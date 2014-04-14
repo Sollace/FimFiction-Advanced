@@ -2,7 +2,7 @@
 // @name        FimFiction Advanced
 // @namespace   fimfiction
 // @description Adds various improvements to FimFiction.net
-// @icon        http://s3.amazonaws.com/uso_ss/icon/185127/large.png?1385835541
+// @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js
