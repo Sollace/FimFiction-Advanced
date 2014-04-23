@@ -77,7 +77,8 @@ var backgroundImages = [
     new BG("Wool", "url(http://fc09.deviantart.net/fs71/f/2014/075/2/7/wool_by_comeha-d7aflw9.png)"),
     new BG("Lunar Nights", "url(http://fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
     new BG("Plain Denim", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
-    new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231")
+    new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
+    new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x")
 ];
 
 var logos = [
@@ -596,14 +597,26 @@ if (backgroundImg != null) {
     $(backgroundImg[0].children[0]).css("background-color", color);
     $(backgroundImg[0].children[0]).css("opacity", "0.8");
     $(backgroundImg[0]).css("background-image", defaultBG);
-    $(backgroundImg[0]).click(function() {
+    $(backgroundImg[0]).click(function () {
         setBackgroundImg(-1);
-        $('body').css('background','');
+        $('.body_container').css('background','');
         colorPick.value = '';
         $(colorPick).change();
         setDocCookie("bgColor", defaultBGc);
     });
     
+    $(backgroundImg[0]).parent().find('.premade_settings').click(function () {
+        $(this).parent().find('.premade_settings_selected').each(function () {
+            $(this).removeClass('premade_settings_selected');
+        });
+        $(this).addClass('premade_settings_selected');
+    });
+
+    var bgIndex = getBackgroundImgIndex();
+    if (bgIndex > -2 && bgIndex + 1 < backgroundImg.length) {
+        $(backgroundImg[bgIndex + 1]).addClass('premade_settings_selected');
+    }
+
     logger.Log('setup backgroundImg');
 }
 
@@ -3359,6 +3372,8 @@ function BG(name, css, source) {
         $(blank).css("background", replaceAll(" fixed", "", this.Css));
         $(blank).attr("data-bg-index", i);
         $(blank).css("background-size", "cover");
+        $(blank).css("padding", "0px");
+        $(blank).css("background-position", "center center");
         $(blank).click(function() {
             setBackgroundImg($(this).attr("data-bg-index"));
             updateBackground(getBGColor());
@@ -3587,9 +3602,9 @@ function setTitleHidden(v) {setDocCookie("titleHidden", v);}
 function updateBackground(c) {
     var img = getBackgroundImg();
     if (img != '') {
-        $('body').css("background", img + " " + c);
+        $('.body_container').css("background", img + " " + c);
     } else {
-        $('body').css("background-color", c);
+        $('.body_container').css("background-color", c);
     }
     setDocCookie("bgColor", c);
 }
@@ -3601,7 +3616,7 @@ function getBGColor() {
 
 //==API FUNCTION==//
 function getBackgroundImg() {
-    var index = (hasDocCookie("bgImg") ? parseInt(getDocCookie("bgImg")) : -1);
+    var index = getBackgroundImgIndex();
     
     if (index < 0) return '';
     
@@ -3609,6 +3624,11 @@ function getBackgroundImg() {
     } catch (e) {}
     
     return backgroundImages[0].Css;
+}
+
+//==API FUNCTION==//
+function getBackgroundImgIndex() {
+    return (hasDocCookie("bgImg") ? parseInt(getDocCookie("bgImg")) : -1);
 }
 
 function setBackgroundImg(v) {setDocCookie("bgImg", v);}
@@ -3992,6 +4012,8 @@ function SettingsTab() {
                         transition: box-shadow 0.25s ease 0s;\
                         vertical-align: middle;\
                         text-decoration: none;}\
+                    a.premade_settings_selected {\
+                        box-shadow: 0px 0px 10px #302FFF;}\
                     a.premade_settings:hover {\
                         box-shadow: 0px 0px 10px rgb(196, 111, 111);}\
                     a.premade_settings div.toolbar {\
