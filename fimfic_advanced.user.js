@@ -65,20 +65,20 @@ var backgroundImages = [
     new BG("Sunny Skies","url(http://fc05.deviantart.net/fs70/f/2013/342/8/b/sunny_days_by_comeha-d6x61up.png)"),
     new BG("Pinkie Pie","url(http://fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png) fixed right,url(http://fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png), url(http://fc09.deviantart.net/fs71/f/2013/342/a/2/pinkie_1_by_comeha-d6x61v0.png)"),
     new BG("Diary","url(http://fc03.deviantart.net/fs71/f/2013/342/d/1/book_0_by_comeha-d6x61t4.png) fixed bottom -150px right -50px no-repeat, url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png)"),
-    new BG("School House","url(http://fc09.deviantart.net/fs70/f/2013/342/4/a/house_0_by_comeha-d6x61vh.png) fixed bottom left no-repeat, url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png) fixed"),
+    new BG("School House", "url(http://fc09.deviantart.net/fs70/f/2013/342/4/a/house_0_by_comeha-d6x61vh.png) bottom 100px left no-repeat, url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png)"),
     new BG("Sky","url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png), url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png) fixed"),
     new BG("Twilight Sparkle", "url(http://fc06.deviantart.net/fs70/f/2013/344/b/c/twilight_1_by_comeha-d6xf5mk.png) fixed right,url(http://fc02.deviantart.net/fs71/f/2013/344/3/8/twilight_sparkle_by_comeha-d6xf54o.png),url(http://fc05.deviantart.net/fs71/f/2013/345/d/a/twilight_2_by_comeha-d6xja6o.png) fixed right"),
     new BG("Rarity", "url('http://fc03.deviantart.net/fs70/f/2013/351/4/c/rarity_1_by_comeha-d6yd7e2.png'),url('http://fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png'),url('http://fc03.deviantart.net/fs71/f/2013/351/7/c/rarity_0_by_comeha-d6yd7dj.png')"),
     new BG("Cobble", "url('http://fc08.deviantart.net/fs70/f/2013/354/6/9/cobble_by_comeha-d6ymd5d.png')"),
     new BG("Glass", "url('http://fc01.deviantart.net/fs71/f/2013/354/1/6/glass_by_comeha-d6ymd58.png') top center"),
     new BG("Sonic Rainboom", "url('http://fc00.deviantart.net/fs70/f/2012/132/1/d/sonic_rainboom_by_knight33-d4zgfjy.jpg') fixed 100% center", "http://knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
-    new BG("Rainbow Dash", "url('http://fc01.deviantart.net/fs71/i/2013/269/9/8/rainbow_dash_by_up1ter-d6nz0tp.png') top left -500px no-repeat, url('http://fc09.deviantart.net/fs70/i/2012/067/2/0/rainbow_dash_by_up1ter-d4s3nbk.png') fixed bottom right -500px no-repeat, url('http://fc02.deviantart.net/fs70/i/2012/032/d/8/rainbow_dash_by_up1ter-d4obti3.png') fixed bottom left no-repeat", "http://up1ter.deviantart.com/"),
+    CBG('kp', '60% 60%', new BG("Rainbow Dash", "url('http://fc01.deviantart.net/fs71/i/2013/269/9/8/rainbow_dash_by_up1ter-d6nz0tp.png') top left -500px no-repeat, url('http://fc09.deviantart.net/fs70/i/2012/067/2/0/rainbow_dash_by_up1ter-d4s3nbk.png') bottom -30px right -500px no-repeat, url('http://fc02.deviantart.net/fs70/i/2012/032/d/8/rainbow_dash_by_up1ter-d4obti3.png') bottom 270px left -60px no-repeat", "http://up1ter.deviantart.com/")),
     new BG("PinkieScape", "url(http://fc02.deviantart.net/fs71/f/2014/021/b/1/land_by_comeha-d733yee.png) no-repeat fixed top 200px center / 100% auto, url(http://fc03.deviantart.net/fs71/f/2014/021/d/4/sky_by_comeha-d733ydu.png) local top left -300px / 100% auto"),
     new BG("Wool", "url(http://fc09.deviantart.net/fs71/f/2014/075/2/7/wool_by_comeha-d7aflw9.png)"),
     new BG("Lunar Nights", "url(http://fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
     new BG("Plain Denim", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
-    new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x")
+    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x"))
 ];
 
 var logos = [
@@ -3360,8 +3360,25 @@ function isJQuery() {
 }
 
 //==API FUNCTION==//
+function CBG(type, p, bg2) {
+    if (typeof (p) == 'string') {
+        bg2.Type = {
+            Key: type,
+            param: p
+        };
+        return bg2;
+    }
+    p.Type = {
+        Key: type,
+        param: ''
+    };
+    return p;
+}
+
+//==API FUNCTION==//
 function BG(name, css, source) {
-    this.Able = typeof(name) == 'string';
+    this.Able = typeof (name) == 'string';
+    this.Type = { Key: '', param: '' };
     this.Css = css;
     this.Name = name;
     
@@ -3369,11 +3386,33 @@ function BG(name, css, source) {
         blank.children[1].innerHTML = name;
         $(blank.children[0]).css("background-color", c);
         $(blank.children[0]).css("opacity", "0.8");
-        $(blank).css("background", replaceAll(" fixed", "", this.Css));
+        var css = replaceAll(" fixed", "", this.Css);
+        if (contains(this.Type.Key, 'k')) {
+            css = css.split(' ');
+            for (var o = 0; o < css.length - 1; o++) {
+                switch (css[o]) {
+                    case 'top':
+                    case 'bottom':
+                    case 'left':
+                    case 'right':
+                        if (endsWith(css[o + 1], 'px')) {
+                            css.splice(o + 1, 1);
+                        }
+                }
+            }
+            css = css.join(' ');
+        }
+        $(blank).css("background", css);
         $(blank).attr("data-bg-index", i);
-        $(blank).css("background-size", "cover");
-        $(blank).css("padding", "0px");
-        $(blank).css("background-position", "center center");
+        if (!contains(this.Type.Key, 'p')) $(blank).css("background-position", "center center");
+
+        if (contains(this.Type.Key, 'c')) {
+            $(blank).css("background-size", "contain");
+        } else if (contains(this.Type.Key, 'k')) {
+            $(blank).css("background-size", this.Type.param);
+        } else {
+            $(blank).css("background-size", "cover");
+        }
         $(blank).click(function() {
             setBackgroundImg($(this).attr("data-bg-index"));
             updateBackground(getBGColor());
