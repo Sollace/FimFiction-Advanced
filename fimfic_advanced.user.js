@@ -78,7 +78,7 @@ var backgroundImages = [
     new BG("Lunar Nights", "url(http://fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
     new BG("Plain Denim", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
-    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x"))
+    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"))
 ];
 
 var logos = [
