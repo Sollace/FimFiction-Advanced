@@ -7,7 +7,7 @@
 // @include     https://www.fimfiction.net/*
 // @require     http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
-// @version     2.12
+// @version     2.13
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -65,8 +65,9 @@ var backgroundImages = [
     new BG("Sunny Skies","url(http://fc05.deviantart.net/fs70/f/2013/342/8/b/sunny_days_by_comeha-d6x61up.png)"),
     new BG("Pinkie Pie","url(http://fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png) fixed right,url(http://fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png), url(http://fc09.deviantart.net/fs71/f/2013/342/a/2/pinkie_1_by_comeha-d6x61v0.png)"),
     new BG("Diary","url(http://fc03.deviantart.net/fs71/f/2013/342/d/1/book_0_by_comeha-d6x61t4.png) fixed bottom -150px right -50px no-repeat, url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png)"),
-    new BG("School House", "url(http://fc09.deviantart.net/fs70/f/2013/342/4/a/house_0_by_comeha-d6x61vh.png) bottom 100px left no-repeat, url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png)"),
-    new BG("Sky","url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png), url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png) fixed"),
+    new BG("School House", "url(http://fc09.deviantart.net/fs70/f/2013/342/4/a/house_0_by_comeha-d6x61vh.png) bottom 100px left no-repeat, url(http://fc09.deviantart.net/fs71/f/2014/118/c/3/whispy2_by_comeha-d7gc40o.png) top 30px center"),
+    new BG("Sky", "url(http://fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png) fixed"),
+    //new BG("Sky","url(http://fc03.deviantart.net/fs71/f/2013/342/6/0/cloud_by_comeha-d6x61vj.png), url(http://fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png) fixed"),
     new BG("Twilight Sparkle", "url(http://fc06.deviantart.net/fs70/f/2013/344/b/c/twilight_1_by_comeha-d6xf5mk.png) fixed right,url(http://fc02.deviantart.net/fs71/f/2013/344/3/8/twilight_sparkle_by_comeha-d6xf54o.png),url(http://fc05.deviantart.net/fs71/f/2013/345/d/a/twilight_2_by_comeha-d6xja6o.png) fixed right"),
     new BG("Rarity", "url('http://fc03.deviantart.net/fs70/f/2013/351/4/c/rarity_1_by_comeha-d6yd7e2.png'),url('http://fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png'),url('http://fc03.deviantart.net/fs71/f/2013/351/7/c/rarity_0_by_comeha-d6yd7dj.png')"),
     new BG("Cobble", "url('http://fc08.deviantart.net/fs70/f/2013/354/6/9/cobble_by_comeha-d6ymd5d.png')"),
@@ -78,7 +79,8 @@ var backgroundImages = [
     new BG("Lunar Nights", "url(http://fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
     new BG("Plain Denim", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
-    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"))
+    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)")),
+    new BG("Whispy", "url(http://fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)")
 ];
 
 var logos = [
