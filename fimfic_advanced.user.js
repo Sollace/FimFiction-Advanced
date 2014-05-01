@@ -1168,7 +1168,15 @@ a:hover .bg_source_link {\
     color:#333;\
     z-index:10;\
     position:relative;}\
+.subListButton > div:after {\
+    content: '';\
+    font-family: 'FontAwesome';\
+    position: absolute;\
+    right: 0px;}\
+    .subListButton[opened='true'] > div:after {\
+        content: '';}\
 .subOption {\
+    white-space: nowrap;\
     display: inline-block;\
     zoom: 1;\
     *display: inline;\
@@ -1191,7 +1199,8 @@ a:hover .bg_source_link {\
     background: linear-gradient(to bottom, #dee9f4 0%, #b5bec7 100%);\
     border: 1px solid #8d949b;\
     border-top-color: #a1a9b1;\
-    border-bottom-color: #797f85; }\
+    border-bottom-color: #797f85;\
+    position: relative;}\
 .subOption:hover {\
     background: #b4bdc6;\
     background: -moz-linear-gradient(top, #c7d1da 0%, #a2abb3 100%);\
@@ -1204,8 +1213,7 @@ a:hover .bg_source_link {\
     color: #36393b;\
     box-shadow: 0px 1px 0px #d9e4ee inset;\
     text-decoration: none;\
-    z-index: 10;\
-    position: relative; }\
+    z-index: 10;}\
 .subOption:active {\
     background: #c9c9c9;\
     background: -moz-linear-gradient(top, #b5b5b5 0%, #dedede 100%);\
@@ -1927,30 +1935,32 @@ function setUpMainButton(toolbar, target) {
     
     options.setAttribute("textTarget", target);
     $(options).on("click", function() {
-        if (this.children.length == 1) {
-            var items=makePopup(this, "Options", "fa fa-flag");
-            
+        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
+            var items = makePopup(this, "Options", "fa fa-flag");
+
             var text = this.getAttribute("textTarget");
-            if (!hasAdv) {
-                addOption(items, "Center(document.getElementById('" +  text + "'));", "Center Align");
-            }
-            addOption(items, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right');", "Right Align");
-            if (!hasAdv) {
-                addOption(items, "Indent(document.getElementById('" + text + "'));", "Indent Paragraphs");
-                addOption(items, "Outdent(document.getElementById('" + text + "'));", "Outdent Paragraphs");
-                addOption(items, "InsertBBCodeTag(document.getElementById('" + text + "'), 'spoiler');", "Add Spoiler");
-            }
+            addDropList(items, "BBCode Tags", function () {
+                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right');", "Right Align");
+                if (!hasAdv) {
+                    addOption(this, "Center(document.getElementById('" + text + "'));", "Center Align");
+                    addOption(this, "AddHR(document.getElementById('" + text + "'));", "Horizontal Rule");
+                    addOption(this, "Indent(document.getElementById('" + text + "'));", "Indent Paragraphs");
+                    addOption(this, "Outdent(document.getElementById('" + text + "'));", "Outdent Paragraphs");
+                    addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'spoiler');", "Add Spoiler");
+                }
+                $(addOption(this, "void();", "Ordered List")).click(function () {
+                    makeList(document.getElementById(text), true);
+                });
+                $(addOption(this, "void();", "Unordered List")).click(function () {
+                    makeList(document.getElementById(text), false);
+                });
+            });
+
             $(addOption(items, "void();", "Sign")).click(function() {
                 sign(text);
             });
             $(addOption(items, "void();", "Insert Direct Image")).click(function() {
                 makeImagePopup(text);
-            });
-            $(addOption(items, "void();", "Ordered List")).click(function() {
-                makeList(document.getElementById(text), true);
-            });
-            $(addOption(items, "void();", "Unordered List")).click(function() {
-                makeList(document.getElementById(text), false);
             });
             $(addOption(items, "void();", "Find/Replace Text")).click(function() {
                 makeReplacePopup(document.getElementById(text));
@@ -3119,12 +3129,16 @@ function makeToolTip(button) {
 //==API FUNCTION==//
 function makePopup(button, title, fafaText, img) {
     logger.Log('makePopup: start');
+    $(button).attr('opened', true);
     var holder = document.createElement("div");
     $("body").append(holder);
     $(holder).addClass("drop-down-pop-up-container");
     $(holder).attr("style", "position: absolute;z-index:2237483647;");
-    $(holder).hover(function(e) { }, function(e) {
-        $(this).remove();
+    $(holder).hover(function (e) { }, function (e) {
+        if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
+            $(this).remove();
+            $(button).attr('opened', false);
+        }
     });
     
     $(holder).css("left", $(button).offset().left + "px");
@@ -3264,6 +3278,42 @@ function addOption(list, func, title, breakline) {
 }
 
 //==API FUNCTION==//
+function addDropList(list, title, func, breakline) {
+    var a = $('<a class="subOption subListButton" style="border-radius: 4px; margin-left: 5px; margin-right: 5px;"><div>' + title + '</div></a>');
+    var pop;
+    a.click(function () {
+        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
+            pop = makePopup(this);
+            $(list).parent().parent().attr('hold', true);
+            $(list).parent().parent().hover(function () { }, function () {
+                if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
+                    $(pop).trigger('mouseleave');
+                }
+            });
+            $(pop).parent().parent().hover(function () {
+                $(a).attr('hold', true);
+            }, function () {
+                if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
+                    $(list).parent().parent().attr('hold', false);
+                }
+            });
+            $(pop).parent().parent().css('margin-left', $(this).width());
+            $(pop).parent().parent().find('h1').remove();
+            func.apply(pop, this);
+            setListItemWidth(pop);
+        } else {
+            $(pop).trigger('mouseleave');
+            pop = null;
+        }
+    });
+    $(list).append(a);
+    if (breakline == null || breakline) {
+        $(list).append("</br>");
+    }
+    return pop;
+}
+
+//==API FUNCTION==//
 function getListItemWidth(list) {
     var result = 0;
     for (var i = 0; i < list.children.length;i++) {
@@ -3329,11 +3379,19 @@ function position(obj, x, y, buff) {
     if (typeof y == "string" && y.toLowerCase() == "center") {
         y = ($(window).height() - $(obj).height()) / 2;
     }
-    
-    if (buff == null || buff == undefined) {
-        buff = 0;
+    if (typeof x == 'object') {
+        var parameters = x;
+        var positioner = x.object != null ? x.object : x;
+        buff = x.buffer != null ? x.buffer : y;
+        
+        y = $(positioner).offset().top - $(window).scrollTop();
+        x = $(positioner).offset().left - $(window).scrollLeft();
+
+        if (parameters.offX != null) x += parameters.offX;
+        if (parameters.offY != null) y += parameters.offY;
     }
     
+    if (buff == null) buff = 0;
     if (x < buff) x = buff;
     if (y < buff) y = buff;
     
