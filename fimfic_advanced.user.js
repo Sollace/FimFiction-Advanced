@@ -3319,7 +3319,7 @@ function addDropList(list, title, func, breakline) {
                     $(list).parent().parent().attr('hold', false);
                 }
 
-                if (!isHovering(e.pageX, e.pageY)) {
+                if (!$(this).attr('toggle') && !isHovering(e.pageX, e.pageY)) {
                     $(list).trigger('mouseleave');
                 }
             });
@@ -3328,8 +3328,8 @@ function addDropList(list, title, func, breakline) {
             func.apply(pop, this);
             setListItemWidth(pop);
         } else {
+            $(pop).parent().parent().attr('toggle', true);
             $(pop).trigger('mouseleave');
-            pop = null;
         }
     });
     $(list).append(a);
