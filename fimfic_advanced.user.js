@@ -1,4 +1,4 @@
-// ==UserScript==
+﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @namespace   fimfiction
 // @description Adds various improvements to FimFiction.net
@@ -3284,17 +3284,43 @@ function addDropList(list, title, func, breakline) {
     a.click(function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
             pop = makePopup(this);
+            $(pop).parent().parent().css('margin-top', '-50px');
             $(list).parent().parent().attr('hold', true);
-            $(list).parent().parent().hover(function () { }, function () {
-                if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
-                    $(pop).trigger('mouseleave');
+
+            var isHovering = function (x, y) {
+                var pops = $('.drop-down-pop-up-container');
+                for (var i = 0; i < pops.length; i++) {
+                    var top = $(pops[i]).offset().top;
+                    var height = $(pops[i]).height() - (parseInt($(pops).css('margin-top')) * 2);
+                    var left = $(pops[i]).offset().left;
+                    var width = $(pops[i]).width() - (parseInt($(pops).css('margin-left')) * 2);
+                    if (y >= top && y <= top + height) {
+                        if (x >= left && x <= left + width) {
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+
+            $(list).parent().parent().on('mouseleave', function (e) {
+                if ($(this).attr('hold') == 'true') {
+                    if (!isHovering(e.pageX, e.pageY)) {
+                        $(this).attr('hold', false);
+                        $(this).trigger('mouseleave');
+                        $(pop).trigger('mouseleave');
+                    }
                 }
             });
             $(pop).parent().parent().hover(function () {
                 $(a).attr('hold', true);
-            }, function () {
+            }, function (e) {
                 if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
                     $(list).parent().parent().attr('hold', false);
+                }
+
+                if (!isHovering(e.pageX, e.pageY)) {
+                    $(list).trigger('mouseleave');
                 }
             });
             $(pop).parent().parent().css('margin-left', $(this).width());
