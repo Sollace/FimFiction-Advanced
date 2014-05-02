@@ -1966,6 +1966,7 @@ function setUpMainButton(toolbar, target) {
                 makeReplacePopup(document.getElementById(text));
             });
             setListItemWidth(items);
+            inbounds($(items).parent().parent());
         }
     });
     logger.Log('setUpMainButton: end');
@@ -2352,7 +2353,7 @@ function betterSizes(size, target) {
     size.setAttribute("textTarget", target);
     size.onclick = function() {
         if (this.children.length == 1) {
-            var items=makePopup(this, "Text Size", "fa fa-text-height");
+            var items = makePopup(this, "Text Size", "fa fa-text-height");
             
             var text = this.getAttribute("textTarget");
             for (var i = 10; i < 20; i+=2) {
@@ -2373,6 +2374,7 @@ function betterSizes(size, target) {
                 }
                 $(items).append("</br>");
             }
+            inbounds($(items).parent().parent());
         }
     }
     logger.Log('betterSizes: end');
@@ -2442,7 +2444,7 @@ function betterColors(color, target) {
             $(b.parentNode).click(function() {
                 insertColor(text);
             });
-            
+            inbounds($(items).parent().parent());
         }
     });
     logger.Log('betterColors: end');
@@ -3327,6 +3329,7 @@ function addDropList(list, title, func, breakline) {
             $(pop).parent().parent().find('h1').remove();
             func.apply(pop, this);
             setListItemWidth(pop);
+            inbounds($(pop).parent().parent());
         } else {
             $(pop).parent().parent().attr('toggle', true);
             $(pop).trigger('mouseleave');
@@ -3429,6 +3432,60 @@ function position(obj, x, y, buff) {
     
     $(obj).css('top', y + "px");
     $(obj).css('left', x + "px");
+}
+
+//==API FUNCTION==//
+function inbounds(el, buff) {
+    if (buff == null) buff = 0;
+
+    var left = $(el).offset().left;
+    var top = $(el).offset().top;
+
+    var scrollX = $(window).scrollLeft();
+    var scrollY = $(window).scrollTop();
+
+    left -= scrollX;
+    top -= scrollY;
+
+    var margL = 0;
+    var margR = 0;
+    var margT = 0;
+    var margB = 0;
+    try {
+        margL = parseFloat($(el).css('margin-left'));
+    } catch (e) {
+        margL = 0;
+    }
+    try {
+        margT = parseFloat($(el).css('margin-top'));
+    } catch (e) {
+        margT = 0;
+    }
+    try {
+        margR = parseFloat($(el).css('margin-right'));
+    } catch (e) {
+        margR = 0;
+    }
+    try {
+        margB = parseFloat($(el).css('margin-bottom'));
+    } catch (e) {
+        margB = 0;
+    }
+
+    var width = $(el).outerWidth(false);
+    var height = $(el).outerHeight(false);
+
+    var winW = $(window).outerWidth(false);
+    var winH = $(window).outerHeight(false);
+
+    if (top - margT + height + margB > winH + buff) top = winH - height;
+    if (left - margL + width + margR > winW + buff) left = winW - width;
+
+    if (top < buff) top = buff;
+    if (left < buff) left = buff;
+    
+    $(el).css('top', top - margT + scrollY + 'px');
+    $(el).css('left', left - margL + scrollX + 'px');
 }
 
 //==API FUNCTION==//
