@@ -16,24 +16,6 @@ if (isJQuery())
 var logger = new Logger('FimFiction Advanced',1);
 //===================================================================================================
 try { try {
-//---------------------------------------------------------------------------------------------------
-/*\--------------------------------------------------------------------------------------------------
-|*|  :: cookies.js ::
-|*|  Syntaxes:
-|*|  * docCookies.setItem(name, value[, end[, path[, domain[, secure]]]])
-|*|  * docCookies.getItem(name)
-|*|  * docCookies.removeItem(name[, path], domain)
-|*|  * docCookies.hasItem(name)
-|*|  * docCookies.keys()
-\*/ var docCookies={
-getItem: function(sKey){return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*"+encodeURIComponent(sKey).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=\\s*([^;]*).*$)|^.*$"),"$1")) || null;},
-setItem: function(sKey,sValue,vEnd,sPath,sDomain,bSecure){if(!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey))return false;var sExpires = "";if(vEnd){switch(vEnd.constructor){case Number: sExpires=vEnd === Infinity ?"; expires=Fri, 31 Dec 9999 23:59:59 GMT":"; max-age="+vEnd;break;case String: sExpires="; expires="+vEnd;break;case Date: sExpires="; expires="+vEnd.toUTCString();break;}}document.cookie=encodeURIComponent(sKey)+"="+encodeURIComponent(sValue)+sExpires+(sDomain ?"; domain="+sDomain:"")+(sPath ?"; path="+sPath:"")+(bSecure ?"; secure":"");return true;},
-removeItem: function(sKey,sPath,sDomain){if(!sKey || !this.hasItem(sKey))return false;document.cookie=encodeURIComponent(sKey)+"=; expires=Thu, 01 Jan 1970 00:00:00 GMT"+(sDomain ?"; domain="+sDomain:"")+(sPath ?"; path="+sPath:"");return true;},
-hasItem: function(sKey){return(new RegExp("(?:^|;\\s*)"+encodeURIComponent(sKey).replace(/[\-\.\+\*]/g,"\\$&")+"\\s*\\=")).test(document.cookie);},
-keys: function(){var aKeys=document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g,"").split(/\s*(?:\=[^;]*)?;\s*/);for(var nIdx=0;nIdx<aKeys.length;nIdx++){aKeys[nIdx]=decodeURIComponent(aKeys[nIdx]);}return aKeys;}};
-
-//----------------------------------------------------------------------------------------------------
-logger.Log('Checkpoint 1: docCookies setup successfully');
 //----------------------------------------------------------------------------------------------------
 function reverse(me){return me != null ? me.split("").reverse().join() : me;}
 function contains(me,it){return me != null ? me.indexOf(it)!=-1 : false;}
@@ -54,7 +36,7 @@ function replaceAll(find,replace,me){
     return me.replace(new RegExp(escapeRegExp(find),'g'),replace);}
 function urlSafe(me){return me.toLowerCase().replace(/[^a-z0-9_-]/gi,'-').replace(/--/,'-');}
 //----------------------------------------------------------------------------------------------------
-logger.Log('Checkpoint 2: string function setup successfully');
+logger.Log('Checkpoint 1: string function setup successfully');
 //----------------------------------------------------------------------------------------------------
 var backgroundImages = [
     new BG("Light","url(http://fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png)"),
@@ -126,25 +108,36 @@ var Morecolors = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,
 var FimFiccolors = [113,114,115,116,117,118,119,120,121,122,123,124,125,126,127];
 var Ponycolors = [128,129,130,131,132,133];
 
-logger.Log('Checkpoint 3: BGs setup successfully');
+logger.Log('Checkpoint 2: BGs setup successfully');
 //----------------------------------------------------------------------------------------------------
 } catch (e) {logger.SevereException('unhandledException in Pre-init: {0}', e);}
 //----------------------------------------------------------------------------------------------------
   
-applyOneTime((document.location.href + ' ').split('fimfiction.net/')[1].trim());
-logger.Log('Checkpoint 4: initial setup completed successfully');
+var location = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
+addChapterButtonsExtras();
+if (startsWith(location, 'manage_user/avatar')) {
+    $('.story_image').each(function () {
+        $(this).attr('src', $(this).attr('src').split('?')[0]);
+    });
+    addGravatar();
+}
+applyBookmarks();
+startRandomizer();
+setup();
 
-if (!startsWith(document.location.href, 'http://www.fimfiction.net/manage_user/messages/')) {
+logger.Log('Checkpoint 3: initial setup completed successfully');
+
+if (!startsWith(location, 'manage_user/messages/')) {
     setInterval(loopUnspoiler, 500);
 }
 
 setInterval(function() {
     setup();
 }, 1000);
-logger.Log('Checkpoint 5: looping started successfully');
+logger.Log('Checkpoint 4: looping started successfully');
 
 var nav_bar = $("div.nav_bar")[0].children[0];
-logger.Log('Checkpoint 6: got nav_bar successfully');
+logger.Log('Checkpoint 5: got nav_bar successfully');
 
 if (nav_bar.children[3].children.length > 2) {
     var messageButton = nav_bar.children[3].children[2].children[1];
@@ -170,18 +163,18 @@ var second_nav = $('div.user_toolbar')[0];
 second_nav = second_nav.children[second_nav.children.length - 1];
 
 if (second_nav != null) {
-    logger.Log('Checkpoint 7: got second_nav successfully');
+    logger.Log('Checkpoint 6: got second_nav successfully');
     
     $(second_nav.children[0]).css("margin-left", "0px");
     $(second_nav.children[0]).css("border-left", "1px solid rgba(0, 0, 0, 0.2)");
     
     var but;
     if (second_nav.children.length > 4) {
-        /*but = second_nav.children[4].children[1];
+        but = second_nav.children[4].children[1];
         
         changeLogo(but, 1, "fa fa-check", true);
         changeLogo(but, 2, "fa fa-rss", true);
-        */
+        
         but = second_nav.children[6].children[1];
     } else {
         but = second_nav.children[1].children[1];
@@ -280,7 +273,7 @@ $('.external_account').each(function() {
     }
 });
 
-logger.Log('Checkpoint 7.5: set account logos successfully');
+logger.Log('Checkpoint 7: set account logos successfully');
 
 var swit = getElementByContent("a", "+ Switch to full view");
 if (swit == null) {
@@ -356,10 +349,10 @@ if (getSweetieEnabled()) {
     logger.Log('sweetie_enable=true');
     setupSweetie();
 }
-logger.Log('Checkpoint 8.5: sweetie Scepter setup successfully');
+logger.Log('Checkpoint 9: sweetie Scepter setup successfully');
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
-logger.Log('Checkpoint 9: starting settings Tab setup');
+logger.Log('Checkpoint 10: starting settings Tab setup');
 //--------------------------------------------------------------------------------------------------
 try {
 //--------------------------------------------------------------------------------------------------
@@ -988,7 +981,7 @@ if (sigText != null) {
 } catch (e) {logger.SevereException('Unhandled Exception in Settings Tab: {0}', e); }
 //--------------------------------------------------------------------------------------------------
 
-logger.Log('Checkpoint 10: settings Tab setup completed Succesfully');
+logger.Log('Checkpoint 11: settings Tab setup completed Succesfully');
 var styleSheet = "\
 #pm_content {\
     resize: none;\
@@ -1307,7 +1300,7 @@ if(getWideNotes()) {
 }
     
 makeStyle(styleSheet);
-logger.Log('Checkpoint 11: style sheet added Succesfully');
+logger.Log('Checkpoint 12: style sheet added Succesfully');
 
 setTimeout(function() {
     if (getTitleHidden()) {
@@ -1320,7 +1313,7 @@ setTimeout(function() {
     logger.Log('Delayed Checkpoint: banner animations setup Succesfully');
 }, 10);
 
-logger.Log('Checkpoint 12: script completed Succesfully');
+logger.Log('Checkpoint 13: script completed Succesfully');
 
 //--------------------------------------------------------------------------------------------------
 } catch (e) {if (e != 'handled') { logger.SevereException('UnHandled Exception: {0}', e); }}
@@ -1328,33 +1321,7 @@ logger.Log('Checkpoint 12: script completed Succesfully');
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-function applyOneTime(location) {
-    logger.Log('one Time: start');
-    addChapterButtonsExtras();
-    if (startsWith(location, 'manage_user/avatar')) {
-        $('.story_image').each(function() {
-            $(this).attr('src', $(this).attr('src').split('?')[0]);
-        });
-        addGravatar();
-    }
-    applyBookmarks();
-    startRandomizer();
-    setup();
-    
-    logger.Log('one Time: end');
-}
-
 function getBookmarksGui(tab) {
-    //-------Port Cookies to DOM
-    var keys = docCookies.keys();
-    for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('_bookmark_position') != -1) {
-            setDocCookie(keys[i], docCookies.getItem(keys[i]));
-            docCookies.removeItem(keys[i], '/', 'fimfiction.net');
-        }
-    }
-    //-------Port Cookies to DOM
-    
     keys = getDocKeys();
     var itemsArray = [];
     for (var i = 0; i < keys.length; i++) {
@@ -3835,7 +3802,6 @@ function getDocKeys() {
 //==API FUNCTION==//
 function setDocCookie(name, val) {
     logger.Log('setCookie: ' + name);
-    //docCookies.setItem(name, val, Infinity, '/', 'fimfiction.net');
     localStorage[name] = val;
 }
 
@@ -3845,13 +3811,6 @@ function getDocCookie(name) {
 }
 
 function hasDocCookie(name) {
-    //-------Port Cookies to DOM
-    if (docCookies.hasItem(name)) {
-        localStorage[name] = docCookies.getItem(name);
-        docCookies.removeItem(name, '/', 'fimfiction.net');
-        return true;
-    }
-    //-------Port Cookies to DOM
     return localStorage[name] != null;
 }
 
