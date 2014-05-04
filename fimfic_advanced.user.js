@@ -3749,6 +3749,7 @@ function setTitleHidden(v) {setDocCookie("titleHidden", v);}
 function updateBackground(c) {
     var img = getBackgroundImg();
     if (img != '') {
+        if (c == 'transparent') c = $('body').css('background-color');
         $('.body_container').css("background", img + " " + c);
     } else {
         $('.body_container').css("background-color", c);
