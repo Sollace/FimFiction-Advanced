@@ -1,7 +1,8 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
-// @namespace   fimfiction
 // @description Adds various improvements to FimFiction.net
+// @author      Sollace
+// @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
@@ -1899,9 +1900,13 @@ function setUpMainButton(toolbar, target) {
     var options = makeButton(toolbar, "More Options", "fa fa-flag");
     
     options.setAttribute("textTarget", target);
-    $(options).on("click", function() {
+    $(options).on("click", function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
+            $('body').addClass('hold_comment');
             var items = makePopup(this, "Options", "fa fa-flag");
+            $(items).on('close', function () {
+                $('body').removeClass('hold_comment');
+            });
 
             var text = this.getAttribute("textTarget");
             addDropList(items, "BBCode Tags", function () {
@@ -2313,35 +2318,40 @@ function hasSigned(value, format) {
 
 function betterSizes(size, target) {
     logger.Log('betterSizes: start');
-    size.children[0].setAttribute("href", "javascript:void();");
+    $(size.children[0]).attr("href", "javascript:void();");
     
-    size.setAttribute("textTarget", target);
-    size.onclick = function() {
-        if (this.children.length == 1) {
-            var items = makePopup(this, "Text Size", "fa fa-text-height");
-            
-            var text = this.getAttribute("textTarget");
-            for (var i = 10; i < 20; i+=2) {
-                for (var k = 0; k < 50; k+=10) {
+    $(size).attr("textTarget", target);
+
+    $(size).click(function () {
+        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
+            $('body').addClass('hold_comment');
+            var items = makePopup(this, 'Text Size', 'fa fa-text-height');
+            $(items).on('close', function () {
+                $('body').removeClass('hold_comment');
+            });
+
+            var text = $(this).attr("textTarget");
+            for (var i = 10; i < 20; i += 2) {
+                for (var k = 0; k < 50; k += 10) {
                     var size = addOption(items, "InsertBBCodeTags(document.getElementById('" + text + "'), '[size=" + (i + k) + "]', '[/size]');", i + k, false);
-                    size.style.display = "inline-block";
-                    
-                    $(size.parentNode).hover(function() {
+                    $(size).css('display', 'inline-block');
+
+                    $(size).parent().hover(function () {
                         var sz = this.children[0].innerHTML;
                         var pop = makeToolTip(this);
-                        pop.parentNode.style.margin = "30px 0px 0px 0px";
-                        pop.parentNode.style.padding = "0px 0px 0px 0px";
+                        $(pop).parent().css('margin', '30px 0px 0px 0px');
+                        $(pop).parent().css('padding', '0px 0px 0px 0px');
                         $(pop).append("<div style=\"font-size: " + sz + "px; line-height: 1; height: " + sz + "px;\">Ab</div>");
-                    }, function() {
-                        this.removeChild(this.children[1]);
+                    }, function () {
+                        $(this.children[1]).remove();
                     });
-                    
+
                 }
                 $(items).append("</br>");
             }
             inbounds($(items).parent().parent());
         }
-    }
+    });
     logger.Log('betterSizes: end');
 }
 
@@ -2350,11 +2360,16 @@ function betterColors(color, target) {
     color.children[0].setAttribute("href", "javascript:void();");
     
     color.setAttribute("textTarget", target);
+
     $(color).on("click", function() {
-        if (this.children.length == 1) {
+        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
+            $('body').addClass('hold_comment');
             var text = this.getAttribute("textTarget");
             
             var items = makePopup(this, "Default Colours", "fa fa-tint");
+            $(items).on('close', function () {
+                $('body').removeClass('hold_comment');
+            });
             addColorTiles(text, items, FimFiccolors.concat([-1,-1,-1].concat(Ponycolors)), 6);
             
             var recent = getRecentColours(6);
@@ -3103,6 +3118,7 @@ function makePopup(button, title, fafaText, img) {
     $(holder).attr("style", "position: absolute;z-index:2237483647;");
     $(holder).hover(function (e) { }, function (e) {
         if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
+            $(this).find(".drop-down-pop-up-content").trigger('close');
             $(this).remove();
             $(button).attr('opened', false);
         }
