@@ -122,7 +122,7 @@ if (startsWith(location, 'manage_user/avatar')) {
 }
 applyBookmarks();
 startRandomizer();
-setup();
+setup(true);
 
 logger.Log('Checkpoint 3: initial setup completed successfully');
 
@@ -131,7 +131,7 @@ if (!startsWith(location, 'manage_user/messages/')) {
 }
 
 setInterval(function() {
-    setup();
+    setup(false);
 }, 1000);
 logger.Log('Checkpoint 4: looping started successfully');
 
@@ -1839,7 +1839,7 @@ function applyBookmarks() {
     logger.Log('applyBookmarks: end');
 }
 
-function setup() {
+function setup(hold) {
     logger.Log('setup: start');
     $("a[title='Text Color']").each(function(index) {
         if ($(this).attr("fimfic_adv") != "true") {
@@ -1854,16 +1854,15 @@ function setup() {
                 $(this).append('<i class="fa fa-tint" />');
             }
             
-            betterColors(this.parentNode, t);
-            
-            setUpMainButton(this.parentNode, t);
+            betterColors(this.parentNode, t, hold);
+            setUpMainButton(this.parentNode, t, hold);
         }
     });
     $("a[title='Font Size']").each(function(index) {
         if ($(this).attr("fimfic_adv") != "true") {
             $(this).attr("fimfic_adv", "true");
             var t = this.getAttribute("href").split("'")[1];
-            betterSizes(this.parentNode, t);
+            betterSizes(this.parentNode, t, hold);
         }
     });
     $("a[title='Insert Image']").each(function(index) {
@@ -1894,7 +1893,7 @@ function setUpSpecialTitles() {
     setSpecialTitle([129122],"Emote Contributor");
 }
 
-function setUpMainButton(toolbar, target) {
+function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: start');
     var hasAdv = toolbar.parentNode.parentNode.children[2].children.length > 4;
     var options = makeButton(toolbar, "More Options", "fa fa-flag");
@@ -1902,11 +1901,14 @@ function setUpMainButton(toolbar, target) {
     options.setAttribute("textTarget", target);
     $(options).on("click", function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            $('body').addClass('hold_comment');
             var items = makePopup(this, "Options", "fa fa-flag");
-            $(items).on('close', function () {
-                $('body').removeClass('hold_comment');
-            });
+
+            if (hold == true) {
+                $('body').addClass('hold_comment');
+                $(items).on('close', function () {
+                    $('body').removeClass('hold_comment');
+                });
+            }
 
             var text = this.getAttribute("textTarget");
             addDropList(items, "BBCode Tags", function () {
@@ -2316,7 +2318,7 @@ function hasSigned(value, format) {
     return regex.test(encodeURI(value));
 }
 
-function betterSizes(size, target) {
+function betterSizes(size, target, hold) {
     logger.Log('betterSizes: start');
     $(size.children[0]).attr("href", "javascript:void();");
     
@@ -2324,11 +2326,13 @@ function betterSizes(size, target) {
 
     $(size).click(function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            $('body').addClass('hold_comment');
             var items = makePopup(this, 'Text Size', 'fa fa-text-height');
-            $(items).on('close', function () {
-                $('body').removeClass('hold_comment');
-            });
+            if (hold == true) {
+                $('body').addClass('hold_comment');
+                $(items).on('close', function () {
+                    $('body').removeClass('hold_comment');
+                });
+            }
 
             var text = $(this).attr("textTarget");
             for (var i = 10; i < 20; i += 2) {
@@ -2355,21 +2359,23 @@ function betterSizes(size, target) {
     logger.Log('betterSizes: end');
 }
 
-function betterColors(color, target) {
+function betterColors(color, target, hold) {
     logger.Log('betterColors: start');
-    color.children[0].setAttribute("href", "javascript:void();");
+    $(color.children[0]).attr("href", "javascript:void();");
     
-    color.setAttribute("textTarget", target);
-
+    $(color).attr("textTarget", target);
     $(color).on("click", function() {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            $('body').addClass('hold_comment');
-            var text = this.getAttribute("textTarget");
+            var text = $(this).attr("textTarget");
             
             var items = makePopup(this, "Default Colours", "fa fa-tint");
-            $(items).on('close', function () {
-                $('body').removeClass('hold_comment');
-            });
+            if (hold == true) {
+                $('body').addClass('hold_comment');
+                $(items).on('close', function () {
+                    $('body').removeClass('hold_comment');
+                });
+            }
+            
             addColorTiles(text, items, FimFiccolors.concat([-1,-1,-1].concat(Ponycolors)), 6);
             
             var recent = getRecentColours(6);
@@ -3268,10 +3274,11 @@ function addDropList(list, title, func, breakline) {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
             pop = makePopup(this);
             $(pop).parent().parent().css('margin-top', '-50px');
+            $(pop).parent().parent().add($(list).parent().parent()).addClass('list-pop-up-container');
             $(list).parent().parent().attr('hold', true);
 
             var isHovering = function (x, y) {
-                var pops = $('.drop-down-pop-up-container');
+                var pops = $('.list-pop-up-container');
                 for (var i = 0; i < pops.length; i++) {
                     var top = $(pops[i]).offset().top;
                     var height = $(pops[i]).height() - (parseInt($(pops).css('margin-top')) * 2);
