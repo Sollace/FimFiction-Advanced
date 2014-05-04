@@ -8,6 +8,7 @@
 // @include     https://www.fimfiction.net/*
 // @require     http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
+// @require     https://github.com/Sollace/FimFiction-UserScripts/raw/Dev/Internal/SpecialTitles.user.js
 // @version     2.14
 // @grant       none
 // ==/UserScript==
@@ -1873,7 +1874,6 @@ function setup(hold) {
         }
     });
     
-    setUpSpecialTitles();
     if (document.hasFocus()) {
         SetupRandomize();
     }
@@ -1884,13 +1884,8 @@ function setup(hold) {
 function loopUnspoiler() {
     logger.Log('loopUnspoiler: loop_start');
     if (!getInit() && unspoilerImages()) {
-        setUpSpecialTitles();
+        SpecialTitles.setUpSpecialTitles();
     }
-}
-
-function setUpSpecialTitles() {
-    setSpecialTitle([138711, 10539, 27165],"FimFiction Modder");
-    setSpecialTitle([129122],"Emote Contributor");
 }
 
 function setUpMainButton(toolbar, target, hold) {
@@ -3029,18 +3024,6 @@ function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 
 //==API FUNCTION==//
 function isCompactView() {return getElementByContent("a", "+ Switch to full view") != null;}
-
-//==API FUNCTION==//
-function setSpecialTitle(userIds, title) {
-    for (var  i = 0; i < userIds.length; i++) {
-        $(".author > .avatar > img[src^='//www.fimfiction-static.net/images/avatars/" + userIds[i] + "']").each(function(item) {
-            var prev = this.parentNode.previousSibling;
-            if (prev != null && prev != undefined && prev.innerHTML != title) {
-                $(this.parentNode).before("<div class=\"author-badge\" >" + title + "</div>");
-            }
-        });
-    }
-}
 
 //==API FUNCTION==//
 function changeLogo(button, index, img, right) {
