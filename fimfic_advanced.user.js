@@ -159,14 +159,10 @@ if (nav_bar.children[3].children.length > 2) {
     changeLogo(bellButton, 2, "fa fa-check");
 }
 
-var second_nav = $('div.user_toolbar')[0];
-second_nav = second_nav.children[second_nav.children.length - 1];
+var second_nav = $('div.user_toolbar > .inner')[0];
 
 if (second_nav != null) {
     logger.Log('Checkpoint 6: got second_nav successfully');
-    
-    $(second_nav.children[0]).css("margin-left", "0px");
-    $(second_nav.children[0]).css("border-left", "1px solid rgba(0, 0, 0, 0.2)");
     
     var but;
     if (second_nav.children.length > 4) {
@@ -1289,7 +1285,10 @@ ul.chapters_compact .chapter_container {\
 .chapter_content #chapter_container {\
     margin-left: auto !important;\
     margin-right: auto !important;\
-    max-width: " + getStoryWidth() + ";}";
+    max-width: " + getStoryWidth() + ";}\
+ .user_toolbar > .inner .button-first {\
+    margin-left: 0px !important;\
+    border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}";
     
 if(getWideNotes()) {
     styleSheet += "\
