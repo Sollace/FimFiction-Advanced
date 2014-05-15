@@ -6,7 +6,7 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
-// @require     http://gsgd.co.uk/sandbox/jquery/easing/jquery.easing.1.3.js
+// @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/FimFiction-UserScripts/raw/Dev/Internal/SpecialTitles.user.js
 // @version     2.14
