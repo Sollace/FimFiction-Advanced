@@ -2165,108 +2165,6 @@ function emoteHTM(name) {
     return '<img src="//www.fimfiction-static.net/images/emoticons/' + name + '.png" style="height:27px;" ></img>';
 }
 
-function getUserCommentThumb(size) {
-    
-    var hold = $('<div class="author" style="line-height:1.1em;" />');
-    
-    if (getIsLoggedIn()) {
-        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a>');
-        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
-    } else {
-        hold.append('<a class="name">Anon</a>');
-        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/none_64.png" /></div>');
-    }
-    
-    var comm = $('<div class="comment" />');
-    comm.append(hold);
-    return comm;
-}
-
-function fillBBCode(text) {
-    var codes = {
-        '[u]': '<u>',
-        '[/u]': '</u>',
-        '[i]': '<i>',
-        '[/i]': '</i>',
-        '[b]': '<b>',
-        '[/b]': '</b>',
-        '[center]': '<center>',
-        '[/center]': '</center>',
-        '[img]': '<img src="',
-        '[/img]': '" />',
-        '[quote]': '<blockquote>',
-        '[/quote]': '</blockquote>',
-        '[s]': '<span style="text-decoration:line-through">',
-        '[/s]': '</span>',
-        '[spoiler]': '<span class="spoiler">',
-        '[/spoiler]': '</span>'
-    }
-    for (var i in codes) {
-        text = replaceAll(i, codes[i], text);
-    }
-    text = replaceTagWithOption(text, 'url', '<a href="{0}">', '</a>', '<a href="{0}">', '</a>');
-    text = replaceTagWithOption(text, 'size', '<span style="font-size:{0}px; line-height:1.3em;">', '</span>');
-    text = replaceTagWithOption(text, 'color', '<span style="color:{0};">', '</span>');
-    text = replaceYouTube(text);
-    return text;
-}
-
-function replaceYouTube(text) {
-    var htm = '<div class="youtube_container"><iframe src="https://www.youtube.com/embed/{0}" /></div>';
-        
-    var passed = -1, url = -1;
-    while ((url = text.indexOf('[youtube')) != -1 && url > passed) {
-        url += '[youtube'.length;
-        var link = '';
-        for (; url < text.length; url++) {
-            if (text[url] == ']') break;
-            link += text[url];
-        }
-        if (link.indexOf('=') == 0) {
-            link = link.replace('=', '');
-        }
-        if (link != '') {
-            try {
-                text = text.replace('[youtube=' + link + ']', htm.replace('{0}', link.split('watch?v=')[1].split('#')[0]));
-            } catch (e) {
-            }
-        }
-        passed = url;
-    }
-    return text;
-}
-
-function replaceTagWithOption(text, tag, withO, closeWith, without, closeOut) {
-    var passed = -1, url = -1;
-    while ((url = text.indexOf('[' + tag)) != -1 && url > passed) {
-        url += tag.length + 1;
-        var link = '';
-        for (; url < text.length; url++) {
-            if (text[url] == ']') break;
-            link += text[url];
-        }
-        if (link.indexOf('=') == 0) {
-            link = link.replace('=', '');
-        }
-        if (link != '') {
-            text = text.replace('[' + tag + '=' + link + ']', replaceAll('{0}', link, withO));
-            text = text.replace('[/' + tag + ']', replaceAll('{0}', link, closeWith));
-        } else if (without != null) {
-            for (url++; url < text.length; url++) {
-                if (text[url] == '[') break;
-                link += text[url];
-            }
-            if (link != '') {
-                text = text.replace('[' + tag + ']', replaceAll('{0}', link, without));
-                text = text.replace('[/' + tag + ']', replaceAll('{0}', link, closeOut));
-            } else {
-            }
-        }
-        passed = url;
-    }
-    return text;
-}
-
 function sign(target, text) {
     if (text == null || text == undefined) {
         target = document.getElementById(target);
@@ -2878,21 +2776,6 @@ function changeBanner(img, color, pos) {
 }
 
 //==API FUNCTION==//
-function gradient(obj, start, end) {
-    if (start != null && start != undefined && start != '') {
-        var prev = $(obj).css('box-shadow');
-        $(obj).attr('data-box-saved', prev);
-        var gradStart = 'inset 800px 0 200px -100px ' + start;
-        var gradEnd = 'inset -800px 0 200px -100px ' + end;
-        
-        $(obj).css('box-shadow', (prev != '' ? prev + ',' : '') + gradStart + ',' + gradEnd);
-    } else {
-        var prev = $(obj).attr('data-box-saved');
-        $(obj).css('box-shadow', (prev != null && prev != undefined) ? prev : '');
-    }
-}
-
-//==API FUNCTION==//
 function updateCheckColors(id) {
     if (themes[id][3] != "") {
         changeCheckColors(themes[id][3]);
@@ -3018,7 +2901,7 @@ function makeStyle(input, id) {
 }
 
 //==API FUNCTION==//
-//Returns true if Extra emticos have already been initialized on this page
+//Returns true if Extra emoticos has already been initialized on this page
 function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 
 //==API FUNCTION==//
@@ -3045,7 +2928,7 @@ function changeLogo(button, index, img, right) {
         logger.Error('changeLogo: img=' + img);
         logger.Error('changeLogo: right=' + right + '(' + (right == true) + ')');
     }
-    logger.Log('changeLogo: start');
+    logger.Log('changeLogo: end');
 }
 
 //==API FUNCTION==//
@@ -3536,6 +3419,111 @@ function BG(name, css, source) {
             $(blank).append('<a class="bg_source_link" href="' + source + '" >Source</a>');
         }
     }
+}
+
+//==API FUNCTION==//
+function getUserCommentThumb(size) {
+    var hold = $('<div class="author" style="line-height:1.1em;" />');
+
+    if (getIsLoggedIn()) {
+        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a>');
+        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
+    } else {
+        hold.append('<a class="name">Anon</a>');
+        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/none_64.png" /></div>');
+    }
+
+    var comm = $('<div class="comment" />');
+    comm.append(hold);
+    return comm;
+}
+
+//==API FUNCTION==//
+function fillBBCode(text) {
+    var codes = {
+        '[u]': '<u>',
+        '[/u]': '</u>',
+        '[i]': '<i>',
+        '[/i]': '</i>',
+        '[b]': '<b>',
+        '[/b]': '</b>',
+        '[center]': '<center>',
+        '[/center]': '</center>',
+        '[img]': '<img src="',
+        '[/img]': '" />',
+        '[quote]': '<blockquote>',
+        '[/quote]': '</blockquote>',
+        '[s]': '<span style="text-decoration:line-through">',
+        '[/s]': '</span>',
+        '[spoiler]': '<span class="spoiler">',
+        '[/spoiler]': '</span>'
+    }
+    for (var i in codes) {
+        text = replaceAll(i, codes[i], text);
+    }
+    text = replaceTagWithOption(text, 'url', '<a href="{0}">', '</a>', '<a href="{0}">', '</a>');
+    text = replaceTagWithOption(text, 'size', '<span style="font-size:{0}px; line-height:1.3em;">', '</span>');
+    text = replaceTagWithOption(text, 'color', '<span style="color:{0};">', '</span>');
+    text = replaceYouTube(text);
+    return text;
+}
+
+//==API INTERNAL==//
+function replaceYouTube(text) {
+    var htm = '<div class="youtube_container"><iframe src="https://www.youtube.com/embed/{0}" /></div>';
+
+    var passed = -1, url = -1;
+    while ((url = text.indexOf('[youtube')) != -1 && url > passed) {
+        url += '[youtube'.length;
+        var link = '';
+        for (; url < text.length; url++) {
+            if (text[url] == ']') break;
+            link += text[url];
+        }
+        if (link.indexOf('=') == 0) {
+            link = link.replace('=', '');
+        }
+        if (link != '') {
+            try {
+                text = text.replace('[youtube=' + link + ']', htm.replace('{0}', link.split('watch?v=')[1].split('#')[0]));
+            } catch (e) {
+            }
+        }
+        passed = url;
+    }
+    return text;
+}
+
+//==API INTERNAL==//
+function replaceTagWithOption(text, tag, withO, closeWith, without, closeOut) {
+    var passed = -1, url = -1;
+    while ((url = text.indexOf('[' + tag)) != -1 && url > passed) {
+        url += tag.length + 1;
+        var link = '';
+        for (; url < text.length; url++) {
+            if (text[url] == ']') break;
+            link += text[url];
+        }
+        if (link.indexOf('=') == 0) {
+            link = link.replace('=', '');
+        }
+        if (link != '') {
+            text = text.replace('[' + tag + '=' + link + ']', replaceAll('{0}', link, withO));
+            text = text.replace('[/' + tag + ']', replaceAll('{0}', link, closeWith));
+        } else if (without != null) {
+            for (url++; url < text.length; url++) {
+                if (text[url] == '[') break;
+                link += text[url];
+            }
+            if (link != '') {
+                text = text.replace('[' + tag + ']', replaceAll('{0}', link, without));
+                text = text.replace('[/' + tag + ']', replaceAll('{0}', link, closeOut));
+            } else {
+            }
+        }
+        passed = url;
+    }
+    return text;
 }
 
 //--------------------------------------------------------------------------------------------------
