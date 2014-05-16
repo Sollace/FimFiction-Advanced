@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/FimFiction-UserScripts/raw/Dev/Internal/SpecialTitles.user.js
-// @version     2.14
+// @version     2.14.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2934,10 +2934,10 @@ function changeLogo(button, index, img, right) {
 //==API FUNCTION==//
 function finaliseThemes() {
     var themeId = getCookie('selected_theme');
+    var t = safeGetThemeArray();
     if (themeId != null && themeId != undefined) {
-        var t = safeGetThemeArray();
         for (var i = 0; i < t.length; i++) {
-            if (safeGetThemeArray()[i][0] == themeId) {
+            if (t[i][0] == themeId) {
                 theme = i;
                 $(".user_toolbar").css('transition', 'none');
                 chooseTheme(i);
@@ -2947,12 +2947,12 @@ function finaliseThemes() {
         }
     }
     
-    themeId = Math.floor(Math.random() * safeGetThemeArray().length);
+    themeId = Math.floor(Math.random() * t.length);
     
     $(".user_toolbar").css('transition', 'none');
     chooseTheme(themeId);
     $(".user_toolbar").css('transition', '');
-    themeId = safeGetThemeArray()[themeId][0];
+    themeId = t[themeId][0];
 }
 
 //==API FUNCTION==//
