@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/FimFiction-UserScripts/raw/Dev/Internal/SpecialTitles.user.js
-// @version     2.14.1
+// @version     2.14.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -136,54 +136,26 @@ setInterval(function() {
 }, 1000);
 logger.Log('Checkpoint 4: looping started successfully');
 
-var nav_bar = $("div.nav_bar")[0].children[0];
-logger.Log('Checkpoint 5: got nav_bar successfully');
-
-if (nav_bar.children[3].children.length > 2) {
-    var messageButton = nav_bar.children[3].children[2].children[1];
-    if (messageButton.innerHTML == "") {
-        var link = makeDropItem("Compose Message", "javascript:void();", "fa fa-envelope");
-        $(link).attr("onclick", "compose_pm('','');");
-        $(messageButton).append(link);
-        link = makeDropItem("Inbox", "//www.fimfiction.net/messages/inbox", "fa fa-folder");
-        $(messageButton).append(link);
-        link = makeDropItem("Outbox", "//www.fimfiction.net/messages/sent", "fa fa-mail-forward");
-        $(messageButton).append(link);
-        link = makeDropItem("Deleted Items", "//www.fimfiction.net/messages/deleted", "fa fa-trash-o");
-        $(messageButton).append(link);
-    }
-    
-    var bellButton = nav_bar.children[5].children[2].children[1];
-    changeLogo(bellButton, 0, "fa fa-comment");
-    changeLogo(bellButton, 1, "fa fa-eye");
-    changeLogo(bellButton, 2, "fa fa-check");
+var messageButton = $('.mail_link ~ .container > .menu_list');
+if (messageButton.children().length == 0) {
+    var link = makeDropItem("Compose Message", "javascript:void();", "fa fa-envelope");
+    $(link).attr("onclick", "compose_pm('','');");
+    $(messageButton).append(link);
+    link = makeDropItem("Inbox", "//www.fimfiction.net/messages/inbox", "fa fa-folder");
+    $(messageButton).append(link);
+    link = makeDropItem("Outbox", "//www.fimfiction.net/messages/sent", "fa fa-mail-forward");
+    $(messageButton).append(link);
+    link = makeDropItem("Deleted Items", "//www.fimfiction.net/messages/deleted", "fa fa-trash-o");
+    $(messageButton).append(link);
 }
 
-var second_nav = $('div.user_toolbar > .inner')[0];
+changeLogo($('a.button[href="/manage_user/notifications?type=social"]'), "fa fa-comment");
+changeLogo($('a.button[href="/manage_user/notifications?type=meta"]'), "fa fa-eye");
+changeLogo($('a.button.mark_all_notifications_read'), "fa fa-check");
 
-if (second_nav != null) {
-    logger.Log('Checkpoint 6: got second_nav successfully');
-    
-    var but;
-    if (second_nav.children.length > 4) {
-        but = second_nav.children[4].children[1];
-        
-        changeLogo(but, 1, "fa fa-check", true);
-        changeLogo(but, 2, "fa fa-rss", true);
-        
-        but = second_nav.children[6].children[1];
-    } else {
-        but = second_nav.children[1].children[1];
-    }
-    
-    if (but.children.length > 0) {
-        for (var i = 0; i < but.children.length; i++) {
-            if ($(but.children[i]).attr('href') == '/writing-guide') {
-                changeLogo(but, i, "fa fa-book", true);
-            }
-        }
-    }
-}
+changeLogo($('a.button[href^="javascript:MarkAllFavsRead("]'), "fa fa-check", true);
+changeLogo($('a.button[href^="/rss/tracking.php?user="]'), "fa fa-rss", true);
+changeLogo($('a.button[href="/writing-guide"]'), "fa fa-book", true);
 
 $('.external_account').each(function() {
     var url = $(this.parentNode).attr('href');
@@ -368,7 +340,12 @@ if (getIsLoggedIn()) {
     });
     button.find('.menu_list').append(bkm);
     
-    $('.user_toolbar audio').before(button);
+    
+    if (typeof (window.registerToolbarButton) !== 'undefined') {
+        window.registerToolbarButton(button, -1, 2);
+    } else {
+        $('.user_toolbar audio').before(button);
+    }
     
     var marks = getTotalBookmarks();
     if (marks > 0) {
@@ -2883,7 +2860,7 @@ function getUserName() {return getIsLoggedIn() ? getUserButton().getAttribute("h
 
 //==API FUNCTION==//
 function getUserButton() {
-    return $(".user_toolbar div.user_drop_down_menu")[0].children[0];
+    return $('.user_toolbar div.user_drop_down_menu a[href^="/user/"]')[0];
 }
 
 //==API FUNCTION==//
@@ -2908,13 +2885,13 @@ function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 function isCompactView() {return getElementByContent("a", "+ Switch to full view") != null;}
 
 //==API FUNCTION==//
-function changeLogo(button, index, img, right) {
+function changeLogo(button, img, right) {
     logger.Log('changeLogo: start');
     try {
         if (button != null && button != undefined) {
-            if (button.children[index].children[0].tagName == "IMG") {
-                $(button.children[index].children[0]).remove();
-                $(button.children[index]).prepend(makeLogo(img, right));
+            if ($(button).children()[0].tagName == "IMG") {
+                $($(button).children()[0]).remove();
+                $(button).prepend(makeLogo(img, right));
             } else {
                 logger.Log('logo already changed! ' + index + ' ' + img);
             }
