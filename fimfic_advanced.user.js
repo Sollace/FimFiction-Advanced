@@ -339,13 +339,7 @@ if (getIsLoggedIn()) {
         $('.bkm_number').text('Bookmarks');
     });
     button.find('.menu_list').append(bkm);
-    
-    
-    if (typeof (window.registerToolbarButton) !== 'undefined') {
-        window.registerToolbarButton(button, -1, 2);
-    } else {
-        $('.user_toolbar audio').before(button);
-    }
+    $('.user_toolbar audio').before(button);
     
     var marks = getTotalBookmarks();
     if (marks > 0) {
