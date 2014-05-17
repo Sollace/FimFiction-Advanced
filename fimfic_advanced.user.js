@@ -149,12 +149,14 @@ if (messageButton.children().length == 0) {
     $(messageButton).append(link);
 }
 
-changeLogo($('a.button[href="/manage_user/notifications?type=social"]'), "fa fa-comment");
-changeLogo($('a.button[href="/manage_user/notifications?type=meta"]'), "fa fa-eye");
-changeLogo($('a.button.mark_all_notifications_read'), "fa fa-check");
+if (getIsLoggedIn()) {
+    changeLogo($('a.button[href="/manage_user/notifications?type=social"]'), "fa fa-comment");
+    changeLogo($('a.button[href="/manage_user/notifications?type=meta"]'), "fa fa-eye");
+    changeLogo($('a.button.mark_all_notifications_read'), "fa fa-check");
 
-changeLogo($('a.button[href^="javascript:MarkAllFavsRead("]'), "fa fa-check", true);
-changeLogo($('a.button[href^="/rss/tracking.php?user="]'), "fa fa-rss", true);
+    changeLogo($('a.button[href^="javascript:MarkAllFavsRead("]'), "fa fa-check", true);
+    changeLogo($('a.button[href^="/rss/tracking.php?user="]'), "fa fa-rss", true);
+}
 changeLogo($('a.button[href="/writing-guide"]'), "fa fa-book", true);
 
 $('.external_account').each(function() {
