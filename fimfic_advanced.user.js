@@ -1351,10 +1351,9 @@ function getBookmarksGui(tab) {
     var buttons = pager.children();
     var pending_loads = 0;
     
-    for (var i = 0; i < 3; i++) {
-       $(buttons[i % 2]).append('<i class="fa fa-chevron-left" />');
-    }
-    
+    $(buttons[0]).append('<i class="fa fa-chevron-left"></i>');
+    $(buttons[1]).append('<i class="fa fa-chevron-left" />');
+
     $(buttons[0]).append('First');
     $(buttons[0]).css('float', 'left');
     $(buttons[0]).click(function() {
@@ -1391,9 +1390,8 @@ function getBookmarksGui(tab) {
         }
     });
     
-    for (var i = 2; i >= 0; i--) {
-        $(buttons[(i % 2) + 2]).append('<i style="margin-left:4px;margin-right:0px;float:right" class="fa fa-chevron-right" />');
-    }
+    $(buttons[2]).append('<i style="margin-left:4px;margin-right:0px;float:right" class="fa fa-chevron-right"></i>');
+    $(buttons[3]).append('<i style="margin-left:4px;margin-right:0px;float:right" class="fa fa-chevron-right" />');
     
     pager.css('text-align', 'center');
     pager.append('<div style="line-height:40px;"><span id="pageNumber" /> of <span id="pageMax">' + (max + 1) + '</span></div>');
