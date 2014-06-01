@@ -123,7 +123,6 @@ if (startsWith(location, 'manage_user/avatar')) {
     addGravatar();
 }
 applyBookmarks();
-startRandomizer();
 setup(true);
 
 logger.Log('Checkpoint 3: initial setup completed successfully');
@@ -1593,65 +1592,6 @@ function addChapterButtonsExtras() {
     });
 }
 
-function startRandomizer() {
-    setInterval(Randomize, 100);
-    Randomize();
-}
-
-function SetupRandomize() {
-    logger.Log('SetupRandomize: start');
-    $('*:contains(":{random}:")').not('input').not('textarea').filter(function() {
-        return $(this).clone().children().remove().end().text().indexOf(':{random}:') != -1 && this.tagName;
-    }).each(function() {
-        $(this).addClass('random_text_randomize_go');
-        $(this).attr('randomizerSeed', decodeHTML(replaceAll(':{random}:', '', this.innerHTML)));
-    });
-    
-    logger.Log('SetupRandomize: end');
-}
-
-function Randomize() {
-    logger.Log('Randomize: start');
-    var chars = 'abcdefghijklmnopqrstuvwxyz';
-    var CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    var nums = '0123456789';
-    
-    $('.random_text_randomize_go').each(function() {
-        var result = '';
-        var text = $(this).attr('randomizerSeed');
-        
-        if (text == null || text == '') {
-            $(this).attr('randomizerSeed', decodeHTML(replaceAll(':{random}:', '', this.innerHTML)));
-            text = $(this).attr('randomizerSeed');
-        }
-        
-        var tag = false;
-        for (var i = 0; i < text.length; i++) {
-            if (text[i] == '<') {
-                tag = true;
-            } else if (text[i] == '>') {
-                tag = false;
-            }
-            
-            if (!tag) {
-                if (contains(chars, text[i])) {
-                    result += pickOne(chars);
-                } else if (contains(CHARS, text[i])) {
-                    result += pickOne(CHARS);
-                } else if (contains(nums, text[i])) {
-                    result += pickOne(nums);
-                } else {
-                    result += text[i];
-                }
-            } else {
-                result += text[i];
-            }
-        }
-        this.innerHTML = result;
-    });
-    logger.Log('Randomize: end');
-}
-
 function makeList(element, ordered) {
     var start = element.selectionStart;
     var end = element.selectionEnd;
@@ -1813,7 +1753,7 @@ function applyBookmarks() {
 
 function setup(hold) {
     logger.Log('setup: start');
-    $("a[title='Text Color']").each(function(index) {
+    $("a[title='Text Color']").each(function (index) {
         if ($(this).attr("fimfic_adv") != "true") {
             $(this).attr("fimfic_adv", "true");
             
@@ -1844,10 +1784,6 @@ function setup(hold) {
             $(this).append('<i class="fa fa-picture-o" />');
         }
     });
-    
-    if (document.hasFocus()) {
-        SetupRandomize();
-    }
     
     logger.Log('setup: end');
 }
