@@ -8,8 +8,8 @@
 // @include     https://www.fimfiction.net/*
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
-// @require     https://github.com/Sollace/FimFiction-UserScripts/raw/Dev/Internal/SpecialTitles.user.js
-// @version     2.15
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
+// @version     2.16.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -4260,71 +4260,94 @@ function MakeDropButtonStyle() {
 }
 
 //==API FUNCTION==//
-function Logger(name,l) {
-    var test=null;
-    var minLevel=0;
-    var line=0;
-    var paused=false;
-    if(typeof(l)=='number')minLevel=l;
-    this.Start=function(level){
-        if(typeof(level)=='number')minLevel=level;
-        test=$('#debug-console')[0];        
-        paused=false;
-        if(test==null||test==undefined){
+function Logger(name, l) {
+    var test = null;
+    var minLevel = 0;
+    var line = 0;
+    var paused = false;
+    if (typeof (l) == 'number') minLevel = l;
+    this.Start = function (level) {
+        if (typeof (level) == 'number') minLevel = level;
+        test = $('#debug-console')[0];
+        paused = false;
+        if (test == null || test == undefined) {
             test = $('<div id="debug-console" style="position:fixed;bottom:0px;left:0px;" />');
             $('body').append(test);
-            $(test).click(function(){
+            $(test).click(function () {
                 $(this).empty();
-                this.style.bottom=this.style.left=line=0;});}
-        Output('===Logging Enabled===',minLevel+1);}
-    this.Stop=function(){
-        if(test!=null){
+                this.style.bottom = this.style.left = line = 0;
+            });
+        }
+        Output('===Logging Enabled===', minLevel + 1);
+    }
+    this.Stop = function () {
+        if (test != null) {
             $(test).remove();
-            test=null;}
-        line=0;
-        Output('===Logging Disabled===',minLevel+1);}
-    this.Pause=function(){
-        Output('===Logging Paused===',minLevel+1);
-        paused=true;}
-    this.Continue=function(){
-        paused=false;
-        Output('===Logging Continued===',minLevel+1);}
-    this.Log=function(txt){Output(txt,0);}
-    this.Error=function(txt){Output(txt,1);}
-    this.SevereException=function(txt,excep){
-        if(excep!='handled'){
-            try{
-                var stopped=false;
-                if(test==null){
-                    stopped=true;
-                    this.Start();}
-                SOut(txt.replace('{0}',excep),2);
-                if(excep.stack!=undefined&&excep.stack!=null)SOut(excep.stack,2);
-                if(stopped)this.Pause();
-            }catch(e){
-                alert('Error in displaying Severe: '+e);
-                alert('Severe: '+txt);}
-            throw'handled';}}
-    this.Severe=function(txt){
-        try{
-            var stopped=false;
-            if(test==null){
-                stopped=true;
-                this.Start();}
-            SOut(txt,2);
-            if(stopped)this.Pause();
-        }catch(e){
-            alert('Error in displaying Severe: '+e);
-            alert('Severe: '+txt);}}
-    function Output(txt,level){
-        if(!paused)SOut(txt,level);}
+            test = null;
+        }
+        line = 0;
+        Output('===Logging Disabled===', minLevel + 1);
+    }
+    this.Pause = function () {
+        Output('===Logging Paused===', minLevel + 1);
+        paused = true;
+    }
+    this.Continue = function () {
+        paused = false;
+        Output('===Logging Continued===', minLevel + 1);
+    }
+    this.Log = function (txt) { Output(txt, 0); }
+    this.Error = function (txt) { Output(txt, 1); }
+    this.SevereException = function (txt, excep) {
+        if (excep != 'handled') {
+            try {
+                var stopped = false;
+                if (test == null) {
+                    stopped = true;
+                    this.Start();
+                }
+                if (txt.indexOf('{0}') != -1) {
+                    SOut(txt.replace('{0}', excep), 2);
+                } else {
+                    SOut(txt, 2);
+                    SOut(excep, 2);
+                }
+                if (excep.stack != undefined && excep.stack != null) SOut(excep.stack, 2);
+                if (stopped) this.Pause();
+            } catch (e) {
+                alert('Error in displaying Severe: ' + e);
+                alert('Severe: ' + txt);
+            }
+            throw 'handled';
+        }
+    }
+    this.Severe = function (txt) {
+        try {
+            var stopped = false;
+            if (test == null) {
+                stopped = true;
+                this.Start();
+            }
+            SOut(txt, 2);
+            if (stopped) this.Pause();
+        } catch (e) {
+            alert('Error in displaying Severe: ' + e);
+            alert('Severe: ' + txt);
+        }
+    }
+    function Output(txt, level) {
+        if (!paused) SOut(txt, level);
+    }
     function SOut(txt, level) {
-        if(level==null||level==undefined)level=0;
-        if(test!=null&&level>=minLevel){
-            if (line>50){
-                line=0;
-                $(test).empty();}
-            $(test).append('<p style="background: rgba('+(line%2==0?'155,0':'0,155')+',0,0.3);">'+ ++line +'):'+name+') '+txt+'</p>');}}
+        if (level == null || level == undefined) level = 0;
+        if (test != null && level >= minLevel) {
+            if (line > 50) {
+                line = 0;
+                $(test).empty();
+            }
+            $(test).append('<p style="background: rgba(' + (line % 2 == 0 ? '155,0' : '0,155') + ',0,0.3);">' + ++line + '):' + name + ') ' + txt + '</p>');
+        }
+    }
 }
 
 var MD5 = function (string) {
