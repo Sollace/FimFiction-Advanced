@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @version     2.16.1
+// @version     2.17
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -78,7 +78,9 @@ var logos = [
     new BG("Lyra Heartstrings", "http://fc00.deviantart.net/fs71/f/2014/073/1/a/fimfic_lyra_by_comeha-d7a5mjk.png"),
     new BG(), // Octavia
     new BG("Vinyl Scratch", "http://fc04.deviantart.net/fs70/f/2014/072/a/1/fimfic_vinyl_by_comeha-d7a0uto.png"),
-    new BG("Derpy Hooves", "http://fc03.deviantart.net/fs71/f/2014/107/0/7/fimfic_derpy_by_comeha-d7eueel.png")
+    new BG("Derpy Hooves", "http://fc03.deviantart.net/fs71/f/2014/107/0/7/fimfic_derpy_by_comeha-d7eueel.png"),
+    new BG("Celestia", "http://fc05.deviantart.net/fs71/f/2014/187/a/7/fimfic_celestia_by_comeha-d7pgn2d.png"),
+    new BG() // Luna
 ];
 registerBanners([
     ["fluttershy_innocence", "http://fc03.deviantart.net/fs71/f/2013/357/e/3/fimfic_banner___innocence_by_comeha-d6z5pcf.png", "http://comeha.deviantart.com/art/Fimfic-Banner-Innocence-421849743", "rgb(255,197,84)", "center right 0px"],
