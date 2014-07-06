@@ -79,7 +79,7 @@ var logos = [
     new BG(), // Octavia
     new BG("Vinyl Scratch", "http://fc04.deviantart.net/fs70/f/2014/072/a/1/fimfic_vinyl_by_comeha-d7a0uto.png"),
     new BG("Derpy Hooves", "http://fc03.deviantart.net/fs71/f/2014/107/0/7/fimfic_derpy_by_comeha-d7eueel.png"),
-    new BG("Celestia", "http://fc05.deviantart.net/fs71/f/2014/187/a/7/fimfic_celestia_by_comeha-d7pgn2d.png"),
+    new BG("Celestia", "http://fc08.deviantart.net/fs70/f/2014/187/d/a/fimfic_celestia_by_comeha-d7pgpel.png"),
     new BG() // Luna
 ];
 registerBanners([
