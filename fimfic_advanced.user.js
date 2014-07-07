@@ -80,7 +80,7 @@ var logos = [
     new BG("Vinyl Scratch", "http://fc04.deviantart.net/fs70/f/2014/072/a/1/fimfic_vinyl_by_comeha-d7a0uto.png"),
     new BG("Derpy Hooves", "http://fc03.deviantart.net/fs71/f/2014/107/0/7/fimfic_derpy_by_comeha-d7eueel.png"),
     new BG("Celestia", "http://fc08.deviantart.net/fs70/f/2014/187/d/a/fimfic_celestia_by_comeha-d7pgpel.png"),
-    new BG() // Luna
+    new BG("Luna", "http://fc03.deviantart.net/fs70/f/2014/188/5/8/fimfic_luna_by_comeha-d7pkw8u.png")
 ];
 registerBanners([
     ["fluttershy_innocence", "http://fc03.deviantart.net/fs71/f/2013/357/e/3/fimfic_banner___innocence_by_comeha-d6z5pcf.png", "http://comeha.deviantart.com/art/Fimfic-Banner-Innocence-421849743", "rgb(255,197,84)", "center right 0px"],
