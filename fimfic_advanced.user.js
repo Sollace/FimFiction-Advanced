@@ -956,7 +956,7 @@ if (sigText != null) {
 logger.Log('Checkpoint 11: settings Tab setup completed Succesfully');
 var styleSheet = "\
 /*Comment insert_left/right fix*/\
-.comment_data, .blog_post_content, .message_content {\
+.comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
 #pm_content {\
     resize: none;\
