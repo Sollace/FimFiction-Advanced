@@ -955,6 +955,9 @@ if (sigText != null) {
 
 logger.Log('Checkpoint 11: settings Tab setup completed Succesfully');
 var styleSheet = "\
+/*Comment insert_left/right fix*/\
+.comment_data {\
+    overflow: hidden;}\
 #pm_content {\
     resize: none;\
     height: 200px;}\
@@ -1825,6 +1828,8 @@ function setUpMainButton(toolbar, target, hold) {
                     addOption(this, "Outdent(document.getElementById('" + text + "'));", "Outdent Paragraphs");
                     addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'spoiler');", "Add Spoiler");
                 }
+                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'left_insert');", "Float Left");
+                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right_insert');", "Float Right");
                 $(addOption(this, "void();", "Ordered List")).click(function () {
                     makeList(document.getElementById(text), true);
                 });
@@ -3367,7 +3372,11 @@ function fillBBCode(text) {
         '[s]': '<span style="text-decoration:line-through">',
         '[/s]': '</span>',
         '[spoiler]': '<span class="spoiler">',
-        '[/spoiler]': '</span>'
+        '[/spoiler]': '</span>',
+        '[left_insert]': '<blockquote style="box-shadow: 5px 5px 0px rgb(238, 238, 238); margin: 10px 25px 10px 0px; box-sizing: border-box; padding: 15px; background-color: rgb(247, 247, 247); border: 1px solid rgb(170, 170, 170); width: 50%; float: left;">',
+        '[/left_insert]': '</blockquote>',
+        '[right_insert]': '<blockquote style="box-shadow: 5px 5px 0px rgb(238, 238, 238); margin: 10px 25px 10px 0px; box-sizing: border-box; padding: 15px; background-color: rgb(247, 247, 247); border: 1px solid rgb(170, 170, 170); width: 50%; float: right;">',
+        '[/right_insert]': '</blockquote>'
     }
     for (var i in codes) {
         text = replaceAll(i, codes[i], text);
