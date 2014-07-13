@@ -1828,8 +1828,8 @@ function setUpMainButton(toolbar, target, hold) {
                     addOption(this, "Outdent(document.getElementById('" + text + "'));", "Outdent Paragraphs");
                     addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'spoiler');", "Add Spoiler");
                 }
-                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'left_insert');", "Float Left");
-                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right_insert');", "Float Right");
+                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'left_insert');", "Left Insert");
+                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right_insert');", "Right Insert");
                 $(addOption(this, "void();", "Ordered List")).click(function () {
                     makeList(document.getElementById(text), true);
                 });
