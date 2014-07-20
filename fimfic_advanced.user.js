@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @version     2.17
+// @version     2.17.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -1002,7 +1002,8 @@ var styleSheet = "\
     height: 32px;\
     cursor: pointer;\
     display: none;\
-    margin-top: -16px;}\
+    margin-top: -16px;\
+    margin-right: -100%;}\
 .bookmark_marker:before {\
     content: ' ';\
     display: block;\
