@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @version     2.17.1
+// @version     2.18
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -554,19 +554,26 @@ var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparen
     }
 });
 
-backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 1, true, 0);
+backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
 if (backgroundImg != null) {
     for (var i = 0; i < backgroundImages.length; i++) {
-        backgroundImages[i].Setup(backgroundImg[i + 1], color, i);
+        backgroundImages[i].Setup(backgroundImg[i + 2], color, i);
     }
     
-    backgroundImg[0].children[1].innerHTML = 'Default';
+    backgroundImg[0].children[1].innerHTML = 'None';
     $(backgroundImg[0].children[0]).css("background-color", color);
     $(backgroundImg[0].children[0]).css("opacity", "0.8");
-    $(backgroundImg[0]).css("background-image", $('body').css('background-image'));
     $(backgroundImg[0]).click(function () {
+        setBackgroundImg(-2);
+        updateBackground(getBGColor());
+    });
+
+    backgroundImg[1].children[1].innerHTML = 'Default';
+    $(backgroundImg[1].children[0]).css("background-color", color);
+    $(backgroundImg[1].children[0]).css("opacity", "0.8");
+    $(backgroundImg[1]).css("background-image", $('body').css('background-image'));
+    $(backgroundImg[1]).click(function () {
         setBackgroundImg(-1);
-        $('.body_container').css('background','');
         colorPick.value = '';
         $(colorPick).change();
         setDocCookie("bgColor", 'transparent');
@@ -580,8 +587,8 @@ if (backgroundImg != null) {
     });
 
     var bgIndex = getBackgroundImgIndex();
-    if (bgIndex > -2 && bgIndex + 1 < backgroundImg.length) {
-        $(backgroundImg[bgIndex + 1]).addClass('premade_settings_selected');
+    if (bgIndex > -3 && bgIndex + 2 < backgroundImg.length) {
+        $(backgroundImg[bgIndex + 2]).addClass('premade_settings_selected');
     }
 
     logger.Log('setup backgroundImg');
@@ -3661,14 +3668,17 @@ function getTitleHidden() {
 function setTitleHidden(v) {setDocCookie("titleHidden", v);}
 
 function updateBackground(c) {
+    setDocCookie("bgColor", c);
     var img = getBackgroundImg();
+    if (img == 'none') {
+        img = $('body').css('background-image');
+    }
+    if (c == '' || c == 'transparent') c = $('body').css('background-color');
     if (img != '') {
-        if (c == 'transparent') c = $('body').css('background-color');
         $('.body_container').css("background", img + " " + c);
     } else {
-        $('.body_container').css("background-color", c);
+        $('.body_container').css("background", c);
     }
-    setDocCookie("bgColor", c);
 }
 
 //==API FUNCTION==//
@@ -3679,13 +3689,15 @@ function getBGColor() {
 //==API FUNCTION==//
 function getBackgroundImg() {
     var index = getBackgroundImgIndex();
-    
-    if (index < 0) return '';
-    
-    try {return backgroundImages[index].Css;
-    } catch (e) {}
-    
-    return backgroundImages[0].Css;
+    if (index < 0) {
+        if (index == -1) return 'none';
+        return '';
+    } else {
+        try {
+            return backgroundImages[index].Css;
+        } catch (e) { }
+        return '';
+    }
 }
 
 //==API FUNCTION==//
