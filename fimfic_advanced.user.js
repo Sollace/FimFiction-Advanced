@@ -2317,19 +2317,6 @@ function addColorTiles(text, panel, colors, cols) {
     }
 }
 
-function mustUnspoiler(url) {
-    var splitten = url.split("?");
-    if (splitten != null && splitten.length == 2) {
-        splitten = splitten[1].split('&');
-        for (var i = 0; i < splitten.length; i++) {
-            if (splitten[i] == 'isEmote=true') {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
 function unspoilerImages() {
     logger.Log('unspoilerImages: start');
     var comments = $('.comment .data .comment_data');
@@ -2353,8 +2340,8 @@ function unspoilerImages() {
 }
 
 function unspoilerSiblings() {
-    $('.comment .data .user_image_link:not(.dontUnspoiler').each(function() {
-        if (type.result > 0) {
+    $('.comment .data .user_image_link:not(.dontUnspoiler)').each(function() {
+        if (mustUnspoiler($(this).attr('href'))) {
             var url = $(this).attr('href');
             var img = $('<img />');
             
@@ -2372,8 +2359,17 @@ function unspoilerSiblings() {
     });
 }
 
-function isSpoileredImg(item) {
-    return item.tagName == 'DIV' && item.children[0] != undefined && item.children[0].tagName == 'A' && mustUnspoiler($(item.children[0]).attr('href'));
+function mustUnspoiler(url) {
+    var splitten = url.split("?");
+    if (splitten != null && splitten.length == 2) {
+        splitten = splitten[1].split('&');
+        for (var i = 0; i < splitten.length; i++) {
+            if (splitten[i] == 'isEmote=true') {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 function getTextArea(button) {
