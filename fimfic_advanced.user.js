@@ -9,7 +9,8 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @version     2.18
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
+// @version     3.0
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -129,9 +130,10 @@ applyBookmarks();
 setup(true);
 
 logger.Log('Checkpoint 3: initial setup completed successfully');
-
+ 
 if (!startsWith(location, 'manage_user/messages/')) {
-    setInterval(loopUnspoiler, 500);
+    loopUnspoiler();
+    FimFicEvents.on('pageChanged, editComment', loopUnspoiler);
 }
 
 setInterval(function() {
@@ -2340,7 +2342,7 @@ function unspoilerImages() {
 }
 
 function unspoilerSiblings() {
-    $('.comment .data .user_image_link:not(.dontUnspoiler)').each(function() {
+    $('.comment .data .user_image_link').each(function() {
         if (mustUnspoiler($(this).attr('href'))) {
             var url = $(this).attr('href');
             var img = $('<img />');
@@ -2353,7 +2355,6 @@ function unspoilerSiblings() {
             $(this).remove();
             logger.Log("unspoilerSiblings: " + url);
         } else {
-            $(this).addClass('dontUnspoiler');
             $(this).parent().after('<br />');
         }
     });
@@ -2821,7 +2822,7 @@ function makeStyle(input, id) {
 }
 
 //==API FUNCTION==//
-//Returns true if Extra emoticos has already been initialized on this page
+//Returns true if Extra emoticons has already been initialized on this page
 function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 
 //==API FUNCTION==//
