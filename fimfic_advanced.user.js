@@ -133,7 +133,7 @@ logger.Log('Checkpoint 3: initial setup completed successfully');
  
 if (!startsWith(location, 'manage_user/messages/')) {
     loopUnspoiler();
-    FimFicEvents.on('afterpagechange, aftereditComment, afterpreviewcomment', loopUnspoiler);
+    FimFicEvents.on('afterpagechange aftereditComment afterpreviewcomment', loopUnspoiler);
 }
 
 setInterval(function() {
