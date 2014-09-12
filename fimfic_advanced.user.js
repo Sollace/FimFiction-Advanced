@@ -136,10 +136,15 @@ if (!startsWith(location, 'manage_user/messages/')) {
     FimFicEvents.on('afterpagechange aftereditComment afterpreviewcomment', loopUnspoiler);
 }
 
+if (getAlwaysShowImages()) {
+    $(document).on('afterpagechange', sunspoiler);
+    sunspoiler();
+}
+     
 setInterval(function() {
     setup(false);
 }, 1000);
-logger.Log('Checkpoint 4: looping started successfully');
+logger.Log('Checkpoint 4: events/looping started successfully');
 
 var messageButton = $('.mail_link ~ .container > .menu_list');
 if (messageButton.children().length == 0) {
@@ -389,7 +394,15 @@ if (wideAT != null) {
     });
     logger.Log('setup wideAT');
 }
-    
+
+var unsp = tab.AddCheckBox("unsp", "Always show posted Images");
+if (unsp != null) {
+    unsp.checked = getAlwaysShowImages();
+    $(unsp).click(function() {
+       setAlwaysShowImages(this.checked);
+    });
+}
+
 var chapWid = tab.AddTextBox("cwt", "Chapter Width");
 if (chapWid != null) {
     AppendPopup("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 46em", chapWid);
@@ -1309,6 +1322,7 @@ logger.Log('Checkpoint 13: script completed Succesfully');
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+
 function getBookmarksGui(tab) {
     keys = getDocKeys();
     var itemsArray = [];
@@ -1810,6 +1824,13 @@ function loopUnspoiler() {
         SpecialTitles.setUpSpecialTitles();
     }
 }
+
+function sunspoiler() {
+    $('.comment_data .user_image_link').each(function() {
+        $(this).parent().after('<img class="user_image" src="' + $(this).attr('href') + '" />').remove();
+    });
+}
+
 
 function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: start');
@@ -2342,17 +2363,10 @@ function unspoilerImages() {
 }
 
 function unspoilerSiblings() {
-    $('.comment .data .user_image_link').each(function() {
-        if (mustUnspoiler($(this).attr('href'))) {
-            var url = $(this).attr('href');
-            var img = $('<img />');
-            
-            $(img).css('max-width', '100%');
-            
-            $(img).attr('src', url);
-            $(this).parent().attr('style', 'display: inline;');
-            $(this).after(img);
-            $(this).remove();
+    $('.comment_data .user_image_link').each(function() {
+        var url = $(this).attr('href');
+        if (mustUnspoiler(url)) {
+            $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
             logger.Log("unspoilerSiblings: " + url);
         } else {
             $(this).parent().after('<br />');
@@ -3454,6 +3468,15 @@ function replaceTagWithOption(text, tag, withO, closeWith, without, closeOut) {
 //--------------------------------------------------------------------------------------------------
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
+
+//==API FUNCTION==//
+function getAlwaysShowImages() {
+    return hasDocCookie('unspoiler_images') ? getDocCookie('unspoiler_images') == '1' : false;
+}
+
+function setAlwaysShowImages(val) {
+    setDocCookie('unspoiler_images', val ? '1' : '0');
+}
 
 //==API FUNCTION==//
 function getRecentColours(num) {
