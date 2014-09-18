@@ -1290,7 +1290,13 @@ ul.chapters_compact .chapter_container {\
     max-width: " + getStoryWidth() + ";}\
  .user_toolbar > .inner .button-first {\
     margin-left: 0px !important;\
-    border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}";
+    border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}\
+.breadcrumbs.bright li, .breadcrumbs.bright li:after {\
+    text-shadow: 1px 1px rgba(255, 255, 255, 0);}\
+.breadcrumbs.bright li {\
+    color: rgba(190,190,190,0.7);}\
+.breadcrumbs.bright li:after {\
+    color: rgba(190,190,190,0.3);}";
     
 if(getWideNotes()) {
     styleSheet += "\
@@ -3699,6 +3705,17 @@ function updateBackground(c) {
     } else {
         $('.body_container').css("background", c);
     }
+    c = $('.body_container').css('background-color').replace('(','').replace(')','').replace('rgba','').replace('rgb','').split(', ');
+    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 130) {
+        $('.breadcrumbs').addClass('bright');
+    } else {
+        $('.breadcrumbs').removeClass('bright');
+    }
+}
+
+/*==API FUNCTION==*/
+function brightness(r,g,b) {
+  return Math.sqrt((0.241 * r * r) + (0.691 * g * g) + (0.068 * b * b));
 }
 
 //==API FUNCTION==//
