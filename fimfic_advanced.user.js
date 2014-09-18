@@ -133,7 +133,7 @@ logger.Log('Checkpoint 3: initial setup completed successfully');
  
 if (!startsWith(location, 'manage_user/messages/')) {
     loopUnspoiler();
-    FimFicEvents.on('afterpagechange aftereditComment afterpreviewcomment', loopUnspoiler);
+    FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
 
 if (getAlwaysShowImages()) {
@@ -3706,7 +3706,7 @@ function updateBackground(c) {
         $('.body_container').css("background", c);
     }
     c = $('.body_container').css('background-color').replace('(','').replace(')','').replace('rgba','').replace('rgb','').split(', ');
-    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 130) {
+    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 100) {
         $('.breadcrumbs').addClass('bright');
     } else {
         $('.breadcrumbs').removeClass('bright');
