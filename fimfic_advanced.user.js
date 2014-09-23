@@ -9,7 +9,7 @@
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @version     3.0
 // @grant       none
 // ==/UserScript==
