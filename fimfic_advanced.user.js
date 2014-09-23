@@ -141,9 +141,9 @@ if (getAlwaysShowImages()) {
     sunspoiler();
 }
      
-setInterval(function() {
+FimFicEvents.on('aftereditmodule aftercomposepm', function() {
     setup(false);
-}, 1000);
+});
 logger.Log('Checkpoint 4: events/looping started successfully');
 
 var messageButton = $('.mail_link ~ .container > .menu_list');
