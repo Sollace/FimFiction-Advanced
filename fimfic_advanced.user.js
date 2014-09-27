@@ -4835,7 +4835,7 @@ function setupSweetie() {
         var fadeTime = Math.max(2000 - ((score*score)/20),1);
         var sitTime = fadeTime * 15;
         var wrath = score > 100 && (Math.random() * 10 == 1);
-        var cook = $('<img class="cookie" style="transition:opacity ' + (fadeTime/1000) + 's linear;opacity:0;display:none" src="' + cookie[wrath ? 1 : 0] + '" />');
+        var cook = $('<img class="cookie nopickup" style="transition:opacity ' + (fadeTime/1000) + 's linear;opacity:0;display:none" src="' + cookie[wrath ? 1 : 0] + '" />');
         $('body').append(cook);
         
         x -= cook.width() / 2;
@@ -4951,9 +4951,9 @@ function setupSweetie() {
         belle.style.left = "-1000px";
         var img = document.elementFromPoint(lastClientX , lastClientY);
         belle.style.left = oldX;
-        if (img != null && img.tagName == "IMG") {
+        if (img != null && img.tagName == "IMG" && !$(img).hasClass('nopickup')) {
             if (img.getAttribute("dragged") != "true") {
-                var result = $(img).clone().attr("id","").attr("style", "z-index: 49; position: absolute; top: " + $(img).offset().top + "px; left: " + $(img).offset().left + "px;");
+                var result = $(img).clone().attr("id","").attr("style", "z-index: 501; position: absolute; top: " + $(img).offset().top + "px; left: " + $(img).offset().left + "px;");
                 $(result).appendTo("body");
                 $(result).attr("dragged", "true");
                 $(result).on("click", function() {
