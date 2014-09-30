@@ -4639,6 +4639,7 @@ function setupSweetie() {
     var grabbedImage = null;
     
     var score = 0;
+    var bank = 0;
     
     var cookie = [
         'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAAYFBMVEWQYzXhyW/QsFRzSiutjkr579bo04TTt21cOSKccTr05LisgT3q2KzBm0ecfk2oi2rbxIh/WTTKtIPHpU+0pIXEqWnv25lEKRnjzpm7j0G4mlyMlFeAdUTZvl7///////94/aVlAAAAIHRSTlP/////////////////////////////////////////AFxcG+0AAA8ySURBVHjazFqLlqSotgRETURQktIUFM///+WNwKxH16N7Zu6ctY49049cVTvYr9ixscR//suP+N8BeNxuj9t/EaBpmhshbk0jQmhu/y7AEabDi4MgjZg6mY2ocP8GAE7sp/s4tOc5KiOEKus5rL0WAmiPx+P/B3BrQhDTiadtz3mWXbFZ1n92yjpC3P4E8VuARvhuWmYYHLb72PfL3JdladtxGLpVdp0P4vYnL8TvTj/B9jz39/v9ZZpkzvO5DnJZ7vOwdrC/FiuQ7sdvc/EjQDheXnD0+9LLPHlvrNfLdsLwkuNSpJQdUFRJiBNT/yPIDwA3Qes4/0tWvcZBRZum+3lusyxRSyVLRwTgGJGEn5DyHyDE9z112R+2CUc/+2MPYrG5xkupqLSOakWIulKU9npu4Zf5AUF8az/UyjlfskdT9SmEJfS9RJYXJbVTVi/9opYenxWXNZCH1ovvm0/8aH8c5/vLGBjiwF9BeB910tY7mkSyl34deiXdMp7tKf33LnwFeKBX8Q0DSuc+FsOOFcIEARCB0CTjfb6vqFLUbVdiKXIZhmFd/dF819vi+/Ov430e7+PZ6YAyFIiEQUXCDTx+God1lneUFBJSlJLdOmyd3vfjmyiJL/abaRja+d7L86UdN2kCXAhSwpCgF8H7DqbRD7mTyjlAAGA7F30YFb76IL601wTWOZeMameeO5VQ5U0QBhUjECtTzjvMLchtXuQS49KjIdpV5cOX0nyhDvElPiNqYs5Jd/llGLteRRInMi1w3qNE4yXKd5m01otEeS4F1lccZLd2k19dEJ/i4xH/bV6yTamLqJMSra100NzC4W1RJvh+7fJ0TgsMS/T0CmbqZHQHAEzzmZrE5/ijWRfEtaRU8rJIlI2ylTQJEphokQlQUKogDlDG2pKZyq59slp8RhC/2gf53LO2yVmr0FhnV5xWFhVY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',
@@ -4653,43 +4654,22 @@ function setupSweetie() {
     ];
     
     var belle = $('<div id="belle" ><div class="speech_container" style="opacity:0"><div class="speech" /></div></div')[0];
+    $(belle).attr("style", "transform-origin: 85% 95%; z-index: 502; position: fixed; top: 0; left: 0; height: 384px; width: 131px; background-repeat: no-repeat; background-size: contain;");
     $('body').append(belle);
+        
+    var canvas = $('<canvas id="belle_mask" style="position:fixed;top:0px;left:-400px;" width="131px" height="384px" />')[0];
+    var blank = $('<canvas width="131px" height="384px" />')[0];
     
-    makeStyle('\
-#belle .speech_container {\
-  position: absolute;\
-  left: 100%;\
-  top: 0px;\
-  width: 200px;\
-  pointer-events: none;\
-  transition: opacity 2s linear;}\
-#belle .speech {\
-  float: left;\
-  background-color: rgba(255, 255, 255, 0.8);\
-  border: 1px solid rgba(0, 0, 0, 0.2);\
-  padding: 6px;\
-  border-radius: 10px;\
-  font-size: 0.8em;\
-  text-shadow: 1px 1px rgba(255, 255, 255, 0.4);\
-  line-height: 1.8em;\
-  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);\
-  margin-left: -20px;}\
-.cookie {\
-  z-index:501;\
-  position:absolute;\
-  cursor:pointer;}');
+    $('body').append(canvas);
     
-    var canvas = $('<canvas style="position:fixed" width="131px" height="384px" />')[0];
     var img = $('<img width="131px" height="384px" />')[0];
     
-    $(belle).attr("style", "transform-origin: 85% 95%; z-index: 502; position: fixed; top: 0; left: 0; height: 384px; width: 131px; background-repeat: no-repeat; background-size: contain;");
+    $(img).load(function() {
+        canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+        canvas.getContext('2d').drawImage(this, 0, 0); 
+    });
     
-    setupImg(hasDocCookie('sweetie_img_index') ? parseInt(getDocCookie('sweetie_img_index')) : 0);
-    
-    if (hasDocCookie("sweetie_posX") && hasDocCookie("sweetie_posY")) {
-        $(belle).css("left", getDocCookie("sweetie_posX"));
-        $(belle).css("top", getDocCookie("sweetie_posY"));
-    }
+    initBelle();
     
     $(document).on('mousemove', $(belle), function(event) {
         var x = event.clientX - parseInt(belle.style.left.split('px')[0]);
@@ -4741,8 +4721,10 @@ function setupSweetie() {
                 rotateObject(belle, 90);
                 $(belle).css('animation', 'sceptre_down 0.07s linear 1');
                 if (key_c) {
-                    $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />')
-                    spawnCookie(false, lastX, lastY);
+                    if (!$('#game_background').length) {
+                        $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />');
+                    }
+                    spawnCookie(true, lastX, lastY);
                 } else if (!no) {
                     no = true;
                     if (grabbedImage == null) {
@@ -4756,6 +4738,7 @@ function setupSweetie() {
                             doGrab();
                         }
                     } else {
+                        $('.grabbedImage').removeClass('grabbedImage');
                         grabbedImage = null;
                     }
                 }
@@ -4784,13 +4767,57 @@ function setupSweetie() {
         var y = parseInt(belle.style.top.split('px')[0]);
         setPos(x, y);
     });
+    
+    $(window).focus(function() {
+        initBelle();
+    });
+    
+    setInterval(function() {
+        $('.floater').each(floatUp);
+    },50);
+    
+    makeStyle('\
+#belle .speech_container {\
+  position: absolute;\
+  left: 100%;\
+  top: 0px;\
+  width: 200px;\
+  pointer-events: none;\
+  transition: opacity 2s linear;}\
+#belle .speech {\
+  float: left;\
+  background-color: rgba(255, 255, 255, 0.8);\
+  border: 1px solid rgba(0, 0, 0, 0.2);\
+  padding: 6px;\
+  border-radius: 10px;\
+  font-size: 0.8em;\
+  text-shadow: 1px 1px rgba(255, 255, 255, 0.4);\
+  line-height: 1.8em;\
+  box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);\
+  margin-left: -20px;}\
+.cookie {\
+  z-index:501;\
+  border-radius: 120px;\
+  position:absolute;\
+  cursor:pointer;}\
+.grabbedImage {\
+  box-shadow: 1px 5px 5px rgba(0,0,0,0.7);}\
+.floater {\
+  z-index:500;\
+  color: white;\
+  pointer-events: none;\
+  text-shadow: 3px 3px 5px black;\
+  font-weight: bold;\
+  animation: wobble 0.5s linear 0s infinite alternate;}\
+@keyframes  wobble {\
+  from {margin-left: -10px;}\
+  to {margin-left: 10px;}}');
     logger.Log('setupSweetie: end');
     
     function setupImg(i) {
         $(belle).attr('selected_image_index', i);
         i = getImage(i);
         $(img).attr("src", i);
-        canvas.getContext("2d").drawImage(img, 0, 0, img.width, img.height);
         $(belle).css('background-image', "url('" + i + "')");
     }
 
@@ -4810,12 +4837,7 @@ function setupSweetie() {
             }
         }
     }
-     
-    function doGrab() {
-        grabbedImage = grabImage();
-        registerDrop();
-    }
-    
+        
     function doImg() {
         var oldIndex = $(belle).attr('selected_image_index');
         var index = oldIndex;
@@ -4826,17 +4848,89 @@ function setupSweetie() {
         setDocCookie('sweetie_img_index', index);
     }
     
-    function say(text) {
-            $('#belle .speech_container').css('opacity', text == '' ? 0 : 1);
-            $('#belle .speech').html(text);
+    function doGrab() {
+        var x = $(belle).offset().left;
+        var y = $(belle).offset().top;
+
+        var oldX = belle.style.left;
+        belle.style.left = "-1000px";
+        var img = document.elementFromPoint(lastClientX , lastClientY);
+        belle.style.left = oldX;
+        if (img != null && img.tagName == "IMG" && !$(img).hasClass('nopickup')) {
+            if (img.getAttribute("dragged") != "true") {
+                var result = $(img).clone().attr("id","").attr("style", "z-index: 501; position: absolute; top: " + $(img).offset().top + "px; left: " + $(img).offset().left + "px;");
+                $(result).appendTo("body");
+                $(result).attr("dragged", "true");
+                $(result).on("click", function() {
+                    if (grabbedImage == this) {
+                        $('.grabbedImage').removeClass('grabbedImage');
+                        grabbedImage = null;
+                    } else {
+                        $(this).addClass('grabbedImage');
+                        grabbedImage = this;
+                    }
+                });
+
+                $(result).addClass('grabbedImage');
+                grabbedImage = result[0];
+                return;
+            } else {
+                $(img).remove();
+            }
+        }
+        grabbedImage = null;
+    }
+    
+    function floatUp() {
+        var t = parseInt($(this).css('top'));
+        if (t <= 5) {
+            $(this).remove();
+        } else {
+            $(this).css('top', (t - 5) + 'px');
+        }
+    }
+
+    function plusOne(x, y, text) {
+        if (typeof(text) == 'number') {
+            if (text == 0) return $('');
+            text = (text > 0 ? '+' : '') + text;
+        }
+        
+        var one = $('<span class="floater" style="position:absolute;transition:opacity 3s linear;opacity:1">' + text + '</span>');
+        one.css('top', y + 'px');
+        one.css('left', x + 'px');
+        $('body').append(one);
+        setTimeout(function() {
+            one.css('opacity', 0);
+            setTimeout(function() {
+                if (one != null) {
+                    one.remove();
+                }
+            }, 3000);
+        }, 10);
+        return one;
     }
         
-    function spawnCookie(time, x, y) {
-        var fadeTime = Math.max(2000 - ((score*score)/20),1);
-        var sitTime = fadeTime * 15;
-        var wrath = score > 100 && (Math.random() * 10 == 1);
+    function spawnCookie(scepter, x, y) {
+        if (scepter && $('.cookie').length) {
+            if (bank < 1) return;
+            say('Cookies: ' + --bank + '</br>Cookies Clicked: ' + score);
+        }
+        var diff = Math.log(score > 0 ? score : 1) * 300;
+        var fadeTime = Math.max(2000 - diff,100);
+        var sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)),100);
+        var wrath = false;
+        if ($('.cookie').length > $('.wrath').length) {
+            for (var i = 0; i < (score/100 - 1) && !wrath && i < 10; i++) {
+                wrath |= (Math.random() * 15 < 2);
+            }
+        }
         var cook = $('<img class="cookie nopickup" style="transition:opacity ' + (fadeTime/1000) + 's linear;opacity:0;display:none" src="' + cookie[wrath ? 1 : 0] + '" />');
         $('body').append(cook);
+        
+        if (wrath) {
+            cook.addClass('wrath');
+        }
         
         x -= cook.width() / 2;
         y -= cook.height() /2;
@@ -4848,16 +4942,20 @@ function setupSweetie() {
         cook.on('mousedown',function(e) {
             $(this).remove();
             cook = null;
+            score++;
             if (wrath) {
-                score -= 2;
+                var newBank = Math.floor(bank * 0.8);
+                plusOne(e.pageX,e.pageY, newBank - bank).css('color','red');
+                bank = newBank;
             } else {
-                score++;
+                plusOne(e.pageX,e.pageY, 1);
+                bank++;
             }
-            say('Cookies Clicked: ' + score);
+            say('Cookies: ' + bank + '</br>Cookies Clicked: ' + score);
             if (Math.random() * 16 < 1) {
-                spawnCookie(true, $(document).scrollLeft() + (Math.random() * $(window).width()), $(document).scrollTop() + (Math.random() * $(window).height()));
+                spawnCookie(false, $(document).scrollLeft() + (Math.random() * $(window).width()), $(document).scrollTop() + (Math.random() * $(window).height()));
             }
-            spawnCookie(true, $(document).scrollLeft() + (Math.random() * $(window).width()), $(document).scrollTop() + (Math.random() * $(window).height()));
+            spawnCookie(false, $(document).scrollLeft() + (Math.random() * $(window).width()), $(document).scrollTop() + (Math.random() * $(window).height()));
             e.preventDefault(); 
         });
         cook.css('display','block');
@@ -4866,33 +4964,20 @@ function setupSweetie() {
             setTimeout(function() {
                 cook.css('opacity', 0);
                 setTimeout(function() {
-                    if ($('.cookie').length == 1) {
-                        $('.cookie, #game_background').remove();
-                        score = 0;
-                        say('Game Over :c');
-                        setTimeout(function() {
-                            $('#belle .speech_container').css('opacity', 0);
-                        },2000);
-                    }
                     if (cook != null) {
                         cook.remove();
+                        if (!$('.cookie').length) {
+                            $('#game_background').remove();
+                            bank = score = 0;
+                            say('Game Over :c');
+                            setTimeout(function() {
+                                $('#belle .speech_container').css('opacity', 0);
+                            },2000);
+                        }
                     }
                 },fadeTime);
             },fadeTime + sitTime);
         },100);
-    }
-    
-    function registerDrop() {
-        $(belle).on('click.belle', function(event) {
-            var x = event.clientX - parseInt(this.style.left.split('px')[0]);
-            var y = event.clientY - parseInt(this.style.top.split('px')[0]);
-            if (canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] == 0) {
-                if (grabbedImage != null) {
-                    grabbedImage = null;
-                    $(belle).off('click.belle');
-                }
-            }
-        });
     }
     
     function shake() {
@@ -4902,6 +4987,11 @@ function setupSweetie() {
                 setTimeout(function() {rot();}, 30);
             }
         }
+    }
+    
+    function say(text) {
+        $('#belle .speech_container').css('opacity', text == '' ? 0 : 1);
+        $('#belle .speech').html(text);
     }
     
     function getImage(i) {
@@ -4925,6 +5015,14 @@ function setupSweetie() {
         }
     }
     
+    function initBelle() {
+        setupImg(hasDocCookie('sweetie_img_index') ? parseInt(getDocCookie('sweetie_img_index')) : 0);
+        if (hasDocCookie("sweetie_posX") && hasDocCookie("sweetie_posY")) {
+            $(belle).css("left", getDocCookie("sweetie_posX"));
+            $(belle).css("top", getDocCookie("sweetie_posY"));
+        }
+    }
+    
     function setPos(x, y) {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
@@ -4941,37 +5039,6 @@ function setupSweetie() {
         setDocCookie("sweetie_posY", y);
         belle.style.left = x;
         setDocCookie("sweetie_posX", x);
-    }
-    
-    function grabImage() {
-        var x = $(belle).offset().left;
-        var y = $(belle).offset().top;
-    
-        var oldX = belle.style.left;
-        belle.style.left = "-1000px";
-        var img = document.elementFromPoint(lastClientX , lastClientY);
-        belle.style.left = oldX;
-        if (img != null && img.tagName == "IMG" && !$(img).hasClass('nopickup')) {
-            if (img.getAttribute("dragged") != "true") {
-                var result = $(img).clone().attr("id","").attr("style", "z-index: 501; position: absolute; top: " + $(img).offset().top + "px; left: " + $(img).offset().left + "px;");
-                $(result).appendTo("body");
-                $(result).attr("dragged", "true");
-                $(result).on("click", function() {
-                    if (grabbedImage == this) {
-                        grabbedImage = null;
-                    } else {
-                        grabbedImage = this;
-                        registerDrop();
-                    }
-                });
-                
-                var childs = document.getElementsByTagName("body")[0].children;
-                return childs[childs.length - 1];
-            } else {
-                $(img).remove();
-            }
-        }
-        return null;
     }
 }
 
