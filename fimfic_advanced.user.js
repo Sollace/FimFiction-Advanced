@@ -4791,6 +4791,7 @@ function setupSweetie() {
   position:absolute;\
   cursor:pointer;}\
 .grabbedImage {\
+  outline: solid rgba(0,0,255,0.2) 10px;\
   box-shadow: 1px 5px 5px rgba(0,0,0,0.7);}\
 img[dragged="true"] {\
   z-index: 501;\
@@ -4883,11 +4884,11 @@ img[held="true"] {\
         belle.style.left = oldX;
         if (img != null && img.tagName == "IMG" && !$(img).hasClass('nopickup')) {
             if (img.getAttribute("dragged") != "true") {
-                var result = $(img).clone().attr('class', 'grabbedImage').removeAttr('id').attr('dragged', 'true');
+                var result = $(img).clone().attr('class', 'grabbedImage').removeAttr('id').attr('dragged', 'true').attr('held','true');
                 $(result).appendTo('body');
                 $(result).css({
-                    'top' : (lastY - $(result).height()/2) + 'px',
-                    'left' : (lastX - $(result).width()/2) + 'px'});
+                    'top' : (lastClientY - $(result).height()/2) + 'px',
+                    'left' : (lastClientX - $(result).width()/2) + 'px'});
                 $(result).on("click", function(e) {
                     if (e.shiftKey) {
                         if (grabbedImage == this) grabbedImage = null;
