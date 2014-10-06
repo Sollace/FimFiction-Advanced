@@ -121,9 +121,9 @@ logger.Log('Checkpoint 2: BGs setup successfully');
 } catch (e) {logger.SevereException('unhandledException in Pre-init: {0}', e);}
 //----------------------------------------------------------------------------------------------------
   
-var location = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
+var loc = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 addChapterButtonsExtras();
-if (startsWith(location, 'manage_user/avatar')) {
+if (startsWith(loc, 'manage_user/avatar')) {
     $('.story_image').each(function () {
         $(this).attr('src', $(this).attr('src').split('?')[0]);
     });
@@ -134,7 +134,7 @@ setup(true);
 
 logger.Log('Checkpoint 3: initial setup completed successfully');
  
-if (!startsWith(location, 'manage_user/messages/')) {
+if (!startsWith(loc, 'manage_user/messages/')) {
     loopUnspoiler();
     FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
@@ -3176,9 +3176,10 @@ function getElementsByAttributeValue(tag, name, value) {
 
 //==API FUNCTION==//
 function rotateObject(obj, deg) {
-    $(obj).css("transform", "rotate(" + deg + "deg)");
     if (deg % 360 == 0) {
         $(obj).css("transform", "");
+    } else {
+        $(obj).css("transform", "rotate(" + deg + "deg)");
     }
 }
 
@@ -4700,7 +4701,6 @@ function setupSweetie() {
         if (event.keyCode == 32) {
             if ($(belle).attr("dragging") == "true") {
                 rotateObject(belle, 90);
-                $(belle).css('animation', 'sceptre_down 0.07s linear 1');
                 if (extra_key == 67) {
                     if (!$('#game_background').length) {
                         $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />');
@@ -4730,15 +4730,17 @@ function setupSweetie() {
             }
         } else if (event.keyCode == 67 || event.keyCode == 72) {
             extra_key = event.keyCode;
+            if ($(belle).attr("dragging") == "true") {
+                event.preventDefault();
+            }
         }
     });
     
     $(document).on('keyup', function(event) {
         if (event.keyCode == 32) {
             rotateObject(belle, 0);
-            $(belle).css('animation', 'sceptre_up 0.07s linear 1');
             no = false;
-            if ($(belle).attr("dragging") == "true") { 
+            if ($(belle).attr("dragging") == "true") {
                 event.preventDefault();
             }
         } else if (event.keyCode == extra_key) {
@@ -4762,6 +4764,7 @@ function setupSweetie() {
     
     makeStyle('\
 #belle {\
+  transition: transform 0.07s linear;\
   transform-origin: 85% 95%;\
   z-index: 502;\
   position: fixed;\
@@ -4806,20 +4809,24 @@ img[held="true"] {\
   font-weight: bold;\
   animation: wobble 0.5s linear 0s infinite alternate;}\
 .wobbly_image {\
+    -webkit-animation: shake_shake 0.25s linear infinite;\
     animation: shake_shake 0.25s linear infinite;}\
-@keyframes sceptre_down {\
+@-webkit-keyframes shake_shake {\
     0% {transform: none;}\
-    100% {transform: rotate(90deg);}}\
-@keyframes sceptre_up {\
-    0% {transform: rotate(90deg);}\
+    25% {transform: rotate(-2deg);}\
+    50% {transform: none;}\
+    75% {transform: rotate(2deg);}\
     100% {transform: none;}}\
+@-webkit-keyframes wobble {\
+  from {margin-left: -10px;}\
+  to {margin-left: 10px;}}\
 @keyframes shake_shake {\
     0% {transform: none;}\
     25% {transform: rotate(-2deg);}\
     50% {transform: none;}\
     75% {transform: rotate(2deg);}\
     100% {transform: none;}}\
-@keyframes  wobble {\
+@keyframes wobble {\
   from {margin-left: -10px;}\
   to {margin-left: 10px;}}');
     logger.Log('setupSweetie: end');
