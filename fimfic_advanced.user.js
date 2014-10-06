@@ -4654,6 +4654,7 @@ function setupSweetie() {
     
     $(belle).on('mousedown', function(event) {
         $(belle).attr("dragging", "true");
+        $('iframe').css('pointer-events','none');
         var x = event.clientX - parseInt(this.style.left);
         var y = event.clientY - parseInt(this.style.top);
         if (canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] > 0) {
@@ -4692,6 +4693,7 @@ function setupSweetie() {
     $(document).on('mouseup blur', function(event) {
         $(belle).attr("dragging", "false");
         $(document).off('mousemove.belle');
+        $('iframe').css('pointer-events','');
         lastX = -1;
     });
     
