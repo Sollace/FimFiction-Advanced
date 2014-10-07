@@ -4809,6 +4809,7 @@ img[held="true"] {\
   pointer-events: none;\
   text-shadow: 3px 3px 5px black;\
   font-weight: bold;\
+  -webkit-animation: wobble 0.5s linear 0s infinite alternate;\
   animation: wobble 0.5s linear 0s infinite alternate;}\
 .wobbly_image {\
     -webkit-animation: shake_shake 0.25s linear infinite;\
