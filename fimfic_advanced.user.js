@@ -10,7 +10,7 @@
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.1
+// @version     3.1.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -124,9 +124,6 @@ logger.Log('Checkpoint 2: BGs setup successfully');
 var loc = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 addChapterButtonsExtras();
 if (startsWith(loc, 'manage_user/avatar')) {
-    $('.story_image').each(function () {
-        $(this).attr('src', $(this).attr('src').split('?')[0]);
-    });
     addGravatar();
 }
 applyBookmarks();
@@ -476,21 +473,23 @@ if (shuffle != null) {
     });
 }
 
-var dec = (new Date()).getMonth() == 11;
-var snower;
+/*var dec = (new Date()).getMonth() == 11;
+var snower;*/
 var snowing = getSnowing();
-if (snowing < 2) {
+/*if (snowing < 2) {
     if (snowing == 0 || dec) {
         snower = new snowBG();
         snower.init();
     }
     logger.Log('setup Ultra Snow');
-}
+}*/
 
 var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
 if (enableUSnow != null) {
     enableUSnow.selectedIndex = snowing;
-    $(enableUSnow).change(function() {
+    enableUSnow.disabled = 1;
+    enableUSnow.title = "Disabled";
+    /*$(enableUSnow).change(function() {
         setSnowing(this.selectedIndex);
         if (this.selectedIndex < 2) {
             if (this.selectedIndex == 0 || dec) {
@@ -506,7 +505,7 @@ if (enableUSnow != null) {
         } else if (snower != null) {
             snower.stop();
         }
-    });
+    });*/
     logger.Log('setup enableUSnow');
 }
 
@@ -1278,7 +1277,16 @@ ul.chapters_compact .chapter_container {\
 .bright {\
     color: rgba(190,190,190,0.7) !important;}\
 .bright li:after {\
-    color: rgba(190,190,190,0.3) !important;}";
+    color: rgba(190,190,190,0.3) !important;}\
+#imgPreview {\
+    border-radius: 5px;\
+    max-width:100%;\
+    max-height:100%;\
+    padding: 3px;\
+    background: none repeat scroll 0% 0% padding-box #FFF;\
+    border-width: 1px;\
+    border-style: solid;\
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}";
     
 if(getWideNotes()) {
     styleSheet += "\
@@ -1642,21 +1650,15 @@ function makeList(element, ordered) {
 
 function addGravatar() {
     logger.Log('addGravatar: start');
-    var grav = $('<tr valign="top" />');
-    var elem;
-    $('form .properties tbody').append(grav);
+    var hook = $('#image_url').parent().parent();
+    var elem = $('<div class="rounded_container" style="width:100%" />');
     
-    elem = $('<td />');
-    grav.append(elem);
+    hook.append('<br /><b>OR</b>');
+    hook.append(elem);
     
-    elem.append('<input id="Grav_ok" type="hidden" value="0" />');
-    elem.append('<h2><img src="http://en.gravatar.com/favicon.ico" style="padding:3px;" /><b>From Gravatar</b></h2>');
-    elem.append('<label style="width:90%;">E-mail:<div><input id="grav_url" type="text" /></div></label>');
-    
-    elem = $('<td colspan="2"/>');
-    grav.append(elem);
-    
-    elem.append('<label><div style="width:128px;height:128px;border:solid 3px rgb(204, 204, 204);border-radius:3px;"><img id="imgPreview" style="max-width:100%;max-height:100%;" src="http://www.gravatar.com/avatar/?s=128&fimficNull=true" /></div></label>');
+    elem.append('<div style="text-align:center"><div style="display:inline;width:128px;height:128px"><img id="imgPreview" src="http://www.gravatar.com/avatar/?s=128&fimficNull=true" /></div></div>');
+    elem.append('<input id="Grav_ok" type="hidden" value="0" /><b>From Gravatar</b><br /><br />');
+    elem.append('<input id="grav_url" type="text" />');
     
     var reloadImg = function() {
         logger.Log('loadGravatar: start');
@@ -2576,7 +2578,6 @@ function listNames() {
 
 function censorStory(element) {
     if ($(element).parent().find('.content_rating_mature').length) {
-        alert($(element).parent().html());
         return true;
     }
     var storyEntry = element.parentNode.parentNode;
@@ -2707,26 +2708,6 @@ function AppendPopup(message, field) {
 }
 
 //==API FUNCTION==//
-function supportsFancyControls() {
-    var result = false;
-    if (navigator.userAgent.toLowerCase().indexOf('windows nt') != -1) {
-        logger.Log('Detected Windows');
-        var ver = navigator.userAgent.toLowerCase().split('windows nt ');
-        for (var i = ver.length - 1; i >= 0; i--) {
-            var char = ver[i][0];
-            var verf = parseFloat(ver[i].split(';')[0]);
-            logger.Log('OSVersionNumber: ' + verf);
-            if (char == '5' || char == '6') {
-                result = verf <= 6.1;
-                break;
-            }
-        }
-    }
-    logger.Log('supportsFancyControls: ' + result);
-    return result;
-}
-
-//==API FUNCTION==//
 function registerBanner(name, img, source, color, pos) {
     safeGetThemeArray().push([name, img, source, color, pos]);
 }
@@ -2802,7 +2783,7 @@ function makeStyle(input, id) {
 function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 
 //==API FUNCTION==//
-function isCompactView() {return getElementByContent("a", "+ Switch to full view") != null;}
+function isCompactView() {return $('.story-card-list').length > 0;}
 
 //==API FUNCTION==//
 function changeLogo(button, img, right) {
@@ -3789,10 +3770,12 @@ function getPageStartNumber() {
 
 //==API FUNCTION==//
 function getParameter(name) {
-    var params = document.location.href.split("?")[1].split("&");
-    for (var i = 0; i < params.length; i++) {
-        if (startsWith(params[i], name + "=")) {
-            return params[i].split("=")[1];
+    if (document.location.href.indexOf('?') != -1) {
+        var params = document.location.href.split("?")[1].split("&");
+        for (var i = 0; i < params.length; i++) {
+            if (startsWith(params[i], name + "=")) {
+                return params[i].split("=")[1];
+            }
         }
     }
 }
@@ -4048,21 +4031,13 @@ function SettingsTab() {
         if (has_init) {
             var input = document.createElement("select");
             $(input).attr("inputID", id);
-            $(input).addClass('styledDropDown');
             for (var i in items) {
                 if (items[i] != null) {
                    $(input).append("<option value=\"" + i + "\">" + items[i] + "</option>");
                 }
             }
             
-            this.AddOption(id, name, input);
-            
-            if (supportsFancyControls()) {
-                $(input).after('<div class="styled_dropButton"><i class="fa fa-chevron-down" /></div>');
-                
-                MakeDropButtonStyle();
-            }
-            
+            this.AddOption(id, name, input);            
             return input;
         }
     }
@@ -4208,44 +4183,6 @@ function SettingsTab() {
             
             this.AddOption("captch", name, field);
         }
-    }
-}
-
-//==API FUNCTION==/
-function MakeDropButtonStyle() {
-    if ($('#settingsTab_dropButtonStyle').length == 0) {
-        var sheet = '\
-        .styledDropDown:hover + .styled_dropButton,.styledDropDown:focus + .styled_dropButton {\
-            background-color: #eef !important;}\
-        .styled_dropButton {\
-            z-index:1;\
-            position:absolute;\
-            width:30px;\
-            border: 1px solid rgb(204, 204, 204) !important;\
-            border-left: none !important;\
-            outline: medium none;\
-            transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
-            box-shadow: -10px 0px 12px 10px rgba(0, 0, 0, 0.07) inset;\
-            text-align: center;\
-            pointer-events: none;\
-            background-color: white;\
-            border-radius: 0 3px 3px 0;';
-            
-            if (isChrome()) {
-                sheet += '\
-                    right:12px;\
-                    height:40px;\
-                    line-height:40px;\
-                    margin-top:-40px !important;}';
-            } else {
-                sheet += '\
-                    right:13px;\
-                    height:41px;\
-                    line-height:41px;\
-                    margin-top:-41px !important;}';
-            }
-            
-            makeStyle(sheet, 'settingsTab_dropButtonStyle');
     }
 }
 
