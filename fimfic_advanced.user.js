@@ -166,9 +166,6 @@ if (getIsLoggedIn()) {
     changeLogo($('a.button[href="/manage_user/notifications?type=social"]'), "fa fa-comment");
     changeLogo($('a.button[href="/manage_user/notifications?type=meta"]'), "fa fa-eye");
     changeLogo($('a.button.mark_all_notifications_read'), "fa fa-check");
-
-    changeLogo($('a.button[href^="javascript:MarkAllFavsRead("]'), "fa fa-check", true);
-    changeLogo($('a.button[href^="/rss/tracking.php?user="]'), "fa fa-rss", true);
 }
 changeLogo($('a.button[href="/writing-guide"]'), "fa fa-book", true);
 
@@ -258,19 +255,13 @@ $('.external_account').each(function() {
 
 logger.Log('Checkpoint 7: set account logos successfully');
 
-var swit = getElementByContent("a", "+ Switch to full view");
-if (swit == null) {
-    swit = getElementByContent("a", "- Switch to compact view");
-}
-
-if (swit != null) {
+var swit = $('.search_results_count');
+if (swit.length) {
     logger.Log('Checkpoint 8: got swit successfully');
     
-    var a = $("<a style=\"color:rgba(0,0,0,0.7);padding-left:10px\" href=\"javascript:void();\">+ List Names</a>");
+    var a = $('<a class="styled_button styled_button_brown" href="javascript:void();">List Names</a>');
     $(a).click(listNames);
-    
-    $(swit.parentNode).append(a);
-    $(swit.parentNode.parentNode).css("width", "100%");
+    swit.after(a);
     
     makeStyle("\
                 .listText {\
@@ -1282,12 +1273,12 @@ ul.chapters_compact .chapter_container {\
  .user_toolbar > .inner .button-first {\
     margin-left: 0px !important;\
     border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}\
-.breadcrumbs.bright li, .breadcrumbs.bright li:after {\
-    text-shadow: 1px 1px rgba(255, 255, 255, 0);}\
-.breadcrumbs.bright li {\
-    color: rgba(190,190,190,0.7);}\
-.breadcrumbs.bright li:after {\
-    color: rgba(190,190,190,0.3);}";
+.bright, .breadcrumbs.bright li:after {\
+    text-shadow: 1px 1px rgba(255, 255, 255, 0) !important;}\
+.bright {\
+    color: rgba(190,190,190,0.7) !important;}\
+.bright li:after {\
+    color: rgba(190,190,190,0.3) !important;}";
     
 if(getWideNotes()) {
     styleSheet += "\
@@ -2508,36 +2499,35 @@ function checkColor(me, preview, valid) {
 }
 
 function listNames() {
+    try {
     var start = getPageStartNumber();
     var result = "";
     var bbCode = "";
     var sfw = "";
     var sfwCode = "";
+
+    var stories;
     
-    var stories = $.grep(getElementsByAttributeValue("a", "class", "title"), function(item) {
-            var s = item.getAttribute("href");
-            return s != null && startsWith(s, "/story/");
-        });
-        
-    if (stories.length == 0) {
-        stories = getElementsByAttributeValue("a", "class", "story_name resize_text");
+    if ($('.story-card-list').length) {
+        stories = $('.story-card-list .story-card .story_link');
+    } else {
+        stories = $('.story_container .story_name');
     }
     
+    
     for (var i = 0; i < stories.length; i++) {
-        var name = stories[i].innerHTML;
+        var name = $(stories[i]).html();
         var link = $(stories[i]).attr('href');
-        
         
         if  (name != null && name != "") {
             result += "#" + (start + i + 1) + "  " + name + "\n";
             bbCode += "#" + (start + i + 1) + "  [url=http://www.fimfiction.net" + link + "]" + name + "[/url]\n";
-            
-            name = censorStory(stories[i], name)
+            name = censorStory(stories[i]) ? '--hidden--' : name;
             sfw += "#" + (start + i + 1) + "  " + name + "\n";
-            sfwCode += "#" + (start + i + 1) + "  " + (name == "--hidden--" ? name : "[url=http://www.fimfiction.net" + link + "]" + name + "[/url]") + "\n";
+            sfwCode += "#" + (start + i + 1) + "  " + (name == '--hidden--' ? name : "[url=http://www.fimfiction.net" + link + "]" + name + "[/url]") + "\n";
         }
     }
-    
+    } catch (e) {alert(e)}
     var pop = makeGlobalPopup("Items", "fa fa-bar-chart-o");
     $(pop).append('<textarea class="listText" style="width:600px;min-height:300px;" />');
     $(pop.children[0]).attr('bbCode', bbCode);
@@ -2584,26 +2574,22 @@ function listNames() {
     position(pop.parentNode.parentNode, "center", "center");
 }
 
-function censorStory(element, name) {
-    var storyEntry = element.parentNode.parentNode;
-    var info;
-    if ($(storyEntry).hasClass('story_data')) {
-        info = storyEntry.children[1];
-    } else {
-        storyEntry = storyEntry.parentNode.parentNode;
-        info = $(storyEntry).find('.chapters li.bottom');
-        info = info[info.length - 1];
+function censorStory(element) {
+    if ($(element).parent().find('.content_rating_mature').length) {
+        alert($(element).parent().html());
+        return true;
     }
-    
-    info = info.children;
-    for (var i = 0; i < info.length; i++) {
-        var t = info[i].innerHTML.toLowerCase();
-        if (t == 'mature' || t == 'sex') {
-            return '--hidden--';
+    var storyEntry = element.parentNode.parentNode;
+    if ($(storyEntry).hasClass('story_card')) {
+        if ($(stortEntry).find('.info').find('span').grep(function() {
+            var ht = $(this).html();
+            return ht == 'sex' || ht == 'mature';
+        }).length) {
+            return true;
         }
     }
     
-    return name;
+    return false;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2684,8 +2670,6 @@ function chooseTheme(id, save) {
         $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
-    
-    updateCheckColors(id);
 }
 
 //==API FUNCTION==//
@@ -2700,22 +2684,6 @@ function changeBanner(img, color, pos) {
         $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
-    
-    changeCheckColors(color);
-}
-
-//==API FUNCTION==//
-function updateCheckColors(id) {
-    if (themes[id][3] != "") {
-        changeCheckColors(themes[id][3]);
-    }
-}
-
-//==API FUNCTION==//
-function changeCheckColors(color) {
-    $('.styledCheckBoxPaddle').each(function(index) {
-        $(this).css('background-color', color);
-    })
 }
 
 //==API FUNCTION==//
@@ -2845,17 +2813,18 @@ function changeLogo(button, img, right) {
                 $($(button).children()[0]).remove();
                 $(button).prepend(makeLogo(img, right));
             } else {
-                logger.Log('logo already changed! ' + index + ' ' + img);
+                logger.Log('logo already changed! ' + img);
             }
         } else {
-            logger.Log('warning! button is null: ' + index + ', ' + img + ', ' + right);
+            logger.Log('warning! button is null: ' + img + ', ' + right);
         }
     } catch (e) {
+        logger.Start();
         logger.Severe('error in changingLogo: ' + e);
         logger.Error('changeLogo: button=' + button);
-        logger.Error('changeLogo: index=' + index);
         logger.Error('changeLogo: img=' + img);
         logger.Error('changeLogo: right=' + right + '(' + (right == true) + ')');
+        logger.Pause();
     }
     logger.Log('changeLogo: end');
 }
@@ -3730,9 +3699,9 @@ function updateBackground(c) {
     }
     c = $('.body_container').css('background-color').replace('(','').replace(')','').replace('rgba','').replace('rgb','').split(', ');
     if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 100) {
-        $('.breadcrumbs').addClass('bright');
+        $('.breadcrumbs, .chapter-header').addClass('bright');
     } else {
-        $('.breadcrumbs').removeClass('bright');
+        $('.breadcrumbs, .chapter-header').removeClass('bright');
     }
 }
 
@@ -4051,37 +4020,11 @@ function SettingsTab() {
         var check = addGenericInput(this, id, name, "checkbox");
         if (check != null) {
             $(check).attr('id', 'checkBox_' + id);
-            $(check).addClass('styledCheckBox');
-            
-            
-            var label = $('<label for="checkBox_' + id + '" ><div class="styledCheckBoxPaddle" /></label>');
+            var label = $('<label class="toggleable-switch" />');
             $(check.parentNode).append(label);
-            
-            $(label.children()[0]).on('mousedown', function(ev) {
-                var me = this;
-                document.onmousemove = function(e) {
-                    var max = $(me).parent().width();
-                    var left = (e.clientX - $(me).parent().offset().left) - ($(me).width() / 2);
-                    if (left < 0) left = 0;
-                    if (left > max) left = max;
-                    $(me).css('left', left + 'px');
-                    if ((left > (max / 2)) != $(me).parent().prev()[0].checked) {
-                        $(me).parent().prev()[0].checked = (left > (max / 2));
-                        $(me).parent().prev().click();
-                        $(me).parent().prev()[0].checked = (left > (max / 2));
-                    }
-                };
-                $(this).add(document).on('mouseup', function() {
-                    document.onmousemove = function() {};
-                    document.onmouseup = function() {};
-                    $(me).css('left', '');
-                });
-                ev.preventDefault();
-            });
-            
-            MakeCheckStyle();
+            label.append(check);
+            label.append('<a />');
         }
-        
         return check;
     }
     
@@ -4265,43 +4208,6 @@ function SettingsTab() {
             
             this.AddOption("captch", name, field);
         }
-    }
-}
-
-//==API FUNCTION==//
-function MakeCheckStyle() {
-    if ($("#settingsTab_checkStyle").length == 0) {
-        makeStyle("\
-            .styledCheckBox {display: none;}\
-            .styledCheckBox + label {\
-                cursor: pointer;\
-                width: 90px;\
-                height: 30px;\
-                border: 1px solid rgb(204, 204, 204);\
-                outline: medium none;\
-                transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
-                box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset !important;\
-                background-color: rgb(244, 244, 244) !important;\
-                line-height: 19px !important;\
-                position: relative;}\
-            .styledCheckBox + label > div {\
-                background-color: rgb(119, 126, 137);\
-                box-shadow: 0px 1px rgba(255, 255, 255, 0.3) inset;\
-                border: 1px solid rgba(0, 0, 0, 0.2) !important;\
-                border-radius: 3px 0 0 3px;\
-                position: absolute;\
-                top: 0px;\
-                left: 0px;\
-                width: 20px;\
-                height: 100%;\
-                transition: left 0.15s linear, background-color 0.5s ease;}\
-            .styledCheckBox + label:hover {\
-                background-color: rgb(232, 239, 246) !important;\
-                border-color: rgba(0, 0, 0, 0.2);}\
-            .styledCheckBox:checked + label {background-color: #88d36b !important;}\
-            .styledCheckBox:checked + label > div {\
-                left: 70px;\
-                border-radius: 0 5px 5px 0;}", "settingsTab_checkStyle");
     }
 }
 
