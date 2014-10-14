@@ -10,7 +10,7 @@
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.1.1
+// @version     3.2
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -61,12 +61,12 @@ var backgroundImages = [
     new BG("Glass", "url('http://fc01.deviantart.net/fs71/f/2013/354/1/6/glass_by_comeha-d6ymd58.png') top center"),
     new BG("Sonic Rainboom", "url('http://fc00.deviantart.net/fs70/f/2012/132/1/d/sonic_rainboom_by_knight33-d4zgfjy.jpg') fixed 100% center", "http://knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
     CBG('kp', '60% 60%', new BG("Rainbow Dash", "url('http://fc01.deviantart.net/fs71/i/2013/269/9/8/rainbow_dash_by_up1ter-d6nz0tp.png') top left -500px no-repeat, url('http://fc09.deviantart.net/fs70/i/2012/067/2/0/rainbow_dash_by_up1ter-d4s3nbk.png') bottom -30px right -500px no-repeat, url('http://fc02.deviantart.net/fs70/i/2012/032/d/8/rainbow_dash_by_up1ter-d4obti3.png') bottom 270px left -60px no-repeat", "http://up1ter.deviantart.com/")),
-    new BG("PinkieScape", "url(http://fc02.deviantart.net/fs71/f/2014/021/b/1/land_by_comeha-d733yee.png) no-repeat fixed top 200px center / 100% auto, url(http://fc03.deviantart.net/fs71/f/2014/021/d/4/sky_by_comeha-d733ydu.png) local top left -300px / 100% auto"),
+    CBG('d', new BG("PinkieScape", "url(http://fc03.deviantart.net/fs71/f/2014/114/2/f/land_by_comeha-d733yee.png) no-repeat fixed top 200px center / 100% auto, url(http://fc03.deviantart.net/fs71/f/2014/021/d/4/sky_by_comeha-d733ydu.png) local top left -300px / 100% auto")),
     new BG("Wool", "url(http://fc09.deviantart.net/fs71/f/2014/075/2/7/wool_by_comeha-d7aflw9.png)"),
     new BG("Lunar Nights", "url(http://fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
     new BG("Plain Denim", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Buy Some Apples", "url(http://fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(http://fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "http://benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
-    CBG("c", new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)")),
+    CBG('c', new BG("Classic", "url(http://fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)")),
     new BG("Whispy", "url(http://fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Poni 2.0", "url(http://fc02.deviantart.net/fs71/f/2014/124/f/1/poni_2_by_comeha-d7h2gd0.png)")
 ];
@@ -123,6 +123,9 @@ logger.Log('Checkpoint 2: BGs setup successfully');
   
 var loc = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 addChapterButtonsExtras();
+if ($('#chapter_container').length) {
+    applyChapterfix();
+}
 if (startsWith(loc, 'manage_user/avatar')) {
     addGravatar();
 }
@@ -1278,6 +1281,8 @@ ul.chapters_compact .chapter_container {\
     color: rgba(190,190,190,0.7) !important;}\
 .bright li:after {\
     color: rgba(190,190,190,0.3) !important;}\
+.bright .story-title {\
+  text-shadow: 0 0 4px black;}\
 #imgPreview {\
     border-radius: 5px;\
     max-width:100%;\
@@ -1286,7 +1291,28 @@ ul.chapters_compact .chapter_container {\
     background: none repeat scroll 0% 0% padding-box #FFF;\
     border-width: 1px;\
     border-style: solid;\
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}";
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}\
+.content_format_pinkie #chapter_container #chapter_container,\
+.content_format_applejack #chapter_container #chapter_container,\
+.content_format_rarity #chapter_container #chapter_container,\
+.content_format_twilight #chapter_container #chapter_container,\
+.content_format_dash #chapter_container #chapter_container,\
+.content_format_fluttershy #chapter_container #chapter_container {\
+  box-shadow: 0 0 3px black;\
+  border-radius: 15px;}\
+#chapter_container p:first-child {\
+  border-radius: 15px 15px 0px 0px !important;}\
+#chapter_container p:last-child {\
+  border-radius: 0px 0px 15px 15px !important;}\
+#bookshelves-sidebar > li, #bookshelves-sidebar-community > li {\
+  background: #fff;\
+  margin: 5px;\
+  padding-left: 5px;\
+  border-width: 1px;\
+  border-style: solid;\
+  border-right: 1px solid #BEBAB4;\
+  border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
+  border-radius: 5px;}";
     
 if(getWideNotes()) {
     styleSheet += "\
@@ -1766,6 +1792,17 @@ function applyBookmarks() {
         });
     }
     logger.Log('applyBookmarks: end');
+}
+
+function applyChapterfix() {
+    window.UpdateColours = function() {
+        var clazz = "content_format_" + LocalStorageGet("format_colours");
+        $('.' + clazz).removeClass(clazz);
+        clazz = $('#format_colours option:selected').val();
+        $('.chapter, .chapter .title, #chapter_format, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
+        LocalStorageSet('format_colours', clazz);
+    }
+    UpdateColours();
 }
 
 function setup(hold) {
@@ -3262,7 +3299,7 @@ function BG(name, css, source) {
         blank.children[1].innerHTML = name;
         $(blank.children[0]).css("background-color", c);
         $(blank.children[0]).css("opacity", "0.8");
-        var css = replaceAll(" fixed", "", this.Css);
+        var css = this.Css.replace(/ fixed/g, "");
         if (contains(this.Type.Key, 'k')) {
             css = css.split(' ');
             for (var o = 0; o < css.length - 1; o++) {
@@ -3679,7 +3716,8 @@ function updateBackground(c) {
         $('.body_container').css("background", c);
     }
     c = $('.body_container').css('background-color').replace('(','').replace(')','').replace('rgba','').replace('rgb','').split(', ');
-    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 100) {
+    var index = getBackgroundImgIndex();
+    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 100 || (index > -1 && backgroundImages[index].Type.Key.indexOf('d') != -1)) {
         $('.breadcrumbs, .chapter-header').addClass('bright');
     } else {
         $('.breadcrumbs, .chapter-header').removeClass('bright');
