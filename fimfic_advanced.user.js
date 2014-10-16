@@ -10,7 +10,7 @@
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.2
+// @version     3.2.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -1313,7 +1313,83 @@ ul.chapters_compact .chapter_container {\
   border-right: 1px solid #BEBAB4;\
   border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
   border-radius: 5px;}";
-    
+
+function getUseLargeAv() {
+    return true;
+}
+
+function setupTimeOnline(el) {
+    var tim = el.attr('title').replace('Last seen ','');
+    if (tim.indexOf(' ago') != -1) {
+        var t = tim.replace(' ago', '').split(', ');
+        var years = 0;
+        var days = 0;
+        var hours = 0;
+        var minutes = 0;
+        var seconds = 0;
+        for (var i = 0; i < t.length; i++) {
+            var conv = parseInt(t[i]);
+            if (conv != null && conv > 0) {
+                if (t[i].indexOf('s') != -1) {
+                    seconds = conv;
+                } else if (t[i].indexOf('m') != -1) {
+                    minutes = conv;
+                } else if (t[i].indexOf('h') != -1) {
+                    hours = conv;
+                } else if (t[i].indexOf('d') != -1) {
+                    days = conv;
+                } else if (t[i].indexOf('y') != -1) {
+                    years = conv;
+                }
+            }
+        }
+        var now = new Date();
+        now.setFullYear(now.getFullYear() - years);
+        now.setDate(now.getDate() - days);
+        now.setHours(now.getHours() - hours);
+        now.setMinutes(now.getMinutes() - minutes);
+        now.setSeconds(now.getSeconds() - seconds);
+        el.data('time', Math.floor(now.getTime() / 1000));
+        el.addClass('time_offset');
+    } else {
+        el.html(tim);
+    }
+    el.attr('title', '');
+}
+
+var userOnlineIcon = $('.module_locked .card-content span');
+if (getUseLargeAv() && userOnlineIcon.length) {
+    styleSheet += '.user-card .avatar {\
+  width: 170px;}\
+.module_locked .top-info {\
+  height: 140px !important;}\
+.module_locked .top-info > * {\
+  padding-top: 100px;}\
+.module_locked .card-content span {\
+  position: absolute;\
+  right: 35px;\
+  top: 30px;}\
+.module_locked .card-content span:before {\
+  position: absolute;\
+  top: -35px;\
+  right: 30px;\
+  display: block;\
+  font-size: 60px !important;}\
+.module_locked .card-content span {\
+  font-size: 10px;\
+  display: block;\
+  position: absolute;\
+  right: 0px;\
+  top: 70px;\
+  width: 120px;\
+  max-height: 40px;\
+  text-align: center;}';
+    $('.module_locked .avatar').each(function() {
+       $(this).attr('src', $(this).attr('src').replace('_128.', '_256.'));
+    });
+    setupTimeOnline(userOnlineIcon);
+}
+     
 if(getWideNotes()) {
     styleSheet += "\
 .chapter_content > .inner_margin {max-width: 100% !important;}\
@@ -1801,6 +1877,23 @@ function applyChapterfix() {
         clazz = $('#format_colours option:selected').val();
         $('.chapter, .chapter .title, #chapter_format, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
         LocalStorageSet('format_colours', clazz);
+        UpdatePageBackgroundColor();
+    }
+    window.UpdatePageBackgroundColor = function() {
+        var a = $('#chapter_toolbar_container'),
+            b = a.parents('.chapter');
+        a.data('start_y') || a.data('start_y', a.offset().top + 50);
+        var c = function (a) {
+            return 1 < a ? 1 : 0 > a ? 0 : a;
+        }
+        ((Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (b.offset().top + b.height()))) / 200);
+        d = extractColor($('#chapter_format').css('background-color'));
+        $('.body_container').css('background-color', getBGColor());
+        $('.chapter_content_box').css('border-color', '');
+        127 > 0.39 * d[0] +
+            0.5 * d[1] + 0.11 * d[2] && (a = function (a, b, g) {
+                return a.css(b, rgbToCSS(colorBlend(extractColor(a.css(b)), colorMult(d, g), c)))
+            }, a($('.body_container'), 'background-color', 0.85), a($('.chapter_content_box'), 'border-right-color', 1.4), a($('.chapter_content_box'), 'border-left-color', 1.4))
     }
     UpdateColours();
 }
