@@ -8,13 +8,14 @@
 // @include     https://www.fimfiction.net/*
 // @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
 // @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.2.1
+// @version     3.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
-if (isJQuery())
+if (isJQuery())    
 //===================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 //===================================================================================================
@@ -101,6 +102,13 @@ registerBanners([
     ["solar_flare", "http://fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "http://zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", "center right 0px"],
     ["serene", "http://fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "http://rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"]
 ]);
+var fonts = {
+  'FimFiction': ['Default','Classic', 'Equestria', 'Font Awesome'],
+  'Browser Defaults': ['Serif','Sans-Serif', 'Monospace'],
+  'Serif': ['Calisto MT', 'Cambria', 'Constantia', 'Georgia', 'Lucida Bright', 'Palatino Linotype', 'Rockwell', 'Times New Roman'],
+  'Sans Serif': ['Arial', 'Candara', 'Corbel', 'Fanklin Gothic', 'Gill Sans MT', 'Helvetica', 'Lucida Sans', 'Microsoft Sans Serif', 'Open Sans', 'Segio UI', 'Tahoma', 'Trebuchet MS', 'Verdana'],
+  'Monospace': ['Consolas', 'Courier New']
+}
 
 var ColourNameMapping = {'#FFFFFF': 'White','#FFC0CB': 'Pink','#FFDAB9': 'PeachPuff','#DCDCDC': 'Gainsboro','#FFB6C1': 'LightPink','#FFE4B5': 'Moccasin','#FFDEAD': 'NavajoWhite','#F5DEB3': 'Wheat','#D3D3D3': 'LightGray','#AFEEEE': 'PaleTurquoise','#EEE8AA': 'PaleGoldenRod','#D8BFD8': 'Thistle','#B0E0E6': 'PowderBlue','#ADD8E6': 'LightBlue','#98FB98': 'PaleGreen','#B0C4DE': 'LightSteelBlue','#87CEFA': 'LightSkyBlue','#C0C0C0': 'Silver','#7FFFD4': 'Aquamarine','#90EE90': 'LightGreen','#DDA0DD': 'Plum','#F0E68C': 'Khaki','#FFA07A': 'LightSalmon','#87CEEB': 'SkyBlue','#EE82EE': 'Violet','#F08080': 'LightCoral','#FA8072': 'Salmon','#FF69B4': 'HotPink','#DEB887': 'BurlyWood','#E9967A': 'DarkSalmon','#D2B48C': 'Tan','#7B68EE': 'MediumSlateBlue','#F4A460': 'SandyBrown','#A9A9A9': 'DarkGray','#6495ED': 'CornFlowerBlue','#FF7F50': 'Coral','#DB7093': 'PaleVioletRed','#9370DB': 'MediumPurple','#BC8F8F': 'RosyBrown','#DA70D6': 'Orchid','#8FBC8B': 'DarkSeaGreen','#FF6347': 'Tomato','#66CDAA': 'MediumAquamarine','#ADFF2F': 'GreenYellow','#CD5C5C': 'IndianRed','#BA55D3': 'MediumOrchid','#BDB76B': 'DarkKhaki','#6A5ACD': 'SlateBlue','#4169E1': 'RoyalBlue','#40E0D0': 'Turquoise','#1E90FF': 'DodgerBlue','#48D1CC': 'MediumTurquoise','#FF1493': 'DeepPink','#778899': 'LightSlateGray','#8A2BE2': 'BlueViolet','#CD853F': 'Peru','#708090': 'SlateGray','#808080': 'Gray','#FF00FF': 'Magenta','#0000FF': 'Blue','#00BFFF': 'DeepSkyBlue','#5F9EA0': 'CadetBlue','#00FFFF': 'Cyan','#00FF7F': 'SpringGreen','#00FF00': 'Lime','#32CD32': 'LimeGreen','#7FFF00': 'Chartreuse','#9ACD32': 'YellowGreen','#FFFF00': 'Yellow','#FFD700': 'Gold','#FFA500': 'Orange','#FF8C00': 'DarkOrange','#FF4500': 'OrangeRed','#FF0000': 'Red','#9932CC': 'DarkOrchid','#7CFC00': 'LawnGreen','#4682B4': 'Steelblue','#00FA9A': 'MediumSpringGreen','#DAA520': 'GoldenRod','#DC143C': 'Crimson','#D2691E': 'Chocolate','#3CB371': 'MediumSeaGreen','#C71585': 'MediumVioletRed','#B22222': 'FireBrick','#9400D3': 'DarkViolet','#20B2AA': 'LightSeaGreen','#696969': 'DimGray','#00CED1': 'DarkTurquoise','#A52A2A': 'Brown','#0000CD': 'MediumBlue','#A0522D': 'Sienna','#483D8B': 'DarkSlateBlue','#B8860B': 'DarkGoldenRod','#2E8B57': 'SeaGreen','#6B8E23': 'OliveDrab','#228B22': 'ForestGreen','#8B4513': 'SaddleBrown','#556B2F': 'DarkOliveGreen','#8B008B': 'DarkMagenta','#00008B': 'DarkBlue','#008B8B': 'DarkCyan','#8B0000': 'DarkRed','#191970': 'MidnightBlue','#4B0082': 'Indigo','#800080': 'Purple','#000080': 'Navy','#008080': 'Teal','#008000': 'Green','#808000': 'Olive','#800000': 'Maroon','#2F4F4F': 'DarkSlateGray','#006400': 'DarkGreen','#000000': 'Black','#666666': 'Grey','#cccccc': 'Light Grey','#383838': 'Dark Grey','#be4343': 'Red','#be7a43': 'Orange','#afa426': 'Yellow','#7aaf26': 'Lime Green','#2caf26': 'Green','#26af6d': 'Turquoise','#26a4af': 'Light Blue','#265daf': 'Blue','#3c26af': 'Purple','#9426af': 'Violet','#af2673': 'Pink','#5f4432': 'Brown','#a66ebe': 'Twilight Sparkle','#5e51a3': 'Rarity','#e97135': 'Applejack','#ea80b0': 'Pinkie Pie','#6aaadd': 'Rainbow Dash','#e6b91f': 'Fluttershy'}
 var ColorMappingKeys = (function() {
@@ -121,12 +129,12 @@ logger.Log('Checkpoint 2: BGs setup successfully');
 } catch (e) {logger.SevereException('unhandledException in Pre-init: {0}', e);}
 //----------------------------------------------------------------------------------------------------
   
-var loc = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
+var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 addChapterButtonsExtras();
 if ($('#chapter_container').length) {
     applyChapterfix();
 }
-if (startsWith(loc, 'manage_user/avatar')) {
+if (startsWith(CURRENT_LOCATION, 'manage_user/avatar')) {
     addGravatar();
 }
 applyBookmarks();
@@ -134,7 +142,7 @@ setup(true);
 
 logger.Log('Checkpoint 3: initial setup completed successfully');
  
-if (!startsWith(loc, 'manage_user/messages/')) {
+if (!startsWith(CURRENT_LOCATION, 'manage_user/messages/')) {
     loopUnspoiler();
     FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
@@ -255,13 +263,14 @@ $('.external_account').each(function() {
 
 logger.Log('Checkpoint 7: set account logos successfully');
 
-var swit = $('.search_results_count');
-if (swit.length) {
+if ($('.right-menu-inner').length) {
     logger.Log('Checkpoint 8: got swit successfully');
     
-    var a = $('<a class="styled_button styled_button_brown" href="javascript:void();">List Names</a>');
+    var swit = $('<div style="display:table-cell;min-width:110px;vertical-align:middle;padding-left:10px" />');
+    $('.right-menu-inner').children().last().before(swit);
+    var a = $('<button type="button" style="display:block !important; width:100% !important; margin:0px;" class="styled_button styled_button_brown" href="javascript:void();">List Names</button>');
     $(a).click(listNames);
-    swit.after(a);
+    swit.append(a);
     
     makeStyle("\
                 .listText {\
@@ -332,7 +341,66 @@ try {
 
 var color = getBGColor();
 updateBackground(color);
-    
+
+var title = document.getElementById("title");
+var isSliding = false;
+var time = getTime(getSlide());
+var fade = null;
+
+if (title != null) {
+    $(title.children[1]).prepend('<div id="fade_banner_image" style="width:100%;height:100%;left:-1px;" />');
+    fade = $("#fade_banner_image");
+    updateSlide();
+    logger.Log('setup slideshow');
+}
+
+var december = (new Date()).getMonth() == 11;
+var snowing = getSnowing();
+var snower;
+if (snowing < 2 && (snowing == 0 || december)) {
+    if (snower == null) {
+        snower = snowBG();
+        logger.Log('setup Ultra Snow');
+    } else {
+        snower.start();
+    }
+}
+
+var logo = getOldLogo();
+var logoO = getLogoO();
+if (logo == -1) {
+    var images = [];
+    for (var i = 1; i < logos.length; i++) {
+        images.push('url(' + logos[i].Css + ')');
+    }
+    $('body').append('<div style="width:0 !important;height:0 !important;background: ' + images.join(', ') + ' !important;" />');
+}
+updateLogo(logo);
+updateLogoO(logoO);
+applyCustomFont(getCustomFont());
+
+var customBannerindex = -1;
+var customBanner = getCustomBanner();
+
+if (customBanner != null) {
+    registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
+    customBannerindex = safeGetThemeArray().length - 1;
+}
+
+if ($('.theme_selector_left > a').length) {
+    $('.theme_selector_left > a')[0].onclick = function() {
+        theme--;
+        if (theme < 0) theme = safeGetThemeArray().length - 1;
+        chooseTheme(theme, true);
+    };
+    $('.theme_selector_right > a')[0].onclick = function() {
+        theme++;
+        chooseTheme(theme % safeGetThemeArray().length, true);
+    };
+}
+
+finaliseThemes();
+
 if (getIsLoggedIn()) {
     var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark"></i><span class="bkm_number" /></a>');
     var button = $('<div class="user_drop_down_menu"><div class="menu_list" style="width:170px;"><a class="button" href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></div></div>');
@@ -357,19 +425,17 @@ if (getIsLoggedIn()) {
         $('.bkm_number').text('Bookmarks');
     }
     
-    var btab = makeSettingsTab('Bookmarks', 'bookmarks', 'fa fa-bookmark');
+    var btab = new SettingsTab('Bookmarks', 'bookmarks', 'fa fa-bookmark');
     if (btab.HasInit()) {
         $('#SettingsPage_Parent').css('min-height', '607px');
         getBookmarksGui(btab);
     }
 }
 
-var tab = makeSettingsTab("Advanced", "fimfiction_advanced", "fa fa-wrench");
-
-tab.StartEndSection("General Settings");
-
-var enableSws = tab.AddCheckBox("sb", "Show Sweetie Scepter");
-if (enableSws != null) {
+var tab = new SettingsTab("Advanced", "fimfiction_advanced", "fa fa-wrench");
+if (tab.HasInit()) {
+    tab.StartEndSection("General Settings");
+    var enableSws = tab.AddCheckBox("sb", "Show Sweetie Scepter");
     enableSws.checked = getSweetieEnabled();
     $(enableSws).click(function() {
         setSweetieEnabled(this.checked);
@@ -380,27 +446,36 @@ if (enableSws != null) {
         }
     });
     logger.Log('setup enableSws');
-}
 
-var wideAT = tab.AddCheckBox("wat", "Wide Author's Notes");
-if (wideAT != null) {
+    var wideAT = tab.AddCheckBox("wat", "Wide Author's Notes");
     wideAT.checked = getWideNotes();
     $(wideAT).click(function() {
         setWideNotes(this.checked);
     });
     logger.Log('setup wideAT');
-}
-
-var unsp = tab.AddCheckBox("unsp", "Always show posted Images");
-if (unsp != null) {
+    
+    var unsp = tab.AddCheckBox("unsp", "Always show posted Images");
     unsp.checked = getAlwaysShowImages();
     $(unsp).click(function() {
        setAlwaysShowImages(this.checked);
     });
-}
-
-var chapWid = tab.AddTextBox("cwt", "Chapter Width");
-if (chapWid != null) {
+    
+    var fontSelect = $(tab.AddDropDown("ffs", "Site Font", []));
+    for (var i in fonts) {
+        var group = $('<optgroup label="' + i + '"/>');
+        for (var j in fonts[i]) {
+            var option = $('<option value="' + fonts[i][j] + '">' + fonts[i][j] + '</option>');
+            option.css('font-family', fonts[i][j]);
+            group.append(option);
+        }
+        fontSelect.append(group);
+    }
+    fontSelect.val(getCustomFont());
+    fontSelect.change(function() {
+        setCustomFont($(this).val());
+    });
+        
+    var chapWid = tab.AddTextBox("cwt", "Chapter Width");
     AppendPopup("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 46em", chapWid);
     chapWid.value = getStoryWidth();
     $(chapWid).change(function() {
@@ -426,14 +501,10 @@ if (chapWid != null) {
         setStoryWidth(val + form);
         this.value = getStoryWidth();
     });
-}
-
-var title = document.getElementById("title");
-
-var enableHb = tab.AddCheckBox("hb", "Hide Banner");
-if (enableHb != null) {
-    enableHb.checked = getTitleHidden();
-    enableHb.onclick = function() {
+    
+    var hideBanner = tab.AddCheckBox("hb", "Hide Banner");
+    hideBanner.checked = getTitleHidden();
+    hideBanner.onclick = function() {
         setTitleHidden(this.checked);
         if (this.checked) {
             $(title).addClass("titleHidden");
@@ -442,21 +513,8 @@ if (enableHb != null) {
         }
     };
     logger.Log('setup enableHb');
-}
 
-var isSliding = false;
-var time = getTime(getSlide());
-var fade = null;
-
-if (title != null) {
-    $(title.children[1]).prepend('<div id="fade_banner_image" style="width:100%;height:100%;left:-1px;" />');
-    fade = $("#fade_banner_image");
-    updateSlide();
-    logger.Log('setup slideshow');
-}
-
-var slide = tab.AddDropDown("sl", "Banner Slide Show", ["Off", "One Minute", "Three Minutes", "Five Minutes", "Ten Minutes", "Fast"]);
-if (slide != null) {
+    var slide = tab.AddDropDown("sl", "Banner Slide Show", ["Off", "One Minute", "Three Minutes", "Five Minutes", "Ten Minutes", "Fast"]);
     slide.selectedIndex = getSlide();
     $(slide).change(function() {
         setSlide(this.selectedIndex);
@@ -466,77 +524,39 @@ if (slide != null) {
         }
     });
     logger.Log('setup slide');
-}
-
-var shuffle = tab.AddCheckBox("shuf", "Shuffle Slide Show");
-if (shuffle != null) {
+    
+    var shuffle = tab.AddCheckBox("shuf", "Shuffle Slide Show");
     shuffle.checked = getShuffle();
     $(shuffle).click(function() {
         setShuffle(this.checked);
     });
-}
-
-/*var dec = (new Date()).getMonth() == 11;
-var snower;*/
-var snowing = getSnowing();
-/*if (snowing < 2) {
-    if (snowing == 0 || dec) {
-        snower = new snowBG();
-        snower.init();
-    }
-    logger.Log('setup Ultra Snow');
-}*/
-
-var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
-if (enableUSnow != null) {
+    
+    var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
     enableUSnow.selectedIndex = snowing;
-    enableUSnow.disabled = 1;
-    enableUSnow.title = "Disabled";
-    /*$(enableUSnow).change(function() {
+    $(enableUSnow).change(function() {
         setSnowing(this.selectedIndex);
-        if (this.selectedIndex < 2) {
-            if (this.selectedIndex == 0 || dec) {
-                if (snower == null) {
-                    snower = new snowBG();
-                    snower.init();
-                } else {
-                    snower.start();
-                }
-            } else if (snower != null) {
-                snower.stop();
+        if (this.selectedIndex < 2 && (this.selectedIndex == 0 || december)) {
+            if (snower == null) {
+                snower = snowBG();
+            } else {
+                snower.start();
             }
         } else if (snower != null) {
             snower.stop();
         }
-    });*/
+    });
     logger.Log('setup enableUSnow');
-}
 
-var pauseSnowBG = tab.AddCheckBox('pus', 'Pause Ultra Snow when lost focus');
-if (pauseSnowBG != null) {
+    var pauseSnowBG = tab.AddCheckBox('pus', 'Pause Ultra Snow when lost focus');
     pauseSnowBG.checked = getSaveFocus();
     $(pauseSnowBG).click(function() {
         setDocCookie('ultra_snow_save_focus', this.checked);
-        if (snower != null) {
-            snower.SetSaveFocus(this.checked);
-        }
+        if (snower != null) snower.SetSaveFocus(this.checked);
     });
-}
-
-tab.StartEndSection("Colours and Customization");
-
-var logo = getOldLogo();
-if (logo == -1) {
-    var images = [];
-    for (var i = 1; i < logos.length; i++) {
-        images.push('url(' + logos[i].Css + ')');
-    }
-    $('body').append('<div style="width:0 !important;height:0 !important;background: ' + images.join(', ') + ' !important;" />');
-}
-updateLogo(logo);
-
-var oldLogo = tab.AddDropDown("ologo", "Logo", getLogoNames());
-if (oldLogo != null) {
+    
+    tab.StartEndSection("Colours and Customization");
+    
+    var oldLogo = tab.AddDropDown("ologo", "Logo", getLogoNames());
     $(oldLogo.children[0]).after('<option value="-1">Random</option>');
     $(oldLogo).val(logo);
     $(oldLogo).change(function() {
@@ -544,31 +564,26 @@ if (oldLogo != null) {
         updateLogo($(this).val());
     });
     logger.Log('setup oldLogo');
-}
-
-var logoO = getLogoO();
-updateLogoO(logoO);
-
-var enableHo = tab.AddSlider("ho", "Logo Opacity", logoO, 10, 100);
-if (enableHo != null) {
-    $(enableHo).change(function() {
-        setLogoO(this.value);
-        updateLogoO(this.value);
-    });
-}
-
-var backgroundImg = null;
-var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparent' ? '' : color, function(me) {
-    updateBackground(me.value);
-    if (backgroundImg != null) {
-        for (var i = 0; i < backgroundImg.length - 1; i++) {
-            $(backgroundImg[i].children[0]).css("background-color", me.value);
-        }
+    
+    var enableHo = tab.AddSlider("ho", "Logo Opacity", logoO, 10, 100);
+    if (enableHo != null) {
+        $(enableHo).change(function() {
+            setLogoO(this.value);
+            updateLogoO(this.value);
+        });
     }
-});
 
-backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
-if (backgroundImg != null) {
+    var backgroundImg = null;
+    var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparent' ? '' : color, function(me) {
+        updateBackground(me.value);
+        if (backgroundImg != null) {
+            for (var i = 0; i < backgroundImg.length - 1; i++) {
+                $(backgroundImg[i].children[0]).css("background-color", me.value);
+            }
+        }
+    });
+    
+    backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
     for (var i = 0; i < backgroundImages.length; i++) {
         backgroundImages[i].Setup(backgroundImg[i + 2], color, i);
     }
@@ -605,32 +620,8 @@ if (backgroundImg != null) {
     }
 
     logger.Log('setup backgroundImg');
-}
-
-var customBannerindex = -1;
-var customBanner = getCustomBanner();
-
-if (customBanner != null) {
-    registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
-    customBannerindex = safeGetThemeArray().length - 1;
-}
-
-try {
-    $('.theme_selector_left > a')[0].onclick = function() {
-        theme--;
-        if (theme < 0) theme = safeGetThemeArray().length - 1;
-        chooseTheme(theme, true);
-    };
-    $('.theme_selector_right > a')[0].onclick = function() {
-        theme++;
-        chooseTheme(theme % safeGetThemeArray().length, true);
-    };
-} catch (e) { }
-
-finaliseThemes();
-
-var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
-if (cban != null) {
+    
+    var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
     cban[0].children[1].innerHTML = '<i class="fa fa-pencil fa-5x" />';
     $(cban[0]).css("width", "700px");
     $(cban[0]).css("text-align", "center");
@@ -644,75 +635,75 @@ if (cban != null) {
     }
     $(cban).click(function() {
         var pop = makeGlobalPopup("Edit Custom Banner", "fa fa-pencil", 10);
-        
+
         $(pop.parentNode).css('width', '700px');
-        
+
         $(pop).append('<table class="properties"><tbody /></table>');
-        
+
         $(pop).append('<div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
-        
+
         var footer = $('<div class="drop-down-pop-up-footer" />');
         $(pop).append(footer);
-        
+
         var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
         footer.append(done);
-        
+
         var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
         footer.append(preview);
-        
+
         var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
         footer.append(reset);
-        
+
         var row = document.createElement('tr');
         $(pop.children[0].children[0]).append(row);
-        
+
         $(row).append('<td class="label">Image Url\n(1300x175px)</td>');
         $(row).append('<td><div /></td>');
         row = row.children[1].children[0];
-        
+
         var input = $('<input type="url" placeholder="Banner Image" />');
         $(row).append(input);
-        
+
         row = document.createElement('tr');
         $(pop.children[0].children[0]).append(row);
-        
+
         $(row).append('<td class="label">Image Position</td>');
         $(row).append('<td><div /></td>');
         row = row.children[1].children[0];
-                
+
         var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
         $(row).append(alignVert);
         var posY = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
         $(row).append(posY);
-        
+
         var alignHor = $('<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
         $(row).append(alignHor);
         var posX = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
         $(row).append(posX);
-        
+
         row = document.createElement('tr');
         $(pop.children[0].children[0]).append(row);
-        
+
         $(row).append('<td class="label">Banner Colour</td>');
         $(row).append('<td><div /></td>');
         row = row.children[1].children[0];
-        
+
         var RInput = $('<input type="text" placeholder="Red" />');
         $(row).append(RInput);
         AppendPopup("Red<br>Range: 0-255", RInput);
-        
+
         var GInput = $('<input type="text" placeholder="Green" />');
         $(row).append(GInput);
         AppendPopup("Green<br>Range: 0-255", GInput);
-        
+
         var BInput = $('<input type="text" placeholder="Blue" />');
         $(row).append(BInput);
         AppendPopup("Blue<br>Range: 0-255", BInput);
-        
+
         var AInput = $('<input type="text" placeholder="Opacity" />');
         $(row).append(AInput);
         AppendPopup("Opacity<br>Range: 0.0-1.0", AInput);
-        
+
         var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
         $(row).append(GuessInput);
         $(GuessInput).click(function() {
@@ -721,14 +712,14 @@ if (cban != null) {
                 color = 'rgb(146,27,87)';
             }
             color = color.split('(')[1].split(')')[0];
-            color = replaceAll(' ', '', color).split(',');
-            
+            color = color.replace(/ /g, '').split(',');
+
             $(RInput).val(color[0]);
             $(GInput).val(color[1]);
             $(BInput).val(color[2]);
             $(AInput).val(color.length == 4 ? color[3] : 1);
         });
-                
+
         var ch = function(me) {
             if ($.isNumeric($(me).val())) {
                 var val = parseInt($(me).val());
@@ -753,13 +744,13 @@ if (cban != null) {
             }
             return false;
         }
-        
-        
+
+
         var updateView = function(save) {
             if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
                 var url = input.val();
                 var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
-                
+
                 var vert = alignVert.val();
                 var hor = alignHor.val();
                 var x = 0;
@@ -770,7 +761,7 @@ if (cban != null) {
                 } catch (e) {
                     x = 0;
                 }
-                
+
                 var y = 0;
                 try {
                     if (posY.val() != '') {
@@ -779,19 +770,19 @@ if (cban != null) {
                 } catch (e) {
                     y = 0;
                 }
-                
+
                 var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
-                
+
                 if (AInput.val() != '1' && AInput.val() != '') {
                     color = 'rgba(' + color + ',' + AInput.val();
                 } else {
                     color = 'rgb(' + color;
                 }
                 color += ')';
-                
+
                 if (save) {
                     setCustomBanner(url, color, pos);
-                
+
                     if (customBannerindex > -1) {
                         themes[customBannerindex] = ["Custom", url, "", color, pos];
                     } else {
@@ -799,32 +790,32 @@ if (cban != null) {
                         customBannerindex = themes.length - 1;
                     }
                 }
-                
+
                 cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
                 $(cban[0].children[0]).css("background-color", themes[customBannerindex][3]);
                 $(cban[0]).css("background-image", 'url("' + themes[customBannerindex][1] + '")');
                 $(cban[0]).css("background-position", themes[customBannerindex][4]);
-                
+
                 if (save) {
                     chooseTheme(customBannerindex, save);
                 } else {
                     finaliseThemes();
                 }
-                
+
                 $('#add_banner_error').addClass('hidden');
                 return true;
             }
             $('#add_banner_error').removeClass('hidden');
             return false;
         };
-        
+
         var hasPre = false;
         $(preview).click(function() {
             hasPre = true;
             if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
                 var url = input.val();
                 var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
-                
+
                 var vert = alignVert.val();
                 var hor = alignHor.val();
                 var x = 0;
@@ -835,7 +826,7 @@ if (cban != null) {
                 } catch (e) {
                     x = 0;
                 }
-                
+
                 var y = 0;
                 try {
                     if (posY.val() != '') {
@@ -844,16 +835,16 @@ if (cban != null) {
                 } catch (e) {
                     y = 0;
                 }
-                
+
                 var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
-                                
+
                 if (AInput.val() != '1' && AInput.val() != '') {
                     color = 'rgba(' + color + ',' + AInput.val();
                 } else {
                     color = 'rgb(' + color;
                 }
                 color += ')';
-                
+
                 changeBanner(url, color, pos);
                 $('#add_banner_error').addClass('hidden');
             } else {
@@ -869,7 +860,7 @@ if (cban != null) {
                 }
                 customBannerindex = -1;
             }
-            
+
             cban[0].children[0].innerHTML = '';
             $(cban[0].children[0]).css("background-color", "#fff");
             $(cban[0]).css("background-image", 'none');
@@ -887,22 +878,22 @@ if (cban != null) {
                 finaliseThemes();
             }
         });
-        
+
         customBanner = getCustomBanner();
         if (customBanner != null) {
             $(input).attr("value", customBanner[0]);
-            
+
             var color = customBanner[1].split('(')[1].split(')')[0];
-            color = replaceAll(' ', '', color).split(',');
-            
+            color = color.replace(/ /g, '').split(',');
+
             $(RInput).val(color[0]);
             $(GInput).val(color[1]);
             $(BInput).val(color[2]);
             $(AInput).val(color.length == 4 ? color[3] : 1);
-            
+
             var poss = customBanner[2].split(' ');
             var i = 0;
-            
+
             alignVert.val(poss[i]);
             if (poss[i] != 'center') {
                 posY.val(poss[++i]);
@@ -913,16 +904,14 @@ if (cban != null) {
             }
 
         }
-        
+
         position(pop.parentNode.parentNode, 'center', 'center');
     });
     logger.Log('setup cban');
-}
 
-tab.StartEndSection("Signatures");
+    tab.StartEndSection("Signatures");
 
-var sigText = tab.AddTextArea("sig", '', getSig());
-if (sigText != null) {
+    var sigText = tab.AddTextArea("sig", '', getSig());
     $(sigText).css("min-height", "150px");
     $(sigText).css("min-width", "100%");
     $(sigText).css("resize", "vertical");
@@ -1202,9 +1191,6 @@ a:hover .bg_source_link {\
     text-shadow: 1px 1px #d4d4d4;\
     z-index: 10;\
     position: relative;}\
-.menu_list .button,.menu_list .user_drop_down_menu {\
-    width: 100% !important;\
-    min-width: 150px;}\
 .chapter-read-all, .chapter-unread-all {\
     margin-right: 8px;\
     font-size: 14px;\
@@ -1313,82 +1299,6 @@ ul.chapters_compact .chapter_container {\
   border-right: 1px solid #BEBAB4;\
   border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
   border-radius: 5px;}";
-
-function getUseLargeAv() {
-    return true;
-}
-
-function setupTimeOnline(el) {
-    var tim = el.attr('title').replace('Last seen ','');
-    if (tim.indexOf(' ago') != -1) {
-        var t = tim.replace(' ago', '').split(', ');
-        var years = 0;
-        var days = 0;
-        var hours = 0;
-        var minutes = 0;
-        var seconds = 0;
-        for (var i = 0; i < t.length; i++) {
-            var conv = parseInt(t[i]);
-            if (conv != null && conv > 0) {
-                if (t[i].indexOf('s') != -1) {
-                    seconds = conv;
-                } else if (t[i].indexOf('m') != -1) {
-                    minutes = conv;
-                } else if (t[i].indexOf('h') != -1) {
-                    hours = conv;
-                } else if (t[i].indexOf('d') != -1) {
-                    days = conv;
-                } else if (t[i].indexOf('y') != -1) {
-                    years = conv;
-                }
-            }
-        }
-        var now = new Date();
-        now.setFullYear(now.getFullYear() - years);
-        now.setDate(now.getDate() - days);
-        now.setHours(now.getHours() - hours);
-        now.setMinutes(now.getMinutes() - minutes);
-        now.setSeconds(now.getSeconds() - seconds);
-        el.data('time', Math.floor(now.getTime() / 1000));
-        el.addClass('time_offset');
-    } else {
-        el.html(tim);
-    }
-    el.attr('title', '');
-}
-
-var userOnlineIcon = $('.module_locked .card-content span');
-if (getUseLargeAv() && userOnlineIcon.length) {
-    styleSheet += '.user-card .avatar {\
-  width: 170px;}\
-.module_locked .top-info {\
-  height: 140px !important;}\
-.module_locked .top-info > * {\
-  padding-top: 100px;}\
-.module_locked .card-content span {\
-  position: absolute;\
-  right: 35px;\
-  top: 30px;}\
-.module_locked .card-content span:before {\
-  position: absolute;\
-  top: -35px;\
-  right: 30px;\
-  display: block;\
-  font-size: 60px !important;}\
-.module_locked .card-content span {\
-  font-size: 10px;\
-  display: block;\
-  position: absolute;\
-  right: 0px;\
-  top: 70px;\
-  width: 120px;\
-  max-height: 40px;\
-  text-align: center;}';
-    $('.module_locked .avatar').each(function() {
-       $(this).attr('src', $(this).attr('src').replace('_128.', '_256.'));
-    });
-    setupTimeOnline(userOnlineIcon);
-}
      
 if(getWideNotes()) {
     styleSheet += "\
@@ -2202,7 +2112,7 @@ function insertColor(target) {
 }
 
 function previewSig() {
-    return fillBBCode(replaceAll('\n', '<br />', sign({}, pickOne([
+    return fillBBCode(sign({}, pickOne([
         'Ermahgerd! I wub u so much!!!11111one11!exclamation!!mark1',
         'I feel ya bro',
         'Sink X Dash is OTP! ' + emoteHTM('rainbowderp'),
@@ -2222,7 +2132,7 @@ function previewSig() {
             '[size=10][i]Don\'t trust the parasprite.[/i][/size]',
             '[center]<img width="100px" height="100px" src="http://fc00.deviantart.net/fs70/i/2012/200/b/e/sweepy_time__by_chubble_munch-d57scrc.png" /><br />Pweese?[/center]',
             '[url=http://dileak.deviantart.com/art/Meanwhile-at-the-super-awesome-WUB-base-310634590]Epic WUB Time is now[/url]'
-            ]))));
+            ])).replace(/\n/g, '<br />'));
 }
 
 function emoteHTM(name) {
@@ -2631,24 +2541,23 @@ function checkColor(me, preview, valid) {
 }
 
 function listNames() {
-    try {
     var start = getPageStartNumber();
     var result = "";
     var bbCode = "";
     var sfw = "";
     var sfwCode = "";
-
-    var stories;
     
+    var stories;
     if ($('.story-card-list').length) {
         stories = $('.story-card-list .story-card .story_link');
+    } else if ($('.story-list').length) {
+        stories = $('.story-list .right .story-title');
     } else {
         stories = $('.story_container .story_name');
     }
     
-    
     for (var i = 0; i < stories.length; i++) {
-        var name = $(stories[i]).html();
+        var name = $(stories[i]).text();
         var link = $(stories[i]).attr('href');
         
         if  (name != null && name != "") {
@@ -2659,7 +2568,6 @@ function listNames() {
             sfwCode += "#" + (start + i + 1) + "  " + (name == '--hidden--' ? name : "[url=http://www.fimfiction.net" + link + "]" + name + "[/url]") + "\n";
         }
     }
-    } catch (e) {alert(e)}
     var pop = makeGlobalPopup("Items", "fa fa-bar-chart-o");
     $(pop).append('<textarea class="listText" style="width:600px;min-height:300px;" />');
     $(pop.children[0]).attr('bbCode', bbCode);
@@ -2679,7 +2587,6 @@ function listNames() {
     $(div).append(toggleSFW);
     $(div).append('<span style="padding-left: 5px;">Hide Mature Stories</span>');
     $(pop).append(div);
-    
     
     var upd = function() {
         if (toggle[0].checked) {
@@ -2707,53 +2614,24 @@ function listNames() {
 }
 
 function censorStory(element) {
-    if ($(element).parent().find('.content_rating_mature').length) {
-        return true;
-    }
+    if ($(element).parent().find('.content_rating_mature').length) return true;
     var storyEntry = element.parentNode.parentNode;
+    if ($(storyEntry).hasClass('title')) storyEntry = storyEntry.parentNode;
     if ($(storyEntry).hasClass('story_card')) {
-        if ($(stortEntry).find('.info').find('span').grep(function() {
-            var ht = $(this).html();
-            return ht == 'sex' || ht == 'mature';
-        }).length) {
-            return true;
-        }
+        storyEntry = $(storyEntry).find('.info span');
+    } else {
+        storyEntry = $(storyEntry).find('.description .story_category');
     }
-    
+    for (var i = 0; i < storyEntry.length; i++) {
+        var ht = $(storyEntry[i]).attr('class');
+        if (endsWith(ht, 'sex') || endsWith(ht, 'mature')) return true;
+    }
     return false;
 }
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------API FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
-    
-//==API FUNCTION==//
-var el;
-function decodeHTML(txt) {
-    txt = replaceAll('<', '[({', txt);
-    txt = replaceAll('>', '})]', txt);
-    
-    if (el == null || el == undefined) {
-        el = document.createElement('div');
-    }
-    
-    el.innerHTML = txt;
-    txt = el.textContent;
-    el.textContent = '';
-    
-    txt = replaceAll('[({', '<', txt);
-    txt = replaceAll('})]', '>', txt);
-    
-    return txt;
-}
-
-//==API FUNCTION==//
-function ShowCustomError(title, message) {
-    var originalTitle = error_window_title;
-    error_window_title = [ title ];
-    ShowErrorWindow(message);
-    error_window_title = originalTitle;
-}
 
 //==API FUNCTION==//
 function getFavicon(url) {
@@ -2827,13 +2705,11 @@ function AppendPopup(message, field) {
     $(field).before(box);
     $(field).focus(function (e) {
         $(box).css("display", "block");
-        setTimeout(function() {
-        $(box).css("opacity", "");},1);
+        setTimeout(function() {$(box).css("opacity", "");},1);
     });
     $(field).blur(function(e) {
         $(box).css("opacity", 0);
-        setTimeout(function() {
-        $(box).css("display", "none");},500);
+        setTimeout(function() {$(box).css("display", "none");},500);
     });
 }
 
@@ -2844,14 +2720,8 @@ function registerBanner(name, img, source, color, pos) {
 
 //==API FUNCTION==//
 function registerBanners(banners) {
-    try {
-        [].push.apply(safeGetThemeArray(), banners);
+    try {[].push.apply(safeGetThemeArray(), banners);
     } catch (e) {}
-}
-
-//==API FUNCTION==//
-function preLoadImagesJ(images) {
-    $('body').append('<div style="background:url(' + images.join('),url(') + ');position:absolute;top:-9999px;left:-9999px;width:0px;height:0px;" />');
 }
 
 //==API FUNCTION==//
@@ -2861,25 +2731,21 @@ function makeLogo(img, r) {return "<i class=\"" + img + '"' + (r == true ? '' : 
 function isMyBlogPage() {
     if (getIsLoggedIn()) {
         if (startsWith(document.location.href, "http://www.fimfiction.net/user/" + getUserNameEncoded() + "/blog")) return true;
-        return startsWith(document.location.href, "http://www.fimfiction.net/user/" + replaceAll(' ', '+', getUserName()) + "/blog");
+        return startsWith(document.location.href, "http://www.fimfiction.net/user/" + getUserName().replace(/ /g, '+') + "/blog");
     }
     return false;
 }
 
 //==API FUNCTION==//
 function isMyPage() {
-    if (document.location.href == ("http://www.fimfiction.net/user/" + getUserNameEncoded())) {
-        return true;
-    }
-    return document.location.href == ("http://www.fimfiction.net/user/" + replaceAll(' ', '+', getUserName()));
+    if (document.location.href == ("http://www.fimfiction.net/user/" + getUserNameEncoded())) return true;
+    return document.location.href == ("http://www.fimfiction.net/user/" + getUserName().replace(/ /g, '+'));
 }
 
 //==API FUNCTION==//
 function getIsLoggedIn() {
-    try {
-        return logged_in_user != null;
-    } catch (e) {
-    }
+    try { return logged_in_user != null;
+    } catch (e) {}
     return false;
 }
 
@@ -2911,9 +2777,6 @@ function makeStyle(input, id) {
 //==API FUNCTION==//
 //Returns true if Extra emoticons has already been initialized on this page
 function getInit() {return $('div#extraemoticons_loaded').length > 0;}
-
-//==API FUNCTION==//
-function isCompactView() {return $('.story-card-list').length > 0;}
 
 //==API FUNCTION==//
 function changeLogo(button, img, right) {
@@ -3545,6 +3408,31 @@ function replaceTagWithOption(text, tag, withO, closeWith, without, closeOut) {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
+function getCustomFont() {
+    var result = hasDocCookie('custom_font') ? getDocCookie('custom_font') : 'Default';
+    return result;
+}
+
+function setCustomFont(v) {
+    applyCustomFont(v);
+    setDocCookie('custom_font', v);
+}
+
+function applyCustomFont(val) {
+    if (val == 'Classic') val = 'Arial';
+    if (val == '' || val == 'Default') {
+        $('#customFontStyle').remove();
+    } else {
+        val = 'html, body, .blog_post_content p, .resize_text, .styled_button, h2, .story_link, h1, .story-title, .title {font-family: ' + val + ' !important;}';
+        if (!$('#customFontStyle').length) {
+            makeStyle(val, 'customFontStyle');
+        } else {
+            $('#customFontStyle').html(val);
+        }
+    }
+}
+
+//==API FUNCTION==//
 function getAlwaysShowImages() {
     return hasDocCookie('unspoiler_images') ? getDocCookie('unspoiler_images') == '1' : false;
 }
@@ -3888,12 +3776,20 @@ function removeDocCookie(name) {
 }
 
 //==API FUNCTION==//
+function getStoryViewMode() {
+    if ($('#browse_form .right-menu-inner .button-group .drop-down-expander').length) {
+        return $('#browse_form .right-menu-inner .button-group .drop-down-expander').text().split(' ')[0].toLowerCase();
+    }
+    return '';
+}
+
+//==API FUNCTION==//
 function getPageStartNumber() {
     var pageNumber = getParameter("page");
     if (pageNumber != null) {
         pageNumber = parseInt(pageNumber);
-        var weight = isCompactView() ? 100 : 10;
-        return (pageNumber - 1) * weight;
+        var mode = getStoryViewMode();
+        return (pageNumber - 1) * (mode == 'list' || mode == 'cards' ? 60 : 10);
     }
     
     return 0;
@@ -3912,133 +3808,121 @@ function getParameter(name) {
 }
 
 //==API FUNCTION==//
-function makeSettingsTab(title, name, img) {
-    logger.Log('makeSettingsTab2: start');
-    if ($('#settingsTabsRegister').length == 0) {
-        $('body').append('<div style="display:none !important;" id="settingsTabsRegister" />');
-    }
-    var registered = [];
-    if ($('#settingsTabsRegister').html() != '') {
-        registered = $('#settingsTabsRegister').html().split('\n');
-    }
-    registered.push(name + ':' + img + ':' + title);
-    
-    var result = new SettingsTab();
-    var page = document.location.href.split('/').reverse()[0];
-    var tabs = $('.tabs');
-    
-    if (page.split('=')[0] == 'index.php?view') {
-        if (page.split("=")[1] == 'local_settings' || (function() {
-            for (var i = 0; i < registered.length; i++) {
-                if (page.split("=")[1] == registered[i].split(':')[0]) return true;
-            }
-            return false;
-        })()) {
-            if (page.split("=")[1] == 'local_settings') {
-                var form = $('.user_cp');
-                form.css('display', 'table');
-                form.find('form').attr("class", "content_box");
-                form.find('form').attr("style", "display:table-cell;width:100%;");
-                form.find('.content_box_header').remove();
-            } else if (tabs.length == 0) {
-                var area = $('.content_box');
-                area.html('<div class="user_cp" style="display:table;"><div class="content_box" style="display:table-cell;width:100%;" /></div>');
-            }
-            
-            if (tabs.length == 0) {
-                tabs = $('<div class="tabs" />');
-                $(tabs).append("<ul><li class=\"tab" + (page.split("=")[1] == "local_settings" ? " tab_selected" : "") + "\"><a href=\"/index.php?view=local_settings\" title=\"Local Settings\"><i class=\"fa fa-cog\" /><span>Local Settings</span></a></li></ul>");
-                $('.user_cp').prepend(tabs);
-            }
-        }
-    }
-    
-    if (tabs.length > 0) {
-        for (var i = 0; i < registered.length; i++) {
-            if ($('li[pageName="' + registered[i].split(':')[0] + '"]').length == 0) {
-                var tab = $('<li class="tab" pageName=' + registered[i].split(':')[0] + '><a><i class="' + registered[i].split(':')[1] + '"></i><span>' + registered[i].split(':')[2] + '</span></a></li>');
-                
-                $(tabs).find('ul').append(tab);
-                
-                if (page.split('=')[0] == 'index.php?view') {
-                    $(tab.children()[0]).attr("href", "/index.php?view=" + registered[i].split(':')[0]);
-                } else {
-                    $(tab.children()[0]).attr("href", "/manage_user/" + registered[i].split(':')[0]);
-                }
-            }
-        }
-        
-        if (page.split('=')[0] == 'index.php?view') {
-            page = page.split('=')[1].split('&')[0];
-        }
-        
-        if (page.split('#')[0] == name) {
-            logger.Log('makeSettingsTab: calling init');
-            tab.addClass('tab_selected');
-            tabs = tabs.parent().children()[1];
-            result.init(tabs);
-        }
-    }
-    
-    
-    $('#settingsTabsRegister').html(registered.join('\n'));
-    return result;
-}
-
-//==API FUNCTION==//
-function SettingsTab() {
-    var context;
+function SettingsTab(title, name, img) {
+    var context, tabl, error;
     var has_init = false;
-    
-    var tabl;
-    var error;
-    
-    this.HasInit = function() {
-        return has_init;
+    preInit();
+
+    function addGenericInput(me, id, name, type, clas) {
+        if (has_init) {
+            var input = document.createElement("div");
+            $(input).append("<input" + (clas != null ? " class=\"" + clas + "\"" : "") + " inputID=\"" + id + "\" type=\"" + type + "\" />");
+            me.AddOption(id, name, input);
+            return input.children[0];
+        }
     }
-    
-    this.init = function(canvas) {
+    function init(canvas) {
         logger.Log('settingsTab.init: start');
         $(canvas).append("<form></form>");
         context = canvas.children[0];
         has_init = true;
-        
+
         error = document.createElement("div");
         error.setAttribute("id", "validation_error_message");
         error.setAttribute("class", "validation_error");
         error.style.display = "none";
         $(context).append(error);
         $(error).append("<div class=\"message\" style=\"margin-bottom:10px;\">There were errors in the settings you chose. Please correct the fields marked<img class=\"icon_16\" style=\"vertical-align:-3px;\" src=\"//www.fimfiction-static.net/images/icons/cross.png\"></img>. Hover over to see the error.</div>");
-        
+
         tabl = document.createElement("table");
         tabl.setAttribute("class", "properties");
         var holder = $('<div id="SettingsPage_Parent" />');
         holder.append(tabl);
         $(context).append(holder);
         $(tabl).append("<tbody></tbody>");
-        
+
         tabl = tabl.children[0];
         logger.Log('settingsTab.init: end');
     }
-    
-    this.ShowError = function() {
-        error.style.display = "block";
+    function preInit() {
+        logger.Log('makeSettingsTab2: start');
+        if ($('#settingsTabsRegister').length == 0) {
+            $('body').append('<div style="display:none !important;" id="settingsTabsRegister" />');
+        }
+        var registered = [];
+        if ($('#settingsTabsRegister').html() != '') {
+            registered = $('#settingsTabsRegister').html().split('\n');
+        }
+        registered.push(name + ':' + img + ':' + title);
+        var page = document.location.href.split('/').reverse()[0];
+        var tabs = $('.tabs');
+
+        if (page.split('=')[0] == 'index.php?view') {
+            if (page.split("=")[1] == 'local_settings' || (function() {
+                for (var i = 0; i < registered.length; i++) {
+                    if (page.split("=")[1] == registered[i].split(':')[0]) return true;
+                }
+                return false;
+            })()) {
+                if (page.split("=")[1] == 'local_settings') {
+                    var form = $('.user_cp');
+                    form.css('display', 'table');
+                    form.find('form').attr("class", "content_box");
+                    form.find('form').attr("style", "display:table-cell;width:100%;");
+                    form.find('.content_box_header').remove();
+                } else if (tabs.length == 0) {
+                    var area = $('.content_box');
+                    area.html('<div class="user_cp" style="display:table;"><div class="content_box" style="display:table-cell;width:100%;" /></div>');
+                }
+
+                if (tabs.length == 0) {
+                    tabs = $('<div class="tabs" />');
+                    $(tabs).append("<ul><li class=\"tab" + (page.split("=")[1] == "local_settings" ? " tab_selected" : "") + "\"><a href=\"/index.php?view=local_settings\" title=\"Local Settings\"><i class=\"fa fa-cog\" /><span>Local Settings</span></a></li></ul>");
+                    $('.user_cp').prepend(tabs);
+                }
+            }
+        }
+
+        if (tabs.length > 0) {
+            for (var i = 0; i < registered.length; i++) {
+                if ($('li[pageName="' + registered[i].split(':')[0] + '"]').length == 0) {
+                    var tab = $('<li class="tab" pageName=' + registered[i].split(':')[0] + '><a><i class="' + registered[i].split(':')[1] + '"></i><span>' + registered[i].split(':')[2] + '</span></a></li>');
+
+                    $(tabs).find('ul').append(tab);
+
+                    if (page.split('=')[0] == 'index.php?view') {
+                        $(tab.children()[0]).attr("href", "/index.php?view=" + registered[i].split(':')[0]);
+                    } else {
+                        $(tab.children()[0]).attr("href", "/manage_user/" + registered[i].split(':')[0]);
+                    }
+                }
+            }
+
+            if (page.split('=')[0] == 'index.php?view') page = page.split('=')[1].split('&')[0];
+            if (page.split('#')[0] == name) {
+                logger.Log('makeSettingsTab: calling init');
+                tab.addClass('tab_selected');
+                tabs = tabs.parent().children()[1];
+                init(tabs);
+            }
+        }
+        $('#settingsTabsRegister').html(registered.join('\n'));
     }
     
-    this.HideError = function() {
-        error.style.display = "none";
-    }
+    this.HasInit = function() {return has_init;}
+    this.ShowError = function() {error.style.display = "block";}
+    this.HideError = function() {error.style.display = "none";}
     
     this.StartEndSection = function(title) {
         if (has_init) $(tabl).append("<tr><td class=\"section_header\" colspan=\"2\"><b>" + title + "</b></td></tr>");
     }
-    
+
     this.getValue = function(id) {
         var fields = tabl.getElementsByTagName("input");
         for (var i = 0; i < fields.length; i++) {
             if (fields[i].getAttribute("inputID") == id) {
                 var field = fields[i];
-                
+
                 if (field.getAttribute("type") == "checkbox") {
                     return field.checked;
                 }
@@ -4046,41 +3930,41 @@ function SettingsTab() {
             }
         }
     }
-    
+
     this.AddColorPick = function(id, name, selected, func) {
         if (has_init) {
             if ($('#settingsTab_colorPickerStyle').length == 0) {
                 makeStyle("\
-                    div.colour_pick_selected {\
-                        outline: 2px solid rgb(221, 85, 0);\
-                        position: relative;\
-                        z-index: 1;}\
-                    div.colour_picker_box {\
-                        display: inline-block;\
-                        vertical-align: middle;\
-                        background-color: rgb(248, 248, 248);\
-                        border: 1px solid rgb(187, 187, 187);\
-                        margin-left: 10px;\
-                        line-height: 0px;\
-                        padding-bottom: 1px;}\
-                    div.colour_pick {\
-                        display: inline-block;\
-                        width: 16px;\
-                        height: 16px;\
-                        margin: 1px 0px 0px 1px;\
-                        border: 1px solid rgba(0, 0, 0, 0.2);\
-                        vertical-align: middle;\
-                        cursor: pointer;\
-                        box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}", "settingsTab_colorPickerStyle");
+div.colour_pick_selected {\
+  outline: 2px solid rgb(221, 85, 0);\
+  position: relative;\
+  z-index: 1;}\
+div.colour_picker_box {\
+  display: inline-block;\
+  vertical-align: middle;\
+  background-color: rgb(248, 248, 248);\
+  border: 1px solid rgb(187, 187, 187);\
+  margin-left: 10px;\
+  line-height: 0px;\
+  padding-bottom: 1px;}\
+div.colour_pick {\
+  display: inline-block;\
+  width: 16px;\
+  height: 16px;\
+  margin: 1px 0px 0px 1px;\
+  border: 1px solid rgba(0, 0, 0, 0.2);\
+  vertical-align: middle;\
+  cursor: pointer;\
+  box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}", "settingsTab_colorPickerStyle");
             }
             var input = document.createElement("div");
             $(input).append("<input style=\"width: 100px;\" data-type=\"colour\" type=\"text\" />");
-            
+
             var picker = $("<div class=\"colour_picker_box\" />");
-            
+
             var colors = ["#d3926b","#d3b76b","#d3cf6b","#b4d36b","#88d36b","#6bd38d","#6bd3bc","#6bafd3","#6b81d3","#8b6bd3","#bc6bd3","#d36bab","#d36b77"];
             var grayScale = ["#000","#111","#333","#555","#777","#999","#aaa","#ccc","#ddd","#eee"];
-            
+
             for (var i = 0; i < colors.length; i++) {
                 $(picker).append('<div class="colour_pick' + (colors[i] == selected ? ' colour_pick_selected' : '') + '" data-colour="' + colors[i] + '" style="background-color:' + colors[i] + ';" />');
             }
@@ -4099,7 +3983,7 @@ function SettingsTab() {
                 });
             }
             $(input).append(picker);
-            
+
             this.AddOption(id, name, input);
             input.children[0].value = selected;
             $(input.children[0]).change(function(e) {
@@ -4113,15 +3997,11 @@ function SettingsTab() {
                         }
                     }
                 }
-                
-                
                 func(this, e);
             });
-            
             return input.children[0];
         }
     }
-        
     this.AddLabelCheckBox = function(id, name, label) {
         if (has_init) {
             var input = $("<label><input inputID=\"" + id + "\" type=\"checkbox\" />" + label + "</label>");
@@ -4129,7 +4009,6 @@ function SettingsTab() {
             return input.children[0];
         }
     }
-    
     this.AddCheckBox = function(id, name) {
         var check = addGenericInput(this, id, name, "checkbox");
         if (check != null) {
@@ -4141,7 +4020,6 @@ function SettingsTab() {
         }
         return check;
     }
-    
     this.AddSlider = function(id, name, val, min, max) {
         var sl = addGenericInput(this, id, name, "range");
         if (sl != null) {
@@ -4152,55 +4030,52 @@ function SettingsTab() {
         }
         return sl;
     }
-    
     this.AddEmailBox = function(id, name) {return addGenericInput(this, id, name, "text", "email");}
     this.AddNameBox = function(id, name) {return addGenericInput(this, id, name, "text", "name");}
     this.AddTextBox = function(id, name) {return addGenericInput(this, id, name, "text");}
     this.AddPassword = function(id, name) {return addGenericInput(this, id, name, "password", "password");}
-    
     this.AddDropDown = function(id, name, items) {
         if (has_init) {
             var input = document.createElement("select");
             $(input).attr("inputID", id);
             for (var i in items) {
                 if (items[i] != null) {
-                   $(input).append("<option value=\"" + i + "\">" + items[i] + "</option>");
+                    $(input).append("<option value=\"" + i + "\">" + items[i] + "</option>");
                 }
             }
-            
+
             this.AddOption(id, name, input);            
             return input;
         }
     }
-    
     this.AddPresetSelect = function(id, name, count, revert, defaultIndex) {
         if (has_init) {
             if ($('#settingsTab_presetStyle').length == 0) {
                 makeStyle("\
-                    a.premade_settings {\
-                        display: inline-block;\
-                        width: 100px;\
-                        height: 100px;\
-                        border: 1px solid rgba(0, 0, 0, 0.5);\
-                        margin-right: 10px;\
-                        cursor: pointer;\
-                        transition: box-shadow 0.25s ease 0s;\
-                        vertical-align: middle;\
-                        text-decoration: none;}\
-                    a.premade_settings_selected {\
-                        box-shadow: 0px 0px 10px #302FFF;}\
-                    a.premade_settings:hover {\
-                        box-shadow: 0px 0px 10px rgb(196, 111, 111);}\
-                    a.premade_settings div.toolbar {\
-                        height: 24px;\
-                        border-bottom: 1px solid rgba(0, 0, 0, 0.5);\
-                        box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}\
-                    a.premade_settings span {\
-                        display: block;\
-                        font-weight: bold;\
-                        font-size: 0.8em;\
-                        color: rgb(51, 51, 51);\
-                        padding: 8px;}", "settingsTab_presetStyle");
+a.premade_settings {\
+  display: inline-block;\
+  width: 100px;\
+  height: 100px;\
+  border: 1px solid rgba(0, 0, 0, 0.5);\
+  margin-right: 10px;\
+  cursor: pointer;\
+  transition: box-shadow 0.25s ease 0s;\
+  vertical-align: middle;\
+  text-decoration: none;}\
+a.premade_settings_selected {\
+  box-shadow: 0px 0px 10px #302FFF;}\
+a.premade_settings:hover {\
+  box-shadow: 0px 0px 10px rgb(196, 111, 111);}\
+a.premade_settings div.toolbar {\
+  height: 24px;\
+  border-bottom: 1px solid rgba(0, 0, 0, 0.5);\
+  box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}\
+a.premade_settings span {\
+  display: block;\
+  font-weight: bold;\
+  font-size: 0.8em;\
+  color: rgb(51, 51, 51);\
+  padding: 8px;}", "settingsTab_presetStyle");
             }
             var div = document.createElement("div");
             for (var i = 0; i < count; i++) {
@@ -4211,21 +4086,10 @@ function SettingsTab() {
                     div.children[defaultIndex].click();
                 });
             }
-            
             this.AddOption(id, name, div);
             return div.children;
         }
     }
-        
-    function addGenericInput(me, id, name, type, clas) {
-        if (has_init) {
-            var input = document.createElement("div");
-            $(input).append("<input" + (clas != null ? " class=\"" + clas + "\"" : "") + " inputID=\"" + id + "\" type=\"" + type + "\" />");
-            me.AddOption(id, name, input);
-            return input.children[0];
-        }
-    }
-    
     this.AddTextArea = function(id, name, defaul) {
         if (has_init) {
             var input = document.createElement("div");
@@ -4237,7 +4101,6 @@ function SettingsTab() {
             return input.children[0];
         }
     }
-    
     this.AddOption = function(id, name, field) {
         logger.Log('settingsTab.AddOption: start');
         if (has_init) {
@@ -4250,30 +4113,27 @@ function SettingsTab() {
         }
         logger.Log('settingsTab.AddOption: end');
     }
-    
     this.AddRaw = function(field) {
         if (has_init) {
             $(tabl).append(field);
         }
     }
-    
     this.AddToolbar = function(id, buttonCount, span) {
         if (has_init) {
             var row = $("<tr />");
             var bar = $("<div class=\"type_selector\"></div>");
             $(row).append($("<td colspan=\"" + span + "\" id=\"" + id + "\" style=\"padding: 0px;\" />").append($("<div class=\"notifications\" />").append(bar)));
             $(tabl).append(row);
-            
+
             if (buttonCount != null) {
                 for (var i = 0; i < buttonCount; i++) {
                     $(bar).append("<a class=\"styled_button styled_button_grey\" href=\"javascript:void();\"><img src=\"//www.fimfiction-static.net/images/icons/post.png\" /></a>");
                 }
             }
-            
+
             return bar;
         }
     }
-    
     this.AppendResetButton = function(control, defaultIndex) {
         $(control.parentNode).append("</br></br>");
         var rev = this.AppendButton(control, '<i class="fa fa-undo" />Revert to default');
@@ -4282,13 +4142,11 @@ function SettingsTab() {
         }
         return rev;
     }
-    
     this.AppendButton = function(control, label) {
         var rev = $('<a class="styled_button styled_button_blue">' + label + '</a>');
         $(control.parentNode).append(rev);
         return rev;
     }
-    
     this.AddButton = function(id, name, label) {
         if (has_init) {
             var input = $("<a inputID=\"" + id + "\" class=\"styled_button styled_button_blue\">" + label + "</a>");
@@ -4296,7 +4154,6 @@ function SettingsTab() {
             return input;
         }
     }
-    
     this.AddFinishButton = function(name, func) {
         if (has_init) {
             var me = this;
@@ -4311,7 +4168,6 @@ function SettingsTab() {
                 }
                 field.children[1].style.display = "none";
             };
-            
             this.AddOption("captch", name, field);
         }
     }
@@ -4409,176 +4265,95 @@ function Logger(name, l) {
 }
 
 var MD5 = function (string) {
-
-   function RotateLeft(lValue, iShiftBits) {
-           return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
-   }
-
-   function AddUnsigned(lX,lY) {
-           var lX4,lY4,lX8,lY8,lResult;
-           lX8 = (lX & 0x80000000);
-           lY8 = (lY & 0x80000000);
-           lX4 = (lX & 0x40000000);
-           lY4 = (lY & 0x40000000);
-           lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
-           if (lX4 & lY4) {
-                   return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
-           }
-           if (lX4 | lY4) {
-                   if (lResult & 0x40000000) {
-                           return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
-                   } else {
-                           return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
-                   }
-           } else {
-                   return (lResult ^ lX8 ^ lY8);
-           }
-   }
-
-   function F(x,y,z) { return (x & y) | ((~x) & z); }
-   function G(x,y,z) { return (x & z) | (y & (~z)); }
-   function H(x,y,z) { return (x ^ y ^ z); }
-   function I(x,y,z) { return (y ^ (x | (~z))); }
-
-   function FF(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac)), s), b);};
-   function GG(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac)), s), b);};
-   function HH(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac)), s), b);};
-   function II(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac)), s), b);};
-
-   function ConvertToWordArray(string) {
-           var lWordCount;
-           var lMessageLength = string.length;
-           var lNumberOfWords_temp1=lMessageLength + 8;
-           var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
-           var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
-           var lWordArray=Array(lNumberOfWords-1);
-           var lBytePosition = 0;
-           var lByteCount = 0;
-           while ( lByteCount < lMessageLength ) {
-                   lWordCount = (lByteCount-(lByteCount % 4))/4;
-                   lBytePosition = (lByteCount % 4)*8;
-                   lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
-                   lByteCount++;
-           }
-           lWordCount = (lByteCount-(lByteCount % 4))/4;
-           lBytePosition = (lByteCount % 4)*8;
-           lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
-           lWordArray[lNumberOfWords-2] = lMessageLength<<3;
-           lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
-           return lWordArray;
-   };
-
-   function WordToHex(lValue) {
-           var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
-           for (lCount = 0;lCount<=3;lCount++) {
-                   lByte = (lValue>>>(lCount*8)) & 255;
-                   WordToHexValue_temp = "0" + lByte.toString(16);
-                   WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
-           }
-           return WordToHexValue;
-   };
-
-   function Utf8Encode(string) {
-           string = string.replace(/\r\n/g,"\n");
-           var utftext = "";
-           for (var n = 0; n < string.length; n++) {
-                   var c = string.charCodeAt(n);
-                   if (c < 128) {
-                           utftext += String.fromCharCode(c);
-                   } else if((c > 127) && (c < 2048)) {
-                           utftext += String.fromCharCode((c >> 6) | 192);
-                           utftext += String.fromCharCode((c & 63) | 128);
-                   } else {
-                           utftext += String.fromCharCode((c >> 12) | 224);
-                           utftext += String.fromCharCode(((c >> 6) & 63) | 128);
-                           utftext += String.fromCharCode((c & 63) | 128);
-                   }
-
-           }
-
-           return utftext;
-   };
-
-   var x=Array();
-   var k,AA,BB,CC,DD,a,b,c,d;
-   var S11=7, S12=12, S13=17, S14=22;
-   var S21=5, S22=9 , S23=14, S24=20;
-   var S31=4, S32=11, S33=16, S34=23;
-   var S41=6, S42=10, S43=15, S44=21;
-   string = Utf8Encode(string);
-   x = ConvertToWordArray(string);
-   a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
-   for (k=0;k<x.length;k+=16) {
-           AA=a; BB=b; CC=c; DD=d;
-           a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
-           d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
-           c=FF(c,d,a,b,x[k+2], S13,0x242070DB);
-           b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
-           a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);
-           d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);
-           c=FF(c,d,a,b,x[k+6], S13,0xA8304613);
-           b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
-           a=FF(a,b,c,d,x[k+8], S11,0x698098D8);
-           d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);
-           c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);
-           b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
-           a=FF(a,b,c,d,x[k+12],S11,0x6B901122);
-           d=FF(d,a,b,c,x[k+13],S12,0xFD987193);
-           c=FF(c,d,a,b,x[k+14],S13,0xA679438E);
-           b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
-           a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);
-           d=GG(d,a,b,c,x[k+6], S22,0xC040B340);
-           c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);
-           b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
-           a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);
-           d=GG(d,a,b,c,x[k+10],S22,0x2441453);
-           c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);
-           b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
-           a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);
-           d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);
-           c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);
-           b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
-           a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);
-           d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);
-           c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);
-           b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
-           a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);
-           d=HH(d,a,b,c,x[k+8], S32,0x8771F681);
-           c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);
-           b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
-           a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);
-           d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);
-           c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);
-           b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
-           a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);
-           d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);
-           c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);
-           b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
-           a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);
-           d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);
-           c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);
-           b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
-           a=II(a,b,c,d,x[k+0], S41,0xF4292244);
-           d=II(d,a,b,c,x[k+7], S42,0x432AFF97);
-           c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);
-           b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
-           a=II(a,b,c,d,x[k+12],S41,0x655B59C3);
-           d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);
-           c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);
-           b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
-           a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);
-           d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);
-           c=II(c,d,a,b,x[k+6], S43,0xA3014314);
-           b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
-           a=II(a,b,c,d,x[k+4], S41,0xF7537E82);
-           d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);
-           c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);
-           b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
-           a=AddUnsigned(a,AA);
-           b=AddUnsigned(b,BB);
-           c=AddUnsigned(c,CC);
-           d=AddUnsigned(d,DD);}
-        return (WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d)).toLowerCase();
+    function RotateLeft(lValue, iShiftBits) {return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));}
+    function AddUnsigned(lX,lY) {
+        var lX4,lY4,lX8,lY8,lResult;
+        lX8 = (lX & 0x80000000);lY8 = (lY & 0x80000000);
+        lX4 = (lX & 0x40000000);lY4 = (lY & 0x40000000);
+        lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
+        if (lX4 & lY4) return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+        if (lX4 | lY4) {
+            if (lResult & 0x40000000) {return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+            } else {return (lResult ^ 0x40000000 ^ lX8 ^ lY8);}
+        } else {return (lResult ^ lX8 ^ lY8);}}
+    function F(x,y,z) { return (x & y) | ((~x) & z); }
+    function G(x,y,z) { return (x & z) | (y & (~z)); }
+    function H(x,y,z) { return (x ^ y ^ z); }
+    function I(x,y,z) { return (y ^ (x | (~z))); }
+    function FF(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac)), s), b);}
+    function GG(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac)), s), b);}
+    function HH(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac)), s), b);}
+    function II(a,b,c,d,x,s,ac) {return AddUnsigned(RotateLeft(AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac)), s), b);}
+    function ConvertToWordArray(string) {
+        var lWordCount;
+        var lMessageLength = string.length;
+        var lNumberOfWords_temp1=lMessageLength + 8;
+        var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
+        var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
+        var lWordArray=Array(lNumberOfWords-1);
+        var lBytePosition = 0;
+        var lByteCount = 0;
+        while ( lByteCount < lMessageLength ) {
+            lWordCount = (lByteCount-(lByteCount % 4))/4;
+            lBytePosition = (lByteCount % 4)*8;
+            lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
+            lByteCount++;}
+        lWordCount = (lByteCount-(lByteCount % 4))/4;
+        lBytePosition = (lByteCount % 4)*8;
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
+        lWordArray[lNumberOfWords-2] = lMessageLength<<3;
+        lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
+        return lWordArray;}
+    function WordToHex(lValue) {
+        var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
+        for (lCount = 0;lCount<=3;lCount++) {
+            lByte = (lValue>>>(lCount*8)) & 255;
+            WordToHexValue_temp = "0" + lByte.toString(16);
+            WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);}
+        return WordToHexValue;}
+    function Utf8Encode(string) {
+        string = string.replace(/\r\n/g,"\n");
+        var utftext = "";
+        for (var n = 0; n < string.length; n++) {
+            var c = string.charCodeAt(n);
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            } else if((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            } else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);}}
+        return utftext;
+    }
+    var k,AA,BB,CC,DD;
+    var S11=7, S12=12, S13=17, S14=22;
+    var S21=5, S22=9 , S23=14, S24=20;
+    var S31=4, S32=11, S33=16, S34=23;
+    var S41=6, S42=10, S43=15, S44=21;
+    var x = ConvertToWordArray(Utf8Encode(string));
+    var a = 0x67452301, b = 0xEFCDAB89, c = 0x98BADCFE, d = 0x10325476;
+    for (k=0;k<x.length;k+=16) {
+        AA=a; BB=b; CC=c; DD=d;
+        a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);c=FF(c,d,a,b,x[k+2], S13,0x242070DB);b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
+        a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);c=FF(c,d,a,b,x[k+6], S13,0xA8304613);b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
+        a=FF(a,b,c,d,x[k+8], S11,0x698098D8);d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
+        a=FF(a,b,c,d,x[k+12],S11,0x6B901122);d=FF(d,a,b,c,x[k+13],S12,0xFD987193);c=FF(c,d,a,b,x[k+14],S13,0xA679438E);b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
+        a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);d=GG(d,a,b,c,x[k+6], S22,0xC040B340);c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
+        a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);d=GG(d,a,b,c,x[k+10],S22,0x2441453);c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
+        a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
+        a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
+        a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);d=HH(d,a,b,c,x[k+8], S32,0x8771F681);c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
+        a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
+        a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
+        a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
+        a=II(a,b,c,d,x[k+0], S41,0xF4292244);d=II(d,a,b,c,x[k+7], S42,0x432AFF97);c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
+        a=II(a,b,c,d,x[k+12],S41,0x655B59C3);d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
+        a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);c=II(c,d,a,b,x[k+6], S43,0xA3014314);b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
+        a=II(a,b,c,d,x[k+4], S41,0xF7537E82);d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
+        a=AddUnsigned(a,AA);b=AddUnsigned(b,BB);c=AddUnsigned(c,CC);d=AddUnsigned(d,DD);}
+    return (WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d)).toLowerCase();
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -5064,104 +4839,127 @@ img[held="true"] {\
 }
 
 function snowBG() {
-    var SCREEN_WIDTH;
-    var SCREEN_HEIGHT;
-
-    var container;
-    var particle;
-
-    var camera;
-    var scene;
-    var renderer;
-
-    var mouseX = 0;
-    var mouseY = 0;
-
-    var windowHalfX, windowHalfY;
-
-    var particles = []; 
-    var particleImage = new Image();
-    particleImage.src = 'https://www.fimfiction-static.net/scripts/img/ParticleSmoke.png'; 
-
-    this.init = function() {
-        SCREEN_WIDTH = $(window).width();
-        SCREEN_HEIGHT = $(window).height();
-
-        windowHalfX = SCREEN_WIDTH / 2;
-        windowHalfY = SCREEN_HEIGHT / 2;
-
-        container = document.getElementsByTagName("body")[0];
-
-        camera = new THREE.PerspectiveCamera( 20, SCREEN_WIDTH/SCREEN_HEIGHT, 1, 10000 );
+    Particle3D = function (material) {
+        THREE.Particle.call(this, material);
+        this.velocity = new THREE.Vector3(0,-8,0);
+        this.velocity.rotateX(randomRange(-45,45));
+        this.velocity.rotateY(randomRange(0,360));
+        this.gravity = new THREE.Vector3(0,0,0);
+        this.drag = 1;
+    }
+    Particle3D.prototype = new THREE.Particle();
+    Particle3D.prototype.constructor = Particle3D;
+    Particle3D.prototype.updatePhysics = function() {
+        this.velocity.multiplyScalar(this.drag);
+        this.velocity.addSelf(this.gravity);
+        this.position.addSelf(this.velocity);
+    }
+    var TO_RADIANS = Math.PI/180;
+    THREE.Vector3.prototype.rotateY = function(angle){
+        cosRY = Math.cos(angle * TO_RADIANS);
+        sinRY = Math.sin(angle * TO_RADIANS);
+        var tempz = this.z;;
+        var tempx = this.x;
+        this.x= (tempx*cosRY)+(tempz*sinRY);
+        this.z= (tempx*-sinRY)+(tempz*cosRY);
+    }
+    THREE.Vector3.prototype.rotateX = function(angle){
+        cosRY = Math.cos(angle * TO_RADIANS);
+        sinRY = Math.sin(angle * TO_RADIANS);
+        var tempz = this.z;;
+        var tempy = this.y;
+        this.y= (tempy*cosRY)+(tempz*sinRY);
+        this.z= (tempy*-sinRY)+(tempz*cosRY);
+    }
+    THREE.Vector3.prototype.rotateZ = function(angle){
+        cosRY = Math.cos(angle * TO_RADIANS);
+        sinRY = Math.sin(angle * TO_RADIANS);
+        var tempx = this.x;
+        var tempy = this.y;
+        this.y= (tempy*cosRY)+(tempx*sinRY);
+        this.x= (tempy*-sinRY)+(tempx*cosRY);
+    }
+    
+    function randomRange(min, max) {
+        return ((Math.random()*(max-min)) + min);
+    }
+    
+    return new (function () {
+        var saveFocus = getSaveFocus();
+        var mouseX = 0, mouseY = 0;
+        $(window).on('mousemove.snow', function (e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+        
+        var SCREEN_WIDTH = $(window).width();
+        var SCREEN_HEIGHT = $(window).height();
+        var windowHalfX = SCREEN_WIDTH / 2;
+        var windowHalfY = SCREEN_HEIGHT / 2;
+        var particles = [];
+        var container = $('body')[0];
+        var particleImage = new Image();
+        particleImage.src = 'https://www.fimfiction-static.net/scripts/img/ParticleSmoke.png';
+        var camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
         camera.position.z = 1000;
-
-        scene = new THREE.Scene();
+        var scene = new THREE.Scene();
         scene.add(camera);
-
-        renderer = new THREE.CanvasRenderer();
+        var renderer = new THREE.CanvasRenderer();
         renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-        var material = new THREE.ParticleBasicMaterial( { map: new THREE.Texture(particleImage) } );
-
+        var material = new THREE.ParticleBasicMaterial({ map: new THREE.Texture(particleImage) });
         for (var i = 0; i < 140; i++) {
-            particle = new Particle3D(material);
+            var particle = new Particle3D(material);
             particle.position.x = Math.random() * 2000 - 1000;
             particle.position.y = Math.random() * 400 - 200;
             particle.position.z = Math.random() * 2000 - 1000;
-            particle.scale.x = particle.scale.y =  1;
+            particle.scale.x = particle.scale.y = 1;
             scene.add(particle);
             particles.push(particle);
         }
-
-        renderer.domElement.onmousedown = function(event) {
+        renderer.domElement.onmousedown = function (event) {
             event.preventDefault();
         }
-
-    	container.insertBefore(renderer.domElement, container.children[0]);
-    	$(renderer.domElement).css("position", "fixed");
-    	$(renderer.domElement).css("top", "0px");
-    	$(renderer.domElement).css("left", "0px");
-	    $(renderer.domElement).css("pointer-events", "none");
-
-        window.setInterval( loop, 1000 / 60 );
-    }
-
-    var run = true;
-    var saveFocus = getSaveFocus();
-
-    this.SetSaveFocus = function(v) {
-        saveFocus = v;
-    }
-
-    this.start = function() {
-        run = true;
-        $(renderer.domElement).css("display", "block");
-    }
-
-    this.stop = function() {
-        run = false;
-        $(renderer.domElement).css("display", "none");
-    }
-
-    function loop() {
-        if ((window_focused || !saveFocus) && run) {
-            for(var i = 0; i<particles.length; i++) {
-                var particle = particles[i]; 
-                particle.updatePhysics();
-                with(particle.position) {
-                    if(y<-300) y+=550;
-                    if(x>1000) x-=2000;
-                    else if(x<-1000) x+=2000;
-                    if(z>1000) z-=2000;
-                    else if(z<-1000) z+=2000;
+        container.insertBefore(renderer.domElement, container.children[0]);
+        $(renderer.domElement).css({ 'position': 'fixed', 'top': '0px', 'left': '0px', 'pointer-events': 'none' });
+        var ticker = window.setInterval(loop, 1000 / 60);
+        
+        function loop() {
+            if (window_focused || !saveFocus) {
+                for (var i = 0; i < particles.length; i++) {
+                    var particle = particles[i];
+                    particle.updatePhysics();
+                    with (particle.position) {
+                        if (y < -300) y += 550;
+                        if (x > 1000) x -= 2000;
+                        else if (x < -1000) x += 2000;
+                        if (z > 1000) z -= 2000;
+                        else if (z < -1000) z += 2000;
+                    }
                 }
+                camera.position.x += (mouseX - camera.position.x) * 0.05;
+                camera.position.y += (-mouseY - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+                renderer.render(scene, camera);
             }
-
-            camera.position.x += ( mouseX - camera.position.x ) * 0.05;
-            camera.position.y += ( -mouseY - camera.position.y ) * 0.05;
-            camera.lookAt(scene.position);
-            renderer.render( scene, camera );
         }
-    }
+        
+        this.SetSaveFocus = function (v) {
+            saveFocus = v;
+        }
+        this.start = function () {
+            if (ticker == null) {
+                ticker = window.setInterval(loop, 1000 / 60);
+            }
+            $(renderer.domElement).css('display', 'block');
+        }
+        this.stop = function () {
+            if (ticker != null) {
+                window.clearInterval(ticker);
+                ticker = null;
+            }
+            $(renderer.domElement).css('display', 'none');
+        }
+    })();
 }
 
 logger.Log('Final: End of script reached');
