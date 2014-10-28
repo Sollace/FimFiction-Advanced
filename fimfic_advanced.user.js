@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.4.1
+// @version     3.4.2
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -1283,6 +1283,11 @@ ul.chapters_compact .chapter_container {\
     border-width: 1px;\
     border-style: solid;\
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}\
+.content_plus_format {\
+  background: none !important;\
+  border-color: rgba(255,255,255,0.3) !important;}\
+.content_plus_format hr {\
+  opacity: 0.3;}\
 .content_format_pinkie #chapter_container #chapter_container,\
 .content_format_applejack #chapter_container #chapter_container,\
 .content_format_rarity #chapter_container #chapter_container,\
@@ -1859,8 +1864,11 @@ function applyChapterfix() {
     window.UpdateColours = function() {
         var clazz = "content_format_" + LocalStorageGet("format_colours");
         $('.' + clazz).removeClass(clazz);
+        $('.content_plus_format').removeClass('content_plus_format');
         clazz = $('#format_colours option:selected').val();
-        $('.chapter, .chapter .title, #chapter_format, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
+        $('.chapter, #chapter_title, #chapter_format, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
+        $('.chapter_footer, .chapter .rating_container .button_container a,  #chapter_title').addClass('content_plus_format');
+        $('.content_plus_format, #chapter_title').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color'))
         LocalStorageSet('format_colours', clazz);
         UpdatePageBackgroundColor();
     }
