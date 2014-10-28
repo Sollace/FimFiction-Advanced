@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.3
+// @version     3.4
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -89,19 +89,19 @@ var logos = [
     new BG("Sunset Shimmer", "http://fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
 ];
 registerBanners([
-    ["fluttershy_innocence", "http://fc03.deviantart.net/fs71/f/2013/357/e/3/fimfic_banner___innocence_by_comeha-d6z5pcf.png", "http://comeha.deviantart.com/art/Fimfic-Banner-Innocence-421849743", "rgb(255,197,84)", "center right 0px"],
-    ["sleeping_bath_bloom", "http://fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "http://junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"],
-    ["flutterby_dash", "http://fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "http://junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"],
-    ["mommy_derp", "http://fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "http://junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"],
-    ["flutter_bite", "http://fc07.deviantart.net/fs71/f/2014/016/3/d/flutterbite_by_comeha-d72ef26.jpg", "http://johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"],
-    ["movie_night", "http://fc04.deviantart.net/fs71/f/2014/016/c/0/movie_night_by_comeha-d72eswd.png", "http://dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"],
-    ["anitpodes", "http://fc05.deviantart.net/fs71/f/2014/022/0/7/antipodes_by_comeha-d7383b9.jpg", "http://www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"],
-    ["steampunk", "http://fc07.deviantart.net/fs71/f/2014/026/0/b/steampunk_by_comeha-d73scy1.jpg", "http://hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"],
-    ["flutter_bee", "http://fc09.deviantart.net/fs70/f/2014/072/b/6/flutterbee3_by_comeha-d7a0n4w.jpg", "http://atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"],
-    ["cmc_roped", "http://fc06.deviantart.net/fs70/f/2014/072/6/d/cmc_roped_by_comeha-d7a0liy.jpg", "http://spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"],
-    ["twi_revenge", "http://fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "http://zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)", "center center"],
-    ["solar_flare", "http://fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "http://zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", "center right 0px"],
-    ["serene", "http://fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "http://rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"]
+    Banner("fluttershy_innocence", "http://fc03.deviantart.net/fs71/f/2013/357/e/3/fimfic_banner___innocence_by_comeha-d6z5pcf.png", "http://comeha.deviantart.com/art/Fimfic-Banner-Innocence-421849743", "rgb(255,197,84)", "center right 0px"),
+    Banner("sleeping_bath_bloom", "http://fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "http://junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
+    Banner("flutterby_dash", "http://fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "http://junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
+    Banner("mommy_derp", "http://fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "http://junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
+    Banner("flutter_bite", "http://fc07.deviantart.net/fs71/f/2014/016/3/d/flutterbite_by_comeha-d72ef26.jpg", "http://johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"),
+    Banner("movie_night", "http://fc04.deviantart.net/fs71/f/2014/016/c/0/movie_night_by_comeha-d72eswd.png", "http://dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"),
+    Banner("anitpodes", "http://fc05.deviantart.net/fs71/f/2014/022/0/7/antipodes_by_comeha-d7383b9.jpg", "http://www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
+    Banner("steampunk", "http://fc07.deviantart.net/fs71/f/2014/026/0/b/steampunk_by_comeha-d73scy1.jpg", "http://hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
+    Banner("flutter_bee", "http://fc09.deviantart.net/fs70/f/2014/072/b/6/flutterbee3_by_comeha-d7a0n4w.jpg", "http://atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
+    Banner("cmc_roped", "http://fc06.deviantart.net/fs70/f/2014/072/6/d/cmc_roped_by_comeha-d7a0liy.jpg", "http://spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
+    Banner("twi_revenge", "http://fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "http://zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)", "center center"),
+    Banner("solar_flare", "http://fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "http://zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", "center right 0px"),
+    Banner("serene", "http://fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "http://rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)")
 ]);
 var fonts = {
   'FimFiction': ['Default','Classic', 'Equestria', 'Font Awesome'],
@@ -129,7 +129,7 @@ logger.Log('Checkpoint 2: BGs setup successfully');
 //----------------------------------------------------------------------------------------------------
 } catch (e) {logger.SevereException('unhandledException in Pre-init: {0}', e);}
 //----------------------------------------------------------------------------------------------------
-  
+
 var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 addChapterButtonsExtras();
 if ($('#chapter_container').length) {
@@ -176,13 +176,6 @@ if (messageButton.children().length == 0) {
     link = makeDropItem("Deleted Items", "//www.fimfiction.net/messages/deleted", "fa fa-trash-o");
     $(messageButton).append(link);
 }
-
-if (getIsLoggedIn()) {
-    changeLogo($('a.button[href="/manage_user/notifications?type=social"]'), "fa fa-comment");
-    changeLogo($('a.button[href="/manage_user/notifications?type=meta"]'), "fa fa-eye");
-    changeLogo($('a.button.mark_all_notifications_read'), "fa fa-check");
-}
-changeLogo($('a.button[href="/writing-guide"]'), "fa fa-book", true);
 
 $('.external-accounts img').each(function() {
     var url = $(this.parentNode).attr('href');
@@ -414,18 +407,18 @@ finaliseThemes();
 
 if (getIsLoggedIn()) {
     var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark"></i><span class="bkm_number" /></a>');
-    var button = $('<div class="user_drop_down_menu"><div class="menu_list" style="width:170px;"><a class="button" href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></div></div>');
+    var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
     button.prepend(bkm);
     var latst = getLatestBookmark();
-    bkm = $('<a class="button bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a>');
-    button.find('.menu_list').append(bkm);
-    bkm = $('<a class="button bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a>');
+    bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
+    button.find('ul').append(bkm);
+    bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
+    button.find('ul').append(bkm);
     bkm.click(function() {
         removeAllBookmarks();
         $('.bkm_button').removeClass('new');
         $('.bkm_number').text('Bookmarks');
     });
-    button.find('.menu_list').append(bkm);
     $('.user_toolbar audio').before(button);
     
     var marks = getTotalBookmarks();
@@ -1280,6 +1273,9 @@ ul.chapters_compact .chapter_container {\
     color: rgba(190,190,190,0.3) !important;}\
 .bright .story-title {\
   text-shadow: 0 0 4px black;}\
+.user-card .external-accounts li img {\
+    max-height: 16px;\
+    max-width: 16px;}\
 #imgPreview {\
     border-radius: 5px;\
     max-width:100%;\
@@ -1843,15 +1839,14 @@ function applyBookmarks() {
                 marker.attr('style', '');
             } else {
                 var position = $(document).scrollTop();
-                setDocCookie(storyNumber + '_bookmark_position', position);
-                pbkmark.attr('set', 'true');
-                pbkmark.attr('title', 'Clear Bookmark');
-                pbkmark.css('color', 'yellow');
-                restorePos.css('display', '');
-                setBookmark(storyNumber, position);
-                position = position - $('.chapter_content').offset().top;
-                if (position > 0) {
-                    marker.css('top', position + 'px');
+                if (position - $('.chapter_content').offset().top > 0) {
+                    pbkmark.attr('set', 'true');
+                    pbkmark.attr('title', 'Clear Bookmark');
+                    pbkmark.css('color', 'yellow');
+                    restorePos.css('display', '');
+                    setDocCookie(storyNumber + '_bookmark_position', position);
+                    setBookmark(storyNumber, position);
+                    marker.css('top', (position - $('.chapter_content').offset().top) + 'px');
                     marker.css('display', 'block');
                 } else {
                     marker.css('display', 'none');
@@ -1892,11 +1887,9 @@ function applyChapterfix() {
 
 function setup(hold) {
     logger.Log('setup: start');
-    $("a[title='Text Color']").each(function (index) {
+    $("button[title='Text Colour']").each(function (index) {
         if ($(this).attr("fimfic_adv") != "true") {
             $(this).attr("fimfic_adv", "true");
-            
-            var t = this.getAttribute("href").split("'")[1];
             
             if (this.children[0].tagName == 'IMG') {
                 logger.Log('setup: changing color button icon');
@@ -1905,18 +1898,20 @@ function setup(hold) {
                 $(this).append('<i class="fa fa-tint" />');
             }
             
-            betterColors(this.parentNode, t, hold);
-            setUpMainButton(this.parentNode, t, hold);
+            $(this).attr('data-function', '');
+            var target = $(this).parents('.bbcode-editor').find('textarea')[0];
+            betterColors(this.parentNode, target, hold);
+            setUpMainButton(this.parentNode, target, hold);
         }
     });
-    $("a[title='Font Size']").each(function(index) {
+    $("button[title='Font Size']").each(function(index) {
         if ($(this).attr("fimfic_adv") != "true") {
             $(this).attr("fimfic_adv", "true");
-            var t = this.getAttribute("href").split("'")[1];
-            betterSizes(this.parentNode, t, hold);
+            $(this).attr('data-function', '');
+            betterSizes(this.parentNode, $(this).parents('.bbcode-editor').find('textarea')[0], hold);
         }
     });
-    $("a[title='Insert Image']").each(function(index) {
+    $("button[title='Insert Image']").each(function(index) {
         if (this.children[0].tagName == 'IMG') {
             logger.Log('Changing Insert Image Logo');
             $(this).empty();
@@ -1943,14 +1938,13 @@ function sunspoiler() {
 
 function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: start');
-    var hasAdv = toolbar.parentNode.parentNode.children[2].children.length > 4;
+    var hasAdv = toolbar.parentNode.parentNode.children.length > 6;
     var options = makeButton(toolbar, "More Options", "fa fa-flag");
     
-    options.setAttribute("textTarget", target);
     $(options).on("click", function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
             var items = makePopup(this, "Options", "fa fa-flag");
-
+            
             if (hold == true) {
                 $('body').addClass('hold_comment');
                 $(items).on('close', function () {
@@ -1958,34 +1952,47 @@ function setUpMainButton(toolbar, target, hold) {
                 });
             }
 
-            var text = this.getAttribute("textTarget");
+            var text = $(this).data("textTarget");
             addDropList(items, "BBCode Tags", function () {
-                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right');", "Right Align");
+                $(addOption(this, "void();", "Right Align")).click(function() {
+                    InsertBBCodeTag(target, 'right');
+                });
                 if (!hasAdv) {
-                    addOption(this, "Center(document.getElementById('" + text + "'));", "Center Align");
-                    addOption(this, "AddHR(document.getElementById('" + text + "'));", "Horizontal Rule");
-                    addOption(this, "Indent(document.getElementById('" + text + "'));", "Indent Paragraphs");
-                    addOption(this, "Outdent(document.getElementById('" + text + "'));", "Outdent Paragraphs");
-                    addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'spoiler');", "Add Spoiler");
+                    $(addOption(this, "void();", "Center Align")).click(function() {
+                        InsertBBCodeTag(target, 'center');
+                    })
+                    $(addOption(this, "void();", "Horizontal Rule")).click(function() {
+                        InsertBBCodeTag(target, 'hr');
+                    });
+                    $(addOption(this, "void();", "Indent Paragraphs")).click(function() {
+                        Indent(target); 
+                    });
+                    $(addOption(this, "void();", "Outdent Paragraphs")).click(function() {
+                        Outdent(target);
+                    });
                 }
-                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'left_insert');", "Left Insert");
-                addOption(this, "InsertBBCodeTag(document.getElementById('" + text + "'), 'right_insert');", "Right Insert");
+                $(addOption(this, "void();", "Left Insert")).click(function() {
+                    InsertBBCodeTag(target, 'left_insert');
+                });
+                $(addOption(this, "void();", "Right Insert")).click(function() {
+                    InsertBBCodeTag(target, 'right_insert');
+                });
                 $(addOption(this, "void();", "Ordered List")).click(function () {
-                    makeList(document.getElementById(text), true);
+                    makeList(target, true);
                 });
                 $(addOption(this, "void();", "Unordered List")).click(function () {
-                    makeList(document.getElementById(text), false);
+                    makeList(target, false);
                 });
             });
 
             $(addOption(items, "void();", "Sign")).click(function() {
-                sign(text);
+                sign(target);
             });
             $(addOption(items, "void();", "Insert Direct Image")).click(function() {
-                makeImagePopup(text);
+                makeImagePopup(target);
             });
             $(addOption(items, "void();", "Find/Replace Text")).click(function() {
-                makeReplacePopup(document.getElementById(text));
+                makeReplacePopup(target);
             });
             setListItemWidth(items);
             inbounds($(items).parent().parent());
@@ -2126,7 +2133,7 @@ function makeImagePopup(target) {
             } else {
                 s = url + "?isEmote=true";
             }
-            InsertBBCodeTags(document.getElementById(target), "[img]" + s, "[/img]");
+            InsertBBCodeTags(target, "[img]" + s, "[/img]");
             $("#message_close_button").click();
         } else {
             $("#add_image_error").removeClass("hidden");
@@ -2223,7 +2230,6 @@ function emoteHTM(name) {
 
 function sign(target, text) {
     if (text == null || text == undefined) {
-        target = document.getElementById(target);
         text = target.value;
     }
     
@@ -2269,8 +2275,6 @@ function hasSigned(value, format) {
 function betterSizes(size, target, hold) {
     logger.Log('betterSizes: start');
     $(size.children[0]).attr("href", "javascript:void();");
-    
-    $(size).attr("textTarget", target);
 
     $(size).click(function () {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
@@ -2281,11 +2285,13 @@ function betterSizes(size, target, hold) {
                     $('body').removeClass('hold_comment');
                 });
             }
-
-            var text = $(this).attr("textTarget");
+            
             for (var i = 10; i < 20; i += 2) {
                 for (var k = 0; k < 50; k += 10) {
-                    var size = addOption(items, "InsertBBCodeTags(document.getElementById('" + text + "'), '[size=" + (i + k) + "]', '[/size]');", i + k, false);
+                    var size = addOption(items, "void;", i + k, false);
+                    $(size).click(function() {
+                       InsertBBCodeTags(target, '[size=' + $(this).text() + ']', '[/size]');
+                    });
                     $(size).css('display', 'inline-block');
 
                     $(size).parent().hover(function () {
@@ -2307,15 +2313,13 @@ function betterSizes(size, target, hold) {
     logger.Log('betterSizes: end');
 }
 
-function betterColors(color, target, hold) {
+function betterColors(color, text, hold) {
     logger.Log('betterColors: start');
     $(color.children[0]).attr("href", "javascript:void();");
     
-    $(color).attr("textTarget", target);
     $(color).on("click", function() {
         if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            var text = $(this).attr("textTarget");
-            
+            var target = text;
             var items = makePopup(this, "Default Colours", "fa fa-tint");
             if (hold == true) {
                 $('body').addClass('hold_comment');
@@ -2324,12 +2328,12 @@ function betterColors(color, target, hold) {
                 });
             }
             
-            addColorTiles(text, items, FimFiccolors.concat([-1,-1,-1].concat(Ponycolors)), 6);
+            addColorTiles(target, items, FimFiccolors.concat([-1,-1,-1].concat(Ponycolors)), 6);
             
             var recent = getRecentColours(6);
             if (recent.length > 0) {
                 var result = '';
-                addColorSection(text, items, recent, 6, 'Recent');
+                addColorSection(target, items, recent, 6, 'Recent');
             }
             $(items).append("</br>");
             
@@ -2347,14 +2351,14 @@ function betterColors(color, target, hold) {
                 var text = me.getAttribute('textTarget');
                 var pop = makeGlobalPopup('All Colours', 'fa fa-tint', false);
                 
-                addColorSection(text, pop, Spectrum, 15, 'Standard Colours');
-                addColorSection(text, pop, FimFiccolors, 15, 'FimFiction');
-                addColorSection(text, pop, Ponycolors, 15, 'Mane Six');
+                addColorSection(target, pop, Spectrum, 15, 'Standard Colours');
+                addColorSection(target, pop, FimFiccolors, 15, 'FimFiction');
+                addColorSection(target, pop, Ponycolors, 15, 'Mane Six');
                 addCollapseColorSection(text, pop, Morecolors, 15, 'More Colours', true);
                 
                 var recent = getRecentColours(15);
                 if (recent.length > 0) {
-                    var recentSec = addColorSection(text, pop, recent, 15, 'Recent');
+                    var recentSec = addColorSection(target, pop, recent, 15, 'Recent');
                     var reset = $('<a href="javascript:void();" style="float:right;" >Clear</a>');
                     $(recentSec).append(reset);
                     $(reset).click(function (){
@@ -2376,7 +2380,7 @@ function betterColors(color, target, hold) {
             b.style = "text-align: center;";
             $(b.parentNode).css('width', '243px');
             $(b.parentNode).click(function() {
-                insertColor(text);
+                insertColor(target);
             });
             inbounds($(items).parent().parent());
         }
@@ -2407,7 +2411,7 @@ function addColorSection(text, panel, colors, cols, title) {
     return colorGroup.children()[0];
 }
 
-function addColorTiles(text, panel, colors, cols) {
+function addColorTiles(target, panel, colors, cols) {
     for (var i = 0; i < colors.length; i++) {
         var code,name;
         if (typeof(colors[i]) == 'string') {
@@ -2427,13 +2431,11 @@ function addColorTiles(text, panel, colors, cols) {
             }
         }
         
-        var a = addOption(panel, "javascript:void();", "", (i + 1) % cols == 0);
+        var a = addOption(panel, "void();", "", (i + 1) % cols == 0);
         if (code != '') {
             $(a.parentNode).attr('code', code);
             $(a.parentNode).click(function() {
-                var target = document.getElementById(text);
-                var c = $(this).attr('code');
-                InsertBBCodeTags(target, '[color=' + c + ']', '[/color]');
+                InsertBBCodeTags(target, '[color=' + $(this).attr('code') + ']', '[/color]');
                 addRecent(c);
                 $(target).focus();
             });
@@ -2741,22 +2743,22 @@ function chooseTheme(id, save) {
     if (save == true) {
         selectTheme(id);
     } else {
-        $('#title a.home_link').css('background-image','url("' + safeGetThemeArray()[id][1] + '")');
-        if (safeGetThemeArray()[id][2] == "") {
+        $('#title a.home_link').css('background-image','url("' + safeGetThemeArray()[id].url + '")');
+        if (safeGetThemeArray()[id].source == "") {
             $('#source_link').addClass('hidden');
         } else {
-            $('#source_link').attr('href', themes[id][2]);
+            $('#source_link').attr('href', safeGetThemeArray()[id].source);
             $('#source_link').removeClass('hidden');
         }
 
-        if (safeGetThemeArray()[id][3] != "") {
-            $('.user_toolbar').css('background-color', safeGetThemeArray()[id][3]);
+        if (safeGetThemeArray()[id].colour != null && safeGetThemeArray()[id].colour != "") {
+            $('.user_toolbar').css('background-color', safeGetThemeArray()[id].colour);
         }
     }
         
-    if (safeGetThemeArray()[id].length > 4 && safeGetThemeArray()[id][4] != "") {
+    if (safeGetThemeArray()[id].position != null && safeGetThemeArray()[id].position != "") {
         $('#title a.home_link').css('background-size', '1300px');
-        $('#title a.home_link').css('background-position', safeGetThemeArray()[id][4]);
+        $('#title a.home_link').css('background-position', safeGetThemeArray()[id].position);
     } else {
         $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
@@ -2797,7 +2799,12 @@ function AppendPopup(message, field) {
 
 //==API FUNCTION==//
 function registerBanner(name, img, source, color, pos) {
-    safeGetThemeArray().push([name, img, source, color, pos]);
+    safeGetThemeArray().push(Banner(name,img,source,color,pos));
+}
+
+//==API FUNCTION==//
+function Banner(name,img,source,color,pos) {
+    return {'id':name, 'url':img, 'source':source, 'colour':color, 'position':pos};
 }
 
 //==API FUNCTION==//
@@ -2839,7 +2846,7 @@ function getUserName() {return getIsLoggedIn() ? getUserButton().getAttribute("h
 
 //==API FUNCTION==//
 function getUserButton() {
-    return $('.user_toolbar div.user_drop_down_menu a[href^="/user/"]')[0];
+    return $('.user_toolbar a.button[href^="/user/"]')[0];
 }
 
 //==API FUNCTION==//
@@ -2861,37 +2868,12 @@ function makeStyle(input, id) {
 function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 
 //==API FUNCTION==//
-function changeLogo(button, img, right) {
-    logger.Log('changeLogo: start');
-    try {
-        if (button != null && button != undefined) {
-            if ($(button).children()[0].tagName == "IMG") {
-                $($(button).children()[0]).remove();
-                $(button).prepend(makeLogo(img, right));
-            } else {
-                logger.Log('logo already changed! ' + img);
-            }
-        } else {
-            logger.Log('warning! button is null: ' + img + ', ' + right);
-        }
-    } catch (e) {
-        logger.Start();
-        logger.Severe('error in changingLogo: ' + e);
-        logger.Error('changeLogo: button=' + button);
-        logger.Error('changeLogo: img=' + img);
-        logger.Error('changeLogo: right=' + right + '(' + (right == true) + ')');
-        logger.Pause();
-    }
-    logger.Log('changeLogo: end');
-}
-
-//==API FUNCTION==//
 function finaliseThemes() {
     var themeId = getCookie('selected_theme');
     var t = safeGetThemeArray();
     if (themeId != null && themeId != undefined) {
         for (var i = 0; i < t.length; i++) {
-            if (t[i][0] == themeId) {
+            if (t[i].id == themeId) {
                 theme = i;
                 $(".user_toolbar").css('transition', 'none');
                 chooseTheme(i);
@@ -2906,12 +2888,12 @@ function finaliseThemes() {
     $(".user_toolbar").css('transition', 'none');
     chooseTheme(themeId);
     $(".user_toolbar").css('transition', '');
-    themeId = t[themeId][0];
+    themeId = t[themeId].id;
 }
 
 //==API FUNCTION==//
 function safeGetThemeArray() {
-    return getSafe('themes', []);
+    return getSafe('banners', []);
 }
 
 //==API FUNCTION==//
@@ -3066,7 +3048,7 @@ function isHexLetter(letter) {
 //==API FUNCTION==//
 function makeButton(a, text,img){
     var b=document.createElement("li");
-    $(b).append("<a href=\"javascript:void();\" title=\"" + text + "\"><i class=\"" + img + "\"></i></a>");
+    $(b).append("<button title=\"" + text + "\"><i class=\"" + img + "\"></i></button>");
     $(a.parentNode).append(b);
     return b;
 }
@@ -3558,7 +3540,7 @@ function getBookmark(num) {
 //==API FUNCTION==//
 function setBookmark(num, val) {
     setDocCookie(num + '_bookmark_position', val);
-    setDocCookie(num + '_bookmark_d', $('.chapter_content_box span.author > a').text() + '\n' + $('#chapter_title').text());
+    setDocCookie(num + '_bookmark_d', $('.chapter-header .story-title').text() + '\n' + $('#chapter_title').text());
     setDocCookie('latest_bookmark', num);
 }
 
@@ -3937,7 +3919,7 @@ function SettingsTab(title, name, img) {
         }
         registered.push(name + ':' + img + ':' + title);
         var page = document.location.href.split('/').reverse()[0];
-        var tabs = $('.tabs');
+        var tabs = $('.tab-collection').first();
 
         if (page.split('=')[0] == 'index.php?view') {
             if (page.split("=")[1] == 'local_settings' || (function() {
@@ -3964,14 +3946,12 @@ function SettingsTab(title, name, img) {
                 }
             }
         }
-
         if (tabs.length > 0) {
             for (var i = 0; i < registered.length; i++) {
                 if ($('li[pageName="' + registered[i].split(':')[0] + '"]').length == 0) {
                     var tab = $('<li class="tab" pageName=' + registered[i].split(':')[0] + '><a><i class="' + registered[i].split(':')[1] + '"></i><span>' + registered[i].split(':')[2] + '</span></a></li>');
-
                     $(tabs).find('ul').append(tab);
-
+                    
                     if (page.split('=')[0] == 'index.php?view') {
                         $(tab.children()[0]).attr("href", "/index.php?view=" + registered[i].split(':')[0]);
                     } else {
@@ -3984,7 +3964,7 @@ function SettingsTab(title, name, img) {
             if (page.split('#')[0] == name) {
                 logger.Log('makeSettingsTab: calling init');
                 tab.addClass('tab_selected');
-                tabs = tabs.parent().children()[1];
+                tabs = tabs.parent().parent().children()[0];
                 init(tabs);
             }
         }
