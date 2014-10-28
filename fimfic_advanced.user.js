@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.4
+// @version     3.4.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -665,7 +665,7 @@ if (tab.HasInit()) {
         $(row).append('<td><div /></td>');
         row = row.children[1].children[0];
 
-        var input = $('<input type="url" placeholder="Banner Image" />');
+        var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
         $(row).append(input);
 
         row = document.createElement('tr');
@@ -711,10 +711,8 @@ if (tab.HasInit()) {
         var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
         $(row).append(GuessInput);
         $(GuessInput).click(function() {
-            var color = $('.user_toolbar').css('background-color');//themes[theme][3];
-            if (color == '') {
-                color = 'rgb(146,27,87)';
-            }
+            var color = $('.user_toolbar > ul').css('background-color');
+            if (color == '') color = 'rgb(146,27,87)';
             color = color.split('(')[1].split(')')[0];
             color = color.replace(/ /g, '').split(',');
 
@@ -786,19 +784,18 @@ if (tab.HasInit()) {
 
                 if (save) {
                     setCustomBanner(url, color, pos);
-
                     if (customBannerindex > -1) {
-                        themes[customBannerindex] = ["Custom", url, "", color, pos];
+                        safeGetThemeArray()[customBannerindex] = Banner('Custom', url, '', color, pos);
                     } else {
                         themes.push(["Custom", url, "", color, pos]);
-                        customBannerindex = themes.length - 1;
+                        customBannerindex = safeGetThemeArray().length - 1;
                     }
                 }
 
                 cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
-                $(cban[0].children[0]).css("background-color", themes[customBannerindex][3]);
-                $(cban[0]).css("background-image", 'url("' + themes[customBannerindex][1] + '")');
-                $(cban[0]).css("background-position", themes[customBannerindex][4]);
+                $(cban[0].children[0]).css("background-color", safeGetThemeArray()[customBannerindex].colour);
+                $(cban[0]).css("background-image", 'url("' + safeGetThemeArray()[customBannerindex].url + '")');
+                $(cban[0]).css("background-position", safeGetThemeArray()[customBannerindex].position);
 
                 if (save) {
                     chooseTheme(customBannerindex, save);
@@ -848,7 +845,6 @@ if (tab.HasInit()) {
                     color = 'rgb(' + color;
                 }
                 color += ')';
-
                 changeBanner(url, color, pos);
                 $('#add_banner_error').addClass('hidden');
             } else {
@@ -858,7 +854,7 @@ if (tab.HasInit()) {
         $(reset).click(function() {
             unsetCustomBanner();
             if (customBannerindex > -1) {
-                themes.splice(customBannerindex, 1);
+                safeGetThemeArray().splice(customBannerindex, 1);
                 if (getCookie('selected_theme') == 'Custom') {
                     chooseTheme(0, true);
                 }
@@ -873,9 +869,11 @@ if (tab.HasInit()) {
         });
         $(done).click(function() {
             hasPre = false;
+            try {
             if (updateView(true)) {
                 $("#message_close_button").click();
             }
+            } catch(e) {alert(e)}
         });
         $("#message_close_button").mousedown(function() {
             if (hasPre) {
@@ -2752,7 +2750,7 @@ function chooseTheme(id, save) {
         }
 
         if (safeGetThemeArray()[id].colour != null && safeGetThemeArray()[id].colour != "") {
-            $('.user_toolbar').css('background-color', safeGetThemeArray()[id].colour);
+            $('.user_toolbar > ul').css('background-color', safeGetThemeArray()[id].colour);
         }
     }
         
@@ -2768,7 +2766,7 @@ function chooseTheme(id, save) {
 //==API FUNCTION==//
 function changeBanner(img, color, pos) {
     $('#title a.home_link').css('background-image','url("' + img + '")');
-    $('.user_toolbar').css('background-color', color);
+    $('.user_toolbar > ul').css('background-color', color);
         
     if (pos != null && pos != undefined && pos != '') {
         $('#title a.home_link').css('background-size', '1300px');
