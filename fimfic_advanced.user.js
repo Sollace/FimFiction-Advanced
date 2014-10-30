@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.4.2
+// @version     3.4.4
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -370,6 +370,10 @@ if (snowing < 2 && (snowing == 0 || december)) {
     }
 }
 
+if ($('.tabs').length && getTabsLeft()) {
+    updateTabsBarSide(true);
+}
+
 var logo = getOldLogo();
 var logoO = getLogoO();
 if (logo == -1) {
@@ -464,6 +468,13 @@ if (tab.HasInit()) {
        setAlwaysShowImages(this.checked);
     });
     
+    var bsd = $(tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left']));
+    bsd.val(getTabsLeft() ? '1' : '0');
+    bsd.change(function() {
+        setTabsLeft($(this).val() == '1');
+        updateTabsBarSide($(this).val() == '1');
+    });
+        
     var fontSelect = $(tab.AddDropDown("ffs", "Site Font", []));
     for (var i in fonts) {
         var group = $('<optgroup label="' + i + '"/>');
@@ -1308,7 +1319,15 @@ ul.chapters_compact .chapter_container {\
   border-style: solid;\
   border-right: 1px solid #BEBAB4;\
   border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
-  border-radius: 5px;}";
+  border-radius: 5px;}\
+.left-tabs {\
+  padding-left: 0px !important;\
+  padding-right: 10px;}\
+.left-tabs + div {\
+  padding-right: 0px !important;\
+  padding-left: 30px;}\
+.left-tabs > .sidebar-shadow {\
+  left: 220px !important;}";
      
 if(getWideNotes()) {
     styleSheet += "\
@@ -2833,8 +2852,9 @@ function isMyBlogPage() {
 
 //==API FUNCTION==//
 function isMyPage() {
-    if (document.location.href == ("http://www.fimfiction.net/user/" + getUserNameEncoded())) return true;
-    return document.location.href == ("http://www.fimfiction.net/user/" + getUserName().replace(/ /g, '+'));
+    var locationCheck = document.location.href.replace('http:','').replace('https:','');
+    if (locationCheck.indexOf('//www.fimfiction.net/user/' + getUserNameEncoded()) == 0) return true;
+    return locationCheck.indexOf('//www.fimfiction.net/user/' + getUserName().replace(/ /g, '+')) == 0;
 }
 
 //==API FUNCTION==//
@@ -2881,9 +2901,9 @@ function finaliseThemes() {
         for (var i = 0; i < t.length; i++) {
             if (t[i].id == themeId) {
                 theme = i;
-                $(".user_toolbar").css('transition', 'none');
+                $(".user_toolbar > ul").css('transition', 'none');
                 chooseTheme(i);
-                $(".user_toolbar").css('transition', '');
+                $(".user_toolbar > ul").css('transition', '');
                 return;
             }
         }
@@ -2891,9 +2911,9 @@ function finaliseThemes() {
     
     themeId = Math.floor(Math.random() * t.length);
     
-    $(".user_toolbar").css('transition', 'none');
+    $(".user_toolbar > ul").css('transition', 'none');
     chooseTheme(themeId);
-    $(".user_toolbar").css('transition', '');
+    $(".user_toolbar > ul").css('transition', '');
     themeId = t[themeId].id;
 }
 
@@ -3642,6 +3662,22 @@ function getStoryNumber() {
     return story + '_' + location.split('chapter/')[1].split('/')[0];
 }
 
+function updateTabsBarSide(v) {
+    if (v) {
+        $('.tabs').parent().prepend($('.tabs'));
+        $('.tabs').addClass('left-tabs');
+    } else {
+        $('.tabs').parent().append($('.tabs'));
+        $('.left-tabs').removeClass('left-tabs');
+    }
+}
+
+//==API FUNCTION==//
+function getTabsLeft() {
+    return hasDocCookie("tabs_side") ? getDocCookie("tabs_side") == '1' : false;
+}
+
+function setTabsLeft(v) {setDocCookie("tabs_side", v ? '1' : '0');}
 
 //==API FUNCTION==//
 function getSaveFocus() {
