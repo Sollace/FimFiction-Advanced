@@ -650,7 +650,7 @@ if (tab.HasInit()) {
     }
     $(cban).click(function() {
         var pop = makeGlobalPopup("Edit Custom Banner", "fa fa-pencil", 10);
-
+        
         $(pop.parentNode).css('width', '700px');
 
         $(pop).append('<table class="properties"><tbody /></table>');
@@ -798,7 +798,7 @@ if (tab.HasInit()) {
                     if (customBannerindex > -1) {
                         safeGetThemeArray()[customBannerindex] = Banner('Custom', url, '', color, pos);
                     } else {
-                        themes.push(["Custom", url, "", color, pos]);
+                        safeGetThemeArray().push(Banner('Custom', url, '', color, pos));
                         customBannerindex = safeGetThemeArray().length - 1;
                     }
                 }
@@ -2500,7 +2500,10 @@ function unspoilerImages() {
 
 function unspoilerSiblings() {
     $('.comment_data .user_image_link').each(function() {
-        var url = $(this).attr('href');
+        var url = $(this).attr('href').replace('https:','http:');
+        if (!url.indexOf('http:') == 0) {
+            url = 'http:' + url;
+        }
         if (mustUnspoiler(url)) {
             $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
             logger.Log("unspoilerSiblings: " + url);
@@ -4281,15 +4284,14 @@ a.premade_settings span {\
 function Logger(name, l) {
     var test = null;
     var minLevel = 0;
-    var line = 0;
     var paused = false;
     if (typeof (l) == 'number') minLevel = l;
     this.Start = function (level) {
         if (typeof (level) == 'number') minLevel = level;
-        test = $('#debug-console')[0];
+        test = $('#debug-console');
         paused = false;
-        if (test == null || test == undefined) {
-            test = $('<div id="debug-console" style="position:fixed;bottom:0px;left:0px;" />');
+        if (!test.length) {
+            test = $('<div id="debug-console" style="overflow-y:auto;max-height:50%;max-width:100%;min-width:50%;background:rgba(255,255,255,0.8);position:fixed;bottom:0px;left:0px;" />');
             $('body').append(test);
             $(test).click(function () {
                 $(this).empty();
@@ -4314,8 +4316,21 @@ function Logger(name, l) {
         paused = false;
         Output('===Logging Continued===', minLevel + 1);
     }
-    this.Log = function (txt) { Output(txt, 0); }
-    this.Error = function (txt) { Output(txt, 1); }
+    this.Log = function (txt, level, params) {
+        if (arguments.length > 1) {
+            if (typeof arguments[1] == 'string') {
+                [].splice.apply(arguments, [1, 0, 0]);
+                level = 0;
+            }
+            for (var i = 2; i < arguments.length; i++) {
+                txt = txt.replace(new RegExp('\\{' + (i-2) + '\\}', 'g'), arguments[i]);
+            }
+        } else {
+            level = 0;
+        }
+        Output(txt, level);
+    }
+    this.Error = function (txt, params) { Output(txt, 1000); }
     this.SevereException = function (txt, excep) {
         if (excep != 'handled') {
             try {
@@ -4325,12 +4340,11 @@ function Logger(name, l) {
                     this.Start();
                 }
                 if (txt.indexOf('{0}') != -1) {
-                    SOut(txt.replace('{0}', excep), 2);
+                    SOut(txt.replace('{0}', excep), 2000);
                 } else {
-                    SOut(txt, 2);
-                    SOut(excep, 2);
+                    SOut(txt + '<br/>' + except, 2000);
                 }
-                if (excep.stack != undefined && excep.stack != null) SOut(excep.stack, 2);
+                if (excep.stack != null) SOut(excep.stack, 2000);
                 if (stopped) this.Pause();
             } catch (e) {
                 alert('Error in displaying Severe: ' + e);
@@ -4359,11 +4373,12 @@ function Logger(name, l) {
     function SOut(txt, level) {
         if (level == null || level == undefined) level = 0;
         if (test != null && level >= minLevel) {
-            if (line > 50) {
+            var line = $(test).children().length + 1;
+            if (line > 150) {
                 line = 0;
                 $(test).empty();
             }
-            $(test).append('<p style="background: rgba(' + (line % 2 == 0 ? '155,0' : '0,155') + ',0,0.3);">' + ++line + '):' + name + ') ' + txt + '</p>');
+            $(test).append('<p style="background: rgba(' + (line % 2 == 0 ? '155,0' : '0,155') + ',0,0.3);">' + (line + 1) + '):' + name + ') ' + txt + '</p>');
         }
     }
 }
