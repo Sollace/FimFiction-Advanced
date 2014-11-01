@@ -370,10 +370,6 @@ if (snowing < 2 && (snowing == 0 || december)) {
     }
 }
 
-if ($('.tabs').length && getTabsLeft()) {
-    updateTabsBarSide(true);
-}
-
 var logo = getOldLogo();
 var logoO = getLogoO();
 if (logo == -1) {
@@ -433,14 +429,14 @@ if (getIsLoggedIn()) {
         $('.bkm_number').text('Bookmarks');
     }
     
-    var btab = new SettingsTab('Bookmarks', 'bookmarks', 'fa fa-bookmark');
+    var btab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content');
     if (btab.HasInit()) {
         $('#SettingsPage_Parent').css('min-height', '607px');
         getBookmarksGui(btab);
     }
 }
 
-var tab = new SettingsTab("Advanced", "fimfiction_advanced", "fa fa-wrench");
+var tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account');
 if (tab.HasInit()) {
     tab.StartEndSection("General Settings");
     var enableSws = tab.AddCheckBox("sb", "Show Sweetie Scepter");
@@ -971,6 +967,10 @@ if (tab.HasInit()) {
     logger.Log('setup sigText');
 }
 
+if ($('.tabs').length && getTabsLeft()) {
+    updateTabsBarSide(true);
+}
+    
 //--------------------------------------------------------------------------------------------------
 } catch (e) {logger.SevereException('Unhandled Exception in Settings Tab: {0}', e); }
 //--------------------------------------------------------------------------------------------------
@@ -1360,8 +1360,10 @@ logger.Log('Checkpoint 13: script completed Succesfully');
 //--------------------------------------------------------------------------------------------------
 
 function registerExternalAccount(id, item) {
-  external_account_config[id] = item;
-  $('#external_account_details').prepend('<span data-custom="1" id="external_account_details_' + id + '">' + item.url + '</span?');
+    try {
+        external_account_config[id] = item;
+    } catch (e) {}
+    $('#external_account_details').prepend('<span data-custom="1" id="external_account_details_' + id + '">' + item.url + '</span?');
 }
 
 function updateAccountControls() {
@@ -3915,11 +3917,11 @@ function getParameter(name) {
 }
 
 //==API FUNCTION==//
-function SettingsTab(title, name, img) {
+function SettingsTab(title, description, name, img, category) {
     var context, tabl, error;
     var has_init = false;
     preInit();
-
+    
     function addGenericInput(me, id, name, type, clas) {
         if (has_init) {
             var input = document.createElement("div");
@@ -3930,8 +3932,9 @@ function SettingsTab(title, name, img) {
     }
     function init(canvas) {
         logger.Log('settingsTab.init: start');
-        $(canvas).append("<form></form>");
-        context = canvas.children[0];
+        $(canvas).append('<div class="user-cp-content-box"><form></form></div>');
+        context = $(canvas).find('form')[0];
+        $(context).before('<h1><i class="fa ' + img + '" />' + description + '</h1>');
         has_init = true;
 
         error = document.createElement("div");
@@ -3939,7 +3942,7 @@ function SettingsTab(title, name, img) {
         error.setAttribute("class", "validation_error");
         error.style.display = "none";
         $(context).append(error);
-        $(error).append("<div class=\"message\" style=\"margin-bottom:10px;\">There were errors in the settings you chose. Please correct the fields marked<img class=\"icon_16\" style=\"vertical-align:-3px;\" src=\"//www.fimfiction-static.net/images/icons/cross.png\"></img>. Hover over to see the error.</div>");
+        $(error).append('<div class="message" style="margin-bottom:10px;">There were errors with the settings you chose. Please correct the fields marked<img class="icon_16" style="vertical-align:-3px;" src="//www.fimfiction-static.net/images/icons/cross.png"></img>. Hover over to see the error.</div>');
 
         tabl = document.createElement("table");
         tabl.setAttribute("class", "properties");
@@ -3960,10 +3963,17 @@ function SettingsTab(title, name, img) {
         if ($('#settingsTabsRegister').html() != '') {
             registered = $('#settingsTabsRegister').html().split('\n');
         }
-        registered.push(name + ':' + img + ':' + title);
+        if (category == '' || category == null) category = 'Account';
+        registered.push(name + ':' + img + ':' + title + ':' + category);
         var page = document.location.href.split('/').reverse()[0];
         var tabs = $('.tab-collection').first();
-
+        var sections = $('.tab-collection');
+        for (var i = 0; i < sections.length; i++) {
+            if ($(sections[i]).find('h1 span').text() == category) {
+                tabs = $(sections[i]);
+            }
+        }
+        
         if (page.split('=')[0] == 'index.php?view') {
             if (page.split("=")[1] == 'local_settings' || (function() {
                 for (var i = 0; i < registered.length; i++) {
@@ -3973,19 +3983,22 @@ function SettingsTab(title, name, img) {
             })()) {
                 if (page.split("=")[1] == 'local_settings') {
                     var form = $('.user_cp');
-                    form.css('display', 'table');
-                    form.find('form').attr("class", "content_box");
-                    form.find('form').attr("style", "display:table-cell;width:100%;");
-                    form.find('.content_box_header').remove();
+                    form.attr("style", "display:table;");
+                    form.parent().after(form).remove();
+                    var box = $('<div class="user-cp-content" />');
+                    box.append(form.children());
+                    form.append(box);
                 } else if (tabs.length == 0) {
-                    var area = $('.content_box');
-                    area.html('<div class="user_cp" style="display:table;"><div class="content_box" style="display:table-cell;width:100%;" /></div>');
+                    $('.content_box').after('<div class="user_cp" style="display:table;"><div class="user-cp-content" /></div>').remove();
                 }
 
                 if (tabs.length == 0) {
+                    $('.content_box_header').remove();
                     tabs = $('<div class="tabs" />');
-                    $(tabs).append("<ul><li class=\"tab" + (page.split("=")[1] == "local_settings" ? " tab_selected" : "") + "\"><a href=\"/index.php?view=local_settings\" title=\"Local Settings\"><i class=\"fa fa-cog\" /><span>Local Settings</span></a></li></ul>");
-                    $('.user_cp').prepend(tabs);
+                    tabs.append('<div class="sidebar-shadow"><div class="light-gradient"></div><div class="dark-gradient"></div></div><a><img src="//www.fimfiction-static.net/images/avatars/none_64.png"></a>');
+                    tabs.append('<div class="tab-collection"><h1><i class="fa fa-fw fa-cog" /><span>Account</span></h1><ul><li class="tab' + (page.split('=')[1] == 'local_settings' ? ' tab_selected' : '') + '"><a  title="Local Settings" href="/index.php?view=local_settings"><i class="fa fa-cog" /><span>Local Settings</span></a></li></ul></div>');
+                    $('.user_cp').append(tabs);
+                    tabs = $('.tab-collection').first();
                 }
             }
         }
@@ -4007,8 +4020,7 @@ function SettingsTab(title, name, img) {
             if (page.split('#')[0] == name) {
                 logger.Log('makeSettingsTab: calling init');
                 tab.addClass('tab_selected');
-                tabs = tabs.parent().parent().children()[0];
-                init(tabs);
+                init($('.user-cp-content')[0]);
             }
         }
         $('#settingsTabsRegister').html(registered.join('\n'));
