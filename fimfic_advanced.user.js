@@ -2991,13 +2991,11 @@ function makeGlobalPopup(title, fafaText, darken, img) {
     $(holder).attr("style", "position: fixed;z-index:2147483647;left:10px;top:10px");
     $(holder).addClass('global_popup');
     
-    var dark = $("<div style=\"position: fixed;left:0px;right:0px;top:0px;bottom:0px;background-color:rgba(0,0,0,0.4); z-index:100000;\" />");
-    if (typeof(darken) == 'number') {
-        dark.css('background-color', 'rgba(0,0,0,' + (darken/100) + ')');
-        $("body").append(dark);
-    } else if (darken == null || darken) {
-        $("body").append(dark);
+    var dark = $('<div class="dimmer" style="z-index:1001;" />');
+    if (typeof (darken) == 'number') {
+        dark.css('opacity', (darken / 100));
     }
+    $('#dimmers').append(dark);
     
     var pop = $("<div class=\"drop-down-pop-up\" style=\"width: auto\" />");
     $(holder).append(pop);
@@ -4293,7 +4291,7 @@ function Logger(name, l) {
         if (!test.length) {
             test = $('<div id="debug-console" style="overflow-y:auto;max-height:50%;max-width:100%;min-width:50%;background:rgba(255,255,255,0.8);position:fixed;bottom:0px;left:0px;" />');
             $('body').append(test);
-            $(test).click(function () {
+            test.click(function () {
                 $(this).empty();
                 this.style.bottom = this.style.left = line = 0;
             });
@@ -4302,7 +4300,7 @@ function Logger(name, l) {
     }
     this.Stop = function () {
         if (test != null) {
-            $(test).remove();
+            test.remove();
             test = null;
         }
         line = 0;
@@ -4373,12 +4371,15 @@ function Logger(name, l) {
     function SOut(txt, level) {
         if (level == null || level == undefined) level = 0;
         if (test != null && level >= minLevel) {
-            var line = $(test).children().length + 1;
+            var line = test.children().length;
             if (line > 150) {
                 line = 0;
-                $(test).empty();
+                test.empty();
             }
-            $(test).append('<p style="background: rgba(' + (line % 2 == 0 ? '155,0' : '0,155') + ',0,0.3);">' + (line + 1) + '):' + name + ') ' + txt + '</p>');
+            test.append('<p style="background: rgba(' + (line % 2 == 0 ? '155,0' : '0,155') + ',0,0.3);">' + (line + 1) + '):' + name + ') ' + txt + '</p>');
+            test.stop().animate({
+                scrollTop: test[0].scrollHeight
+            },800);
         }
     }
 }
