@@ -11,15 +11,11 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.4.4
+// @version     3.5
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
-if (isJQuery())    
-//===================================================================================================
-var logger = new Logger('FimFiction Advanced',1);
-//===================================================================================================
-try { try {
+if (isJQuery())   
 //----------------------------------------------------------------------------------------------------
 function reverse(me){return me != null ? me.split("").reverse().join() : me;}
 function contains(me,it){return me != null ? me.indexOf(it)!=-1 : false;}
@@ -43,8 +39,11 @@ function urlSafe(me){
     while (result.indexOf('--') != -1) result = result.replace(/--/g,'-');
     return result;}
 //----------------------------------------------------------------------------------------------------
-logger.Log('Checkpoint 1: string function setup successfully');
+var logger = new Logger('FimFiction Advanced',1);
+//===================================================================================================
+try { try {
 //----------------------------------------------------------------------------------------------------
+logger.Log('start pre-init data registration',10);
 var backgroundImages = [
     new BG("Light","url(http://fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png)"),
     new BG("Dark","url(http://fc04.deviantart.net/fs71/f/2013/342/5/3/cloth_dark_by_comeha-d6x61vl.png)"),
@@ -71,7 +70,6 @@ var backgroundImages = [
     new BG("Whispy", "url(http://fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(http://fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
     new BG("Poni 2.0", "url(http://fc02.deviantart.net/fs71/f/2014/124/f/1/poni_2_by_comeha-d7h2gd0.png)")
 ];
-
 var logos = [
     new BG("Default", "http://www.fimfiction-static.net/images/custom_banners/logo.png"),
     new BG("Rainbow Dash", "http://fc03.deviantart.net/fs71/f/2013/350/d/b/fimfic_rainbowdash_by_comeha-d6y58nl.png"),
@@ -89,7 +87,6 @@ var logos = [
     new BG("Sunset Shimmer", "http://fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
 ];
 registerBanners([
-    Banner("fluttershy_innocence", "http://fc03.deviantart.net/fs71/f/2013/357/e/3/fimfic_banner___innocence_by_comeha-d6z5pcf.png", "http://comeha.deviantart.com/art/Fimfic-Banner-Innocence-421849743", "rgb(255,197,84)", "center right 0px"),
     Banner("sleeping_bath_bloom", "http://fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "http://junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
     Banner("flutterby_dash", "http://fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "http://junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
     Banner("mommy_derp", "http://fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "http://junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
@@ -110,7 +107,6 @@ var fonts = {
   'Sans Serif': ['Arial', 'Candara', 'Corbel', 'Fanklin Gothic', 'Gill Sans MT', 'Helvetica', 'Lucida Sans', 'Microsoft Sans Serif', 'Open Sans', 'Segio UI', 'Tahoma', 'Trebuchet MS', 'Verdana'],
   'Monospace': ['Consolas', 'Courier New']
 }
-
 var ColourNameMapping = {'#FFFFFF': 'White','#FFC0CB': 'Pink','#FFDAB9': 'PeachPuff','#DCDCDC': 'Gainsboro','#FFB6C1': 'LightPink','#FFE4B5': 'Moccasin','#FFDEAD': 'NavajoWhite','#F5DEB3': 'Wheat','#D3D3D3': 'LightGray','#AFEEEE': 'PaleTurquoise','#EEE8AA': 'PaleGoldenRod','#D8BFD8': 'Thistle','#B0E0E6': 'PowderBlue','#ADD8E6': 'LightBlue','#98FB98': 'PaleGreen','#B0C4DE': 'LightSteelBlue','#87CEFA': 'LightSkyBlue','#C0C0C0': 'Silver','#7FFFD4': 'Aquamarine','#90EE90': 'LightGreen','#DDA0DD': 'Plum','#F0E68C': 'Khaki','#FFA07A': 'LightSalmon','#87CEEB': 'SkyBlue','#EE82EE': 'Violet','#F08080': 'LightCoral','#FA8072': 'Salmon','#FF69B4': 'HotPink','#DEB887': 'BurlyWood','#E9967A': 'DarkSalmon','#D2B48C': 'Tan','#7B68EE': 'MediumSlateBlue','#F4A460': 'SandyBrown','#A9A9A9': 'DarkGray','#6495ED': 'CornFlowerBlue','#FF7F50': 'Coral','#DB7093': 'PaleVioletRed','#9370DB': 'MediumPurple','#BC8F8F': 'RosyBrown','#DA70D6': 'Orchid','#8FBC8B': 'DarkSeaGreen','#FF6347': 'Tomato','#66CDAA': 'MediumAquamarine','#ADFF2F': 'GreenYellow','#CD5C5C': 'IndianRed','#BA55D3': 'MediumOrchid','#BDB76B': 'DarkKhaki','#6A5ACD': 'SlateBlue','#4169E1': 'RoyalBlue','#40E0D0': 'Turquoise','#1E90FF': 'DodgerBlue','#48D1CC': 'MediumTurquoise','#FF1493': 'DeepPink','#778899': 'LightSlateGray','#8A2BE2': 'BlueViolet','#CD853F': 'Peru','#708090': 'SlateGray','#808080': 'Gray','#FF00FF': 'Magenta','#0000FF': 'Blue','#00BFFF': 'DeepSkyBlue','#5F9EA0': 'CadetBlue','#00FFFF': 'Cyan','#00FF7F': 'SpringGreen','#00FF00': 'Lime','#32CD32': 'LimeGreen','#7FFF00': 'Chartreuse','#9ACD32': 'YellowGreen','#FFFF00': 'Yellow','#FFD700': 'Gold','#FFA500': 'Orange','#FF8C00': 'DarkOrange','#FF4500': 'OrangeRed','#FF0000': 'Red','#9932CC': 'DarkOrchid','#7CFC00': 'LawnGreen','#4682B4': 'Steelblue','#00FA9A': 'MediumSpringGreen','#DAA520': 'GoldenRod','#DC143C': 'Crimson','#D2691E': 'Chocolate','#3CB371': 'MediumSeaGreen','#C71585': 'MediumVioletRed','#B22222': 'FireBrick','#9400D3': 'DarkViolet','#20B2AA': 'LightSeaGreen','#696969': 'DimGray','#00CED1': 'DarkTurquoise','#A52A2A': 'Brown','#0000CD': 'MediumBlue','#A0522D': 'Sienna','#483D8B': 'DarkSlateBlue','#B8860B': 'DarkGoldenRod','#2E8B57': 'SeaGreen','#6B8E23': 'OliveDrab','#228B22': 'ForestGreen','#8B4513': 'SaddleBrown','#556B2F': 'DarkOliveGreen','#8B008B': 'DarkMagenta','#00008B': 'DarkBlue','#008B8B': 'DarkCyan','#8B0000': 'DarkRed','#191970': 'MidnightBlue','#4B0082': 'Indigo','#800080': 'Purple','#000080': 'Navy','#008080': 'Teal','#008000': 'Green','#808000': 'Olive','#800000': 'Maroon','#2F4F4F': 'DarkSlateGray','#006400': 'DarkGreen','#000000': 'Black','#666666': 'Grey','#cccccc': 'Light Grey','#383838': 'Dark Grey','#be4343': 'Red','#be7a43': 'Orange','#afa426': 'Yellow','#7aaf26': 'Lime Green','#2caf26': 'Green','#26af6d': 'Turquoise','#26a4af': 'Light Blue','#265daf': 'Blue','#3c26af': 'Purple','#9426af': 'Violet','#af2673': 'Pink','#5f4432': 'Brown','#a66ebe': 'Twilight Sparkle','#5e51a3': 'Rarity','#e97135': 'Applejack','#ea80b0': 'Pinkie Pie','#6aaadd': 'Rainbow Dash','#e6b91f': 'Fluttershy'}
 var ColorMappingKeys = (function() {
     var result = [];
@@ -124,158 +120,81 @@ var Spectrum = [0,73,70,68,107,59,103,24,112];
 var Morecolors = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112];
 var FimFiccolors = [113,114,115,116,117,118,119,120,121,122,123,124,125,126,127];
 var Ponycolors = [128,129,130,131,132,133];
-
-logger.Log('Checkpoint 2: BGs setup successfully');
+addCss();
 //----------------------------------------------------------------------------------------------------
 } catch (e) {logger.SevereException('unhandledException in Pre-init: {0}', e);}
 //----------------------------------------------------------------------------------------------------
+logger.Log('pre-init complete',10);
+logger.Log('initializing...',10);
 
+var title = document.getElementById("title");
 var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
-addChapterButtonsExtras();
-if ($('#chapter_container').length) {
-    applyChapterfix();
-}
-if (startsWith(CURRENT_LOCATION, 'manage_user/avatar')) {
-    addGravatar();
+
+var color = getBGColor();
+updateBackground(color);
+applyCustomFont(getCustomFont());
+
+logger.Log('loading custom banner...',10);
+var customBannerindex = -1;
+var customBanner = getCustomBanner();
+if (customBanner != null) {
+    registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
+    customBannerindex = safeGetThemeArray().length - 1;
 }
 
+if ($('.theme_selector_left > a').length) {
+    $('.theme_selector_left > a')[0].onclick = function() {
+        theme--;
+        if (theme < 0) theme = safeGetThemeArray().length - 1;
+        chooseTheme(theme, true);
+    };
+    $('.theme_selector_right > a')[0].onclick = function() {
+        theme++;
+        chooseTheme(theme % safeGetThemeArray().length, true);
+    };
+}
+finaliseThemes();
+
+var logo = getOldLogo();
+var logoO = getLogoO();
+updateLogo(logo);
+updateLogoO(logoO);
+addChapterButtonsExtras();
+applyBookmarks();
+setAccountLogos();
+setup(true);
+
+if (startsWith(CURRENT_LOCATION, 'manage_user/avatar')) addGravatar();
 if (startsWith(CURRENT_LOCATION, 'manage_user/account')) {
     registerExternalAccount('other', {'name': 'Other', 'url': 'http://{account}', 'regex': /\/\/(.*)/, 'account': 'url'});
     updateAccountControls();
 }
+if ($('#chapter_container').length) applyChapterfix();
 
-applyBookmarks();
-setup(true);
+logger.Log('Registering events...',10);
 
-logger.Log('Checkpoint 3: initial setup completed successfully');
- 
 if (!startsWith(CURRENT_LOCATION, 'manage_user/messages/')) {
     loopUnspoiler();
     FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
 
-if (getAlwaysShowImages()) {
-    $(document).on('afterpagechange', sunspoiler);
-    sunspoiler();
-}
-     
 FimFicEvents.on('aftereditmodule aftercomposepm', function() {
     setup(false);
 });
-logger.Log('Checkpoint 4: events/looping started successfully');
 
-var messageButton = $('.mail_link ~ .container > .menu_list');
-if (messageButton.children().length == 0) {
-    var link = makeDropItem("Compose Message", "javascript:void();", "fa fa-envelope");
-    $(link).attr("onclick", "compose_pm('','');");
-    $(messageButton).append(link);
-    link = makeDropItem("Inbox", "//www.fimfiction.net/messages/inbox", "fa fa-folder");
-    $(messageButton).append(link);
-    link = makeDropItem("Outbox", "//www.fimfiction.net/messages/sent", "fa fa-mail-forward");
-    $(messageButton).append(link);
-    link = makeDropItem("Deleted Items", "//www.fimfiction.net/messages/deleted", "fa fa-trash-o");
-    $(messageButton).append(link);
+if (getAlwaysShowImages()) {
+    FimFicEvents.on('afterpagechange', sunspoiler);
+    sunspoiler();
 }
 
-$('.external-accounts img').each(function() {
-    var url = $(this.parentNode).attr('href');
-    
-    if (url != null) {
-        var name = null;
-        
-        if (contains(url, '?')) {
-            var params = url.split('?')[1].split('&');
-            var nparams = [];
-            for (var i = 0; i < params.length; i++) {
-                var p = params[i].split('=');
-                if (p[0] == 'DisplayNameFF') {
-                    name = p[1];
-                    break;
-                } else if (params[i] != '.deviantart.com') {
-                    nparams.push(params[i]);
-                }
-            }
-            url = url.split('?')[0] + (nparams.length > 0 ? '?' + nparams.join('&') : '');
-        }
-        
-        $(this.parentNode).attr('href', url);
-        if (name == null) {
-            var urlBackup = url;
-            url = url.split('?')[0].toLowerCase();
-            try {
-                if (startsWith(url, 'mailto:')) {
-                    name = 'Email ' + $('.bio-content').parent().find('.user-box-level-1 a').text() + "\nat " + url.replace('mailto:','');
-                    url = '';
-                } else if (contains(url, '.deviantart.') || contains(url, '.tumblr.')) {
-                    url = getSite(url);
-                    name = url.split('.')[0];
-                    url = url.substring(name.length + 1, url.length);
-                } else if (contains(url, 'steamcommunity')) {
-                    name = url.split('/id/')[1].split('/')[0]
-                    url = getSite(url);
-                } else if (contains(url, 'intensedebate.')) {
-                    name = url.split(url.indexOf('/people/') != -1 ? '/people/' : '/profiles/')[1].split('/')[0]
-                    url = getSite(url);
-                } else if (contains(url, 'twitter.')) {
-                    name = url.split('/').reverse()[0];
-                    url = getSite(url);
-                } else if (contains(url, '.fanfiction.')) {
-                    name = url.split('~')[1];
-                    url = getSite(url);
-                } else if (contains(url, '.minecraftforum.')) {
-                    name = url.split('/user/')[1];
-                    name = name.substring((parseInt(name) + '-').length, name.length);
-                    url = getSite(url);
-                } else if (contains(url, 'tvtropes.')) {
-                    name = url.split('/tropers/')[1];
-                    url = getSite(url);
-                } else if (contains(url, '/user/')) {
-                    name = url.split('/user/')[1].split('/')[0];
-                    url = getSite(url);
-                } else if (contains(url, '/github.com/')) {
-                    name = url.split('/github.com/').reverse()[0].split('/')[0];
-                    url = getSite(url);
-                } else if (contains(url, '/www.github.com/')) {
-                    name = url.split('/www.github.com/').reverse()[0].split('/')[0];
-                    url = getSite(url);
-                }
-            } catch (e) {
-                name = null;
-                url = urlBackup;
-            }
-        }
-        
-        if (name != null) {
-            if (name.toLowerCase() == 'knighty' || name.toLowerCase() == 'knighty33' || name.toLowerCase() == 'knight33') {
-                name = name.toLowerCase();
-            } else {
-                name = normalize(name);
-            }
-            $(this.parentNode).attr('title', name + (url == '' ? '' : '\non ' + getSite(url)));
-        } else {
-            $(this.parentNode).attr('title', url);
-        }
-        
-        if ($(this).attr('src') == '//www.fimfiction-static.net/images/external_accounts/da.png' && url.indexOf('deviantart') == -1) {
-            $(this).attr('src', getFavicon(url));
-            $(this).one('error', function() {
-                $(this).attr('src', '//www.fimfiction-static.net/images/external_accounts/other.png');
-            });
-        }
-    }
-});
-
-logger.Log('Checkpoint 7: set account logos successfully');
+logger.Log('events registered successfully',10);
 
 if ($('.right-menu-inner').length) {
-    logger.Log('Checkpoint 8: got swit successfully');
-    
     var swit = $('<div style="display:table-cell;min-width:110px;vertical-align:middle;padding-left:10px" />');
     $('.right-menu-inner').children().last().before(swit);
     var a = $('<button type="button" style="display:block !important; width:100% !important; margin:0px;" class="styled_button styled_button_brown" href="javascript:void();">List Names</button>');
-    $(a).click(listNames);
     swit.append(a);
-    
+    $(a).click(listNames);
     makeStyle("\
                 .listText {\
                     padding: 8px;\
@@ -295,67 +214,51 @@ if ($('.right-menu-inner').length) {
                     background-color: rgb(232, 239, 246);\
                     border-color: rgba(0, 0, 0, 0.2);\
                     text-shadow: none;}");
+    logger.Log('story lister added successfully',10);
 }
 
 if (isMyBlogPage()) {
-    logger.Log('is_users_blog=true');
-    var posts = getElementsByAttributeValue("div", "class", "content_box blog_post_content_box");
-    logger.Log(posts.length + ' posts found');
-    if (posts.length == 0) {
-        logger.Log('creating notice..');
-        var nopost = document.createElement("div");
-        
+    logger.Log('is_users_blog=true',10);
+    if (!$('.content_box.blog_post_content_box').length) {
+        logger.Log('creating notice..',8);
+        var nopost = $("<div />");
         var page = $("div.page_list")[0];
         if (page != null) {
             $(page).before(nopost);
-            
-            $(nopost).attr("class", "content_box blog_post_content_box");
-            $(nopost).css("margin-top", "0px");
-            
-            $(nopost).append("\
-                <div class=\"content_box_header\">\
-                    <h2>\
-                        <span class=\"resize_text\" data-multiline=\"true\" data-minimum-size=\"0.6\" data-start-size=\"1.2\" data-max-height=\"80\" style=\"font-size: 1.2em;\">\
-                            <a href=\"//www.fimfiction.net/manage_user/edit_blog_post\">Start a blog</a>\
-                        <span/>\
-                    </h2>\
-                </div>");
-            var message = $("<div class=\"main\"></div>");
-            $(nopost).append(message);
-            var messageInner = $("<div class=\"blog_post_content\" />");
-            $(message).append(messageInner);
-            messageInner.append("<p>You have no blog posts. </p><a href=\"//www.fimfiction.net/manage_user/edit_blog_post\">Click here to make your first blog post</a>");
+            nopost.attr("class", "content_box blog_post_content_box");
+            nopost.css("margin-top", "0px");
+            nopost.append('\
+                <div class="content_box_header">\
+                    <h2><span class="resize_text" data-multiline="true" data-minimum-size="0.6" data-start-size="1.2" data-max-height="80" style="font-size: 1.2em;">\
+                       <a href="//www.fimfiction.net/manage_user/edit_blog_post">Start a blog</a>\
+                    <span/></h2>\
+                </div>');
+            var message = $('<div class="main" />');
+            nopost.append(message);
+            var messageInner = $('<div class="blog_post_content" />');
+            message.append(messageInner);
+            messageInner.append('<p>You have no blog posts. </p><a href="//www.fimfiction.net/manage_user/edit_blog_post">Click here to make your first blog post</a>');
         }
-        logger.Log('Notice added');
+        logger.Log('Notice added',8);
     }
 }
-     
-//-----------------------------------------------------------------------------------------------------------------------------------------
+
 if (getSweetieEnabled()) {
     logger.Log('sweetie_enable=true');
     setupSweetie();
 }
-logger.Log('Checkpoint 9: sweetie Scepter setup successfully');
-//-----------------------------------------------------------------------------------------------------------------------------------------
+logger.Log('sweetie Scepter setup successfully',10);
+logger.Log('starting customizations setup',10);
 
-logger.Log('starting settings Tab setup');
-//--------------------------------------------------------------------------------------------------
-try {
-//--------------------------------------------------------------------------------------------------
-
-var color = getBGColor();
-updateBackground(color);
-
-var title = document.getElementById("title");
 var isSliding = false;
 var time = getTime(getSlide());
 var fade = null;
 
-if (title != null) {
-    $(title.children[1]).prepend('<div id="fade_banner_image" style="width:100%;height:100%;left:-1px;" />');
-    fade = $("#fade_banner_image");
+if ($('#title').length) {
+    fade = $('<div id="fade_banner_image" style="width:100%;height:100%;left:-1px;" />');
+    $('#title > .home_link').prepend(fade);
     updateSlide();
-    logger.Log('setup slideshow');
+    logger.Log('setup slideshow',9);
 }
 
 var december = (new Date()).getMonth() == 11;
@@ -364,981 +267,581 @@ var snower;
 if (snowing < 2 && (snowing == 0 || december)) {
     if (snower == null) {
         snower = snowBG();
-        logger.Log('setup Ultra Snow');
+        logger.Log('setup Ultra Snow',9);
     } else {
         snower.start();
     }
 }
+//--------------------------------------------------------------------------------------------------
+try {
+    logger.Log('starting settings Tab setup');
+    if (getIsLoggedIn()) {
+        var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark"></i><span class="bkm_number" /></a>');
+        var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
+        button.prepend(bkm);
+        var latst = getLatestBookmark();
+        bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
+        button.find('ul').append(bkm);
+        bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
+        button.find('ul').append(bkm);
+        bkm.click(function() {
+            removeAllBookmarks();
+            $('.bkm_button').removeClass('new');
+            $('.bkm_number').text('Bookmarks');
+        });
+        $('.user_toolbar audio').before(button);
 
-var logo = getOldLogo();
-var logoO = getLogoO();
-if (logo == -1) {
-    var images = [];
-    for (var i = 1; i < logos.length; i++) {
-        images.push('url(' + logos[i].Css + ')');
-    }
-    $('body').append('<div style="width:0 !important;height:0 !important;background: ' + images.join(', ') + ' !important;" />');
-}
-updateLogo(logo);
-updateLogoO(logoO);
-applyCustomFont(getCustomFont());
-
-var customBannerindex = -1;
-var customBanner = getCustomBanner();
-
-if (customBanner != null) {
-    registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
-    customBannerindex = safeGetThemeArray().length - 1;
-}
-
-if ($('.theme_selector_left > a').length) {
-    $('.theme_selector_left > a')[0].onclick = function() {
-        theme--;
-        if (theme < 0) theme = safeGetThemeArray().length - 1;
-        chooseTheme(theme, true);
-    };
-    $('.theme_selector_right > a')[0].onclick = function() {
-        theme++;
-        chooseTheme(theme % safeGetThemeArray().length, true);
-    };
-}
-
-finaliseThemes();
-
-if (getIsLoggedIn()) {
-    var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark"></i><span class="bkm_number" /></a>');
-    var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
-    button.prepend(bkm);
-    var latst = getLatestBookmark();
-    bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
-    button.find('ul').append(bkm);
-    bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
-    button.find('ul').append(bkm);
-    bkm.click(function() {
-        removeAllBookmarks();
-        $('.bkm_button').removeClass('new');
-        $('.bkm_number').text('Bookmarks');
-    });
-    $('.user_toolbar audio').before(button);
-    
-    var marks = getTotalBookmarks();
-    if (marks > 0) {
-        $('.bkm_button').addClass('new');
-        $('.bkm_number').text(marks);
-    } else {
-        $('.bkm_number').text('Bookmarks');
-    }
-    
-    var btab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content');
-    if (btab.HasInit()) {
-        $('#SettingsPage_Parent').css('min-height', '607px');
-        getBookmarksGui(btab);
-    }
-}
-
-var tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account');
-if (tab.HasInit()) {
-    tab.StartEndSection("General Settings");
-    var enableSws = tab.AddCheckBox("sb", "Show Sweetie Scepter");
-    enableSws.checked = getSweetieEnabled();
-    $(enableSws).click(function() {
-        setSweetieEnabled(this.checked);
-        if ($('#belle').length) {
-            $('#belle').css('display', this.checked ? "block" : "none");
-        } else if (this.checked) {
-            setupSweetie();
-        }
-    });
-    logger.Log('setup enableSws');
-
-    var wideAT = tab.AddCheckBox("wat", "Wide Author's Notes");
-    wideAT.checked = getWideNotes();
-    $(wideAT).click(function() {
-        setWideNotes(this.checked);
-    });
-    logger.Log('setup wideAT');
-    
-    var unsp = tab.AddCheckBox("unsp", "Always show posted Images");
-    unsp.checked = getAlwaysShowImages();
-    $(unsp).click(function() {
-       setAlwaysShowImages(this.checked);
-    });
-    
-    var bsd = $(tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left']));
-    bsd.val(getTabsLeft() ? '1' : '0');
-    bsd.change(function() {
-        setTabsLeft($(this).val() == '1');
-        updateTabsBarSide($(this).val() == '1');
-    });
-        
-    var fontSelect = $(tab.AddDropDown("ffs", "Site Font", []));
-    for (var i in fonts) {
-        var group = $('<optgroup label="' + i + '"/>');
-        for (var j in fonts[i]) {
-            var option = $('<option value="' + fonts[i][j] + '">' + fonts[i][j] + '</option>');
-            option.css('font-family', fonts[i][j]);
-            group.append(option);
-        }
-        fontSelect.append(group);
-    }
-    fontSelect.val(getCustomFont());
-    fontSelect.change(function() {
-        setCustomFont($(this).val());
-    });
-        
-    var chapWid = tab.AddTextBox("cwt", "Chapter Width");
-    AppendPopup("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 46em", chapWid);
-    chapWid.value = getStoryWidth();
-    $(chapWid).change(function() {
-        var val;
-        var form = 'em';
-        try {
-            val = parseInt(this.value);
-            if (endsWith(this.value, 'em')) {
-                form = 'em';
-            } else if (endsWith(this.value, 'px')) {
-                form = 'px';
-            } else if (endsWith(this.value, '%')) {
-                form = '%';
-            }
-        } catch (e) {
-            val = 46;
-            form = 'em';
-        }
-        if (form == '%') {
-            if (val > 100) val = 100;
-        }
-        if (val < 0) val = 0;
-        setStoryWidth(val + form);
-        this.value = getStoryWidth();
-    });
-    
-    var hideBanner = tab.AddCheckBox("hb", "Hide Banner");
-    hideBanner.checked = getTitleHidden();
-    hideBanner.onclick = function() {
-        setTitleHidden(this.checked);
-        if (this.checked) {
-            $(title).addClass("titleHidden");
+        var marks = getTotalBookmarks();
+        if (marks > 0) {
+            $('.bkm_button').addClass('new');
+            $('.bkm_number').text(marks);
         } else {
-            $(title).removeClass("titleHidden");
+            $('.bkm_number').text('Bookmarks');
         }
-    };
-    logger.Log('setup enableHb');
 
-    var slide = tab.AddDropDown("sl", "Banner Slide Show", ["Off", "One Minute", "Three Minutes", "Five Minutes", "Ten Minutes", "Fast"]);
-    slide.selectedIndex = getSlide();
-    $(slide).change(function() {
-        setSlide(this.selectedIndex);
-        time = getTime(this.selectedIndex);
-        if (!isSliding) {
-            updateSlide();
+        var btab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content');
+        if (btab.HasInit()) {
+            $('#SettingsPage_Parent').css('min-height', '607px');
+            getBookmarksGui(btab);
         }
-    });
-    logger.Log('setup slide');
-    
-    var shuffle = tab.AddCheckBox("shuf", "Shuffle Slide Show");
-    shuffle.checked = getShuffle();
-    $(shuffle).click(function() {
-        setShuffle(this.checked);
-    });
-    
-    var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
-    enableUSnow.selectedIndex = snowing;
-    $(enableUSnow).change(function() {
-        setSnowing(this.selectedIndex);
-        if (this.selectedIndex < 2 && (this.selectedIndex == 0 || december)) {
-            if (snower == null) {
-                snower = snowBG();
+    }
+
+    var tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account');
+    if (tab.HasInit()) {
+        tab.StartEndSection("General Settings");
+        var enableSws = tab.AddCheckBox("sb", "Show Sweetie Scepter");
+        enableSws.checked = getSweetieEnabled();
+        $(enableSws).click(function() {
+            setSweetieEnabled(this.checked);
+            if ($('#belle').length) {
+                $('#belle').css('display', this.checked ? "block" : "none");
+            } else if (this.checked) {
+                setupSweetie();
+            }
+        });
+        logger.Log('setup enableSws');
+
+        var wideAT = tab.AddCheckBox("wat", "Wide Author's Notes");
+        wideAT.checked = getWideNotes();
+        $(wideAT).click(function() {
+            setWideNotes(this.checked);
+        });
+        logger.Log('setup wideAT');
+
+        var unsp = tab.AddCheckBox("unsp", "Always show posted Images");
+        unsp.checked = getAlwaysShowImages();
+        $(unsp).click(function() {
+            setAlwaysShowImages(this.checked);
+        });
+
+        var bsd = $(tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left']));
+        bsd.val(getTabsLeft() ? '1' : '0');
+        bsd.change(function() {
+            setTabsLeft($(this).val() == '1');
+            updateTabsBarSide($(this).val() == '1');
+        });
+
+        var fontSelect = $(tab.AddDropDown("ffs", "Site Font", []));
+        for (var i in fonts) {
+            var group = $('<optgroup label="' + i + '"/>');
+            for (var j in fonts[i]) {
+                var option = $('<option value="' + fonts[i][j] + '">' + fonts[i][j] + '</option>');
+                option.css('font-family', fonts[i][j]);
+                group.append(option);
+            }
+            fontSelect.append(group);
+        }
+        fontSelect.val(getCustomFont());
+        fontSelect.change(function() {
+            setCustomFont($(this).val());
+        });
+
+        var chapWid = tab.AddTextBox("cwt", "Chapter Width");
+        AppendPopup("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 46em", chapWid);
+        chapWid.value = getStoryWidth();
+        $(chapWid).change(function() {
+            var val;
+            var form = 'em';
+            try {
+                val = parseInt(this.value);
+                if (endsWith(this.value, 'em')) {
+                    form = 'em';
+                } else if (endsWith(this.value, 'px')) {
+                    form = 'px';
+                } else if (endsWith(this.value, '%')) {
+                    form = '%';
+                }
+            } catch (e) {
+                val = 46;
+                form = 'em';
+            }
+            if (form == '%') {
+                if (val > 100) val = 100;
+            }
+            if (val < 0) val = 0;
+            setStoryWidth(val + form);
+            this.value = getStoryWidth();
+        });
+
+        var hideBanner = tab.AddCheckBox("hb", "Hide Banner");
+        hideBanner.checked = getTitleHidden();
+        hideBanner.onclick = function() {
+            setTitleHidden(this.checked);
+            if (this.checked) {
+                $(title).addClass("titleHidden");
             } else {
-                snower.start();
+                $(title).removeClass("titleHidden");
             }
-        } else if (snower != null) {
-            snower.stop();
-        }
-    });
-    logger.Log('setup enableUSnow');
+        };
+        logger.Log('setup enableHb');
 
-    var pauseSnowBG = tab.AddCheckBox('pus', 'Pause Ultra Snow when lost focus');
-    pauseSnowBG.checked = getSaveFocus();
-    $(pauseSnowBG).click(function() {
-        setDocCookie('ultra_snow_save_focus', this.checked);
-        if (snower != null) snower.SetSaveFocus(this.checked);
-    });
-    
-    tab.StartEndSection("Colours and Customization");
-    
-    var oldLogo = tab.AddDropDown("ologo", "Logo", getLogoNames());
-    $(oldLogo.children[0]).after('<option value="-1">Random</option>');
-    $(oldLogo).val(logo);
-    $(oldLogo).change(function() {
-        setOldLogo($(this).val());
-        updateLogo($(this).val());
-    });
-    logger.Log('setup oldLogo');
-    
-    var enableHo = tab.AddSlider("ho", "Logo Opacity", logoO, 10, 100);
-    if (enableHo != null) {
-        $(enableHo).change(function() {
-            setLogoO(this.value);
-            updateLogoO(this.value);
-        });
-    }
-
-    var backgroundImg = null;
-    var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparent' ? '' : color, function(me) {
-        updateBackground(me.value);
-        if (backgroundImg != null) {
-            for (var i = 0; i < backgroundImg.length - 1; i++) {
-                $(backgroundImg[i].children[0]).css("background-color", me.value);
+        var slide = tab.AddDropDown("sl", "Banner Slide Show", ["Off", "One Minute", "Three Minutes", "Five Minutes", "Ten Minutes", "Fast"]);
+        slide.selectedIndex = getSlide();
+        $(slide).change(function() {
+            setSlide(this.selectedIndex);
+            time = getTime(this.selectedIndex);
+            if (!isSliding) {
+                updateSlide();
             }
-        }
-    });
-    
-    backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
-    for (var i = 0; i < backgroundImages.length; i++) {
-        backgroundImages[i].Setup(backgroundImg[i + 2], color, i);
-    }
-    
-    backgroundImg[0].children[1].innerHTML = 'None';
-    $(backgroundImg[0].children[0]).css("background-color", color);
-    $(backgroundImg[0].children[0]).css("opacity", "0.8");
-    $(backgroundImg[0]).click(function () {
-        setBackgroundImg(-2);
-        updateBackground(getBGColor());
-    });
-
-    backgroundImg[1].children[1].innerHTML = 'Default';
-    $(backgroundImg[1].children[0]).css("background-color", color);
-    $(backgroundImg[1].children[0]).css("opacity", "0.8");
-    $(backgroundImg[1]).css("background-image", $('body').css('background-image'));
-    $(backgroundImg[1]).click(function () {
-        setBackgroundImg(-1);
-        colorPick.value = '';
-        $(colorPick).change();
-        setDocCookie("bgColor", 'transparent');
-    });
-    
-    $(backgroundImg[0]).parent().find('.premade_settings').click(function () {
-        $(this).parent().find('.premade_settings_selected').each(function () {
-            $(this).removeClass('premade_settings_selected');
         });
-        $(this).addClass('premade_settings_selected');
-    });
+        logger.Log('setup slide');
 
-    var bgIndex = getBackgroundImgIndex();
-    if (bgIndex > -3 && bgIndex + 2 < backgroundImg.length) {
-        $(backgroundImg[bgIndex + 2]).addClass('premade_settings_selected');
-    }
-
-    logger.Log('setup backgroundImg');
-    
-    var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
-    cban[0].children[1].innerHTML = '<i class="fa fa-pencil fa-5x" />';
-    $(cban[0]).css("width", "700px");
-    $(cban[0]).css("text-align", "center");
-    $(cban[0].children[0]).css("color", "black");
-    $(cban[0].children[0]).css('text-shadow', '1px 1px 0px rgba(255, 255, 255, 0.15)');
-    $(cban[0]).css("background-size", "100%");
-    if (customBanner != null) {
-        $(cban[0].children[0]).append(customBanner[0].split('/').reverse()[0].split('.')[0]);
-        $(cban[0].children[0]).css("background-color", customBanner[1]);
-        $(cban[0]).css("background-image", 'url("' + customBanner[0] + '")');
-    }
-    $(cban).click(function() {
-        var pop = makeGlobalPopup("Edit Custom Banner", "fa fa-pencil", 10);
-        
-        $(pop.parentNode).css('width', '700px');
-
-        $(pop).append('<table class="properties"><tbody /></table>');
-
-        $(pop).append('<div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
-
-        var footer = $('<div class="drop-down-pop-up-footer" />');
-        $(pop).append(footer);
-
-        var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
-        footer.append(done);
-
-        var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
-        footer.append(preview);
-
-        var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
-        footer.append(reset);
-
-        var row = document.createElement('tr');
-        $(pop.children[0].children[0]).append(row);
-
-        $(row).append('<td class="label">Image Url\n(1300x175px)</td>');
-        $(row).append('<td><div /></td>');
-        row = row.children[1].children[0];
-
-        var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
-        $(row).append(input);
-
-        row = document.createElement('tr');
-        $(pop.children[0].children[0]).append(row);
-
-        $(row).append('<td class="label">Image Position</td>');
-        $(row).append('<td><div /></td>');
-        row = row.children[1].children[0];
-
-        var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
-        $(row).append(alignVert);
-        var posY = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        $(row).append(posY);
-
-        var alignHor = $('<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
-        $(row).append(alignHor);
-        var posX = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        $(row).append(posX);
-
-        row = document.createElement('tr');
-        $(pop.children[0].children[0]).append(row);
-
-        $(row).append('<td class="label">Banner Colour</td>');
-        $(row).append('<td><div /></td>');
-        row = row.children[1].children[0];
-
-        var RInput = $('<input type="text" placeholder="Red" />');
-        $(row).append(RInput);
-        AppendPopup("Red<br>Range: 0-255", RInput);
-
-        var GInput = $('<input type="text" placeholder="Green" />');
-        $(row).append(GInput);
-        AppendPopup("Green<br>Range: 0-255", GInput);
-
-        var BInput = $('<input type="text" placeholder="Blue" />');
-        $(row).append(BInput);
-        AppendPopup("Blue<br>Range: 0-255", BInput);
-
-        var AInput = $('<input type="text" placeholder="Opacity" />');
-        $(row).append(AInput);
-        AppendPopup("Opacity<br>Range: 0.0-1.0", AInput);
-
-        var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
-        $(row).append(GuessInput);
-        $(GuessInput).click(function() {
-            var color = $('.user_toolbar > ul').css('background-color');
-            if (color == '') color = 'rgb(146,27,87)';
-            color = color.split('(')[1].split(')')[0];
-            color = color.replace(/ /g, '').split(',');
-
-            $(RInput).val(color[0]);
-            $(GInput).val(color[1]);
-            $(BInput).val(color[2]);
-            $(AInput).val(color.length == 4 ? color[3] : 1);
+        var shuffle = tab.AddCheckBox("shuf", "Shuffle Slide Show");
+        shuffle.checked = getShuffle();
+        $(shuffle).click(function() {
+            setShuffle(this.checked);
         });
 
-        var ch = function(me) {
-            if ($.isNumeric($(me).val())) {
-                var val = parseInt($(me).val());
-                if (val < 0) {
-                    me.val(0);
-                } else if (val > 255) {
-                    me.val(255);
-                }
-                return true;
-            }
-            return false;
-        }
-        var a_ch = function(me) {
-            if ($.isNumeric($(me).val())) {
-                var val = parseFloat($(me).val());
-                if (val < 0) {
-                    me.val(0);
-                } else if (val > 1) {
-                    me.val(1);
-                }
-                return true;
-            }
-            return false;
-        }
-
-
-        var updateView = function(save) {
-            if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
-                var url = input.val();
-                var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
-
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = 0;
-                try {
-                    if (posX.val() != '') {
-                        x = parseInt(posX.val());
-                    }
-                } catch (e) {
-                    x = 0;
-                }
-
-                var y = 0;
-                try {
-                    if (posY.val() != '') {
-                        y = parseInt(posY.val());
-                    }
-                } catch (e) {
-                    y = 0;
-                }
-
-                var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
-
-                if (AInput.val() != '1' && AInput.val() != '') {
-                    color = 'rgba(' + color + ',' + AInput.val();
+        var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
+        enableUSnow.selectedIndex = snowing;
+        $(enableUSnow).change(function() {
+            setSnowing(this.selectedIndex);
+            if (this.selectedIndex < 2 && (this.selectedIndex == 0 || december)) {
+                if (snower == null) {
+                    snower = snowBG();
                 } else {
-                    color = 'rgb(' + color;
+                    snower.start();
                 }
-                color += ')';
+            } else if (snower != null) {
+                snower.stop();
+            }
+        });
+        logger.Log('setup enableUSnow');
 
-                if (save) {
-                    setCustomBanner(url, color, pos);
-                    if (customBannerindex > -1) {
-                        safeGetThemeArray()[customBannerindex] = Banner('Custom', url, '', color, pos);
+        var pauseSnowBG = tab.AddCheckBox('pus', 'Pause Ultra Snow when lost focus');
+        pauseSnowBG.checked = getSaveFocus();
+        $(pauseSnowBG).click(function() {
+            setDocCookie('ultra_snow_save_focus', this.checked);
+            if (snower != null) snower.SetSaveFocus(this.checked);
+        });
+
+        tab.StartEndSection("Colours and Customization");
+
+        var oldLogo = tab.AddDropDown("ologo", "Logo", getLogoNames());
+        $(oldLogo.children[0]).after('<option value="-1">Random</option>');
+        $(oldLogo).val(logo);
+        $(oldLogo).change(function() {
+            setOldLogo($(this).val());
+            updateLogo($(this).val());
+        });
+        logger.Log('setup oldLogo');
+
+        var enableHo = tab.AddSlider("ho", "Logo Opacity", logoO, 10, 100);
+        if (enableHo != null) {
+            $(enableHo).change(function() {
+                setLogoO(this.value);
+                updateLogoO(this.value);
+            });
+        }
+
+        var backgroundImg = null;
+        var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparent' ? '' : color, function(me) {
+            updateBackground(me.value);
+            if (backgroundImg != null) {
+                for (var i = 0; i < backgroundImg.length - 1; i++) {
+                    $(backgroundImg[i].children[0]).css("background-color", me.value);
+                }
+            }
+        });
+
+        backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
+        for (var i = 0; i < backgroundImages.length; i++) {
+            backgroundImages[i].Setup(backgroundImg[i + 2], color, i);
+        }
+
+        backgroundImg[0].children[1].innerHTML = 'None';
+        $(backgroundImg[0].children[0]).css("background-color", color);
+        $(backgroundImg[0].children[0]).css("opacity", "0.8");
+        $(backgroundImg[0]).click(function () {
+            setBackgroundImg(-2);
+            updateBackground(getBGColor());
+        });
+
+        backgroundImg[1].children[1].innerHTML = 'Default';
+        $(backgroundImg[1].children[0]).css("background-color", color);
+        $(backgroundImg[1].children[0]).css("opacity", "0.8");
+        $(backgroundImg[1]).css("background-image", $('body').css('background-image'));
+        $(backgroundImg[1]).click(function () {
+            setBackgroundImg(-1);
+            colorPick.value = '';
+            $(colorPick).change();
+            setDocCookie("bgColor", 'transparent');
+        });
+
+        $(backgroundImg[0]).parent().find('.premade_settings').click(function () {
+            $(this).parent().find('.premade_settings_selected').each(function () {
+                $(this).removeClass('premade_settings_selected');
+            });
+            $(this).addClass('premade_settings_selected');
+        });
+
+        var bgIndex = getBackgroundImgIndex();
+        if (bgIndex > -3 && bgIndex + 2 < backgroundImg.length) {
+            $(backgroundImg[bgIndex + 2]).addClass('premade_settings_selected');
+        }
+
+        logger.Log('setup backgroundImg');
+
+        var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
+        cban[0].children[1].innerHTML = '<i class="fa fa-pencil fa-5x" />';
+        $(cban[0]).css("width", "700px");
+        $(cban[0]).css("text-align", "center");
+        $(cban[0].children[0]).css("color", "black");
+        $(cban[0].children[0]).css('text-shadow', '1px 1px 0px rgba(255, 255, 255, 0.15)');
+        $(cban[0]).css("background-size", "100%");
+        if (customBanner != null) {
+            $(cban[0].children[0]).append(customBanner[0].split('/').reverse()[0].split('.')[0]);
+            $(cban[0].children[0]).css("background-color", customBanner[1]);
+            $(cban[0]).css("background-image", 'url("' + customBanner[0] + '")');
+        }
+        $(cban).click(function() {
+            var pop = makeGlobalPopup("Edit Custom Banner", "fa fa-pencil", 10);
+
+            $(pop.parentNode).css('width', '700px');
+
+            $(pop).append('<table class="properties"><tbody /></table>');
+
+            $(pop).append('<div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
+
+            var footer = $('<div class="drop-down-pop-up-footer" />');
+            $(pop).append(footer);
+
+            var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
+            footer.append(done);
+
+            var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
+            footer.append(preview);
+
+            var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
+            footer.append(reset);
+
+            var row = document.createElement('tr');
+            $(pop.children[0].children[0]).append(row);
+
+            $(row).append('<td class="label">Image Url\n(1300x175px)</td>');
+            $(row).append('<td><div /></td>');
+            row = row.children[1].children[0];
+
+            var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
+            $(row).append(input);
+
+            row = document.createElement('tr');
+            $(pop.children[0].children[0]).append(row);
+
+            $(row).append('<td class="label">Image Position</td>');
+            $(row).append('<td><div /></td>');
+            row = row.children[1].children[0];
+
+            var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
+            $(row).append(alignVert);
+            var posY = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
+            $(row).append(posY);
+
+            var alignHor = $('<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
+            $(row).append(alignHor);
+            var posX = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
+            $(row).append(posX);
+
+            row = document.createElement('tr');
+            $(pop.children[0].children[0]).append(row);
+
+            $(row).append('<td class="label">Banner Colour</td>');
+            $(row).append('<td><div /></td>');
+            row = row.children[1].children[0];
+
+            var RInput = $('<input type="text" placeholder="Red" />');
+            $(row).append(RInput);
+            AppendPopup("Red<br>Range: 0-255", RInput);
+
+            var GInput = $('<input type="text" placeholder="Green" />');
+            $(row).append(GInput);
+            AppendPopup("Green<br>Range: 0-255", GInput);
+
+            var BInput = $('<input type="text" placeholder="Blue" />');
+            $(row).append(BInput);
+            AppendPopup("Blue<br>Range: 0-255", BInput);
+
+            var AInput = $('<input type="text" placeholder="Opacity" />');
+            $(row).append(AInput);
+            AppendPopup("Opacity<br>Range: 0.0-1.0", AInput);
+
+            var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
+            $(row).append(GuessInput);
+            $(GuessInput).click(function() {
+                var color = $('.user_toolbar > ul').css('background-color');
+                if (color == '') color = 'rgb(146,27,87)';
+                color = color.split('(')[1].split(')')[0];
+                color = color.replace(/ /g, '').split(',');
+
+                $(RInput).val(color[0]);
+                $(GInput).val(color[1]);
+                $(BInput).val(color[2]);
+                $(AInput).val(color.length == 4 ? color[3] : 1);
+            });
+
+            var ch = function(me) {
+                if ($.isNumeric($(me).val())) {
+                    var val = parseInt($(me).val());
+                    if (val < 0) {
+                        me.val(0);
+                    } else if (val > 255) {
+                        me.val(255);
+                    }
+                    return true;
+                }
+                return false;
+            }
+            var a_ch = function(me) {
+                if ($.isNumeric($(me).val())) {
+                    var val = parseFloat($(me).val());
+                    if (val < 0) {
+                        me.val(0);
+                    } else if (val > 1) {
+                        me.val(1);
+                    }
+                    return true;
+                }
+                return false;
+            }
+
+
+            var updateView = function(save) {
+                if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
+                    var url = input.val();
+                    var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
+
+                    var vert = alignVert.val();
+                    var hor = alignHor.val();
+                    var x = 0;
+                    try {
+                        if (posX.val() != '') {
+                            x = parseInt(posX.val());
+                        }
+                    } catch (e) {
+                        x = 0;
+                    }
+
+                    var y = 0;
+                    try {
+                        if (posY.val() != '') {
+                            y = parseInt(posY.val());
+                        }
+                    } catch (e) {
+                        y = 0;
+                    }
+
+                    var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
+
+                    if (AInput.val() != '1' && AInput.val() != '') {
+                        color = 'rgba(' + color + ',' + AInput.val();
                     } else {
-                        safeGetThemeArray().push(Banner('Custom', url, '', color, pos));
-                        customBannerindex = safeGetThemeArray().length - 1;
+                        color = 'rgb(' + color;
                     }
+                    color += ')';
+
+                    if (save) {
+                        setCustomBanner(url, color, pos);
+                        if (customBannerindex > -1) {
+                            safeGetThemeArray()[customBannerindex] = Banner('Custom', url, '', color, pos);
+                        } else {
+                            safeGetThemeArray().push(Banner('Custom', url, '', color, pos));
+                            customBannerindex = safeGetThemeArray().length - 1;
+                        }
+                    }
+
+                    cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
+                    $(cban[0].children[0]).css("background-color", safeGetThemeArray()[customBannerindex].colour);
+                    $(cban[0]).css("background-image", 'url("' + safeGetThemeArray()[customBannerindex].url + '")');
+                    $(cban[0]).css("background-position", safeGetThemeArray()[customBannerindex].position);
+
+                    if (save) {
+                        chooseTheme(customBannerindex, save);
+                    } else {
+                        finaliseThemes();
+                    }
+
+                    $('#add_banner_error').addClass('hidden');
+                    return true;
+                }
+                $('#add_banner_error').removeClass('hidden');
+                return false;
+            };
+
+            var hasPre = false;
+            $(preview).click(function() {
+                hasPre = true;
+                if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
+                    var url = input.val();
+                    var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
+
+                    var vert = alignVert.val();
+                    var hor = alignHor.val();
+                    var x = 0;
+                    try {
+                        if (posX.val() != '') {
+                            x = parseInt(posX.val());
+                        }
+                    } catch (e) {
+                        x = 0;
+                    }
+
+                    var y = 0;
+                    try {
+                        if (posY.val() != '') {
+                            y = parseInt(posY.val());
+                        }
+                    } catch (e) {
+                        y = 0;
+                    }
+
+                    var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
+
+                    if (AInput.val() != '1' && AInput.val() != '') {
+                        color = 'rgba(' + color + ',' + AInput.val();
+                    } else {
+                        color = 'rgb(' + color;
+                    }
+                    color += ')';
+                    changeBanner(url, color, pos);
+                    $('#add_banner_error').addClass('hidden');
+                } else {
+                    $('#add_banner_error').removeClass('hidden');
+                }
+            });
+            $(reset).click(function() {
+                unsetCustomBanner();
+                if (customBannerindex > -1) {
+                    safeGetThemeArray().splice(customBannerindex, 1);
+                    if (getCookie('selected_theme') == 'Custom') {
+                        chooseTheme(0, true);
+                    }
+                    customBannerindex = -1;
                 }
 
-                cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
-                $(cban[0].children[0]).css("background-color", safeGetThemeArray()[customBannerindex].colour);
-                $(cban[0]).css("background-image", 'url("' + safeGetThemeArray()[customBannerindex].url + '")');
-                $(cban[0]).css("background-position", safeGetThemeArray()[customBannerindex].position);
-
-                if (save) {
-                    chooseTheme(customBannerindex, save);
-                } else {
+                cban[0].children[0].innerHTML = '';
+                $(cban[0].children[0]).css("background-color", "#fff");
+                $(cban[0]).css("background-image", 'none');
+                finaliseThemes();
+                $("#message_close_button").click();
+            });
+            $(done).click(function() {
+                hasPre = false;
+                try {
+                    if (updateView(true)) {
+                        $("#message_close_button").click();
+                    }
+                } catch(e) {alert(e)}
+            });
+            $("#message_close_button").mousedown(function() {
+                if (hasPre) {
                     finaliseThemes();
                 }
+            });
 
-                $('#add_banner_error').addClass('hidden');
-                return true;
+            customBanner = getCustomBanner();
+            if (customBanner != null) {
+                $(input).attr("value", customBanner[0]);
+
+                var color = customBanner[1].split('(')[1].split(')')[0];
+                color = color.replace(/ /g, '').split(',');
+
+                $(RInput).val(color[0]);
+                $(GInput).val(color[1]);
+                $(BInput).val(color[2]);
+                $(AInput).val(color.length == 4 ? color[3] : 1);
+
+                var poss = customBanner[2].split(' ');
+                var i = 0;
+
+                alignVert.val(poss[i]);
+                if (poss[i] != 'center') {
+                    posY.val(poss[++i]);
+                }
+                alignHor.val(poss[++i]);
+                if (poss[i] != 'center') {
+                    posX.val(poss[++i]);
+                }
+
             }
-            $('#add_banner_error').removeClass('hidden');
-            return false;
-        };
 
-        var hasPre = false;
-        $(preview).click(function() {
-            hasPre = true;
-            if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
-                var url = input.val();
-                var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
+            position(pop.parentNode.parentNode, 'center', 'center');
+        });
+        logger.Log('setup cban');
 
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = 0;
-                try {
-                    if (posX.val() != '') {
-                        x = parseInt(posX.val());
-                    }
-                } catch (e) {
-                    x = 0;
-                }
+        tab.StartEndSection("Signatures");
 
-                var y = 0;
-                try {
-                    if (posY.val() != '') {
-                        y = parseInt(posY.val());
-                    }
-                } catch (e) {
-                    y = 0;
-                }
+        var sigText = tab.AddTextArea("sig", '', getSig());
+        $(sigText).css("min-height", "150px");
+        $(sigText).css("min-width", "100%");
+        $(sigText).css("resize", "vertical");
+        AppendPopup("<u>Magic Strings</u><br >\
+            <div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>%name% - the name of the current user<br />\
+            %message% - posted comment<br />\
+            %year% - The Year eg: 2014<br />\
+            %MONTH% - Month of year<br />\
+            %DAY% - Day of month</div>\
+            <div style='display:table-cell;padding-right:5px;'>%month% - Name of month<br />\
+            %day% - Day of Week<br />\
+            %hour% - Current hour in 24 hour format<br />\
+            %min% - Minute<br />\
+            %sec% - Second</div></div>", sigText);
+        var sigPrev = $('<div class="sigPreview" style="min-height:150px;min-width:100%;" />');
+        $(sigText).after(sigPrev);
+        $(sigText).change(function() {
+            setSig(this.value);
+        });
+        $(tab.AppendResetButton(sigText)).click(function() {
+            sigText.value = defSig();
+            setSig(sigText.value);
+        });
 
-                var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
+        var userTile = getUserCommentThumb(128);
+        $(userTile).attr('style', 'float:right;background:none;border:none;');
+        $($(sigText).parent().parent().parent().children()[0]).append(userTile);
 
-                if (AInput.val() != '1' && AInput.val() != '') {
-                    color = 'rgba(' + color + ',' + AInput.val();
-                } else {
-                    color = 'rgb(' + color;
-                }
-                color += ')';
-                changeBanner(url, color, pos);
-                $('#add_banner_error').addClass('hidden');
+        var previewButton = tab.AppendButton(sigText, 'Preview');
+        $(previewButton).addClass('previewButton');
+        $(previewButton).click(function() {
+            if ($(sigText).hasClass('sigPreviewing')) {
+                $(sigText).removeClass('sigPreviewing');
+                $(sigPrev).html('');
+                this.innerHTML = 'Preview';
+                $(this).attr('class', 'styled_button styled_button_blue previewButton');
             } else {
-                $('#add_banner_error').removeClass('hidden');
+                $(sigPrev).html(previewSig());
+                $(sigText).addClass('sigPreviewing');
+                this.innerHTML = 'Edit';
+                $(this).attr('class', 'styled_button styled_button_green previewButton');
             }
         });
-        $(reset).click(function() {
-            unsetCustomBanner();
-            if (customBannerindex > -1) {
-                safeGetThemeArray().splice(customBannerindex, 1);
-                if (getCookie('selected_theme') == 'Custom') {
-                    chooseTheme(0, true);
-                }
-                customBannerindex = -1;
-            }
-
-            cban[0].children[0].innerHTML = '';
-            $(cban[0].children[0]).css("background-color", "#fff");
-            $(cban[0]).css("background-image", 'none');
-            finaliseThemes();
-            $("#message_close_button").click();
-        });
-        $(done).click(function() {
-            hasPre = false;
-            try {
-            if (updateView(true)) {
-                $("#message_close_button").click();
-            }
-            } catch(e) {alert(e)}
-        });
-        $("#message_close_button").mousedown(function() {
-            if (hasPre) {
-                finaliseThemes();
-            }
-        });
-
-        customBanner = getCustomBanner();
-        if (customBanner != null) {
-            $(input).attr("value", customBanner[0]);
-
-            var color = customBanner[1].split('(')[1].split(')')[0];
-            color = color.replace(/ /g, '').split(',');
-
-            $(RInput).val(color[0]);
-            $(GInput).val(color[1]);
-            $(BInput).val(color[2]);
-            $(AInput).val(color.length == 4 ? color[3] : 1);
-
-            var poss = customBanner[2].split(' ');
-            var i = 0;
-
-            alignVert.val(poss[i]);
-            if (poss[i] != 'center') {
-                posY.val(poss[++i]);
-            }
-            alignHor.val(poss[++i]);
-            if (poss[i] != 'center') {
-                posX.val(poss[++i]);
-            }
-
-        }
-
-        position(pop.parentNode.parentNode, 'center', 'center');
-    });
-    logger.Log('setup cban');
-
-    tab.StartEndSection("Signatures");
-
-    var sigText = tab.AddTextArea("sig", '', getSig());
-    $(sigText).css("min-height", "150px");
-    $(sigText).css("min-width", "100%");
-    $(sigText).css("resize", "vertical");
-    AppendPopup("<u>Magic Strings</u><br >\
-        <div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>%name% - the name of the current user<br />\
-        %message% - posted comment<br />\
-        %year% - The Year eg: 2014<br />\
-        %MONTH% - Month of year<br />\
-        %DAY% - Day of month</div>\
-        <div style='display:table-cell;padding-right:5px;'>%month% - Name of month<br />\
-        %day% - Day of Week<br />\
-        %hour% - Current hour in 24 hour format<br />\
-        %min% - Minute<br />\
-        %sec% - Second</div></div>", sigText);
-    var sigPrev = $('<div class="sigPreview" style="min-height:150px;min-width:100%;" />');
-    $(sigText).after(sigPrev);
-    $(sigText).change(function() {
-        setSig(this.value);
-    });
-    $(tab.AppendResetButton(sigText)).click(function() {
-        sigText.value = defSig();
-        setSig(sigText.value);
-    });
-    
-    var userTile = getUserCommentThumb(128);
-    $(userTile).attr('style', 'float:right;background:none;border:none;');
-    $($(sigText).parent().parent().parent().children()[0]).append(userTile);
-    
-    var previewButton = tab.AppendButton(sigText, 'Preview');
-    $(previewButton).addClass('previewButton');
-    $(previewButton).click(function() {
-        if ($(sigText).hasClass('sigPreviewing')) {
-            $(sigText).removeClass('sigPreviewing');
-            $(sigPrev).html('');
-            this.innerHTML = 'Preview';
-            $(this).attr('class', 'styled_button styled_button_blue previewButton');
-        } else {
-            $(sigPrev).html(previewSig());
-            $(sigText).addClass('sigPreviewing');
-            this.innerHTML = 'Edit';
-            $(this).attr('class', 'styled_button styled_button_green previewButton');
-        }
-    });
-    logger.Log('setup sigText');
-}
-
-if ($('.tabs').length && getTabsLeft()) {
-    updateTabsBarSide(true);
-}
-    
+        logger.Log('setup sigText');
+    }
+    logger.Log('settings Tab setup completed Succesfully',10);
+    logger.Log('final-init updating tab-bar position',10);
+    if ($('.tabs').length && getTabsLeft()) updateTabsBarSide(true);
 //--------------------------------------------------------------------------------------------------
-} catch (e) {logger.SevereException('Unhandled Exception in Settings Tab: {0}', e); }
+} catch (e) {if (e != 'handled') logger.SevereException('Unhandled Exception in Settings Tab: {0}', e); }
 //--------------------------------------------------------------------------------------------------
-
-logger.Log('Checkpoint 11: settings Tab setup completed Succesfully');
-var styleSheet = "\
-/*Comment insert_left/right fix*/\
-.comment_data, .blog_post_content, .message_content, .chapter_content {\
-    overflow: hidden;}\
-#pm_content {\
-    resize: none;\
-    height: 200px;}\
-.bkm_button.new:not(hover) {\
-    background-color: #AA9922;}\
-.bkm_button.new:hover, .user_drop_down_menu:hover .bkm_button.new {\
-    background-color: #9A8912 !important;}\
-.bookmark_item {\
-    border-bottom: solid 1px grey;\
-    padding-top: 5px;}\
-.bookmark_img {\
-    max-height: 55px;\
-    max-width: 100px;\
-    margin-right: 10px;\
-    border: solid gray 3px;\
-    border-radius: 3px;}\
-.bookmark_item .chapter {\
-    font-size: 1.8em;\
-    padding: 0px;\
-    line-height: 1em;}\
-.bookmark_item .subText, .bookmark_item .subText a {\
-    color: #888;}\
-#chapter_edit_form textarea {\
-    width: 100% !important;\
-    resize: y;}\
-.bookmark_marker {\
-    background-color: #B93838;\
-    left: -10px;\
-    top: 4px;\
-    line-height: 2.5em;\
-    color: #FFF;\
-    margin-right: -8px;\
-    float: left;\
-    font-size: 0.85em;\
-    font-weight: bold;\
-    border: 1px solid rgba(0, 0, 0, 0.15);\
-    box-shadow: -1px 2px 1px rgba(0, 0, 0, 0.2), 0px 0px 8px rgba(0, 0, 0, 0.2) inset;\
-    position: relative;\
-    text-shadow: -1px -1px rgba(0, 0, 0, 0.1);\
-    font-family: Constantia,Serif;\
-    width: 150px;\
-    height: 32px;\
-    cursor: pointer;\
-    display: none;\
-    margin-top: -16px;\
-    margin-right: -100%;}\
-.bookmark_marker:before {\
-    content: ' ';\
-    display: block;\
-    width: 0px;\
-    height: 0px;\
-    border-right: 9px solid #7D1F1F;\
-    border-bottom: 9px solid transparent;\
-    position: absolute;\
-    bottom: -10px;\
-    left: -1px;}\
-.bookmark_marker:after {\
-    content: '';\
-    font-family: 'FontAwesome';\
-    transform: rotate(45deg);\
-    float: right;\
-    margin-right: 10px;\
-    line-height: 30px;}\
-#user_page_editing_toolbar img[src='//www.fimfiction-static.net/images/icons/watch_on.png'] {\
-    display: none;}\
-#user_page_editing_toolbar img[src='//www.fimfiction-static.net/images/icons/watch_on.png'] + span:before {\
-    content: '';\
-    font-family: 'FontAwesome';\
-    line-height: 0px;\
-    font-size: 16px;\
-    margin-right: 3px;\
-    color: rgb(90,90,90);\
-    text-shadow: 0 2px 1px rgba(120,120,120,0.5);}\
-.mark_all_holder {\
-    display:inline;\
-    cursor:pointer;\
-    margin-right:5px;}\
-.mark_all_holder:hover i {\
-    color: rgb(82, 149, 29);}\
-.all_chapters_hidden {\
-    display: none;\
-    text-align: center;}\
-.chapters_compact .all_chapters_hidden {\
-    display: block;}\
-.chapter_highlighted {\
-    background: rgb(48, 250, 255);\
-    transition: background 0.5s ease !important;}\
-.message:before {\
-    content: '';}\
-.global_popup input[type='text'], .global_popup input[type='url'] {\
-    padding:8px;\
-    width:100%;\
-    border:1px solid rgb(204, 204, 204);\
-    background:none repeat scroll 0% 0% rgb(248,248,248);\
-    outline:medium none;\
-    color:rgb(51,51,51);\
-    box-shadow:0px 2px 4px rgba(0,0,0,0.1) inset;\
-    border-radius:3px;\
-    margin:5px 0px;}\
-a:hover .bg_source_link {\
-    opacity: 1;\
-    color: rgba(255, 255, 255, 0.8);\
-    text-decoration: none;}\
-.bg_source_link {\
-    margin: 3px 3px 3px;\
-    position: absolute;\
-    right: 0px;\
-    bottom: 0px;\
-    transition: opacity 0.25s ease;\
-    opacity: 0;\
-    line-height: 1em;\
-    background-color: rgba(0, 0, 0, 0.7);\
-    color: rgba(255, 255, 255, 0.8);\
-    font-size: 0.7em;\
-    padding: 5px 10px;\
-    text-decoration: none;\
-    border-radius: 3px;\
-    border: 1px solid rgba(0, 0, 0, 0.3);\
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;\
-    font-family: 'Segoe UI';\
-    text-shadow: 1px 1px rgba(0, 0, 0, 0.3);}\
-.titleHidden {\
-    height: 50px !important;}\
-.titleHidden:hover {\
-    height: 175px !important;}\
-.collapsable.collapsed ~ * {\
-    display: none;}\
-.collapsable.collapsed:after {\
-    content: '' !important;}\
-.collapsable:after {\
-    content: '';\
-    float: right;\
-    font-size: 20px;\
-    font-family: 'FontAwesome';}\
-.color_table_header {\
-    border-bottom: 1px solid rgb(187, 187, 187);\
-    margin: 0px;\
-    margin-bottom: 7px;}\
-.color_table_header h2 {\
-    padding-left: 10px;\
-    font-weight: bold;\
-    font-size: 1.2em;\
-    line-height: 50px;}\
-.Xcolor {\
-    display:inline-block;\
-    zoom:1;\
-    *display:inline;\
-    text-decoration:none;\
-    margin:4px 0px 4px -1px;\
-    background-image:url('//www.fimfiction-static.net/images/edit_button_background_up.png') !important;\
-    border:1px solid #CCC;\
-    padding:7px 10px;\
-    font-family:'Segoe UI', Arial;\
-    font-size:0.95em;\
-    color:#666;\
-    vertical-align:middle;\
-    text-shadow:1px 1px rgba(255,255,255,0.3);\
-    z-index:0;\
-    line-height:1.0em;}\
-.Xcolor:hover {\
-    border-color:#9aaec0;\
-    background-image:url('//www.fimfiction-static.net/images/edit_button_background_down.png') !important;\
-    color:#333;\
-    z-index:10;\
-    position:relative;}\
-.subListButton > div:after {\
-    content: '';\
-    font-family: 'FontAwesome';\
-    position: absolute;\
-    right: 0px;}\
-    .subListButton[opened='true'] > div:after {\
-        content: '';}\
-.subOption {\
-    white-space: nowrap;\
-    display: inline-block;\
-    zoom: 1;\
-    *display: inline;\
-    text-decoration: none;\
-    margin: 4px 0px 4px -1px;\
-    padding: 7px 10px;\
-    font-size: 0.95em;\
-    color: #43464a;\
-    vertical-align: middle;\
-    text-shadow: 1px 1px rgba(255, 255, 255, 0.25);\
-    z-index: 0;\
-    line-height: 1.0em;\
-    box-shadow: 0px 1px 0px #f2feff inset;\
-    background: #c9d3dd;\
-    background: -moz-linear-gradient(top, #dee9f4 0%, #b5bec7 100%);\
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #dee9f4), color-stop(100%, #b5bec7));\
-    background: -webkit-linear-gradient(top, #dee9f4 0%, #b5bec7 100%);\
-    background: -o-linear-gradient(top, #dee9f4 0%, #b5bec7 100%);\
-    background: -ms-linear-gradient(top, #dee9f4 0%, #b5bec7 100%);\
-    background: linear-gradient(to bottom, #dee9f4 0%, #b5bec7 100%);\
-    border: 1px solid #8d949b;\
-    border-top-color: #a1a9b1;\
-    border-bottom-color: #797f85;\
-    position: relative;}\
-.subOption:hover {\
-    background: #b4bdc6;\
-    background: -moz-linear-gradient(top, #c7d1da 0%, #a2abb3 100%);\
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #c7d1da), color-stop(100%, #a2abb3));\
-    background: -webkit-linear-gradient(top, #c7d1da 0%, #a2abb3 100%);\
-    background: -o-linear-gradient(top, #c7d1da 0%, #a2abb3 100%);\
-    background: -ms-linear-gradient(top, #c7d1da 0%, #a2abb3 100%);\
-    background: linear-gradient(to bottom, #c7d1da 0%, #a2abb3 100%);\
-    border: 1px solid #90989f;\
-    color: #36393b;\
-    box-shadow: 0px 1px 0px #d9e4ee inset;\
-    text-decoration: none;\
-    z-index: 10;}\
-.subOption:active {\
-    background: #c9c9c9;\
-    background: -moz-linear-gradient(top, #b5b5b5 0%, #dedede 100%);\
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #b5b5b5), color-stop(100%, #dedede));\
-    background: -webkit-linear-gradient(top, #b5b5b5 0%, #dedede 100%);\
-    background: -o-linear-gradient(top, #b5b5b5 0%, #dedede 100%);\
-    background: -ms-linear-gradient(top, #b5b5b5 0%, #dedede 100%);\
-    background: linear-gradient(to bottom, #b5b5b5 0%, #dedede 100%);\
-    border: 1px solid #a1a1a1;\
-    color: #282828;\
-    text-shadow: 1px 1px #d4d4d4;\
-    z-index: 10;\
-    position: relative;}\
-.chapter-read-all, .chapter-unread-all {\
-    margin-right: 8px;\
-    font-size: 14px;\
-    font-family: 'FontAwesome';\
-    font-style: normal;\
-    color: rgb(80, 126, 44);}\
-.compact_chapters {\
-    display: none;}\
-.chapters_expanded .compact_chapters {\
-    display: inline !important;}\
-.chapter-read-all:before {\
-    content: '';}\
-.chapter-unread-all:before {\
-    content: '';}\
-ul.chapters_compact .chapter_container {\
-    display: none !important;}\
-.sigPreview {\
-    padding: 8px;\
-    color: rgb(68, 68, 68);\
-    width: 100%;\
-    border: 1px solid rgb(204, 204, 204);\
-    font-size: 1.1em;\
-    font-family: 'Segoe UI',Arial;\
-    -moz-box-sizing: border-box;\
-    outline: medium none;\
-    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
-    background-color: rgb(255, 255, 250);\
-    text-shadow: 1px 1px rgba(255, 255, 255, 0.8);\
-    vertical-align: middle;\
-    display: none;}\
-.sigPreviewing {\
-    display: none;}\
-.sigPreviewing ~ .sigPreview {\
-    display: inline-block;}\
-.previewButton {\
-    width: 100px !important;\
-    text-align: center;}\
-.comment .textarea_padding {\
-    padding-left: 0px !important;\
-    padding-right: 0px !important;}\
-.comment textarea:focus {\
-    background-color: rgb(232, 239, 246) !important;\
-    border-color: rgba(0, 0, 0, 0.2) !important;\
-    text-shadow: none !important;}\
-.previous_message .user_image {\
-    max-width: 100px;}\
-.comment textarea {\
-    padding: 8px;\
-    color: rgb(68, 68, 68);\
-    border: 1px solid rgb(204, 204, 204);\
-    -moz-box-sizing: border-box;\
-    outline: medium none;\
-    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
-    background-color: rgb(255, 255, 250);\
-    text-shadow: 1px 1px rgba(244, 244, 244, 0.8);\
-    vertical-align: middle;\
-    min-height: 120px;\
-    border-radius: 0px !important;\
-    width: 100%;\
-    resize: vertical;\
-    left: 0px !important;}\
-.chapter_content #chapter_container {\
-    margin-left: auto !important;\
-    margin-right: auto !important;\
-    max-width: " + getStoryWidth() + ";}\
- .user_toolbar > .inner .button-first {\
-    margin-left: 0px !important;\
-    border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}\
-.bright, .breadcrumbs.bright li:after {\
-    text-shadow: 1px 1px rgba(255, 255, 255, 0) !important;}\
-.bright {\
-    color: rgba(190,190,190,0.7) !important;}\
-.bright li:after {\
-    color: rgba(190,190,190,0.3) !important;}\
-.bright .story-title {\
-  text-shadow: 0 0 4px black;}\
-.user-card .external-accounts li img {\
-    max-height: 16px;\
-    max-width: 16px;}\
-#imgPreview {\
-    border-radius: 5px;\
-    max-width:100%;\
-    max-height:100%;\
-    padding: 3px;\
-    background: none repeat scroll 0% 0% padding-box #FFF;\
-    border-width: 1px;\
-    border-style: solid;\
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}\
-.content_plus_format {\
-  background: none !important;\
-  border-color: rgba(255,255,255,0.3) !important;}\
-.content_plus_format hr {\
-  opacity: 0.3;}\
-.content_format_pinkie #chapter_container #chapter_container,\
-.content_format_applejack #chapter_container #chapter_container,\
-.content_format_rarity #chapter_container #chapter_container,\
-.content_format_twilight #chapter_container #chapter_container,\
-.content_format_dash #chapter_container #chapter_container,\
-.content_format_fluttershy #chapter_container #chapter_container {\
-  box-shadow: 0 0 3px black;\
-  border-radius: 15px;}\
-#chapter_container p:first-child {\
-  border-radius: 15px 15px 0px 0px !important;}\
-#chapter_container p:last-child {\
-  border-radius: 0px 0px 15px 15px !important;}\
-#bookshelves-sidebar > li, #bookshelves-sidebar-community > li {\
-  background: #fff;\
-  margin: 5px;\
-  padding-left: 5px;\
-  border-width: 1px;\
-  border-style: solid;\
-  border-right: 1px solid #BEBAB4;\
-  border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
-  border-radius: 5px;}\
-.left-tabs {\
-  padding-left: 0px !important;\
-  padding-right: 10px;}\
-.left-tabs + div {\
-  padding-right: 0px !important;\
-  padding-left: 30px;}\
-.left-tabs > .sidebar-shadow {\
-  left: 220px !important;}";
-     
-if(getWideNotes()) {
-    styleSheet += "\
-.chapter_content > .inner_margin {max-width: 100% !important;}\
-.chapter_content .authors-note:before {\
-    content: '';\
-    font-family: FontAwesome;}";
-}
-    
-makeStyle(styleSheet);
-logger.Log('Checkpoint 12: style sheet added Succesfully');
 
 setTimeout(function() {
     if (getTitleHidden()) {
@@ -1364,6 +867,97 @@ function registerExternalAccount(id, item) {
         external_account_config[id] = item;
     } catch (e) {}
     $('#external_account_details').prepend('<span data-custom="1" id="external_account_details_' + id + '">' + item.url + '</span?');
+}
+
+function setAccountLogos() {
+    $('.external-accounts img').each(function() {
+        var url = $(this.parentNode).attr('href');
+        
+        if (url != null) {
+            var name = null;
+            
+            if (contains(url, '?')) {
+                var params = url.split('?')[1].split('&');
+                var nparams = [];
+                for (var i = 0; i < params.length; i++) {
+                    var p = params[i].split('=');
+                    if (p[0] == 'DisplayNameFF') {
+                        name = p[1];
+                        break;
+                    } else if (params[i] != '.deviantart.com') {
+                        nparams.push(params[i]);
+                    }
+                }
+                url = url.split('?')[0] + (nparams.length > 0 ? '?' + nparams.join('&') : '');
+            }
+            
+            $(this.parentNode).attr('href', url);
+            if (name == null) {
+                var urlBackup = url;
+                url = url.split('?')[0].toLowerCase();
+                try {
+                    if (startsWith(url, 'mailto:')) {
+                        name = 'Email ' + $('.bio-content').parent().find('.user-box-level-1 a').text() + "\nat " + url.replace('mailto:','');
+                        url = '';
+                    } else if (contains(url, '.deviantart.') || contains(url, '.tumblr.')) {
+                        url = getSite(url);
+                        name = url.split('.')[0];
+                        url = url.substring(name.length + 1, url.length);
+                    } else if (contains(url, 'steamcommunity')) {
+                        name = url.split('/id/')[1].split('/')[0]
+                        url = getSite(url);
+                    } else if (contains(url, 'intensedebate.')) {
+                        name = url.split(url.indexOf('/people/') != -1 ? '/people/' : '/profiles/')[1].split('/')[0]
+                        url = getSite(url);
+                    } else if (contains(url, 'twitter.')) {
+                        name = url.split('/').reverse()[0];
+                        url = getSite(url);
+                    } else if (contains(url, '.fanfiction.')) {
+                        name = url.split('~')[1];
+                        url = getSite(url);
+                    } else if (contains(url, '.minecraftforum.')) {
+                        name = url.split('/user/')[1];
+                        name = name.substring((parseInt(name) + '-').length, name.length);
+                        url = getSite(url);
+                    } else if (contains(url, 'tvtropes.')) {
+                        name = url.split('/tropers/')[1];
+                        url = getSite(url);
+                    } else if (contains(url, '/user/')) {
+                        name = url.split('/user/')[1].split('/')[0];
+                        url = getSite(url);
+                    } else if (contains(url, '/github.com/')) {
+                        name = url.split('/github.com/').reverse()[0].split('/')[0];
+                        url = getSite(url);
+                    } else if (contains(url, '/www.github.com/')) {
+                        name = url.split('/www.github.com/').reverse()[0].split('/')[0];
+                        url = getSite(url);
+                    }
+                } catch (e) {
+                    name = null;
+                    url = urlBackup;
+                }
+            }
+
+            if (name != null) {
+                if (name.toLowerCase() == 'knighty' || name.toLowerCase() == 'knighty33' || name.toLowerCase() == 'knight33') {
+                    name = name.toLowerCase();
+                } else {
+                    name = normalize(name);
+                }
+                $(this.parentNode).attr('title', name + (url == '' ? '' : '\non ' + getSite(url)));
+            } else {
+                $(this.parentNode).attr('title', url);
+            }
+
+            if ($(this).attr('src') == '//www.fimfiction-static.net/images/external_accounts/da.png' && url.indexOf('deviantart') == -1) {
+                $(this).attr('src', getFavicon(url));
+                $(this).one('error', function() {
+                    $(this).attr('src', '//www.fimfiction-static.net/images/external_accounts/other.png');
+                });
+            }
+        }
+    });
+    logger.Log('set account logos successfully',10);
 }
 
 function updateAccountControls() {
@@ -1889,14 +1483,14 @@ function applyChapterfix() {
         clazz = $('#format_colours option:selected').val();
         $('.chapter, #chapter_title, #chapter_format, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
         $('.chapter_footer, .chapter .rating_container .button_container a,  #chapter_title').addClass('content_plus_format');
-        $('.content_plus_format, #chapter_title').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color'))
+        $('.content_plus_format, #chapter_title').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color'));
         LocalStorageSet('format_colours', clazz);
         UpdatePageBackgroundColor();
     }
     window.UpdatePageBackgroundColor = function() {
-        var a = $('#chapter_toolbar_container'),
-            b = a.parents('.chapter');
-        a.data('start_y') || a.data('start_y', a.offset().top + 50);
+        var a = $('#chapter_toolbar_container');
+        var b = a.parents('.chapter');
+        if (!a.data('start_y')) a.data('start_y', a.offset().top + 50);
         var c = function (a) {
             return 1 < a ? 1 : 0 > a ? 0 : a;
         }
@@ -1909,7 +1503,11 @@ function applyChapterfix() {
                 return a.css(b, rgbToCSS(colorBlend(extractColor(a.css(b)), colorMult(d, g), c)))
             }, a($('.body_container'), 'background-color', 0.85), a($('.chapter_content_box'), 'border-right-color', 1.4), a($('.chapter_content_box'), 'border-left-color', 1.4))
     }
-    UpdateColours();
+    try {
+        UpdateColours();
+    } catch (e) {
+        logger.Error(e);
+    }
 }
 
 function setup(hold) {
@@ -1925,17 +1523,16 @@ function setup(hold) {
                 $(this).append('<i class="fa fa-tint" />');
             }
             
-            $(this).attr('data-function', '');
             var target = $(this).parents('.bbcode-editor').find('textarea')[0];
-            betterColors(this.parentNode, target, hold);
-            setUpMainButton(this.parentNode, target, hold);
+            betterColors($(this), target);
+            setUpMainButton(this.parentNode.parentNode, target, hold);
         }
     });
     $("button[title='Font Size']").each(function(index) {
         if ($(this).attr("fimfic_adv") != "true") {
             $(this).attr("fimfic_adv", "true");
             $(this).attr('data-function', '');
-            betterSizes(this.parentNode, $(this).parents('.bbcode-editor').find('textarea')[0], hold);
+            betterSizes($(this), $(this).parents('.bbcode-editor').find('textarea')[0]);
         }
     });
     $("button[title='Insert Image']").each(function(index) {
@@ -1945,7 +1542,6 @@ function setup(hold) {
             $(this).append('<i class="fa fa-picture-o" />');
         }
     });
-    
     logger.Log('setup: end');
 }
 
@@ -1962,63 +1558,60 @@ function sunspoiler() {
     });
 }
 
-
 function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: start');
-    var hasAdv = toolbar.parentNode.parentNode.children.length > 6;
-    var options = makeButton(toolbar, "More Options", "fa fa-flag");
-    
-    $(options).on("click", function () {
-        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            var items = makePopup(this, "Options", "fa fa-flag");
-            
-            if (hold == true) {
-                $('body').addClass('hold_comment');
-                $(items).on('close', function () {
-                    $('body').removeClass('hold_comment');
-                });
-            }
-
-            var text = $(this).data("textTarget");
+    var hasAdv = toolbar.parentNode.children.length > 6;
+    makeButton(toolbar, "More Options", "fa fa-flag").on("click", function () {
+        if (!$(this).parent().find('.drop-down').length) {
+            $(this).after('<div class="drop-down"><div class="arrow" /><ul /></div>');
+            var items = $(this).parent().find('ul');
             addDropList(items, "BBCode Tags", function () {
-                $(addOption(this, "void();", "Right Align")).click(function() {
+                addOption(this, "Right Align").click(function() {
                     InsertBBCodeTag(target, 'right');
                 });
                 if (!hasAdv) {
-                    $(addOption(this, "void();", "Center Align")).click(function() {
+                    addOption(this, "Center Align").click(function() {
                         InsertBBCodeTag(target, 'center');
                     })
-                    $(addOption(this, "void();", "Horizontal Rule")).click(function() {
+                    addOption(this, "Horizontal Rule").click(function() {
                         InsertBBCodeTag(target, 'hr');
                     });
-                    $(addOption(this, "void();", "Indent Paragraphs")).click(function() {
-                        Indent(target); 
+                    addOption(this, "Indent Paragraphs").click(function() {
+                        var f = BBCodeGetSelection(target);
+                        var g = !1;
+                        "" == f && (f = e.value, g = !0);
+                        f = f.replace(/\n/g, "\n\t");
+                        g ? e.value = f : InsertTextAt(target, f);
                     });
-                    $(addOption(this, "void();", "Outdent Paragraphs")).click(function() {
-                        Outdent(target);
+                    addOption(this, "Outdent Paragraphs").click(function() {
+                        var f = BBCodeGetSelection(target);
+                        var g = !1;
+                        "" == f && (f = target.value, g = !0);
+                        f = f.replace(/\n\t/g, "\n");
+                        g ? e.value = f : InsertTextAt(target, f);
                     });
                 }
-                $(addOption(this, "void();", "Left Insert")).click(function() {
+                addOption(this, "Left Insert").click(function() {
                     InsertBBCodeTag(target, 'left_insert');
                 });
-                $(addOption(this, "void();", "Right Insert")).click(function() {
+                addOption(this, "Right Insert").click(function() {
                     InsertBBCodeTag(target, 'right_insert');
                 });
-                $(addOption(this, "void();", "Ordered List")).click(function () {
+                addOption(this, "Ordered List").click(function () {
                     makeList(target, true);
                 });
-                $(addOption(this, "void();", "Unordered List")).click(function () {
+                addOption(this, "Unordered List").click(function () {
                     makeList(target, false);
                 });
             });
 
-            $(addOption(items, "void();", "Sign")).click(function() {
+            addOption(items, "Sign").click(function() {
                 sign(target);
             });
-            $(addOption(items, "void();", "Insert Direct Image")).click(function() {
+            addOption(items, "Insert Direct Image").click(function() {
                 makeImagePopup(target);
             });
-            $(addOption(items, "void();", "Find/Replace Text")).click(function() {
+            addOption(items, "Find/Replace Text").click(function() {
                 makeReplacePopup(target);
             });
             setListItemWidth(items);
@@ -2026,12 +1619,6 @@ function setUpMainButton(toolbar, target, hold) {
         }
     });
     logger.Log('setUpMainButton: end');
-}
-
-function makeDropItem(text, link, img) {
-    var link = $('<a class="button" href="' + link + '" />');
-    $(link).append(makeLogo(img) + text);
-    return link;
 }
 
 function makeReplacePopup(target) {
@@ -2219,9 +1806,7 @@ function insertColor(target) {
     });
     
     $(pop).append(button);
-    
     $(pop).append('<div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>');
-    
     $(pop.parentNode).append('<div class="drop-down-pop-up-footer">Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using \'[spoiler]text[/spoiler]\'</div>');    
     
     position(pop.parentNode.parentNode.parentNode, "center", "center");
@@ -2295,131 +1880,138 @@ function sign(target, text) {
 }
 
 function hasSigned(value, format) {
-    var regex = new RegExp(encodeURI(replaceAll("%message%", ".*", format)));
-    return regex.test(encodeURI(value));
+    return (new RegExp(encodeURI(replaceAll("%message%", ".*", format)))).test(encodeURI(value));
 }
 
-function betterSizes(size, target, hold) {
+function betterSizes(button, target) {
     logger.Log('betterSizes: start');
-    $(size.children[0]).attr("href", "javascript:void();");
-
-    $(size).click(function () {
-        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            var items = makePopup(this, 'Text Size', 'fa fa-text-height');
-            if (hold == true) {
-                $('body').addClass('hold_comment');
-                $(items).on('close', function () {
-                    $('body').removeClass('hold_comment');
-                });
-            }
-            
+    button.attr('data-function', '');
+    button.attr('data-init','true');
+    button.click(function() {
+        if (!$(this).parent().find('.drop-down').length) {
+            $(this).parent().append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
+            var holder = $(this).parent().find('ul');
             for (var i = 10; i < 20; i += 2) {
                 for (var k = 0; k < 50; k += 10) {
-                    var size = addOption(items, "void;", i + k, false);
-                    $(size).click(function() {
-                       InsertBBCodeTags(target, '[size=' + $(this).text() + ']', '[/size]');
+                    var size = $('<li><a>' + (i + k) + '</a></li>');
+                    holder.append(size);
+                    size.find('a').click(function() {
+                        InsertBBCodeTags(target, '[size=' + $(this).text() + 'px]', '[/size]');
+                        $(document).trigger("close-dropdowns");
                     });
-                    $(size).css('display', 'inline-block');
-
-                    $(size).parent().hover(function () {
-                        var sz = this.children[0].innerHTML;
+                    size.hover(function () {
+                        var sz = $(this).find('a').text();
                         var pop = makeToolTip(this);
-                        $(pop).parent().css('margin', '30px 0px 0px 0px');
-                        $(pop).parent().css('padding', '0px 0px 0px 0px');
-                        $(pop).append("<div style=\"font-size: " + sz + "px; line-height: 1; height: " + sz + "px;\">Ab</div>");
+                        pop.parent().css('margin', '15px 0px 0px 0px');
+                        pop.parent().css('padding', '0px 0px 0px 0px');
+                        pop.append('<div style="font-size: ' + sz + 'px; line-height: 1; height: ' + sz + 'px;">Ab</div>');
                     }, function () {
                         $(this.children[1]).remove();
                     });
-
                 }
-                $(items).append("</br>");
             }
-            inbounds($(items).parent().parent());
         }
     });
     logger.Log('betterSizes: end');
 }
 
-function betterColors(color, text, hold) {
+function betterColors(button, target) {
     logger.Log('betterColors: start');
-    $(color.children[0]).attr("href", "javascript:void();");
-    
-    $(color).on("click", function() {
-        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            var target = text;
-            var items = makePopup(this, "Default Colours", "fa fa-tint");
-            if (hold == true) {
-                $('body').addClass('hold_comment');
-                $(items).on('close', function () {
-                    $('body').removeClass('hold_comment');
-                });
-            }
-            
-            addColorTiles(target, items, FimFiccolors.concat([-1,-1,-1].concat(Ponycolors)), 6);
-            
+    button.attr('data-function', '');
+    button.attr('data-init','true');
+    button.click(function() {
+        if (!$(this).parent().find('.drop-down').length) {
+            $(this).parent().append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
+            var holder = $(this).parent().find('.colour-holder');
+            addColorTiles(target, holder, FimFiccolors);
+            holder.append('<li class="divider" />');
+            addColorTiles(target, holder, Ponycolors);
             var recent = getRecentColours(6);
+            holder.append('<li class="recent-part divider"><span>Recent</span></li>');
+            var recentHolder = $('<span class="recent-part recent-colours" data-count="6" />');
+            holder.append(recentHolder);
             if (recent.length > 0) {
-                var result = '';
-                addColorSection(target, items, recent, 6, 'Recent');
+                addColorTiles(target, recentHolder, recent);
+            } else {
+                $('.recent-part').css('display','none');
             }
-            $(items).append("</br>");
-            
-            var b = addOption(items, "javascript:void()", "More Colours");
+            holder.append('<li class="divider" />');
+            holder = $(this).parent().find('.button-holder');
+            var b = $('<li><a>More Colours</a></li>');
+            holder.append(b);
             var me = this;
-            b.style = "text-align: center;";
-            $(b.parentNode).css('width', '243px');
-            $(b.parentNode).click(function() {
-                var posOverride = [];
-                if ($('.color_picker').length != 0) {
-                    posOverride.x = $('.color_picker').parent().parent().css('left');
-                    posOverride.y = $('.color_picker').parent().parent().css('top');
-                    $('.color_picker').parent().parent().remove();
-                }
-                var text = me.getAttribute('textTarget');
-                var pop = makeGlobalPopup('All Colours', 'fa fa-tint', false);
-                
-                addColorSection(target, pop, Spectrum, 15, 'Standard Colours');
-                addColorSection(target, pop, FimFiccolors, 15, 'FimFiction');
-                addColorSection(target, pop, Ponycolors, 15, 'Mane Six');
-                addCollapseColorSection(text, pop, Morecolors, 15, 'More Colours', true);
-                
-                var recent = getRecentColours(15);
-                if (recent.length > 0) {
-                    var recentSec = addColorSection(target, pop, recent, 15, 'Recent');
-                    var reset = $('<a href="javascript:void();" style="float:right;" >Clear</a>');
-                    $(recentSec).append(reset);
-                    $(reset).click(function (){
-                        clearRecentColours();
-                        $(recentSec).parent().find('a').css('opacity', 0.3);
-                        $(recentSec).parent().find('a').css('pointer-events', 'none');
-                    });
-                }
-                
-                $(pop).addClass("color_picker");
-                
-                if (posOverride.x != null) {
-                    $(pop).parent().parent().css('left', posOverride.x);
-                    $(pop).parent().parent().css('top', posOverride.y);
+            b.find('a').click(function() {
+                if (!$('#colour_manager').length) {
+                    var posOverride = [];
+                    if ($('.color_picker').length != 0) {
+                        posOverride.x = $('.color_picker').parent().parent().css('left');
+                        posOverride.y = $('.color_picker').parent().parent().css('top');
+                        $('.color_picker').parent().parent().remove();
+                    }
+                    var text = me.getAttribute('textTarget');
+
+                    var list = $(makeGlobalPopup('All Colours', 'fa fa-tint', false, false));
+                    list.parent().parent().attr('id','colour_manager');
+                    list.css('width','590px');
+                    addCollapseColorSection(target, list, Spectrum, 'Standard Colours', false);
+                    addCollapseColorSection(target, list, FimFiccolors, 'FimFiction', false);
+                    addCollapseColorSection(target, list, Ponycolors, 'Mane Six', false);
+                    addCollapseColorSection(text, list, Morecolors, 'More Colours', true);
+
+                    var recent = getRecentColours(15);
+                    if (recent.length > 0) {
+                        var recentSec = addColorSection(target, list, recent, 'Recent');
+                        recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
+                        var reset = $('<a href="javascript:void();" style="float:right;" >Clear</a>');
+                        recentSec.find('.colour-section-header').append(reset);
+                        reset.click(function (){
+                            clearRecentColours();
+                            $(recentSec).find('ul').css('opacity', 0.3);
+                            $(recentSec).find('ul').css('pointer-events', 'none');
+                        });
+                    }
+
+                    $(pop).addClass("color_picker");
+                    if (posOverride.x != null) {
+                        $(pop).parent().parent().css('left', posOverride.x);
+                        $(pop).parent().parent().css('top', posOverride.y);
+                    }
+                } else {
+                    $('#colour_manager').css('display', '');
                 }
             });
             
-            b = addOption(items, "void();", "Custom Colour");
-            b.style = "text-align: center;";
-            $(b.parentNode).css('width', '243px');
-            $(b.parentNode).click(function() {
+            b = $('<li><a>Custom Colour</a></li>');
+            holder.append(b);
+            b.find('a').click(function() {
                 insertColor(target);
             });
-            inbounds($(items).parent().parent());
         }
+        $('.recent-colours').each(function() {
+            var recent = getRecentColours(parseInt($(this).attr('data-count')));
+            if (recent.length > 0) {
+                $(this).empty();
+                addColorTiles(target, $(this), recent);
+                $(this).css({
+                    'opacity': '',
+                    'pointer-events': ''
+                });
+                $('.recent-part').css('display','');
+            } else {
+                $(this).css({
+                    'opacity': '0.3',
+                    'pointer-events': 'none'
+                });
+            }
+        });
     });
-    logger.Log('betterColors: end');
 }
 
-function addCollapseColorSection(text, panel, colors, cols, title, collapse) {
-    var section = addColorSection(text, panel, colors, cols, title);
-    $(section).css('cursor', 'pointer');
-    $(section).addClass('collapsable');
-    $(section).click(function() {
+function addCollapseColorSection(text, panel, colors, title, collapse) {
+    var section = addColorSection(text, panel, colors, title);
+    section.find('.colour-section-header').css('cursor', 'pointer');
+    section.find('.colour-section-header').addClass('collapsable');
+    section.find('.colour-section-header').click(function() {
         if ($(this).hasClass('collapsed')) {
             $(this).removeClass('collapsed');
         } else {
@@ -2427,18 +2019,21 @@ function addCollapseColorSection(text, panel, colors, cols, title, collapse) {
         }
     });
     if (collapse) {
-        $(section).addClass('collapsed');
+        section.find('.colour-section-header').addClass('collapsed');
     }
 }
 
-function addColorSection(text, panel, colors, cols, title) {
-    var colorGroup = $('<div><h1 style="border-radius:0px;">' + title + '</h1></div>');
-    $(panel).append(colorGroup);
-    addColorTiles(text, colorGroup, colors, cols);
-    return colorGroup.children()[0];
+function addColorSection(target, panel, colors, title) {
+    var result = $('<div class="colour-section" />');
+    result.append($('<div class="colour-section-header">' + title + '</div>'));
+    var colorGroup = $('<ul class="colour-holder" />');
+    result.append(colorGroup);
+    panel.append(result);
+    addColorTiles(target, colorGroup, colors);
+    return result;
 }
 
-function addColorTiles(target, panel, colors, cols) {
+function addColorTiles(target, panel, colors) {
     for (var i = 0; i < colors.length; i++) {
         var code,name;
         if (typeof(colors[i]) == 'string') {
@@ -2457,23 +2052,20 @@ function addColorTiles(target, panel, colors, cols) {
                 }
             }
         }
-        
-        var a = addOption(panel, "void();", "", (i + 1) % cols == 0);
+                
+        var a = $('<a><span style="background-color:' + code + ' !important" class="color-tile" /></a>');
+        var item = $('<li class="colour-tile" />');
+        item.append(a);
+        panel.append(item);
         if (code != '') {
-            $(a.parentNode).attr('code', code);
-            $(a.parentNode).click(function() {
-                InsertBBCodeTags(target, '[color=' + $(this).attr('code') + ']', '[/color]');
+            a.attr('data-colour', code);
+            a.attr('title', name);
+            a.click(function() {
+                var c = $(this).attr('data-colour');
+                InsertBBCodeTags(target, '[color=' + c + ']', '[/color]');
                 addRecent(c);
                 $(target).focus();
             });
-            a.parentNode.setAttribute("title", name);
-        }
-        a.parentNode.setAttribute("class", "Xcolor subOption");
-        a.parentNode.setAttribute("style", "cursor:pointer; padding: 18px; margin:2px; background-color:" + code + " !important; border:1px solid #333; border-radius:3px;");
-        
-        if (colors[i] < 0) {
-            $(a.parentNode).css('opacity', '0');
-            $(a.parentNode).css('pointer-events', 'none');
         }
     }
 }
@@ -2526,21 +2118,6 @@ function mustUnspoiler(url) {
         }
     }
     return false;
-}
-
-function getTextArea(button) {
-    var elem = button.parentNode.parentNode.parentNode;
-    elem = elem.children[1].children[0].children[0];
-    
-    if (elem != null && elem.tagName == "TEXTAREA") {
-        return elem;
-    }
-
-    elem = button;
-    for (var i = 0; i < 3; i++) {
-        elem = elem.parentNode;
-    }
-    return elem.children[1].children[1].children[0].children[0];
 }
 
 function updateSlide() {
@@ -2743,6 +2320,344 @@ function censorStory(element) {
     return false;
 }
 
+function addCss() {
+    logger.Log('adding stylesheet',10);
+    var styleSheet = "\
+/*Comment insert_left/right fix*/\
+.comment_data, .blog_post_content, .message_content, .chapter_content {\
+    overflow: hidden;}\
+#pm_content {\
+    resize: none;\
+    height: 200px;}\
+.bkm_button.new:not(hover) {\
+    background-color: #AA9922;}\
+.bkm_button.new:hover, .user_drop_down_menu:hover .bkm_button.new {\
+    background-color: #9A8912 !important;}\
+.bookmark_item {\
+    border-bottom: solid 1px grey;\
+    padding-top: 5px;}\
+.bookmark_img {\
+    max-height: 55px;\
+    max-width: 100px;\
+    margin-right: 10px;\
+    border: solid gray 3px;\
+    border-radius: 3px;}\
+.bookmark_item .chapter {\
+    font-size: 1.8em;\
+    padding: 0px;\
+    line-height: 1em;}\
+.bookmark_item .subText, .bookmark_item .subText a {\
+    color: #888;}\
+#chapter_edit_form textarea {\
+    width: 100% !important;\
+    resize: y;}\
+.bookmark_marker {\
+    background-color: #B93838;\
+    left: -10px;\
+    top: 4px;\
+    line-height: 2.5em;\
+    color: #FFF;\
+    margin-right: -8px;\
+    float: left;\
+    font-size: 0.85em;\
+    font-weight: bold;\
+    border: 1px solid rgba(0, 0, 0, 0.15);\
+    box-shadow: -1px 2px 1px rgba(0, 0, 0, 0.2), 0px 0px 8px rgba(0, 0, 0, 0.2) inset;\
+    position: relative;\
+    text-shadow: -1px -1px rgba(0, 0, 0, 0.1);\
+    font-family: Constantia,Serif;\
+    width: 150px;\
+    height: 32px;\
+    cursor: pointer;\
+    display: none;\
+    margin-top: -16px;\
+    margin-right: -100%;}\
+.bookmark_marker:before {\
+    content: ' ';\
+    display: block;\
+    width: 0px;\
+    height: 0px;\
+    border-right: 9px solid #7D1F1F;\
+    border-bottom: 9px solid transparent;\
+    position: absolute;\
+    bottom: -10px;\
+    left: -1px;}\
+.bookmark_marker:after {\
+    content: '';\
+    font-family: 'FontAwesome';\
+    transform: rotate(45deg);\
+    float: right;\
+    margin-right: 10px;\
+    line-height: 30px;}\
+#user_page_editing_toolbar img[src='//www.fimfiction-static.net/images/icons/watch_on.png'] {\
+    display: none;}\
+#user_page_editing_toolbar img[src='//www.fimfiction-static.net/images/icons/watch_on.png'] + span:before {\
+    content: '';\
+    font-family: 'FontAwesome';\
+    line-height: 0px;\
+    font-size: 16px;\
+    margin-right: 3px;\
+    color: rgb(90,90,90);\
+    text-shadow: 0 2px 1px rgba(120,120,120,0.5);}\
+.mark_all_holder {\
+    display:inline;\
+    cursor:pointer;\
+    margin-right:5px;}\
+.mark_all_holder:hover i {\
+    color: rgb(82, 149, 29);}\
+.all_chapters_hidden {\
+    display: none;\
+    text-align: center;}\
+.chapters_compact .all_chapters_hidden {\
+    display: block;}\
+.chapter_highlighted {\
+    background: rgb(48, 250, 255);\
+    transition: background 0.5s ease !important;}\
+.global_popup input[type='text'], .global_popup input[type='url'] {\
+    padding:8px;\
+    width:100%;\
+    border:1px solid rgb(204, 204, 204);\
+    background:none repeat scroll 0% 0% rgb(248,248,248);\
+    outline:medium none;\
+    color:rgb(51,51,51);\
+    box-shadow:0px 2px 4px rgba(0,0,0,0.1) inset;\
+    border-radius:3px;\
+    margin:5px 0px;}\
+a:hover .bg_source_link {\
+    opacity: 1;\
+    color: rgba(255, 255, 255, 0.8);\
+    text-decoration: none;}\
+.bg_source_link {\
+    margin: 3px 3px 3px;\
+    position: absolute;\
+    right: 0px;\
+    bottom: 0px;\
+    transition: opacity 0.25s ease;\
+    opacity: 0;\
+    line-height: 1em;\
+    background-color: rgba(0, 0, 0, 0.7);\
+    color: rgba(255, 255, 255, 0.8);\
+    font-size: 0.7em;\
+    padding: 5px 10px;\
+    text-decoration: none;\
+    border-radius: 3px;\
+    border: 1px solid rgba(0, 0, 0, 0.3);\
+    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;\
+    font-family: 'Segoe UI';\
+    text-shadow: 1px 1px rgba(0, 0, 0, 0.3);}\
+.titleHidden {\
+    height: 50px !important;}\
+.titleHidden:hover {\
+    height: 175px !important;}\
+.drop-size-pick ul li {\
+    display: inline-block !important;}\
+.drop-size-pick {\
+    width: 177px !important;\
+    margin-left: -90px !important;\
+    margin-right: auto !important;}\
+.colour-holder .colour-tile {\
+    display: inline-block !important;}\
+.colour-holder .colour-tile a {\
+    padding: 1px !important;}\
+.colour-holder {\
+    padding: 10px;}\
+.colour-holder .divider {\
+    line-height: 0px;}\
+.drop-colour-pick {\
+    left: -32px !important;\
+    right: auto !important;}\
+.colour-section-header {\
+    color: #555;\
+    background: #EEE;\
+    line-height: 1.7em;\
+    border-bottom: 1px solid #ccc;\
+    padding: 5px 10px;\
+    margin: 1px;}\
+.collapsable.collapsed ~ * {\
+    display: none;}\
+.collapsable.collapsed:after {\
+    content: '' !important;}\
+.collapsable:after {\
+    color: #000;\
+    opacity: 0.2;}\
+.collapsable:after {\
+    content: '';\
+    float: right;\
+    font-size: 20px;\
+    color: #000;\
+    opacity: 0.2;\
+    font-family: 'FontAwesome';}\
+.color-tile {\
+    cursor:pointer;\
+    padding: 15px;\
+    margin: 2px;\
+    border: 1px solid #333;\
+    border-radius:3px;\
+    display: inline-block;\
+    vertical-align: middle;\
+  transition: all 0.5s linear;\
+    box-shadow: 0 1px 0 rgba(255,255,255,0.5) inset,0 -15px 5px rgba(255,255,255,0.1) inset;}\
+.color-tile:hover {\
+    box-shadow: 0 1px 0 rgba(255,255,255,1) inset,0 -15px 5px rgba(255,255,255,0.1) inset;}\
+.tooltip {\
+    position: relative;\
+    color: #444;\
+    text-shadow: none;\
+    padding: 4px;\
+    border-radius:5px;\
+    background: #fff;\
+    border: 1px solid rgba(0, 0, 0, 0.2);\
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);}\
+.drop-down .drop-down {\
+    display: none !important;\
+    top: 0px;\
+    left: 150%;\
+    right: auto !important;}\
+.drop-down li:hover > .drop-down {\
+    display: block !important;}\
+.drop-down li:hover > .drop-down:before {\
+    font-family: 'FontAwesome';\
+    display: inline-block;\
+    content: '';\
+    position: absolute;\
+    top: 0px;\
+    left: -10px;\
+    line-height: 3em;}\
+.chapter-read-all, .chapter-unread-all {\
+    margin-right: 8px;\
+    font-size: 14px;\
+    font-family: 'FontAwesome';\
+    font-style: normal;\
+    color: rgb(80, 126, 44);}\
+.compact_chapters {\
+    display: none;}\
+.chapters_expanded .compact_chapters {\
+    display: inline !important;}\
+.chapter-read-all:before {\
+    content: '';}\
+.chapter-unread-all:before {\
+    content: '';}\
+ul.chapters_compact .chapter_container {\
+    display: none !important;}\
+.sigPreview {\
+    padding: 8px;\
+    color: rgb(68, 68, 68);\
+    width: 100%;\
+    border: 1px solid rgb(204, 204, 204);\
+    font-size: 1.1em;\
+    font-family: 'Segoe UI',Arial;\
+    -moz-box-sizing: border-box;\
+    outline: medium none;\
+    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
+    background-color: rgb(255, 255, 250);\
+    text-shadow: 1px 1px rgba(255, 255, 255, 0.8);\
+    vertical-align: middle;\
+    display: none;}\
+.sigPreviewing {\
+    display: none;}\
+.sigPreviewing ~ .sigPreview {\
+    display: inline-block;}\
+.previewButton {\
+    width: 100px !important;\
+    text-align: center;}\
+.comment .textarea_padding {\
+    padding-left: 0px !important;\
+    padding-right: 0px !important;}\
+.comment textarea:focus {\
+    background-color: rgb(232, 239, 246) !important;\
+    border-color: rgba(0, 0, 0, 0.2) !important;\
+    text-shadow: none !important;}\
+.previous_message .user_image {\
+    max-width: 100px;}\
+.comment textarea {\
+    padding: 8px;\
+    color: rgb(68, 68, 68);\
+    border: 1px solid rgb(204, 204, 204);\
+    -moz-box-sizing: border-box;\
+    outline: medium none;\
+    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
+    background-color: rgb(255, 255, 250);\
+    text-shadow: 1px 1px rgba(244, 244, 244, 0.8);\
+    vertical-align: middle;\
+    min-height: 120px;\
+    border-radius: 0px !important;\
+    width: 100%;\
+    resize: vertical;\
+    left: 0px !important;}\
+.chapter_content #chapter_container {\
+    margin-left: auto !important;\
+    margin-right: auto !important;\
+    max-width: " + getStoryWidth() + ";}\
+ .user_toolbar > .inner .button-first {\
+    margin-left: 0px !important;\
+    border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}\
+.bright, .breadcrumbs.bright li:after {\
+    text-shadow: 1px 1px rgba(255, 255, 255, 0) !important;}\
+.bright {\
+    color: rgba(190,190,190,0.7) !important;}\
+.bright li:after {\
+    color: rgba(190,190,190,0.3) !important;}\
+.bright .story-title {\
+  text-shadow: 0 0 4px black;}\
+.user-card .external-accounts li img {\
+    max-height: 16px;\
+    max-width: 16px;}\
+#imgPreview {\
+    border-radius: 5px;\
+    max-width:100%;\
+    max-height:100%;\
+    padding: 3px;\
+    background: none repeat scroll 0% 0% padding-box #FFF;\
+    border-width: 1px;\
+    border-style: solid;\
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}\
+.content_plus_format {\
+    background: none !important;\
+    border-color: rgba(255,255,255,0.3) !important;}\
+.content_plus_format hr {\
+    opacity: 0.3;}\
+.content_format_pinkie #chapter_container #chapter_container,\
+.content_format_applejack #chapter_container #chapter_container,\
+.content_format_rarity #chapter_container #chapter_container,\
+.content_format_twilight #chapter_container #chapter_container,\
+.content_format_dash #chapter_container #chapter_container,\
+.content_format_fluttershy #chapter_container #chapter_container {\
+    box-shadow: 0 0 3px black;\
+    border-radius: 15px;}\
+#chapter_container p:first-child {\
+    border-radius: 15px 15px 0px 0px !important;}\
+#chapter_container p:last-child {\
+    border-radius: 0px 0px 15px 15px !important;}\
+#bookshelves-sidebar > li, #bookshelves-sidebar-community > li {\
+    background: #fff;\
+    margin: 5px;\
+    padding-left: 5px;\
+    border-width: 1px;\
+    border-style: solid;\
+    border-right: 1px solid #BEBAB4;\
+    border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;\
+    border-radius: 5px;}\
+.left-tabs {\
+    padding-left: 0px !important;\
+    padding-right: 10px;}\
+.left-tabs + div {\
+    padding-right: 0px !important;\
+    padding-left: 30px;}\
+.left-tabs > .sidebar-shadow {\
+    left: 220px !important;}";
+     
+    if(getWideNotes()) {
+        styleSheet += "\
+.chapter_content > .inner_margin {max-width: 100% !important;}\
+.chapter_content .authors-note:before {\
+    content: '';\
+    font-family: FontAwesome;}";
+    }
+    makeStyle(styleSheet);
+}
+
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------API FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -2841,6 +2756,53 @@ function Banner(name,img,source,color,pos) {
 function registerBanners(banners) {
     try {[].push.apply(safeGetThemeArray(), banners);
     } catch (e) {}
+    if ($('.banner_credits').length) addBannerCredits(banners);
+}
+
+function addBannerCredits(items) {
+    var swich = $('<div id="banner_switcher" style="display:block;text-align:center"><div class="toggleable-radio toggleable-radio-2" ><a /></div></div>');
+    $('.banner_credits').parent().before(swich);
+    $('.banner_credits').attr('data-group','default');
+    swich = swich.find('.toggleable-radio');
+    swich.prepend('<input name="banner-group" id="advanced" type="radio" value="advanced" /><label for="advanced">Advanced</label>');
+    swich.prepend('<input name="banner-group" id="default" type="radio" value="default" checked="checked" /><label for="default">Default</label>');
+
+    swich.find('input').on('change',function() {
+        var val = $(this).val();
+        $('.banner_credits').each(function() {
+            if ($(this).attr('data-group') == val) {
+                $(this).css('display','');
+            } else {
+                $(this).css('display','none');
+            }
+        });
+    });
+    
+    var holder = $('<div class="banner_credits" data-group="advanced" style="display:none" />');
+    $('.banner_credits').first().before(holder);
+
+    for (var i in items) {
+        var item = $('<div class="theme" />');
+        holder.append(item);
+        var banner = $('<div class="banner" title="Click to select this banner" style="background-image:url(' + items[i].url + ')" />');
+        item.append(banner);
+        banner.click(function() {
+            var checkbox = item.find("input");
+            checkbox.prop("checked", !checkbox.prop("checked"));
+        });
+        var source = $('<div class="source" style="background-color:' + items[i].colour + '"><input type="checkbox" value="' + items[i].id + '" name="banners[]" /></div>');
+        item.append(source);
+        if (items[i]['source']) {
+            source.append(' Source: <a href="' + items[i].source + '">' + items[i].source + '</a>');
+        }
+        if (items[i]['position']) {
+            banner.css('background-position', items[i].position);
+        }
+    }
+    var themeId = getCookie('selected_theme');
+    $('.banner_credits .source input').each(function() {
+        $(this).prop('checked', $(this).val() == themeId);
+    })
 }
 
 //==API FUNCTION==//
@@ -2902,24 +2864,17 @@ function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 function finaliseThemes() {
     var themeId = getCookie('selected_theme');
     var t = safeGetThemeArray();
+    $('.user_toolbar > ul').css('transition', 'none');
     if (themeId != null && themeId != undefined) {
-        for (var i = 0; i < t.length; i++) {
+        for (var i in t) {
             if (t[i].id == themeId) {
-                theme = i;
-                $(".user_toolbar > ul").css('transition', 'none');
-                chooseTheme(i);
-                $(".user_toolbar > ul").css('transition', '');
+                chooseTheme(theme = i);
                 return;
             }
         }
     }
-    
-    themeId = Math.floor(Math.random() * t.length);
-    
-    $(".user_toolbar > ul").css('transition', 'none');
-    chooseTheme(themeId);
-    $(".user_toolbar > ul").css('transition', '');
-    themeId = t[themeId].id;
+    chooseTheme(theme = Math.floor(Math.random() * t.length));
+    $('.user_toolbar > ul').css('transition', '');
 }
 
 //==API FUNCTION==//
@@ -2936,14 +2891,13 @@ function getSafe(name, defaultValue) {
 
 //==API FUNCTION==//
 function makeToolTip(button) {
-    var popup = document.createElement("div");
-    $(popup).attr("style", "z-index: 50; text-align: left; position: absolute; padding-top: 30px; margin-top: -30px;");
-    $(popup).append("<div style=\"color: black; text-shadow: none; padding: 4px; border-radius: 5px;background-color:#FFF; border:1px solid silver; -webkit-box-shadow:1px 1px 5px #CCC;-moz-box-shadow:1px 1px 5px #CCC;box-shadow:1px 1px 5px #CCC;\"></div>");
+    var popup = $('<div style="z-index:50;text-align:left;position:absolute;" />');
+    popup.append('<div class="tooltip" />');
     $(button).append(popup);
-    $(popup).hover(function(e) { }, function(e) {
+    popup.hover(function(e) { }, function(e) {
         $(this).remove();
     });
-    return popup.children[0];
+    return popup.find('.tooltip');
 }
 
 //==API FUNCTION==//
@@ -2985,7 +2939,9 @@ function makePopup(button, title, fafaText, img) {
 }
 
 //==API FUNCTION==//
-function makeGlobalPopup(title, fafaText, darken, img) {
+function makeGlobalPopup(title, fafaText, darken, close) {
+    if (typeof (close) == 'undefined') close = true;
+    
     logger.Log('makeGlobalPopup: start');
     var holder = document.createElement("div");
     $("body").append(holder);
@@ -2993,11 +2949,13 @@ function makeGlobalPopup(title, fafaText, darken, img) {
     $(holder).attr("style", "position: fixed;z-index:2147483647;left:10px;top:10px");
     $(holder).addClass('global_popup');
     
-    var dark = $('<div class="dimmer" style="z-index:1001;" />');
-    if (typeof (darken) == 'number') {
-        dark.css('opacity', (darken / 100));
+    if (darken) {
+        var dark = $('<div class="dimmer" style="z-index:1001;" />');
+        if (typeof (darken) == 'number') {
+            dark.css('opacity', (darken / 100));
+        }
+        $('#dimmers').append(dark);
     }
-    $('#dimmers').append(dark);
     
     var pop = $("<div class=\"drop-down-pop-up\" style=\"width: auto\" />");
     $(holder).append(pop);
@@ -3024,14 +2982,16 @@ function makeGlobalPopup(title, fafaText, darken, img) {
         document.onmousemove = function(e) {};
     };
     
-    var close = document.createElement("a");
-    $(close).addClass("close_button");
-    $(close).attr("id", "message_close_button");
-    $(close).click(function(e) {
-        $(dark).remove();
-        $(holder).remove();
+    var c = $('<a id="message_close_button" class="close_button" />');
+    $(head).append(c);
+    $(c).click(function(e) {
+        if (close) {
+            $(dark).remove();
+            $(holder).remove();
+        } else {
+           $(holder).css('display','none');
+        }
     });
-    $(head).append(close);
     
     var content = document.createElement("div");
     $(content).addClass("drop-down-pop-up-content");
@@ -3075,89 +3035,24 @@ function isHexLetter(letter) {
 }
 
 //==API FUNCTION==//
-function makeButton(a, text,img){
-    var b=document.createElement("li");
-    $(b).append("<button title=\"" + text + "\"><i class=\"" + img + "\"></i></button>");
-    $(a.parentNode).append(b);
-    return b;
+function makeButton(a, text, img){
+    var result = $('<li class="button-group"><button class="drop-down-expander" title="' + text + '"><i class="' + img + '"></i></button></li>');
+    $(a).append(result);
+    return result.find('button');
 }
 
 //==API FUNCTION==//
-function addOption(list, func, title, breakline) {
-    var a = document.createElement("a");
-    a.setAttribute("href", "javascript:" + func);
-    a.setAttribute("class", "subOption");
-    a.innerHTML = "<div>" + title + "</div>";
-    a.setAttribute("style", "border-radius: 4px; margin-left: 5px; margin-right: 5px;");
+function addOption(list, title) {
+    var a = $('<li><a href="javascript:void()" >' + title + '</a></li>');
     $(list).append(a);
-    if (breakline == null || breakline) {
-        $(list).append("</br>");
-    }
-    return a.children[0];
+    return a.children().first();
 }
 
 //==API FUNCTION==//
-function addDropList(list, title, func, breakline) {
-    var a = $('<a class="subOption subListButton" style="border-radius: 4px; margin-left: 5px; margin-right: 5px;"><div>' + title + '</div></a>');
-    var pop;
-    a.click(function () {
-        if (!$(this).attr('opened') || $(this).attr('opened') == 'false') {
-            pop = makePopup(this);
-            $(pop).parent().parent().css('margin-top', '-50px');
-            $(pop).parent().parent().add($(list).parent().parent()).addClass('list-pop-up-container');
-            $(list).parent().parent().attr('hold', true);
-
-            var isHovering = function (x, y) {
-                var pops = $('.list-pop-up-container');
-                for (var i = 0; i < pops.length; i++) {
-                    var top = $(pops[i]).offset().top;
-                    var height = $(pops[i]).height() - (parseInt($(pops).css('margin-top')) * 2);
-                    var left = $(pops[i]).offset().left;
-                    var width = $(pops[i]).width() - (parseInt($(pops).css('margin-left')) * 2);
-                    if (y >= top && y <= top + height) {
-                        if (x >= left && x <= left + width) {
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            $(list).parent().parent().on('mouseleave', function (e) {
-                if ($(this).attr('hold') == 'true') {
-                    if (!isHovering(e.pageX, e.pageY)) {
-                        $(this).attr('hold', false);
-                        $(this).trigger('mouseleave');
-                        $(pop).trigger('mouseleave');
-                    }
-                }
-            });
-            $(pop).parent().parent().hover(function () {
-                $(a).attr('hold', true);
-            }, function (e) {
-                if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
-                    $(list).parent().parent().attr('hold', false);
-                }
-
-                if (!$(this).attr('toggle') && !isHovering(e.pageX, e.pageY)) {
-                    $(list).trigger('mouseleave');
-                }
-            });
-            $(pop).parent().parent().css('margin-left', $(this).width());
-            $(pop).parent().parent().find('h1').remove();
-            func.apply(pop, this);
-            setListItemWidth(pop);
-            inbounds($(pop).parent().parent());
-        } else {
-            $(pop).parent().parent().attr('toggle', true);
-            $(pop).trigger('mouseleave');
-        }
-    });
-    $(list).append(a);
-    if (breakline == null || breakline) {
-        $(list).append("</br>");
-    }
-    return pop;
+function addDropList(list, title, func) {
+    var a = $('<li><a>' + title + '</a><div class="drop-down"><ul /></div></li>');
+    list.append(a);
+    func.apply(a.find('ul'));
 }
 
 //==API FUNCTION==//
@@ -3176,38 +3071,6 @@ function setListItemWidth(list) {
     for (var i = 0; i < list.children.length; i++) {
         list.children[i].style.width = w + "px";
     }
-}
-
-//==API FUNCTION==//
-function getElementByContent(tag, content) {
-    var all = document.getElementsByTagName(tag);
-    for (var i = 0; i < all.length; i++) {
-        if (all[i].innerHTML == content) {
-            return all[i];
-        }
-    }
-}
-
-//==API FUNCTION==//
-function getElementsByClass(tag, clas) {
-    var elements = document.getElementsByTagName(tag);
-    var results = [];
-    for (var i = 0; i < elements.length; i++) {
-        if ($(elements[i]).hasClass(clas)) {
-            results.push(elements[i]);
-        }
-    }
-    return results;
-}
-
-//==API FUNCTION==//
-function getElementsByAttributeValue(tag, name, value) {
-    var elements = document.getElementsByTagName(tag);
-    var result = [];
-    for (var i = 0; i < elements.length; i++) {
-        if ($(elements[i]).attr(name) == value) result.push(elements[i]);
-    }
-    return result;
 }
 
 //==API FUNCTION==//
@@ -4298,6 +4161,9 @@ function Logger(name, l) {
     if (typeof (l) == 'number') minLevel = l;
     this.Start = function (level) {
         if (typeof (level) == 'number') minLevel = level;
+        if (test == null) {
+            Output('===Logging Started===', minLevel + 1);
+        }
         test = $('#debug-console');
         paused = false;
         if (!test.length) {
@@ -4305,26 +4171,25 @@ function Logger(name, l) {
             $('body').append(test);
             test.click(function () {
                 $(this).empty();
-                this.style.bottom = this.style.left = line = 0;
             });
         }
-        Output('===Logging Enabled===', minLevel + 1);
     }
     this.Stop = function () {
         if (test != null) {
             test.remove();
             test = null;
+            Output('===Logging Stopped===', minLevel + 1);
         }
-        line = 0;
-        Output('===Logging Disabled===', minLevel + 1);
     }
     this.Pause = function () {
-        Output('===Logging Paused===', minLevel + 1);
+        if (!paused) Output('===Logging Paused===', minLevel + 1);
         paused = true;
     }
     this.Continue = function () {
-        paused = false;
-        Output('===Logging Continued===', minLevel + 1);
+        if (paused) {
+            paused = false;
+            Output('===Logging Continued===', minLevel + 1);
+        }
     }
     this.Log = function (txt, level, params) {
         if (arguments.length > 1) {
@@ -4340,7 +4205,10 @@ function Logger(name, l) {
         }
         Output(txt, level);
     }
-    this.Error = function (txt, params) { Output(txt, 1000); }
+    this.Error = function (txt, params) {
+        arguments.splice(1,0,1000);
+        this.Log.apply(this,arguments);
+    }
     this.SevereException = function (txt, excep) {
         if (excep != 'handled') {
             try {
@@ -4357,8 +4225,7 @@ function Logger(name, l) {
                 if (excep.stack != null) SOut(excep.stack, 2000);
                 if (stopped) this.Pause();
             } catch (e) {
-                alert('Error in displaying Severe: ' + e);
-                alert('Severe: ' + txt);
+                alert('Error in displaying Severe: ' + e + '\n' + 'Severe: ' + excep);
             }
             throw 'handled';
         }
@@ -4373,8 +4240,7 @@ function Logger(name, l) {
             SOut(txt, 2);
             if (stopped) this.Pause();
         } catch (e) {
-            alert('Error in displaying Severe: ' + e);
-            alert('Severe: ' + txt);
+            alert('Error in displaying Severe: ' + e + '\n' + 'Severe: ' + excep);
         }
     }
     function Output(txt, level) {
@@ -5120,4 +4986,4 @@ function snowBG() {
     })();
 }
 
-logger.Log('Final: End of script reached');
+logger.Log('Final: End of script reached',100);
