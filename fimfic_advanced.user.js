@@ -6,8 +6,6 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
-// @require     http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js
-// @require     http://flesler-plugins.googlecode.com/files/jquery.scrollTo-1.4.3.1-min.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
@@ -1405,71 +1403,46 @@ function addGravatar() {
 function applyBookmarks() {
     logger.Log('applyBookmarks: start');
     var pbkmark = $('#place_bookmark');
-
-    if (pbkmark.length > 0) {
-        var cl = $('<a style="" set="false" href="javascript:void(0);" id="place_bookmark" title="Place Bookmark"><i class="fa fa-bookmark"></i></a>');
-        pbkmark.after(cl);
-        pbkmark.remove();
-        pbkmark = cl;
-        $('.chapter_content').prepend(marker);
-        
-        var restorePos = $('<li style="display:none;"><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
+    if (pbkmark.length) {
+        var storyNumber = getStoryNumber();
+        var bookmark = getBookmark(storyNumber);
+        var marker = $('#chapter_bookmark');
+        if (bookmark != null) {
+            $(document).scrollTop(bookmark);
+            bookmark = bookmark - $('.chapter_content').offset().top;
+            marker.addClass("placed");
+            marker.css('top', bookmark + 'px');
+            marker.one('click',function() {
+                removeBookmark(storyNumber);
+            });
+        }
+        var restorePos = $('<li><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
         $(restorePos.children()[0]).click(function() {
             logger.Log('Set scroll Position');
-            var bookmark = getBookmark(storyNumber);
-            if (bookmark != null) {
-                $(document).scrollTo(bookmark, {axis: 'y', duration: 800, easing: 'easeInOutExpo'});
+            if ($('#chapter_bookmark').hasClass('placed')) {
+                $('html, body').animate({
+                    scrollTop: parseInt($('#chapter_bookmark').offset().top) - $(window).height() * 0.2
+                }, 500);
             }
         });
         $(pbkmark.parent()).after(restorePos);
-        
-        var marker = $('#chapter_bookmark');
-        cl = $('<div style="top: 111px;" class="bookmark_marker" ></div>');
-        marker.after(cl);
-        marker.remove();
-        marker = cl;
-        
-        var storyNumber = getStoryNumber();
-        var bookmark = getBookmark(storyNumber);
-        if (bookmark != null) {
-            $(document).scrollTop(bookmark);
-            logger.Log('Set scroll Position');
-            pbkmark.attr('set', 'true');
-            pbkmark.attr('title', 'Clear Bookmark');
-            pbkmark.css('color', 'yellow');
-            restorePos.css('display', '');
-            
-            bookmark = bookmark - $('.chapter_content').offset().top;
-            if (bookmark > 0) {
-                marker.css('top', bookmark + 'px');
-                marker.css('display', 'block');
-            }
-        }
-        
-        pbkmark.click(function() {
-            logger.Log('Bookmark Button: click');
-            if ($(this).attr('set') == 'true') {
-                removeBookmark(storyNumber);
-                pbkmark.attr('set', 'false');
-                pbkmark.attr('title', 'Place Bookmark');
-                pbkmark.css('color', '');
-                restorePos.css('display', 'none');
-                marker.attr('style', '');
+        $('#place_bookmark').on('mouseup', function() {
+            restorePos.css('display', 'none');
+        });
+        $(document).on('mouseup', '#chapter_format p', function() {
+            if (marker.hasClass('placing')) {
+                restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
             } else {
-                var position = $(document).scrollTop();
-                if (position - $('.chapter_content').offset().top > 0) {
-                    pbkmark.attr('set', 'true');
-                    pbkmark.attr('title', 'Clear Bookmark');
-                    pbkmark.css('color', 'yellow');
-                    restorePos.css('display', '');
-                    setDocCookie(storyNumber + '_bookmark_position', position);
-                    setBookmark(storyNumber, position);
-                    marker.css('top', (position - $('.chapter_content').offset().top) + 'px');
-                    marker.css('display', 'block');
-                } else {
-                    marker.css('display', 'none');
-                }
+                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
             }
+        });
+        $('#chapter_bookmark').on('mouseup', function() {
+            restorePos.css('display',marker.hasClass('placed') ? 'none' : '');
+        });
+        $(document).ready(function() {
+            setTimeout(function() {
+                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
+            },501);
         });
     }
     logger.Log('applyBookmarks: end');
@@ -1508,6 +1481,9 @@ function applyChapterfix() {
     } catch (e) {
         logger.Error(e);
     }
+    $('.button-sidebar-toggle').on('click', function() {
+        $("#chapter_toolbar_container").css("width", '');
+    });
 }
 
 function setup(hold) {
@@ -1941,6 +1917,8 @@ function betterColors(button, target) {
             holder.append(b);
             var me = this;
             b.find('a').click(function() {
+                $('.active_text_area').removeClass('active_text_area');
+                $(target).addClass('active_text_area');
                 if (!$('#colour_manager').length) {
                     var posOverride = [];
                     if ($('.color_picker').length != 0) {
@@ -1953,14 +1931,14 @@ function betterColors(button, target) {
                     var list = $(makeGlobalPopup('All Colours', 'fa fa-tint', false, false));
                     list.parent().parent().attr('id','colour_manager');
                     list.css('width','590px');
-                    addCollapseColorSection(target, list, Spectrum, 'Standard Colours', false);
-                    addCollapseColorSection(target, list, FimFiccolors, 'FimFiction', false);
-                    addCollapseColorSection(target, list, Ponycolors, 'Mane Six', false);
-                    addCollapseColorSection(text, list, Morecolors, 'More Colours', true);
+                    addCollapseColorSection(list, Spectrum, 'Standard Colours', false);
+                    addCollapseColorSection(list, FimFiccolors, 'FimFiction', false);
+                    addCollapseColorSection(list, Ponycolors, 'Mane Six', false);
+                    addCollapseColorSection(list, Morecolors, 'More Colours', true);
 
                     var recent = getRecentColours(15);
                     if (recent.length > 0) {
-                        var recentSec = addColorSection(target, list, recent, 'Recent');
+                        var recentSec = addColorSection(list, recent, 'Recent');
                         recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
                         var reset = $('<a href="javascript:void();" style="float:right;" >Clear</a>');
                         recentSec.find('.colour-section-header').append(reset);
@@ -1977,7 +1955,7 @@ function betterColors(button, target) {
                         $(pop).parent().parent().css('top', posOverride.y);
                     }
                 } else {
-                    $('#colour_manager').css('display', '');
+                    $('#colour_manager').css('display','');
                 }
             });
             
@@ -2007,8 +1985,8 @@ function betterColors(button, target) {
     });
 }
 
-function addCollapseColorSection(text, panel, colors, title, collapse) {
-    var section = addColorSection(text, panel, colors, title);
+function addCollapseColorSection(panel, colors, title, collapse) {
+    var section = addColorSection(panel, colors, title);
     section.find('.colour-section-header').css('cursor', 'pointer');
     section.find('.colour-section-header').addClass('collapsable');
     section.find('.colour-section-header').click(function() {
@@ -2023,13 +2001,13 @@ function addCollapseColorSection(text, panel, colors, title, collapse) {
     }
 }
 
-function addColorSection(target, panel, colors, title) {
+function addColorSection(panel, colors, title) {
     var result = $('<div class="colour-section" />');
     result.append($('<div class="colour-section-header">' + title + '</div>'));
     var colorGroup = $('<ul class="colour-holder" />');
     result.append(colorGroup);
     panel.append(result);
-    addColorTiles(target, colorGroup, colors);
+    addColorTiles(null, colorGroup, colors);
     return result;
 }
 
@@ -2060,12 +2038,22 @@ function addColorTiles(target, panel, colors) {
         if (code != '') {
             a.attr('data-colour', code);
             a.attr('title', name);
-            a.click(function() {
-                var c = $(this).attr('data-colour');
-                InsertBBCodeTags(target, '[color=' + c + ']', '[/color]');
-                addRecent(c);
-                $(target).focus();
-            });
+            if (target == null) {
+                a.click(function() {
+                    var t = $('.active_text_area').first();
+                    var c = $(this).attr('data-colour');
+                    InsertBBCodeTags(t[0], '[color=' + c + ']', '[/color]');
+                    addRecent(c);
+                    t.focus();
+                });
+            } else {
+                a.click(function() {
+                    var c = $(this).attr('data-colour');
+                    InsertBBCodeTags(target, '[color=' + c + ']', '[/color]');
+                    addRecent(c);
+                    $(target).focus();
+                });
+            }
         }
     }
 }
@@ -2844,9 +2832,7 @@ function getUserButton() {
 
 //==API FUNCTION==//
 function makeStyle(input, id) {
-    while (contains(input, '  ')) {
-        input = replaceAll('  ',' ', input);
-    }
+    while (input.indexOf('  ') != -1) input = input.replace(/  /g,' ');
     var style = document.createElement('style');
     $(style).attr('type', 'text/css');
     $(style).append(input);
