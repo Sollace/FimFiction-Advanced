@@ -96,7 +96,8 @@ registerBanners([
     Banner("cmc_roped", "http://fc06.deviantart.net/fs70/f/2014/072/6/d/cmc_roped_by_comeha-d7a0liy.jpg", "http://spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
     Banner("twi_revenge", "http://fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "http://zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)", "center center"),
     Banner("solar_flare", "http://fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "http://zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", "center right 0px"),
-    Banner("serene", "http://fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "http://rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)")
+    Banner("serene", "http://fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "http://rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
+    Banner("nightwork", "http://fc07.deviantart.net/fs71/f/2014/313/d/f/nightwork_by_comeha-d85teut.png", "http://yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)")
 ]);
 var fonts = {
   'FimFiction': ['Default','Classic', 'Equestria', 'Font Awesome'],
@@ -2855,6 +2856,7 @@ function finaliseThemes() {
         for (var i in t) {
             if (t[i].id == themeId) {
                 chooseTheme(theme = i);
+                $('.user_toolbar > ul').css('transition', '');
                 return;
             }
         }
