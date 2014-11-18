@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5
+// @version     3.5.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -143,13 +143,10 @@ if (customBanner != null) {
 
 if ($('.theme_selector_left > a').length) {
     $('.theme_selector_left > a')[0].onclick = function() {
-        theme--;
-        if (theme < 0) theme = safeGetThemeArray().length - 1;
-        chooseTheme(theme, true);
+        chooseTheme(theme == 0 ? safeGetThemeArray().length - 1 : theme - 1, true);
     };
     $('.theme_selector_right > a')[0].onclick = function() {
-        theme++;
-        chooseTheme(theme % safeGetThemeArray().length, true);
+        chooseTheme((theme + 1) % safeGetThemeArray().length, true);
     };
 }
 finaliseThemes();
@@ -177,7 +174,7 @@ if (!startsWith(CURRENT_LOCATION, 'manage_user/messages/')) {
     FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
 
-FimFicEvents.on('aftereditmodule aftercomposepm', function() {
+FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange', function() {
     setup(false);
 });
 
@@ -1873,7 +1870,7 @@ function betterSizes(button, target) {
                     var size = $('<li><a>' + (i + k) + '</a></li>');
                     holder.append(size);
                     size.find('a').click(function() {
-                        InsertBBCodeTags(target, '[size=' + $(this).text() + 'px]', '[/size]');
+                        InsertBBCodeTags(target, '[size=' + $(this).text() + ']', '[/size]');
                         $(document).trigger("close-dropdowns");
                     });
                     size.hover(function () {
@@ -2575,10 +2572,6 @@ ul.chapters_compact .chapter_container {\
     width: 100%;\
     resize: vertical;\
     left: 0px !important;}\
-.chapter_content #chapter_container {\
-    margin-left: auto !important;\
-    margin-right: auto !important;\
-    max-width: " + getStoryWidth() + ";}\
  .user_toolbar > .inner .button-first {\
     margin-left: 0px !important;\
     border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}\
@@ -2635,16 +2628,17 @@ ul.chapters_compact .chapter_container {\
     padding-right: 0px !important;\
     padding-left: 30px;}\
 .left-tabs > .sidebar-shadow {\
-    left: 220px !important;}";
-     
-    if(getWideNotes()) {
-        styleSheet += "\
-.chapter_content > .inner_margin {max-width: 100% !important;}\
+    left: 220px !important;}\
 .chapter_content .authors-note:before {\
     content: '';\
-    font-family: FontAwesome;}";
-    }
-    makeStyle(styleSheet);
+    font-family: FontAwesome;}\
+.chapter_content > .inner_margin {max-width: 100% !important;}\
+.chapter_content #chapter_container" + (getWideNotes() ? "" : ", .authors-note") + " {\
+    margin-left: auto !important;\
+    margin-right: auto !important;\
+    max-width: " + getStoryWidth() + ";}";
+    makeStyle(styleSheet, "FimFiction_Advanced_Styleshet");
+    makeStyle(styleSheet, "FimFiction_advanced_story_content_sheet");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2697,6 +2691,12 @@ function chooseTheme(id, save) {
         $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
+    
+    if (!$('#imagePreload').length) {
+        $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
+    }
+    $('#imagePreload').css('background-image', 'url(' + safeGetThemeArray()[id == 0 ? safeGetThemeArray().length - 1 : id - 1].url + '), url(' + safeGetThemeArray()[(id + 1) % safeGetThemeArray().length].url + ')');
+    theme = id;
 }
 
 //==API FUNCTION==//
@@ -2855,13 +2855,13 @@ function finaliseThemes() {
     if (themeId != null && themeId != undefined) {
         for (var i in t) {
             if (t[i].id == themeId) {
-                chooseTheme(theme = i);
+                chooseTheme(i);
                 $('.user_toolbar > ul').css('transition', '');
                 return;
             }
         }
     }
-    chooseTheme(theme = Math.floor(Math.random() * t.length));
+    chooseTheme(Math.floor(Math.random() * t.length));
     $('.user_toolbar > ul').css('transition', '');
 }
 
