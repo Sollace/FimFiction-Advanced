@@ -174,7 +174,7 @@ if (!startsWith(CURRENT_LOCATION, 'manage_user/messages/')) {
     FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
 
-FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange', function() {
+FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', function() {
     setup(false);
 });
 
