@@ -156,10 +156,11 @@ var logoO = getLogoO();
 updateLogo(logo);
 updateLogoO(logoO);
 addChapterButtonsExtras();
+addBookshelfEdits();
 applyBookmarks();
 setAccountLogos();
 setup(true);
-
+     
 if (startsWith(CURRENT_LOCATION, 'manage_user/avatar')) addGravatar();
 if (startsWith(CURRENT_LOCATION, 'manage_user/account')) {
     registerExternalAccount('other', {'name': 'Other', 'url': 'http://{account}', 'regex': /\/\/(.*)/, 'account': 'url'});
@@ -1028,19 +1029,21 @@ function getBookmarksGui(tab) {
     for (var i = 0; i < keys.length; i++) {
         if (keys[i].indexOf('bookmark_position') != -1) {
             var item = keys[i].replace('_bookmark_position', '');
-            if ((item.indexOf('_') == -1 && item.indexOf(':') == -1) || parseInt(getDocCookie(keys[i])) < 0) {
-                removeBookmark(item);
-            } else {
-                var entry = {};
-                entry.raw = keys[i];
-                entry.key = keys[i].replace('_bookmark_position', '');
-                if (item.indexOf(':') != -1) {
-                    entry.bookmark = ['published'].concat(item.split(':'));
+            if (parseInt(getDocCookie(keys[i])) >= 0) {
+                if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
+                    removeBookmark(item);
                 } else {
-                    entry.bookmark = ['unpublished'].concat(item.split('_'));
+                    var entry = {};
+                    entry.raw = keys[i];
+                    entry.key = keys[i].replace('_bookmark_position', '');
+                    if (item.indexOf(':') != -1) {
+                        entry.bookmark = ['published'].concat(item.split(':'));
+                    } else {
+                        entry.bookmark = ['unpublished'].concat(item.split('_'));
+                    }
+
+                    itemsArray.push(entry);
                 }
-                
-                itemsArray.push(entry);
             }
         }
     }
@@ -1199,8 +1202,7 @@ function getBookmarksGui(tab) {
                     renderPage();
                 }
             }, 360);
-            setDocCookie($(this).attr('cookieName'), -1);
-            removeBookmark($(this).attr('cookieName'));
+            markBookmarkDeleted($(this).attr('cookieName'));
         });
         $(row.children()[2]).append(delBut);
         $(row).css('opacity', 1);
@@ -1247,6 +1249,19 @@ function getBookmarksGui(tab) {
         }
         itemsArray[i].me = me;
     }
+}
+
+function addBookshelfEdits() {
+    $('.user_toolbar ul.bookshelves li').each(function() {
+        if ($(this).attr('data-id')) {
+            var edit = $('<span class="bookshelf-info" style="display:inline"> (<a data-id="' + $(this).attr('data-id') + '">edit</a>) </span>');
+            edit.find('a').on('click', function(a) {
+                (new Bookshelf($(this).attr('data-id'))).Edit();
+                a.preventDefault();
+            });
+            $(this).find('.bookshelf-content > span > a').first().after(edit);
+        }
+    });
 }
 
 function addChapterButtonsExtras() {
@@ -1405,7 +1420,8 @@ function applyBookmarks() {
         var storyNumber = getStoryNumber();
         var bookmark = getBookmark(storyNumber);
         var marker = $('#chapter_bookmark');
-        if (bookmark != null) {
+        
+        if (bookmark != null && bookmark > 0) {
             $(document).scrollTop(bookmark);
             bookmark = bookmark - $('.chapter_content').offset().top;
             marker.addClass("placed");
@@ -1429,19 +1445,36 @@ function applyBookmarks() {
         });
         $(document).on('mouseup', '#chapter_format p', function() {
             if (marker.hasClass('placing')) {
+                updatePlaceBookmark();
                 restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
             } else {
                 restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
             }
         });
         $('#chapter_bookmark').on('mouseup', function() {
-            restorePos.css('display',marker.hasClass('placed') ? 'none' : '');
+            updatePlaceBookmark();
+            restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
         });
         $(document).ready(function() {
             setTimeout(function() {
                 restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
+                var storyNumber = getStoryNumber();
+                var bookmark = getBookmark(storyNumber);
+                if (bookmark < 0) {
+                    $('#remove_bookmark').click();
+                    $(document).scrollTop(0);
+                    removeBookmark(storyNumber);
+                }
             },501);
         });
+        
+        function updatePlaceBookmark() {
+            if (marker.hasClass('placed')) {
+                removeBookmark(storyNumber);
+            } else {
+                setBookmark(storyNumber);
+            }
+        }
     }
     logger.Log('applyBookmarks: end');
 }
@@ -3414,12 +3447,12 @@ function addRecent(color) {
 //==API FUNCTION==//
 function getBookmark(num) {
     num = hasDocCookie(num + '_bookmark_position') ? parseInt(getDocCookie(num + '_bookmark_position')) : null;
-    return num != null && num >= 0 ? num : null;
+    return num != null && num >= -1 ? num : null;
 }
 
 //==API FUNCTION==//
-function setBookmark(num, val) {
-    setDocCookie(num + '_bookmark_position', val);
+function setBookmark(num) {
+    setDocCookie(num + '_bookmark_position', '0');
     setDocCookie(num + '_bookmark_d', $('.chapter-header .story-title').text() + '\n' + $('#chapter_title').text());
     setDocCookie('latest_bookmark', num);
 }
@@ -3466,6 +3499,11 @@ function getTotalBookmarks() {
         }
     }
     return result;
+}
+
+//==API FUNCTION==//
+function markBookmarkDeleted(num) {
+    setDocCookie(num + '_bookmark_position', -1);
 }
 
 //==API FUNCTION==//
