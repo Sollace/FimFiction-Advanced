@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5.1
+// @version     3.5.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -156,7 +156,6 @@ var logoO = getLogoO();
 updateLogo(logo);
 updateLogoO(logoO);
 addChapterButtonsExtras();
-addBookshelfEdits();
 applyBookmarks();
 setAccountLogos();
 setup(true);
@@ -166,7 +165,7 @@ if (startsWith(CURRENT_LOCATION, 'manage_user/account')) {
     registerExternalAccount('other', {'name': 'Other', 'url': 'http://{account}', 'regex': /\/\/(.*)/, 'account': 'url'});
     updateAccountControls();
 }
-if ($('#chapter_container').length) applyChapterfix();
+if ($('#browse_form').length) applyChapterfix();
 
 logger.Log('Registering events...',10);
 
@@ -186,33 +185,7 @@ if (getAlwaysShowImages()) {
 
 logger.Log('events registered successfully',10);
 
-if ($('.right-menu-inner').length) {
-    var swit = $('<div style="display:table-cell;min-width:110px;vertical-align:middle;padding-left:10px" />');
-    $('.right-menu-inner').children().last().before(swit);
-    var a = $('<button type="button" style="display:block !important; width:100% !important; margin:0px;" class="styled_button styled_button_brown" href="javascript:void();">List Names</button>');
-    swit.append(a);
-    $(a).click(listNames);
-    makeStyle("\
-                .listText {\
-                    padding: 8px;\
-                    color: rgb(68, 68, 68);\
-                    width: 100%;\
-                    border: 1px solid rgb(204, 204, 204);\
-                    font-size: 1.1em;\
-                    font-family: 'Segoe UI',Arial;\
-                    -moz-box-sizing: border-box;\
-                    outline: medium none;\
-                    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
-                    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
-                    background-color: rgb(244, 244, 244);\
-                    text-shadow: 1px 1px rgba(255, 255, 255, 0.8);\
-                    vertical-align: middle;}\
-                .listText:focus {\
-                    background-color: rgb(232, 239, 246);\
-                    border-color: rgba(0, 0, 0, 0.2);\
-                    text-shadow: none;}");
-    logger.Log('story lister added successfully',10);
-}
+if ($('.right-menu-inner').length) addStoryList();
 
 if (isMyBlogPage()) {
     logger.Log('is_users_blog=true',10);
@@ -1251,24 +1224,11 @@ function getBookmarksGui(tab) {
     }
 }
 
-function addBookshelfEdits() {
-    $('.user_toolbar ul.bookshelves li').each(function() {
-        if ($(this).attr('data-id')) {
-            var edit = $('<span class="bookshelf-info" style="display:inline"> (<a data-id="' + $(this).attr('data-id') + '">edit</a>) </span>');
-            edit.find('a').on('click', function(a) {
-                (new Bookshelf($(this).attr('data-id'))).Edit();
-                a.preventDefault();
-            });
-            $(this).find('.bookshelf-content > span > a').first().after(edit);
-        }
-    });
-}
-
 function addChapterButtonsExtras() {
     var loggedIn = getIsLoggedIn();
     $('ul.chapters').each(function() {
         var me = this;
-        var extra = $('<li class="bottom" style="overflow:hidden;" />');
+        var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
         
         $(this).prepend('<div class="all_chapters_hidden"><li>All chapters hidden</li></div>');
         $(this).prepend(extra);
@@ -1411,6 +1371,32 @@ function addGravatar() {
         }
     });
     logger.Log('addGravatar: end');
+}
+
+function addStoryList() {
+    var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void();">List</a>');
+    $('#browse_form .button-group .styled_button').first().after(a);
+    $(a).click(listNames);
+    makeStyle("\
+.listText {\
+    padding: 8px;\
+    color: rgb(68, 68, 68);\
+    width: 100%;\
+    border: 1px solid rgb(204, 204, 204);\
+    font-size: 1.1em;\
+    font-family: 'Segoe UI',Arial;\
+    -moz-box-sizing: border-box;\
+    outline: medium none;\
+    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;\
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;\
+    background-color: rgb(244, 244, 244);\
+    text-shadow: 1px 1px rgba(255, 255, 255, 0.8);\
+    vertical-align: middle;}\
+.listText:focus {\
+    background-color: rgb(232, 239, 246);\
+    border-color: rgba(0, 0, 0, 0.2);\
+    text-shadow: none;}");
+    logger.Log('story lister added successfully',10);
 }
 
 function applyBookmarks() {
