@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5.3
+// @version     3.5.4
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ if (startsWith(CURRENT_LOCATION, 'manage_user/account')) {
     registerExternalAccount('other', {'name': 'Other', 'url': 'http://{account}', 'regex': /\/\/(.*)/, 'account': 'url'});
     updateAccountControls();
 }
-if ($('#browse_form').length) applyChapterfix();
+if ($('#chapter_container').length) applyChapterfix();
 
 logger.Log('Registering events...',10);
 
@@ -3743,6 +3743,7 @@ function setDocCookie(name, val) {
     localStorage[name] = val;
 }
 
+//==API FUNCTION==//
 function getDocCookie(name) {
     logger.Log('getCookie: ' + name);
     return localStorage[name];
