@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5.4
+// @version     3.5.5
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -246,7 +246,7 @@ if (snowing < 2 && (snowing == 0 || december)) {
 try {
     logger.Log('starting settings Tab setup');
     if (getIsLoggedIn()) {
-        var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark"></i><span class="bkm_number" /></a>');
+        var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark" /><span>Bookmarks ( ' + getTotalBookmarks() + ' )</span></a>');
         var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
         button.prepend(bkm);
         var latst = getLatestBookmark();
@@ -256,18 +256,9 @@ try {
         button.find('ul').append(bkm);
         bkm.click(function() {
             removeAllBookmarks();
-            $('.bkm_button').removeClass('new');
-            $('.bkm_number').text('Bookmarks');
+            $('.bkm_number').text('Bookmarks ( 0 )');
         });
         $('.user_toolbar audio').before(button);
-
-        var marks = getTotalBookmarks();
-        if (marks > 0) {
-            $('.bkm_button').addClass('new');
-            $('.bkm_number').text(marks);
-        } else {
-            $('.bkm_number').text('Bookmarks');
-        }
 
         var btab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content');
         if (btab.HasInit()) {
@@ -2334,10 +2325,6 @@ function addCss() {
 #pm_content {\
     resize: none;\
     height: 200px;}\
-.bkm_button.new:not(hover) {\
-    background-color: #AA9922;}\
-.bkm_button.new:hover, .user_drop_down_menu:hover .bkm_button.new {\
-    background-color: #9A8912 !important;}\
 .bookmark_item {\
     border-bottom: solid 1px grey;\
     padding-top: 5px;}\
