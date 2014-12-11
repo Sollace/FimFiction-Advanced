@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5.5
+// @version     3.5.6
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2319,9 +2319,17 @@ function censorStory(element) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     var styleSheet = "\
+/*Dropdown radius fix*/\
+.user_toolbar > ul > li ul li:last-child a > i {\
+    border-bottom-left-radius: 4px;}\
+.user_toolbar > ul > li > ul ul {\
+    border-bottom-left-radius: 4px;\
+    border-bottom-right-radius: 4px;}\
+\
 /*Comment insert_left/right fix*/\
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
+\
 #pm_content {\
     resize: none;\
     height: 200px;}\
