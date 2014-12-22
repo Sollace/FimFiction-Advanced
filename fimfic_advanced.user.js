@@ -2368,11 +2368,24 @@ function addCss() {
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
 \
-.user-page-header, .story-page-header {\
-  height: 20px;\
-  transition: height 0.5s ease;}\
-.user-page-header:hover, .story-page-header:hover {\
-  height: 300px;}\
+@media all and (min-width: 700px) {\
+  .user-page-header, .story-page-header {\
+    height: 20px;\
+    transition: height 0.5s ease;}\
+  .user-page-header:hover, .story-page-header:hover {\
+    transition: height 0.5s 0.6s ease;\
+    height: 300px;}\
+  .user_toolbar > ul {\
+    box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
+    border: 1px solid rgba(0, 0, 0, 0.2);\
+    border-left: none;\
+    border-right: none;}\
+\
+  header.header #title {\
+    display: block !important;\
+  }\
+}\
+\
 #pm_content {\
     resize: none;\
     height: 200px;}\
@@ -2695,7 +2708,6 @@ ul.chapters_compact .chapter_container {\
     margin-right: auto !important;\
     max-width: " + getStoryWidth() + ";}";
     makeStyle(styleSheet, "FimFiction_Advanced_Styleshet");
-    makeStyle(styleSheet, "FimFiction_advanced_story_content_sheet");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -2806,9 +2818,9 @@ function Banner(name,img,source,color,pos) {
 
 //==API FUNCTION==//
 function registerBanners(items) {
-    if (!$('.banner_buttons').length && !$('.story_page_header').length) {
+    if (!$('.banner_buttons').length && !$('.story_page_header').length && !$('.group.content_box .banner').length) {
         $('header.header').prepend('\
-<div style="display: block !important; overflow: hidden; transition: height 0.5s ease 0s;" id="title" class="title">\
+<div style="overflow: hidden; transition: height 0.5s ease 0s;" id="title" class="title">\
   <div class="banner-buttons">\
     <a id="source_link" href="">Source</a>\
     <a id="reset_banner" href="javascript:void(0);" onclick="ResetBanner( );">Reset Selection</a>\
