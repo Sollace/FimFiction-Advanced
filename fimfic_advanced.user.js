@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.5.6
+// @version     3.6
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -84,7 +84,45 @@ var logos = [
     new BG("Luna", "http://fc03.deviantart.net/fs70/f/2014/188/5/8/fimfic_luna_by_comeha-d7pkw8u.png"),
     new BG("Sunset Shimmer", "http://fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
 ];
-registerBanners([
+var banners = registerBanners([
+    Ban("zecora", "http://aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "rgb(164, 110, 60)"),
+    Ban("aeron_fluttershy", "http://aeronjvl.deviantart.com/art/Nature-326303180", "rgb(164, 122, 60)"),
+    Ban("aeron_philomena", "http://ajvl.deviantart.com/art/Philomena-Equestria-s-Finest-Phoenix-310217164", "rgb(76, 112, 126)"),
+    Ban("aeron_celestia", "http://aeronjvl.deviantart.com/art/Path-to-Canterlot-340639474", "rgb(76, 126, 110)"),
+    Ban("derpy_dash", "http://ponykillerx.deviantart.com/art/Full-Armour-D-vs-D-288729315", "rgb(87, 102, 111)"),
+    Ban("ponykiller_trixie", "http://ponykillerx.deviantart.com/art/No-Title-Wallpaper-Version-287646346", "rgb(83, 76, 121)"),
+    Ban("yamio_fluttershy", "http://yamio.deviantart.com/art/Fluttershy-285372865", "rgb(140, 151, 83)"),
+    Ban("ratofdrawn_1", "http://ratofdrawn.deviantart.com/art/Wet-Fun-317158001", "rgb(146, 164, 60)"),
+    Ban("ratofdrawn_rarijack", "http://ratofdrawn.deviantart.com/art/Differences-343226962", "rgb(100, 133, 190)"),
+    Ban("solar_luna", "http://soapie-solar.deviantart.com/art/Chibi-Luna-Star-Fishing-340002341", "rgb(72, 60, 164)"),
+    Ban("solar_group", "http://soapie-solar.deviantart.com/art/Forest-Foundation-283012970", "rgb(131, 164, 60)"),
+    Ban("uc77_1", "http://uc77.deviantart.com/art/Ponies-Dig-Giant-Robots-281071953", "rgb(164, 135, 60)"),
+    Ban("cmaggot_fluttershy", "http://cmaggot.deviantart.com/art/Dangerous-Mission-342068171", "rgb(77, 60, 164)"),
+    Ban("rainbow_ss", "http://derpiboo.ru/41558", "rgb(164, 114, 60)"),
+    Ban("rainbow_markerpone", "http://derpiboo.ru/131068", "rgb(69, 100, 96)"),
+    Ban("rainbow_roseluck", "http://derpiboo.ru/50361", "rgb(164, 60, 152)"),
+    Ban("jj_trixie", "http://johnjoseco.deviantart.com/art/Trixie-s-Life-is-so-Hard-340685374", "rgb(60, 114, 164)"),
+    Ban("anima_1", "http://spiritto.deviantart.com/art/C-mon-lift-your-Spirit-324914801", "rgb(60, 118, 164)"),
+    Ban("mew_pinkie", "http://mewball.deviantart.com/art/Reflect-338427890", "rgb(60, 147, 164)"),
+    Ban("tsitra_dash", "http://tsitra360.deviantart.com/art/Morning-Flight-331710988", "rgb(60, 89, 164)"),
+    Ban("knifeh_scoots", "http://knifeh.deviantart.com/art/Scootaloo-326771443", "rgb(164, 127, 60)"),
+    Ban("noben_celestia", "http://noben.deviantart.com/art/Sunrise-in-Equestria-280309698", "rgb(164, 89, 60)"),
+    Ban("ep_shady_trough", "http://equestria-prevails.deviantart.com/art/The-Shady-Trough-319986368", "rgb(77, 60, 164)"),
+    Ban("spittfire_1", "http://spittfireart.deviantart.com/art/The-Report-Commission-340421670", "rgb(60, 85, 164)"),
+    Ban("blitzpony_luna", "http://blitzpony.deviantart.com/art/S-hard-to-say-359899432", "rgb(75, 77, 85)"),
+    Ban("gsphere_scoots", "http://lionel23.deviantart.com/art/The-Newbie-set-an-Academy-Record-356826950", "rgb(71, 127, 179)"),
+    Ban("stoic_celestia", "http://thestoicmachine.deviantart.com/art/Radiant-Malevolence-213959523", "rgb(112, 108, 167)"),
+    Ban("moe_canterlot", "http://derpibooru.org/25", "rgb(134, 125, 88)"),
+    Ban("alasou_costumes", "http://alasou.deviantart.com/art/Costume-Swap-party-381670764", "rgb(119, 88, 134)"),
+    Ban("pridark_luna", "http://pridark.deviantart.com/art/A-Wonderful-Night-381504014", "rgb(82, 90, 143)"),
+    Ban("gign_flutterdash", "http://gign-3208.deviantart.com/art/In-the-attic-377732207", "rgb(165, 87, 68)"),
+    Ban("goben_forest", "http://noben.deviantart.com/art/Giggling-at-the-Ghosties-356451219", "rgb(85, 107, 128)"),
+    Ban("devinian_lyra_bonbon", "http://devinian.deviantart.com/art/Story-of-the-bench-373750983", "rgb(104, 136, 90)"),
+    Ban("devinian_fluttershy", "http://devinian.deviantart.com/art/Picnic-with-Kindness-351639714", "rgb(116, 145, 66)"),
+    Ban("jackalynn_pinkiedash", "http://jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "rgb(69, 132, 182)"),
+    Ban("yakovlev_fluttershy", "http://yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5e7520"),
+    Ban("yakovlev_twilight", "http://yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9e75a9"),
+    Ban("mymagicdream_twilight", "http://my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599a"),
     Banner("sleeping_bath_bloom", "http://fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "http://junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
     Banner("flutterby_dash", "http://fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "http://junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
     Banner("mommy_derp", "http://fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "http://junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
@@ -2330,6 +2368,11 @@ function addCss() {
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
 \
+.user-page-header, .story-page-header {\
+  height: 20px;\
+  transition: height 0.5s ease;}\
+.user-page-header:hover, .story-page-header:hover {\
+  height: 300px;}\
 #pm_content {\
     resize: none;\
     height: 200px;}\
@@ -2683,20 +2726,21 @@ function getSite(url) {
 //==API FUNCTION==//
 function chooseTheme(id, save) {
     if (save == true) {
-        selectTheme(id);
-    } else {
-        $('#title a.home_link').css('background-image','url("' + safeGetThemeArray()[id].url + '")');
-        if (safeGetThemeArray()[id].source == "") {
-            $('#source_link').addClass('hidden');
-        } else {
-            $('#source_link').attr('href', safeGetThemeArray()[id].source);
-            $('#source_link').removeClass('hidden');
-        }
-
-        if (safeGetThemeArray()[id].colour != null && safeGetThemeArray()[id].colour != "") {
-            $('.user_toolbar > ul').css('background-color', safeGetThemeArray()[id].colour);
-        }
+        setCookie("selected_theme",safeGetThemeArray()[id].id,365);
     }
+    
+    $('#title a.home_link').css('background-image','url("' + safeGetThemeArray()[id].url + '")');
+    if (safeGetThemeArray()[id].source == "") {
+        $('#source_link').addClass('hidden');
+    } else {
+        $('#source_link').attr('href', safeGetThemeArray()[id].source);
+        $('#source_link').removeClass('hidden');
+    }
+
+    if (safeGetThemeArray()[id].colour != null && safeGetThemeArray()[id].colour != "") {
+        $('.user_toolbar > ul').css('background-color', safeGetThemeArray()[id].colour);
+    }
+
         
     if (safeGetThemeArray()[id].position != null && safeGetThemeArray()[id].position != "") {
         $('#title a.home_link').css('background-size', '1300px');
@@ -2751,15 +2795,35 @@ function registerBanner(name, img, source, color, pos) {
 }
 
 //==API FUNCTION==//
+function Ban(name, source, color, pos) {
+    return Banner(name, 'https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev/banners/' + name + '.jpg', source, color, pos);
+}
+
+//==API FUNCTION==//
 function Banner(name,img,source,color,pos) {
     return {'id':name, 'url':img, 'source':source, 'colour':color, 'position':pos};
 }
 
 //==API FUNCTION==//
-function registerBanners(banners) {
-    try {[].push.apply(safeGetThemeArray(), banners);
-    } catch (e) {}
-    if ($('.banner_credits').length) addBannerCredits(banners);
+function registerBanners(items) {
+    if (!$('.banner_buttons').length && !$('.story_page_header').length) {
+        $('header.header').prepend('\
+<div style="display: block !important; overflow: hidden; transition: height 0.5s ease 0s;" id="title" class="title">\
+  <div class="banner-buttons">\
+    <a id="source_link" href="">Source</a>\
+    <a id="reset_banner" href="javascript:void(0);" onclick="ResetBanner( );">Reset Selection</a>\
+    <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
+  </div>\
+  <a style="" href="/" class="home_link"><div><img style="opacity: 1;" src=""></div></a>\
+  <a href="/" class="home_link_link" />\
+  <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
+  <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
+</div>');
+    }
+    if ($('.banner_credits').length) {
+        addBannerCredits(items);
+    }
+    return items;
 }
 
 function addBannerCredits(items) {
@@ -2881,7 +2945,7 @@ function finaliseThemes() {
 
 //==API FUNCTION==//
 function safeGetThemeArray() {
-    return getSafe('banners', []);
+    return banners;
 }
 
 //==API FUNCTION==//
@@ -4489,6 +4553,8 @@ function setupSweetie() {
                         $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />');
                     }
                     spawnCookie(true, lastX, lastY);
+                } else if (extra_key == 68) {
+                    bonusDucks();
                 } else if (extra_key == 72) {
                     toggleHearts();
                 } else if (!no) {
@@ -4511,7 +4577,7 @@ function setupSweetie() {
                 }
                 event.preventDefault();
             }
-        } else if (event.keyCode == 67 || event.keyCode == 72) {
+        } else if (event.keyCode == 67 || event.keyCode == 72 || event.keyCode == 68) {
             extra_key = event.keyCode;
             if ($(belle).attr("dragging") == "true") {
                 event.preventDefault();
@@ -4804,6 +4870,15 @@ img[held="true"] {\
                 },fadeTime);
             },fadeTime + sitTime);
         },100);
+    }
+    
+    function bonusDucks() {
+        if (!$('.bonus_ducks').length) {
+            var pop = $(makeGlobalPopup('Bonus Ducks!', 'fa fa-child', false));
+            pop.css({'width': '700px', 'height':'750px'});
+            pop.html('<iframe style="width:100%;height:100%;" src="http://bonusducks.com" />');
+            pop.addClass('bonus_ducks');
+        }
     }
     
     function shake() {
