@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.6.2
+// @version     3.6.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2892,8 +2892,11 @@ function registerBanners(items) {
     $('.focus-tile').on('mouseleave', function() {
         $('body').removeClass('expand-tile');
     });
-    $(window).on('resize',repos);
-    repos();
+    
+    if ($('.user-page-header, .story-page-header').length) {
+        $(window).on('resize', repos);
+        repos();
+    }
     
     if ($('.banner_credits').length) {
         addBannerCredits(items);
