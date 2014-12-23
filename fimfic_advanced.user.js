@@ -2368,23 +2368,71 @@ function addCss() {
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
 \
+@media all and (max-width: 700px) {\
+  .hover-tile {\
+    display: none;}}\
 @media all and (min-width: 700px) {\
   .user-page-header, .story-page-header {\
-    height: 20px;\
+    height: 70px;\
     transition: height 0.5s ease;}\
+  body.expand-tile .user-page-header, body.expand-tile .story-page-header,\
   .user-page-header:hover, .story-page-header:hover {\
     transition: height 0.5s 0.6s ease;\
     height: 300px;}\
+  body.expand-tile header.header .title,\
+  .user-page-header:hover ~  header.header .title, .story-page-header:hover ~ header.header .title {\
+    height: 20px;}\
+  header.header .title {\
+    transition: height 0.5s ease;}\
+  body.expand-tile header.header .title,\
+  .user-page-header:hover ~  header.header .title,\
+  .story-page-header:hover ~ header.header .title {\
+    transition: height 0.5s 0.6s ease !important;}\
   .user_toolbar > ul {\
     box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
     border: 1px solid rgba(0, 0, 0, 0.2);\
     border-left: none;\
     border-right: none;}\
-\
+  header.header .focus-tile {\
+    position: absolute;\
+    vertical-align: top;\
+    padding-right: 20px;\
+    width: 0px;\
+    top: -45px;\
+    left: 13px;\
+    transition: opacity 0.7s ease;\
+    z-index: 30 !important;}\
+  header.header .focus-tile img {\
+    padding: 4px;\
+    background: none repeat scroll 0% 0% #FFF;\
+    max-height: 147px;\
+    max-width: 147px;\
+    border-radius: 5px;\
+    display: block;}\
+  header.header .image-container {\
+    top: -45px;\
+    left: 33px;\
+    opacity: 1;}\
+  header.header .image-container img {\
+    max-height: 160px;\
+    max-width: 220px;}\
+  body.expand-tile .story-page-header + * .focus-tile,\
+  .story-page-header:hover + * .focus-tile,\
+  body.expand-tile .user-page-header + * .focus-tile,\
+  .user-page-header:hover + * .focus-tile {\
+    opacity: 0;}\
   header.header #title {\
-    display: block !important;\
-  }\
-}\
+    display: block !important;}}\
+.user_toolbar > ul > li {\
+  background: rgba(255, 255, 255, 0.1);\
+  text-shadow: none;\
+  color: rgba(0, 0, 0, 0.85);\
+  border-right: 1px solid rgba(0, 0, 0, 0.2);\
+  border-top: 1px solid rgba(0, 0, 0, 0.2);\
+  margin: -1px 0px 0px;}\
+.user_toolbar > ul > li:hover {\
+  text-shadow: none;\
+  background: rgba(0, 0, 0, 0.1);}\
 \
 #pm_content {\
     resize: none;\
@@ -2750,7 +2798,7 @@ function chooseTheme(id, save) {
     }
 
     if (safeGetThemeArray()[id].colour != null && safeGetThemeArray()[id].colour != "") {
-        $('.user_toolbar > ul').css('background-color', safeGetThemeArray()[id].colour);
+        $('.user_toolbar > ul').css('background', safeGetThemeArray()[id].colour);
     }
 
         
@@ -2818,9 +2866,9 @@ function Banner(name,img,source,color,pos) {
 
 //==API FUNCTION==//
 function registerBanners(items) {
-    if (!$('.banner_buttons').length && !$('.story_page_header').length && !$('.group.content_box .banner').length) {
+    if (!$('.banner_buttons').length && !$('.group.content_box .banner').length) {
         $('header.header').prepend('\
-<div style="overflow: hidden; transition: height 0.5s ease 0s;" id="title" class="title">\
+<div style="overflow: hidden;" id="title" class="title">\
   <div class="banner-buttons">\
     <a id="source_link" href="">Source</a>\
     <a id="reset_banner" href="javascript:void(0);" onclick="ResetBanner( );">Reset Selection</a>\
@@ -2832,6 +2880,17 @@ function registerBanners(items) {
   <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
 </div>');
     }
+    if ($('.user-page-header').length) {
+        $('header.header').append($('.user-page-header').first().find('.avatar-container').addClass('focus-tile').clone());
+    } else if ($('.story-page-header').length) {
+        $('header.header').append($('.story-page-header').first().find('.image-container').addClass('focus-tile').clone());
+    }
+    $('.focus-tile').on('mouseover', function() {
+        $('body').addClass('expand-tile');
+    });
+    $('.focus-tile').on('mouseleave', function() {
+        $('body').removeClass('expand-tile');
+    });
     if ($('.banner_credits').length) {
         addBannerCredits(items);
     }
