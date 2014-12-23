@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.6.1
+// @version     3.6.2
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2390,9 +2390,7 @@ function addCss() {
     transition: height 0.5s 0.6s ease !important;}\
   .user_toolbar > ul {\
     box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
-    border: 1px solid rgba(0, 0, 0, 0.2);\
-    border-left: none;\
-    border-right: none;}\
+    border: 1px solid rgba(0, 0, 0, 0.2);}\
   header.header .focus-tile {\
     position: absolute;\
     vertical-align: top;\
@@ -2412,6 +2410,7 @@ function addCss() {
   header.header .image-container {\
     top: -45px;\
     left: 33px;\
+    padding: 0px 20px;\
     opacity: 1;}\
   header.header .image-container img {\
     max-height: 160px;\
@@ -2433,6 +2432,8 @@ function addCss() {
 .user_toolbar > ul > li:hover {\
   text-shadow: none;\
   background: rgba(0, 0, 0, 0.1);}\
+header.header {\
+  max-width: 1300px;}\
 \
 #pm_content {\
     resize: none;\
@@ -2891,9 +2892,19 @@ function registerBanners(items) {
     $('.focus-tile').on('mouseleave', function() {
         $('body').removeClass('expand-tile');
     });
+    $(window).on('resize',repos);
+    repos();
+    
     if ($('.banner_credits').length) {
         addBannerCredits(items);
     }
+    
+    function repos() {
+        $('.focus-tile').css({
+            'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left - $('header.header .title').offset().left
+        });
+    }
+    
     return items;
 }
 
