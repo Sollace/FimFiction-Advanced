@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.6
+// @version     3.6.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2369,7 +2369,7 @@ function addCss() {
     overflow: hidden;}\
 \
 @media all and (max-width: 700px) {\
-  .hover-tile {\
+  .focus-tile {\
     display: none;}}\
 @media all and (min-width: 700px) {\
   .user-page-header, .story-page-header {\
@@ -2881,9 +2881,9 @@ function registerBanners(items) {
 </div>');
     }
     if ($('.user-page-header').length) {
-        $('header.header').append($('.user-page-header').first().find('.avatar-container').addClass('focus-tile').clone());
+        $('header.header').append($('.user-page-header').first().find('.avatar-container').clone().addClass('focus-tile'));
     } else if ($('.story-page-header').length) {
-        $('header.header').append($('.story-page-header').first().find('.image-container').addClass('focus-tile').clone());
+        $('header.header').append($('.story-page-header').first().find('.image-container').clone().addClass('focus-tile'));
     }
     $('.focus-tile').on('mouseover', function() {
         $('body').addClass('expand-tile');
