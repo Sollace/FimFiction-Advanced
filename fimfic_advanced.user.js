@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.6.4
+// @version     3.6.6
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2357,6 +2357,13 @@ function censorStory(element) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     var styleSheet = "\
+/*Bookshelf icon colour fix*/\
+.story-toolbar .bookshelves li span {\
+    color: #777;\
+    transition: color 0.2s ease 0s;}\
+.user_toolbar > ul > li ul li:hover > a .bookshelf-icon-element span {\
+    color: #FFF !important;}\
+\
 /*Dropdown radius fix*/\
 .user_toolbar > ul > li ul li:last-child a > i {\
     border-bottom-left-radius: 4px;}\
@@ -2399,7 +2406,7 @@ function addCss() {
     top: -45px;\
     left: 13px;\
     transition: opacity 0.7s ease;\
-    z-index: 30 !important;}\
+    z-index: 3 !important;}\
   header.header .focus-tile img {\
     padding: 4px;\
     background: none repeat scroll 0% 0% #FFF;\
