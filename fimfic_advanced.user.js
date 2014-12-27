@@ -2381,6 +2381,8 @@ function addCss() {
   border-right: 1px solid rgba(0, 0, 0, 0.2);\
   border-top: 1px solid rgba(0, 0, 0, 0.2);\
   margin: -1px 0px 0px;}\
+.user_toolbar > ul > li:first-of-type {\
+  border-left: 1px solid rgba(0, 0, 0, 0.2);}\
 .user_toolbar > ul > li:hover {\
   text-shadow: none;\
   background: rgba(0, 0, 0, 0.1);}\
