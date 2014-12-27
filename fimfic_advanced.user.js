@@ -13,7 +13,7 @@
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
-if (!isJQuery()) return;
+if (isJQuery())
 //----------------------------------------------------------------------------------------------------
 function reverse(me){return me != null && me.length > 1 ? me.split("").reverse().join() : me;}
 function contains(me,it){return me != null ? me.indexOf(it)!=-1 : false;}
@@ -772,7 +772,7 @@ try {
 
             }
 
-            position(pop.parentNode.parentNode, 'center', 'center');
+            pop.position('center', 'center');
         });
         logger.Log('setup cban');
 
@@ -1633,7 +1633,7 @@ function setUpMainButton(toolbar, target, hold) {
 }
 
 function makeReplacePopup(target) {
-    var pop = makeGlobalPopup('Find and Replace', 'fa fa-magic', false));
+    var pop = makeGlobalPopup('Find and Replace', 'fa fa-magic', false);
     
     pop.content.parent().css('width','350px');
     pop.scope('<div style="padding:10px;" />');
@@ -2455,7 +2455,7 @@ header.header {\
 #feed_end_marker {\
   animation: 1.5s linear infinite spin;}\
 #feed_end_marker:before {\
-  content: "";\
+  content: '';\
   font-family: FontAwesome;\
   font-size: 66px;\
   color: rgba(0,0,0,0.6);}\
@@ -2765,22 +2765,32 @@ function chooseTheme(id, save) {
         $('#title a.home_link').css('background-position', '');
     }
     
-    catchImg(safeGetThemeArray()[id == 0 ? safeGetThemeArray().length - 1 : id - 1].url);
-    catchImg(safeGetThemeArray()[(id + 1) % safeGetThemeArray().length].url);
-    //TODO: Test this. Is catchImg better?
-    /*if (!$('#imagePreload').length) {
-        $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
-    }
-    $('#imagePreload').append('<div style="background-image:url(' + safeGetThemeArray()[id == 0 ? safeGetThemeArray().length - 1 : id - 1].url + '), url(' + safeGetThemeArray()[(id + 1) % safeGetThemeArray().length].url + ')" />');*/
+    catchBanners(id);
     theme = id;
 }
 
-function catchImg(url) {
-    if (!$('#imagePreload').length) {
-        $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
+function catchBanners(id) {
+    if (!$('#imagePreload').length) $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
+    var before = safeGetThemeArray()[id == 0 ? safeGetThemeArray().length - 1 : id - 1];
+    var after = safeGetThemeArray()[(id + 1) % safeGetThemeArray().length];
+    
+    if (!before.catched) {
+        before.catched = true;
+        var img = $('<img style="width:0px;height:0px" src="' + before.url + '" />');
+        $('#imagePreload').append(img);
+        img.on('load error', function() {
+            img.remove();
+            img = null;
+        });
     }
-    if (!$('#imagePreload img[src="' + url + '"]').length) {
-        $('#imagePreload').append('<img src="' + url + '" />');
+    if (!after.catched) {
+        after.catched = true;
+        var img = $('<img style="width:0px;height:0px" src="' + after.url + '" />');
+        $('#imagePreload').append(img);
+        img.on('load error', function() {
+            img.remove();
+            img = null;
+        });
     }
 }
 
@@ -3009,11 +3019,10 @@ function makeToolTip(button) {
 }
 
 //==API FUNCTION==//
-function Popup(holder, dark, cont, button) {
+function Popup(holder, dark, cont) {
   this.holder = holder;
   this.dark = dark;
   this.content = this.unscoped = cont;
-  this.button = button;
   this.scoped = null;
   this.position = function(x, y, buff) {
     if (this.holder != null) position(this.holder, x, y, buff);
@@ -3036,36 +3045,6 @@ function Popup(holder, dark, cont, button) {
 }
 
 //==API FUNCTION==//
-//==Unused==//
-function makePopup(button, title, fafaText) {
-    logger.Log('makePopup: start');
-    button = $(button);
-    button.attr('opened', true);
-    var holder = $('<div class="drop-down-pop-up-container" style="position: absolute;z-index:2237483647;" />');
-    $("body").append(holder);
-    holder.css("left", button.offset().left + "px");
-    holder.css("top", (button.offset().top + button.height()) + "px");
-    holder.hover(function (e) { }, function (e) {
-        if (!$(this).attr('hold') || $(this).attr('hold') == 'false') {
-            $(this).find(".drop-down-pop-up-content").trigger('close');
-            $(this).remove();
-            button.attr('opened', false);
-        }
-    });
-
-    var pop = $("<div class=\"drop-down-pop-up\" style=\"width: auto\" />");
-    holder.append(pop);
-    var head = $('<h1>' + title + '</h1>');
-    pop.append(head);
-    if (fafaText) head.prepend('<i class="' + fafaText + '" /i>');
-    
-    var content = $('<div class="drop-down-pop-up-content" />');
-    pop.append(content);
-    logger.Log('makePopup: end');
-    return new Popup(holder, null, content, button);
-}
-
-//==API FUNCTION==//
 function makeGlobalPopup(title, fafaText, darken, close) {
     logger.Log('makeGlobalPopup: start');
     if (typeof (close) == 'undefined') close = true;
@@ -3085,20 +3064,20 @@ function makeGlobalPopup(title, fafaText, darken, close) {
     var head = $('<h1 style="cursor:move">' + title + '</h1>');
     pop.append(head);
     if (fafaText) head.prepend("<i class=\"" + fafaText + "\" /i>");
-    head.onmousedown = function(e) {
-        var x = e.clientX - parseInt(holder.style.left.split('px')[0]);
-        var y = e.clientY - parseInt(holder.style.top.split('px')[0]);
-        document.onmousemove = function(e) {
+    head.on('mousedown', function(e) {
+        var x = e.clientX - parseFloat(holder.css('left'));
+        var y = e.clientY - parseFloat(holder.css('top'));
+        $(document).on('mousemove.popup.global', function(e) {
             position(holder, e.clientX - x, e.clientY - y, 30);
-        };
+        });
+        $(document).one('mouseup', function(e) {
+            $(this).off('mousemove.popup.global');
+        });
         e.preventDefault();
-    };
-    head.onmouseup = function(e) {
-        document.onmousemove = function(e) {};
-    };
+    });
     
     var c = $('<a id="message_close_button" class="close_button" />');
-    $(head).append(c);
+    head.append(c);
     $(c).click(function(e) {
         if (close) {
             $(dark).remove();
@@ -3111,7 +3090,7 @@ function makeGlobalPopup(title, fafaText, darken, close) {
     var content = $('<div class="drop-down-pop-up-content" />');
     pop.append(content);
     logger.Log('makeGlobalPopup: end');
-    return new Popup(holder, dark, content, null);
+    return new Popup(holder, dark, content);
 }
 
 //==API FUNCTION==//
@@ -3369,27 +3348,27 @@ function getUserCommentThumb(size) {
 
 //==API FUNCTION==//
 function fillBBCode(text) {
-    var codes = {
-        /\[u\]/g: '<u>',
-        /\[\/u\]/g: '</u>',
-        /\[i\]/g: '<i>',
-        /\[\/i]/g: '</i>',
-        /\[b\]/g: '<b>',
-        /\[\/b\]/g: '</b>',
-        /\[center\]/g: '<center>',
-        /\[\/center\]/g: '</center>',
-        /\[img\]/g: '<img src="',
-        /\[\/img\]/g: '" />',
-        /\[quote\]/g: '<blockquote>',
-        /\[\/quote\]/g: '</blockquote>',
-        /\[s\]/g: '<span style="text-decoration:line-through">',
-        /\[\/s\]/g: '</span>',
-        /\[spoiler\]/g: '<span class="spoiler">',
-        /\[\/spoiler\]/g: '</span>',
-        /\[(left|right)_insert\]/gi: '<blockquote style="box-shadow: 5px 5px 0px rgb(238, 238, 238); margin: 10px 25px 10px 0px; box-sizing: border-box; padding: 15px; background-color: rgb(247, 247, 247); border: 1px solid rgb(170, 170, 170); width: 50%; float: $1;">',
-        /\[\/(left|right)_insert\]/gi: '</blockquote>'
-    }
-    for (var i in codes) text = text.replace(i, codes[i]);
+    var codes = [
+        [/\[u\]/g, '<u>'],
+        [/\[\/u\]/g, '</u>'],
+        [/\[i\]/g, '<i>'],
+        [/\[\/i]/g, '</i>'],
+        [/\[b\]/g, '<b>'],
+        [/\[\/b\]/g, '</b>'],
+        [/\[center\]/g, '<center>'],
+        [/\[\/center\]/g, '</center>'],
+        [/\[img\]/g, '<img src="'],
+        [/\[\/img\]/g, '" />'],
+        [/\[quote\]/g, '<blockquote>'],
+        [/\[\/quote\]/g, '</blockquote>'],
+        [/\[s\]/g, '<span style="text-decoration:line-through">'],
+        [/\[\/s\]/g, '</span>'],
+        [/\[spoiler\]/g, '<span class="spoiler">'],
+        [/\[\/spoiler\]/g, '</span>'],
+        [/\[(left|right)_insert\]/gi, '<blockquote style="box-shadow: 5px 5px 0px rgb(238, 238, 238); margin: 10px 25px 10px 0px; box-sizing: border-box; padding: 15px; background-color: rgb(247, 247, 247); border: 1px solid rgb(170, 170, 170); width: 50%; float: $1;">'],
+        [/\[\/(left|right)_insert\]/gi, '</blockquote>']
+    ]
+    for (var i in codes) text = text.replace(codes[i][0], codes[i][1]);
     text = replaceTagWithOption(text, 'url', '<a href="{0}">', '</a>', '<a href="{0}">', '</a>');
     text = replaceTagWithOption(text, 'size', '<span style="font-size:{0}px; line-height:1.3em;">', '</span>');
     text = replaceTagWithOption(text, 'color', '<span style="color:{0};">', '</span>');
