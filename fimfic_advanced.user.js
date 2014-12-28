@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.6.7
+// @version     3.6.8
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -171,7 +171,8 @@ addCss();
 //----------------------------------------------------------------------------------------------------
 logger.Log('pre-init complete',10);
 logger.Log('initializing...',10);
-
+$('html').attr('FimFic_Adv','');
+     
 var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 
 var color = getBGColor();
@@ -2878,6 +2879,7 @@ function registerBanners(items) {
     
     function repos() {
         $('.focus-tile').css({
+            'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top - $('header.header .title').offset().top,
             'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left - $('header.header .title').offset().left
         });
     }
