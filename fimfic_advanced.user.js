@@ -3052,6 +3052,7 @@ function Popup(holder, dark, cont) {
 function makeGlobalPopup(title, fafaText, darken, close) {
     logger.Log('makeGlobalPopup: start');
     if (typeof (close) == 'undefined') close = true;
+    if (typeof (darken) == 'undefined') darken = 100;
     var holder = $('<div style="position: fixed;z-index:2147483647;left:10px;top:10px" class="global_popup drop-down-pop-up-container" />');
     $("body").append(holder);
     
@@ -3072,7 +3073,7 @@ function makeGlobalPopup(title, fafaText, darken, close) {
         var x = e.clientX - parseFloat(holder.css('left'));
         var y = e.clientY - parseFloat(holder.css('top'));
         $(document).on('mousemove.popup.global', function(e) {
-            position(holder, e.clientX - x, e.clientY - y, 30);
+            position(holder, e.clientX - x, e.clientY - y);
         });
         $(document).one('mouseup', function(e) {
             $(this).off('mousemove.popup.global');
@@ -3084,7 +3085,9 @@ function makeGlobalPopup(title, fafaText, darken, close) {
     head.append(c);
     $(c).click(function(e) {
         if (close) {
-            $(dark).remove();
+            $(dark).fadeOut('fast', function () {
+                $(this).remove()
+            });
             $(holder).remove();
         } else {
            $(holder).css('display','none');
