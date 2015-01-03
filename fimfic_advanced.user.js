@@ -24,7 +24,7 @@ function pickOne(arr,rare){
     return arr[Math.floor(Math.random()*arr.length)];}
 function pickNext(arr){return pickNextMin(arr,0);}
 function pickNextMin(arr,min){return arr[Math.max((new Date()).getSeconds() % arr.length,min)];}
-function normalize(me){
+function normalise(me){
     if(me==null)return me;
     var result='';var space = true;
     for(var i=0;i<me.length;i++){result+=space?me[i].toUpperCase():me[i].toLowerCase();space=me[i]==' ';}
@@ -122,7 +122,8 @@ var banners = registerBanners([
     Ban("jackalynn_pinkiedash", "http://jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "rgb(69, 132, 182)"),
     Ban("yakovlev_fluttershy", "http://yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5e7520"),
     Ban("yakovlev_twilight", "http://yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9e75a9"),
-    Ban("mymagicdream_twilight", "http://my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599a"),
+    Ban("mymagicdream_twilight", "http://my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599a")
+    ], [
     Banner("sleeping_bath_bloom", "http://fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "http://junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
     Banner("flutterby_dash", "http://fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "http://junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
     Banner("mommy_derp", "http://fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "http://junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
@@ -138,17 +139,19 @@ var banners = registerBanners([
     Banner("nightwork", "http://fc07.deviantart.net/fs71/f/2014/313/d/f/nightwork_by_comeha-d85teut.png", "http://yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)")
 ]);
 var fonts = (function(f) {
-    return {
-        'FimFiction': (function(a) {
-            [].unshift.apply(a, ['Default','Classic']);
-            return a;
-        })(f.test(['Equestria', 'Celestia Redux', 'Celestia Redux Alternate', 'Font Awesome'])),
-        'Browser Defaults': f.test(['Serif','Sans-Serif', 'Monospace']),
-        'Serif': f.test(['Calisto MT', 'Cambria', 'Constantia', 'Georgia', 'Lucida Bright', 'Palatino Linotype', 'Rockwell', 'Times New Roman']),
-        'Sans Serif': f.test(['Arial', 'Candara', 'Corbel', 'Fanklin Gothic', 'Gill Sans MT', 'Helvetica', 'Lucida Sans', 'Microsoft Sans Serif', 'Open Sans', 'Segio UI', 'Tahoma', 'Trebuchet MS', 'Verdana']),
-        'Monospace': f.test(['Consolas', 'Courier New'])
+    function a(arr, un) {
+        arr = f.test(arr.split(';')).sort();
+        if (un) [].unshift.apply(arr, un.split(';'));
+        return arr;
     }
-})(new FontDetector());
+    return {
+        'FimFiction': a('Equestria;Celestia Redux;Celestia Redux Alternate;FontAwesome', 'Default;Classic'),
+        'Browser Defaults': 'Serif;Sans-Serif;Monospace'.split(';'),
+        'Serif': a('Calisto MT;Cambria;Constantia;Georgia;Lucida Bright;Palatino Linotype;Rockwell;Times New Roman'),
+        'Sans Serif': a('Arial;Candara;Corbel;Fanklin Gothic;Gill Sans MT;Helvetica;Lucida Sans;Microsoft Sans Serif;Open Sans;Segio UI;Tahoma;Trebuchet MS;Verdana'),
+        'Monospace': a('Consolas;Courier New')
+    }
+})(new (getSafe('FontDetector', function result() {this.test = function(a) {return a;}}))());
 var colours = {
     Mapping: {'#FFFFFF': 'White','#FFC0CB': 'Pink','#FFDAB9': 'PeachPuff','#DCDCDC': 'Gainsboro','#FFB6C1': 'LightPink','#FFE4B5': 'Moccasin','#FFDEAD': 'NavajoWhite','#F5DEB3': 'Wheat','#D3D3D3': 'LightGray','#AFEEEE': 'PaleTurquoise','#EEE8AA': 'PaleGoldenRod','#D8BFD8': 'Thistle','#B0E0E6': 'PowderBlue','#ADD8E6': 'LightBlue','#98FB98': 'PaleGreen','#B0C4DE': 'LightSteelBlue','#87CEFA': 'LightSkyBlue','#C0C0C0': 'Silver','#7FFFD4': 'Aquamarine','#90EE90': 'LightGreen','#DDA0DD': 'Plum','#F0E68C': 'Khaki','#FFA07A': 'LightSalmon','#87CEEB': 'SkyBlue','#EE82EE': 'Violet','#F08080': 'LightCoral','#FA8072': 'Salmon','#FF69B4': 'HotPink','#DEB887': 'BurlyWood','#E9967A': 'DarkSalmon','#D2B48C': 'Tan','#7B68EE': 'MediumSlateBlue','#F4A460': 'SandyBrown','#A9A9A9': 'DarkGray','#6495ED': 'CornFlowerBlue','#FF7F50': 'Coral','#DB7093': 'PaleVioletRed','#9370DB': 'MediumPurple','#BC8F8F': 'RosyBrown','#DA70D6': 'Orchid','#8FBC8B': 'DarkSeaGreen','#FF6347': 'Tomato','#66CDAA': 'MediumAquamarine','#ADFF2F': 'GreenYellow','#CD5C5C': 'IndianRed','#BA55D3': 'MediumOrchid','#BDB76B': 'DarkKhaki','#6A5ACD': 'SlateBlue','#4169E1': 'RoyalBlue','#40E0D0': 'Turquoise','#1E90FF': 'DodgerBlue','#48D1CC': 'MediumTurquoise','#FF1493': 'DeepPink','#778899': 'LightSlateGray','#8A2BE2': 'BlueViolet','#CD853F': 'Peru','#708090': 'SlateGray','#808080': 'Gray','#FF00FF': 'Magenta','#0000FF': 'Blue','#00BFFF': 'DeepSkyBlue','#5F9EA0': 'CadetBlue','#00FFFF': 'Cyan','#00FF7F': 'SpringGreen','#00FF00': 'Lime','#32CD32': 'LimeGreen','#7FFF00': 'Chartreuse','#9ACD32': 'YellowGreen','#FFFF00': 'Yellow','#FFD700': 'Gold','#FFA500': 'Orange','#FF8C00': 'DarkOrange','#FF4500': 'OrangeRed','#FF0000': 'Red','#9932CC': 'DarkOrchid','#7CFC00': 'LawnGreen','#4682B4': 'Steelblue','#00FA9A': 'MediumSpringGreen','#DAA520': 'GoldenRod','#DC143C': 'Crimson','#D2691E': 'Chocolate','#3CB371': 'MediumSeaGreen','#C71585': 'MediumVioletRed','#B22222': 'FireBrick','#9400D3': 'DarkViolet','#20B2AA': 'LightSeaGreen','#696969': 'DimGray','#00CED1': 'DarkTurquoise','#A52A2A': 'Brown','#0000CD': 'MediumBlue','#A0522D': 'Sienna','#483D8B': 'DarkSlateBlue','#B8860B': 'DarkGoldenRod','#2E8B57': 'SeaGreen','#6B8E23': 'OliveDrab','#228B22': 'ForestGreen','#8B4513': 'SaddleBrown','#556B2F': 'DarkOliveGreen','#8B008B': 'DarkMagenta','#00008B': 'DarkBlue','#008B8B': 'DarkCyan','#8B0000': 'DarkRed','#191970': 'MidnightBlue','#4B0082': 'Indigo','#800080': 'Purple','#000080': 'Navy','#008080': 'Teal','#008000': 'Green','#808000': 'Olive','#800000': 'Maroon','#2F4F4F': 'DarkSlateGray','#006400': 'DarkGreen','#000000': 'Black','#666666': 'Grey','#cccccc': 'Light Grey','#383838': 'Dark Grey','#be4343': 'Red','#be7a43': 'Orange','#afa426': 'Yellow','#7aaf26': 'Lime Green','#2caf26': 'Green','#26af6d': 'Turquoise','#26a4af': 'Light Blue','#265daf': 'Blue','#3c26af': 'Purple','#9426af': 'Violet','#af2673': 'Pink','#5f4432': 'Brown','#a66ebe': 'Twilight Sparkle','#5e51a3': 'Rarity','#e97135': 'Applejack','#ea80b0': 'Pinkie Pie','#6aaadd': 'Rainbow Dash','#e6b91f': 'Fluttershy'},
     Keys: [],
@@ -185,15 +188,6 @@ var customBanner = getCustomBanner();
 if (customBanner != null) {
     registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
     customBannerindex = safeGetThemeArray().length - 1;
-}
-
-if ($('.theme_selector_left > a').length) {
-    $('.theme_selector_left > a')[0].onclick = function() {
-        chooseTheme(theme == 0 ? safeGetThemeArray().length - 1 : theme - 1, true);
-    };
-    $('.theme_selector_right > a')[0].onclick = function() {
-        chooseTheme((theme + 1) % safeGetThemeArray().length, true);
-    };
 }
 finaliseThemes();
 
@@ -232,7 +226,7 @@ if (getAlwaysShowImages()) {
 
 logger.Log('events registered successfully',10);
 
-if ($('.right-menu-inner').length) addStoryList();
+if ($('.right-menu-inner, #browse_form').length) addStoryList();
 
 if (isMyBlogPage()) {
     logger.Log('is_users_blog=true',10);
@@ -408,9 +402,7 @@ try {
         $(slide).change(function() {
             setSlide(this.selectedIndex);
             time = getTime(this.selectedIndex);
-            if (!isSliding) {
-                updateSlide();
-            }
+            if (!isSliding) updateSlide();
         });
         logger.Log('setup slide');
 
@@ -523,9 +515,9 @@ try {
             $(cban[0]).css("background-image", 'url("' + customBanner[0] + '")');
         }
         $(cban).click(function() {
-            var pop = makeGlobalPopup("Edit Custom Banner", "fa fa-pencil", 10);
-            pop.content.parent().css('width', '700px');
-            pop.content.append('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
+            var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
+            pop.SetWidth(700);
+            pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
 
             var footer = $('<div class="drop-down-pop-up-footer" />');
             pop.content.append(footer);
@@ -677,7 +669,7 @@ try {
             };
 
             var hasPre = false;
-            $(preview).click(function() {
+            preview.click(function() {
                 hasPre = true;
                 if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
                     var url = input.val();
@@ -717,7 +709,7 @@ try {
                     $('#add_banner_error').removeClass('hidden');
                 }
             });
-            $(reset).click(function() {
+            reset.click(function() {
                 unsetCustomBanner();
                 if (customBannerindex > -1) {
                     safeGetThemeArray().splice(customBannerindex, 1);
@@ -733,7 +725,7 @@ try {
                 finaliseThemes();
                 $("#message_close_button").click();
             });
-            $(done).click(function() {
+            done.click(function() {
                 hasPre = false;
                 try {
                     if (updateView(true)) {
@@ -746,43 +738,31 @@ try {
                     finaliseThemes();
                 }
             });
-
+            
             customBanner = getCustomBanner();
             if (customBanner != null) {
-                $(input).attr("value", customBanner[0]);
-
-                var color = customBanner[1].split('(')[1].split(')')[0];
-                color = color.replace(/ /g, '').split(',');
-
-                $(RInput).val(color[0]);
-                $(GInput).val(color[1]);
-                $(BInput).val(color[2]);
-                $(AInput).val(color.length == 4 ? color[3] : 1);
-
+                input.attr("value", customBanner[0]);
+                var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
+                RInput.val(color[0]);
+                GInput.val(color[1]);
+                BInput.val(color[2]);
+                AInput.val(color.length == 4 ? color[3] : 1);
+                
                 var poss = customBanner[2].split(' ');
                 var i = 0;
-
                 alignVert.val(poss[i]);
-                if (poss[i] != 'center') {
-                    posY.val(poss[++i]);
-                }
+                if (poss[i] != 'center') posY.val(poss[++i]);
                 alignHor.val(poss[++i]);
-                if (poss[i] != 'center') {
-                    posX.val(poss[++i]);
-                }
-
+                if (poss[i] != 'center') posX.val(poss[++i]);
             }
-
-            pop.position('center', 'center');
+            pop.Show();
         });
         logger.Log('setup cban');
 
         tab.StartEndSection("Signatures");
 
-        var sigText = tab.AddTextArea("sig", '', getSig());
-        $(sigText).css("min-height", "150px");
-        $(sigText).css("min-width", "100%");
-        $(sigText).css("resize", "vertical");
+        var sigText = $(tab.AddTextArea("sig", '', getSig()));
+        sigText.css({"min-height": "150px","min-width": "100%","resize": "vertical"});
         AppendPopup("<u>Magic Strings</u><br >\
             <div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>%name% - the name of the current user<br />\
             %message% - posted comment<br />\
@@ -795,30 +775,30 @@ try {
             %min% - Minute<br />\
             %sec% - Second</div></div>", sigText);
         var sigPrev = $('<div class="sigPreview" style="min-height:150px;min-width:100%;" />');
-        $(sigText).after(sigPrev);
-        $(sigText).change(function() {
+        sigText.after(sigPrev);
+        sigText.change(function() {
             setSig(this.value);
         });
-        $(tab.AppendResetButton(sigText)).click(function() {
-            sigText.value = defSig();
-            setSig(sigText.value);
+        $(tab.AppendResetButton(sigText[0])).click(function() {
+            sigText.val(defSig());
+            setSig(sigText.val());
         });
 
         var userTile = getUserCommentThumb(128);
-        $(userTile).attr('style', 'float:right;background:none;border:none;');
-        $($(sigText).parent().parent().parent().children()[0]).append(userTile);
-
-        var previewButton = tab.AppendButton(sigText, 'Preview');
-        $(previewButton).addClass('previewButton');
-        $(previewButton).click(function() {
-            if ($(sigText).hasClass('sigPreviewing')) {
-                $(sigText).removeClass('sigPreviewing');
-                $(sigPrev).html('');
+        userTile.attr('style', 'float:right;background:none;border:none;');
+        sigText.parent().parent().parent().children().first().append(userTile);
+        
+        var previewButton = $(tab.AppendButton(sigText, 'Preview'));
+        previewButton.addClass('previewButton');
+        previewButton.click(function() {
+            if (sigText.hasClass('sigPreviewing')) {
+                sigText.removeClass('sigPreviewing');
+                sigPrev.html('');
                 this.innerHTML = 'Preview';
                 $(this).attr('class', 'styled_button styled_button_blue previewButton');
             } else {
-                $(sigPrev).html(previewSig());
-                $(sigText).addClass('sigPreviewing');
+                sigPrev.html(previewSig());
+                sigText.addClass('sigPreviewing');
                 this.innerHTML = 'Edit';
                 $(this).attr('class', 'styled_button styled_button_green previewButton');
             }
@@ -833,9 +813,7 @@ try {
 //--------------------------------------------------------------------------------------------------
 
 setTimeout(function() {
-    if (getTitleHidden()) {
-        $(title).addClass("titleHidden");
-    }
+    if (getTitleHidden()) $(title).addClass("titleHidden");
     $(title).css("overflow", "hidden");
     setTimeout(function() {
         $(title).css("transition", "height 0.5s ease");
@@ -860,11 +838,10 @@ function registerExternalAccount(id, item) {
 
 function setAccountLogos() {
     $('.external-accounts img').each(function() {
-        var url = $(this.parentNode).attr('href');
-        
+        var me = $(this);
+        var url = me.parent().attr('href');
         if (url != null) {
             var name = null;
-            
             if (contains(url, '?')) {
                 var params = url.split('?')[1].split('&');
                 var nparams = [];
@@ -880,7 +857,7 @@ function setAccountLogos() {
                 url = url.split('?')[0] + (nparams.length > 0 ? '?' + nparams.join('&') : '');
             }
             
-            $(this.parentNode).attr('href', url);
+            me.parent().attr('href', url);
             if (name == null) {
                 var urlBackup = url;
                 url = url.split('?')[0].toLowerCase();
@@ -894,32 +871,32 @@ function setAccountLogos() {
                         url = url.substring(name.length + 1, url.length);
                     } else if (contains(url, 'steamcommunity')) {
                         name = url.split('/id/')[1].split('/')[0]
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, 'intensedebate.')) {
                         name = url.split(url.indexOf('/people/') != -1 ? '/people/' : '/profiles/')[1].split('/')[0]
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, 'twitter.')) {
                         name = url.split('/').reverse()[0];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, '.fanfiction.')) {
                         name = url.split('~')[1];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, '.minecraftforum.')) {
                         name = url.split('/user/')[1];
                         name = name.substring((parseInt(name) + '-').length, name.length);
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, 'tvtropes.')) {
                         name = url.split('/tropers/')[1];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, '/user/')) {
                         name = url.split('/user/')[1].split('/')[0];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, '/github.com/')) {
                         name = url.split('/github.com/').reverse()[0].split('/')[0];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     } else if (contains(url, '/www.github.com/')) {
                         name = url.split('/www.github.com/').reverse()[0].split('/')[0];
-                        url = getSite(url);
+                        url = getSiteName(url);
                     }
                 } catch (e) {
                     name = null;
@@ -931,16 +908,16 @@ function setAccountLogos() {
                 if (name.toLowerCase() == 'knighty' || name.toLowerCase() == 'knighty33' || name.toLowerCase() == 'knight33') {
                     name = name.toLowerCase();
                 } else {
-                    name = normalize(name);
+                    name = normalise(name);
                 }
-                $(this.parentNode).attr('title', name + (url == '' ? '' : '\non ' + getSite(url)));
+                me.parent().attr('title', name + (url == '' ? '' : '\non ' + getSiteName(url)));
             } else {
-                $(this.parentNode).attr('title', url);
+                me.parent().attr('title', url);
             }
 
-            if ($(this).attr('src') == '//www.fimfiction-static.net/images/external_accounts/da.png' && url.indexOf('deviantart') == -1) {
-                $(this).attr('src', getFavicon(url));
-                $(this).one('error', function() {
+            if (me.attr('src') == '//www.fimfiction-static.net/images/external_accounts/da.png' && url.indexOf('deviantart') == -1) {
+                me.attr('src', getFavicon(url));
+                mw.one('error', function() {
                     $(this).attr('src', '//www.fimfiction-static.net/images/external_accounts/other.png');
                 });
             }
@@ -1393,9 +1370,9 @@ function addGravatar() {
 }
 
 function addStoryList() {
-    var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void();">List</a>');
+    var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void();"><i class="fa fa-bars" />List</a>');
     $('#browse_form .button-group .styled_button').first().after(a);
-    $(a).click(listNames);
+    a.click(listNames);
     makeStyle("\
 .listText {\
     padding: 8px;\
@@ -1615,6 +1592,9 @@ function setUpMainButton(toolbar, target, hold) {
                 addOption(this, "Unordered List").click(function () {
                     makeList(target, false);
                 });
+                addOption(this, "Icon").click(function() {
+                    makeInsertIconPopup(target);
+                });
             });
 
             addOption(items, "Sign").click(function() {
@@ -1633,22 +1613,32 @@ function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: end');
 }
 
+function makeInsertIconPopup(target) {
+    var pop = makePopup('Insert Icon', 'fa fa-anchor');
+    var icons = ["adjust","adn","align-center","align-justify","align-left","align-right","ambulance","anchor","android","angellist","angle-double-down","angle-double-left","angle-double-right","angle-double-up","angle-down","angle-left","angle-right","angle-up","apple","archive","area-chart","arrow-circle-down","arrow-circle-left","arrow-circle-o-down","arrow-circle-o-left","arrow-circle-o-right","arrow-circle-o-up","arrow-circle-right","arrow-circle-up","arrow-down","arrow-left","arrow-right","arrow-up","arrows","arrows-alt","arrows-h","arrows-v","asterisk","at","automobile","backward","ban","bank","bar-chart","bar-chart-o","barcode","bars","beer","behance","behance-square","bell","bell-o","bell-slash","bell-slash-o","bicycle","binoculars","birthday-cake","bitbucket","bitbucket-square","bitcoin","bold","bolt","bomb","book","bookmark","bookmark-o","briefcase","btc","bug","building","building-o","bullhorn","bullseye","bus","cab","calculator","calendar","calendar-o","camera","camera-retro","car","caret-down","caret-left","caret-right","caret-square-o-down","caret-square-o-left","caret-square-o-right","caret-square-o-up","caret-up","cc","cc-amex","cc-discover","cc-mastercard","cc-paypal","cc-stripe","cc-visa","certificate","chain","chain-broken","check","check-circle","check-circle-o","check-square","check-square-o","chevron-circle-down","chevron-circle-left","chevron-circle-right","chevron-circle-up","chevron-down","chevron-left","chevron-right","chevron-up","child","circle","circle-o","circle-o-notch","circle-thin","clipboard","clock-o","close","cloud","cloud-download","cloud-upload","cny","code","code-fork","codepen","coffee","cog","cogs","columns","comment","comment-o","comments","comments-o","compass","compress","copy","copyright","credit-card","crop","crosshairs","css3","cube","cubes","cut","cutlery","dashboard","database","dedent","delicious","desktop","deviantart","digg","dollar","dot-circle-o","download","dribbble","dropbox","drupal","edit","eject","ellipsis-h","ellipsis-v","empire","envelope","envelope-o","envelope-square","eraser","eur","euro","exchange","exclamation","exclamation-circle","exclamation-triangle","expand","external-link","external-link-square","eye","eye-slash","eyedropper","facebook","facebook-square","fast-backward","fast-forward","fax","female","fighter-jet","file","file-archive-o","file-audio-o","file-code-o","file-excel-o","file-image-o","file-movie-o","file-o","file-pdf-o","file-photo-o","file-picture-o","file-powerpoint-o","file-sound-o","file-text","file-text-o","file-video-o","file-word-o","file-zip-o","files-o","film","filter","fire","fire-extinguisher","flag","flag-checkered","flag-o","flash","flask","flickr","floppy-o","folder","folder-o","folder-open","folder-open-o","font","forward","foursquare","frown-o","futbol-o","gamepad","gavel","gbp","ge","gear","gears","gift","git","git-square","github","github-alt","github-square","gittip","glass","globe","google","google-plus","google-plus-square","google-wallet","graduation-cap","group","h-square","hacker-news","hand-o-down","hand-o-left","hand-o-right","hand-o-up","hdd-o","header","headphones","heart","heart-o","history","home","hospital-o","html5","ils","image","inbox","indent","info","info-circle","inr","instagram","institution","ioxhost","italic","joomla","jpy","jsfiddle","key","keyboard-o","krw","language","laptop","lastfm","lastfm-square","leaf","legal","lemon-o","level-down","level-up","life-bouy","life-buoy","life-ring","life-saver","lightbulb-o","line-chart","link","linkedin","linkedin-square","linux","list","list-alt","list-ol","list-ul","location-arrow","lock","long-arrow-down","long-arrow-left","long-arrow-right","long-arrow-up","magic","magnet","mail-forward","mail-reply","mail-reply-all","male","map-marker","maxcdn","meanpath","medkit","meh-o","microphone","microphone-slash","minus","minus-circle","minus-square","minus-square-o","mobile","mobile-phone","money","moon-o","mortar-board","music","navicon","newspaper-o","openid","outdent","pagelines","paint-brush","paper-plane","paper-plane-o","paperclip","paragraph","paste","pause","paw","paypal","pencil","pencil-square","pencil-square-o","phone","phone-square","photo","picture-o","pie-chart","pied-piper","pied-piper-alt","pinterest","pinterest-square","plane","play","play-circle","play-circle-o","plug","plus","plus-circle","plus-square","plus-square-o","power-off","print","puzzle-piece","qq","qrcode","question","question-circle","quote-left","quote-right","ra","random","rebel","recycle","reddit","reddit-square","refresh","remove","renren","reorder","repeat","reply","reply-all","retweet","rmb","road","rocket","rotate-left","rotate-right","rouble","rss","rss-square","rub","ruble","rupee","save","scissors","search","search-minus","search-plus","send","send-o","share","share-alt","share-alt-square","share-square","share-square-o","shekel","sheqel","shield","shopping-cart","sign-in","sign-out","signal","sitemap","skype","slack","sliders","slideshare","smile-o","soccer-ball-o","sort","sort-alpha-asc","sort-alpha-desc","sort-amount-asc","sort-amount-desc","sort-asc","sort-desc","sort-down","sort-numeric-asc","sort-numeric-desc","sort-up","soundcloud","space-shuttle","spinner","spoon","spotify","square","square-o","stack-exchange","stack-overflow","star","star-half","star-half-empty","star-half-full","star-half-o","star-o","steam","steam-square","step-backward","step-forward","stethoscope","stop","strikethrough","stumbleupon","stumbleupon-circle","subscript","suitcase","sun-o","superscript","support","table","tablet","tachometer","tag","tags","tasks","taxi","tencent-weibo","terminal","text-height","text-width","th","th-large","th-list","thumb-tack","thumbs-down","thumbs-o-down","thumbs-o-up","thumbs-up","ticket","times","times-circle","times-circle-o","tint","toggle-down","toggle-left","toggle-off","toggle-on","toggle-right","toggle-up","trash","trash-o","tree","trello","trophy","truck","try","tty","tumblr","tumblr-square","turkish-lira","twitch","twitter","twitter-square","umbrella","underline","undo","university","unlink","unlock","unlock-alt","unsorted","upload","usd","user","user-md","users","video-camera","vimeo-square","vine","vk","volume-down","volume-off","volume-up","warning","wechat","weibo","weixin","wheelchair","wifi","windows","won","wordpress","wrench","xing","xing-square","yahoo","yelp","yen","youtube","youtube-play","youtube-square"];
+    pop.SetWidth(400);
+    pop.SetContent('<div class="bookshelf-edit-popup"><div class="bookshelf-icons" /></div>');
+    for (var i in icons) {
+        var icon = $('<label title="' + normalise(icons[i]) + '"><div><span class="bookshelf-icon-element fa fa-' + icons[i] + '" data-icon-type="font-awesome" /></div><input type="radio" value="' + icons[i] + '" style="visibility:hidden;display:none;" name="icon" /></label>');
+        icon.find('input').change(function() {
+            var f = BBCodeGetSelection(target);
+            InsertTextAt(target, '[icon]' + $(this).val() + '[/icon]' + f);
+            pop.Close();
+        });
+        pop.content.find('.bookshelf-icons').append(icon);
+    }
+    pop.Show();
+}
+
 function makeReplacePopup(target) {
-    var pop = makeGlobalPopup('Find and Replace', 'fa fa-magic', false);
-    
-    pop.content.parent().css('width','350px');
-    pop.scope('<div style="padding:10px;" />');
-    pop.content.append('<input id="find" type="text" required="required" placeholder="Find" name="find" />');
-    pop.content.append('<input id="replace" type="text" required="required" placeholder="Replace" name="replace" />');
-    
-    var finB = $('<button type="button" nextStart="0" class="styled_button">Find</button>');
-    pop.content.append(finB);
-    
+    var pop = makePopup('Find and Replace', 'fa fa-magic', false);
+    pop.SetWidth(350);
+    pop.SetContent('<div style="padding:10px;"><input id="find" type="text" required="required" placeholder="Find" name="find" /><input id="replace" type="text" required="required" placeholder="Replace" name="replace" />');
+    pop.SetFooter('<button id="find_button" type="button" nextStart="0" class="styled_button">Find</button><button id="replace_button" type="button" class="styled_button">Replace</button><button id="replace_2_button" type="button" class="styled_button">Replace All</button>');
     $('#find').change(function() {
-        finB.attr('nextStart', 0);
+        $('#find_button').attr('nextStart', 0);
     });
-    
-    finB.click(function() {
+    $('#find_button').click(function() {
         var find = $('#find').val();
         var nextStart = parseInt($(this).attr('nextStart'));
         var text = target.value.substring(nextStart, target.value.length);
@@ -1669,10 +1659,7 @@ function makeReplacePopup(target) {
             $(target).focus();
         }
     });
-    
-    var replB = $('<button type="button" class="styled_button">Replace</button>');
-    pop.content.append(replB);
-    replB.click(function() {
+    $('#replace_button').click(function() {
         var find = $('#find').val();
         if (find != '') {
             var start = target.selectionStart;
@@ -1700,30 +1687,23 @@ function makeReplacePopup(target) {
             $(target).focus();
         }
     });
-    
-    var replAB = $('<button type="button" class="styled_button">Replace All</button>');
-    pop.content.append(replAB);
-    replAB.click(function() {
+    $('#replace_2_button').click(function() {
         var find = $('#find').val();
         if (find != '') {
            $(target).val(replaceAll(find, $('#replace').val(), $(target).val()));
         }
     });
-    pop.position('center', 'center');
-    
+    pop.Show();
 }
 
 function makeImagePopup(target) {
-    var message = makeGlobalPopup("Add Direct Image", "fa fa-picture-o");
-    
-    message.content.parent().css('width','350px');
-    message.content.append('<div style="padding:10px;" /><div class="drop-down-pop-up-footer">Please remember all images must be safe for work!<br />Try to avoid including enormous images (bigger than 1mb)</div>');
-    message.scope(message.find('div').first());
-    message.content.append('<div class="pattern-checkerboard" style="border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;"><img id="bbcode_image_preview" style="display:block; margin:auto; max-height:100%; max-width:100%;" /></div><form id="add_image">');
-    message.scope(message.find('form'));
+    var message = makePopup("Add Direct Image", "fa fa-picture-o");
+    message.SetWidth(350);
+    message.SetContent('<div style="padding:10px;"><div class="pattern-checkerboard" style="border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;"><img id="bbcode_image_preview" style="display:block; margin:auto; max-height:100%; max-width:100%;" /></div><form id="add_image"></div>');
+    message.SetFooter('Please remember all images must be safe for work!<br />Try to avoid including enormous images (bigger than 1mb)');
     
     var valid = $('<input type="hidden" value="0" name="valid"></input>');
-    message.content.append(valid);
+    message.content.find('form').append(valid);
     
     $("#bbcode_image_preview").on("load", function() {
         valid.attr("value", "1");
@@ -1734,7 +1714,7 @@ function makeImagePopup(target) {
     });
     
     var input = $('<input id="bbcode_image" type="url" required="required" placeholder="Image URL" name="url" />');
-    message.content.append(input);
+    message.content.find('form').append(input);
         
     var check = function() {
         $("#bbcode_image_preview").attr("src", this.value);
@@ -1760,23 +1740,22 @@ function makeImagePopup(target) {
         }
     });
     
-    message.content.append(button);
-    message.content.append('<div id="add_image_error" class="error-message hidden">Invalid Image</div>');
-    message.position("center", "center");
+    message.content.find('form').append(button);
+    message.content.find('form').append('<div id="add_image_error" class="error-message hidden">Invalid Image</div>');
+    message.Show();
 }
 
 function insertColor(target) {
-    var pop = makeGlobalPopup("Custom Colour", 'fa fa-tint');
-    pop.content.parent().css('width','350px');
-    pop.scope('<div style="padding:10px;" />');
-    
-    pop.content.append('<div id="color_preview" style="overflow: hidden; padding: 15px; border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;" ><b><span style="font-size:30px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:20px;">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:10px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:5px">The quick brown fox jumped over the lazy rabbit.</span></b></div>');
+    var pop = makePopup("Custom Colour", 'fa fa-tint');
+    pop.SetWidth(350);
+    var cont = $('<div style="padding:10px;"><div id="color_preview" style="overflow: hidden; padding: 15px; border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;" ><b><span style="font-size:30px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:20px;">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:10px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:5px">The quick brown fox jumped over the lazy rabbit.</span></b></div></div>');
+    pop.SetContent(cont)
     
     var valid = $('<input type="hidden" value="0" name="valid"></input>');
-    pop.content.append(valid);
+    cont.append(valid);
     
     var color = $('<input type="text" placeholder="Text Colour" />');
-    pop.content.append(color);
+    cont.append(color);
     
     var ch = function() {
         checkColor(this, $("#color_preview"), valid);
@@ -1785,11 +1764,10 @@ function insertColor(target) {
     color.on("input", ch);
     color.change(ch);
     
-    var button = $('<button type="button" class="styled_button">Use Colour</button>');
-    button.click(function(e) {
+    cont.append('<button id="use_colour" type="button" class="styled_button">Use Colour</button>');
+    $('#use_colour').click(function(e) {
         var c = color.attr("value");
-        if (c != null && c != undefined && c != "" && $(valid).attr("value") == "1") {
-            
+        if (c != null && c != undefined && c != "" && valid.val() == "1") {
             if (!(function() {
                 for (var i = 0; i < colours.Keys.length; i++) {
                     if (colours.Keys[i] == c) return true;
@@ -1798,17 +1776,16 @@ function insertColor(target) {
                 c = "#" + c;
             }
             addRecent(c);
-            InsertBBCodeTags(document.getElementById(target), "[color=" + c + "]", "[/color]");
-            $("#message_close_button").click();
+            InsertBBCodeTags(target, "[color=" + c + "]", "[/color]");
+            pop.Close();
         } else {
             $("#color_error").removeClass("hidden");
         }
     });
     
-    pop.content.append(button);
-    pop.content.append('<div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>');
-    pop.unscoped.append('<div class="drop-down-pop-up-footer">Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using \'[spoiler]text[/spoiler]\'</div>');    
-    pop.position("center", "center");
+    cont.append('<div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>');
+    pop.SetFooter('Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using \'[spoiler]text[/spoiler]\'');
+    pop.Show();
 }
 
 function previewSig() {
@@ -1943,9 +1920,9 @@ function betterColors(button, target) {
                     }
                     var text = me.getAttribute('textTarget');
 
-                    var list = makeGlobalPopup('All Colours', 'fa fa-tint', false, false);
-                    list.holder.attr('id','colour_manager');
-                    list.content.css('width','590px');
+                    var list = makePopup('All Colours', 'fa fa-tint', false, false);
+                    list.content.parent().attr('id','colour_manager');
+                    list.SetWidth(590);
                     for (var i in colours.Sets) {
                         addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
                     }
@@ -1964,9 +1941,9 @@ function betterColors(button, target) {
                     }
 
                     list.content.addClass("color_picker");
+                    list.Show();
                     if (posOverride.x != null) {
-                        list.holder.css('left', posOverride.x);
-                        list.holder.css('top', posOverride.y);
+                        list.SetPosition(posOverride.x, posOverride.y);
                     }
                 } else {
                     $('#colour_manager').css('display','');
@@ -2113,33 +2090,23 @@ function mustUnspoiler(url) {
     return false;
 }
 
-function updateSlide() {
+function updateSlide(prev) {
     if (time > 0 && fade != null) {
         isSliding = true;
+        var tit = $('#title a.home_link');
         setTimeout(function() {
-            $(fade).css("background-image", $(title.children[1]).css("background-image"));
-            $(fade).css("background-position", $(title.children[1]).css("background-position"));
-            $(fade).css("background-size", $(title.children[1]).css("background-size"));
-            if (getShuffle()) {
-                theme = Math.floor(Math.random() * themes.length);
-            } else {
-                theme++;
-            }
-            theme %= themes.length;
-            chooseTheme(theme, true);
-            
-            $(fade).css("transition", "none");
-            $(fade).css("opacity", "1");
-            
-            var imgUrl = $(title.children[1]).css('background-image');
-            imgUrl = imgUrl.substring(4,imgUrl.length - 1);
-            while (imgUrl.indexOf('"') > -1) {
-                imgUrl = imgUrl.replace('"','');
-            }
-            
+            fade.css({
+                "background-image": tit.css("background-image"),
+                "background-position": tit.css("background-position"),
+                "background-size": tit.css("background-size")});
+            chooseTheme(getShuffle() ? Math.floor(Math.random() * safeGetThemeArray().length) : (theme + 1) % safeGetThemeArray().length, true);
+            fade.css({"transition": "none",
+                      "opacity": "1"});
+            var imgUrl = tit.css('background-image');
+            imgUrl = imgUrl.substring(4,imgUrl.length - 1).replace(/"/g,'');
             $('<img>').attr('src',imgUrl).load(function() {
-                $(fade).css("transition", "opacity 3s linear");
-                $(fade).css("opacity", "0");
+                fade.css({"transition": "opacity 3s linear",
+                          "opacity": "0"});
             });
             
             updateSlide();
@@ -2166,9 +2133,7 @@ function getLogoNames() {
 function getValidLogoKeys() {
     var indexes = [];
     for (var i = 1; i < logos.length; i++) {
-        if (logos[i].Able) {
-            indexes.push(i);
-        }
+        if (logos[i].Able) indexes.push(i);
     }
     return indexes;
 }
@@ -2187,16 +2152,9 @@ function updateLogoO(o) {
 function checkColor(me, preview, valid) {
     var c = me.value;
     var va = InvalidHexColor(c);
-    if (valid != null) {
-        if (va == "true") {
-            $(valid).attr("value", 0); 
-        } else {
-            $(valid).attr("value", 1);
-        }
-    }
-    
-    if (va == "true" || va == "false") {
-        if (c == "" || c == null || c == undefined) {
+    if (valid) $(valid).val(va == 'true' ? 0 : 1); 
+    if (typeof va == 'string') {
+        if (!c || c == "") {
             c = "#000";
         } else if (!startsWith(c, "#")) {
             c = "#" + c;
@@ -2205,8 +2163,7 @@ function checkColor(me, preview, valid) {
         c = colours.Keys[va];
         me.value = colours.Names[va];
     }
-    
-    if (preview != null) $(preview).css("color", c);
+    if (preview) $(preview).css("color", c);
 }
 
 function listNames() {
@@ -2228,7 +2185,6 @@ function listNames() {
     for (var i = 0; i < stories.length; i++) {
         var name = $(stories[i]).text();
         var link = $(stories[i]).attr('href');
-        
         if  (name != null && name != "") {
             result += "#" + (start + i + 1) + "  " + name + "\n";
             bbCode += "#" + (start + i + 1) + "  [url=http://www.fimfiction.net" + link + "]" + name + "[/url]\n";
@@ -2237,44 +2193,34 @@ function listNames() {
             sfwCode += "#" + (start + i + 1) + "  " + (name == '--hidden--' ? name : "[url=http://www.fimfiction.net" + link + "]" + name + "[/url]") + "\n";
         }
     }
-    var pop = makeGlobalPopup("Items", "fa fa-bar-chart-o");
-    pop.scope('<textarea bbcode="' + bbCode + '" normal="' + result + '" sfw="' + sfw + '" sfwCode="' + sfwCode + '" class="listText" style="width:600px;min-height:300px;" />');
-    pop.content.value = sfw;
     
-    var toggle = $('<input type="checkbox" />');
+    var pop = makePopup("Items", "fa fa-bar-chart-o");
+    var area = $('<textarea class="listText" style="min-height:300px;" />');
+    pop.SetContent(area);
+    pop.SetWidth(600);
+    area.val(sfw);
     
+    var toggle = $('<input checked="false" type="checkbox" />');
     var div = $('<div class="drop-down-pop-up-footer" />');
-    pop.unscope(div);
+    pop.content.append(div);
     div.append(toggle);
     div.append('<span style="padding-left: 5px;">BBCode</span>');
     
-    var toggleSFW = $('<input type="checkbox" />');
+    var toggleSFW = $('<input checked="true" type="checkbox" />');
     div.append(toggleSFW);
     div.append('<span style="padding-left: 5px;">Hide Mature Stories</span>');
+        
+    toggle.click(upd);
+    toggleSFW.click(upd);
+    pop.Show();
     
-    var upd = function() {
+    function upd() {
         if (toggle[0].checked) {
-            if (toggleSFW[0].checked) {
-                pop.children[0].value = $(pop.children[0]).attr('sfwCode');
-            } else {
-                pop.children[0].value = $(pop.children[0]).attr('bbCode');
-            }
+            area.val(area.attr(toggleSFW[0].checked ? sfwCode : bbCode));
         } else {
-            if (toggleSFW[0].checked) {
-                pop.children[0].value = $(pop.children[0]).attr('sfw');
-            } else {
-                pop.children[0].value = $(pop.children[0]).attr('normal');
-            }
+            area.val(area.attr(toggleSFW[0].checked ? sfw : result));
         }
     }
-    
-    toggle.attr('checked', false);
-    toggle.click(upd);
-    
-    toggleSFW.attr('checked', true);
-    toggleSFW.click(upd);
-    
-    pop.position("center", "center");
 }
 
 function censorStory(element) {
@@ -2479,16 +2425,6 @@ header.header {\
     background: rgb(48, 250, 255);\
     transition: background 0.5s ease !important;}\
 \
-.global_popup input[type='text'], .global_popup input[type='url'] {\
-    padding:8px;\
-    width:100%;\
-    border:1px solid rgb(204, 204, 204);\
-    background:none repeat scroll 0% 0% rgb(248,248,248);\
-    outline:medium none;\
-    color:rgb(51,51,51);\
-    box-shadow:0px 2px 4px rgba(0,0,0,0.1) inset;\
-    border-radius:3px;\
-    margin:5px 0px;}\
 a:hover .bg_source_link {\
     opacity: 1;\
     color: rgba(255, 255, 255, 0.8);\
@@ -2725,19 +2661,26 @@ ul.chapters_compact .chapter_container {\
 
 //==API FUNCTION==//
 function getFavicon(url) {
-    if (contains(url, 'userscripts.org')) return 'http://userscripts.org/images/script_icon.png';
     return 'http://' + getSite(url) + '/favicon.ico';
 }
 
 //==API FUNCTION==//
 function getSite(url) {
-    if (contains(url, ':')) {
-        url = url.split(':')[1];
-    }
+    if (url.indexOf('://') != -1) {
+        url = url.split('://');
+        url.splice(0,1);
+        url = url.join('://');
+    } 
     while (startsWith(url, '/')) {
         url = url.substring(1, url.length);
     }
     url = url.split('/')[0];
+    return url;
+}
+
+//==API FUNCTION==//
+function getSiteName(url) {
+    url = getSite(url);
     if (startsWith(url, 'www.')) url = url.substring(4, url.length);
     return url;
 }
@@ -2833,7 +2776,7 @@ function registerBanner(name, img, source, color, pos) {
 
 //==API FUNCTION==//
 function Ban(name, source, color, pos) {
-    return Banner(name, 'https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev/banners/' + name + '.jpg', source, color, pos);
+    return Banner(name, 'https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);
 }
 
 //==API FUNCTION==//
@@ -2842,25 +2785,30 @@ function Banner(name,img,source,color,pos) {
 }
 
 //==API FUNCTION==//
-function registerBanners(items) {
-    if (!$('.banner_buttons').length && !$('.group.content_box .banner').length) {
+function registerBanners(items, extended) {
+    if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
         $('header.header').prepend('\
-<div style="overflow: hidden;" id="title" class="title">\
+<div style="overflow:hidden" id="title" class="title">\
   <div class="banner-buttons">\
-    <a id="source_link" href="">Source</a>\
-    <a id="reset_banner" href="javascript:void(0);" onclick="ResetBanner( );">Reset Selection</a>\
+    <a id="source_link">Source</a>\
+    <a id="reset_banner" href="javascript:void(0);">Reset Selection</a>\
     <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
   </div>\
-  <a style="" href="/" class="home_link"><div><img style="opacity: 1;" src=""></div></a>\
+  <a href="/" class="home_link"><div><img></div></a>\
   <a href="/" class="home_link_link" />\
   <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
   <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
 </div>');
+        
+        $('.theme_selector_left > a')[0].onclick = function() {
+            chooseTheme(theme == 0 ? safeGetThemeArray().length - 1 : theme - 1, true);
+        };
+        $('.theme_selector_right > a')[0].onclick = function() {
+            chooseTheme((theme + 1) % safeGetThemeArray().length, true);
+        };
     }
-    if ($('.user-page-header').length) {
-        $('header.header').append($('.user-page-header').first().find('.avatar-container').clone().addClass('focus-tile'));
-    } else if ($('.story-page-header').length) {
-        $('header.header').append($('.story-page-header').first().find('.image-container').clone().addClass('focus-tile'));
+    if ($('.user-page-header, .story-page-header').length) {
+        $('header.header').append($('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container').clone().addClass('focus-tile'));
     }
     
     $('.focus-tile').on('mouseover', function() {
@@ -2875,7 +2823,7 @@ function registerBanners(items) {
         setTimeout(repos, 1);
     }
     
-    if ($('.banner_credits').length) addBannerCredits(items);
+    if ($('.banner_credits').length) addBannerCredits(extended);
     
     function repos() {
         $('.focus-tile').css({
@@ -2884,6 +2832,7 @@ function registerBanners(items) {
         });
     }
     
+    [].push.apply(items, extended);
     return items;
 }
 
@@ -2894,7 +2843,6 @@ function addBannerCredits(items) {
     swich = swich.find('.toggleable-radio');
     swich.prepend('<input name="banner-group" id="advanced" type="radio" value="advanced" /><label for="advanced">Advanced</label>');
     swich.prepend('<input name="banner-group" id="default" type="radio" value="default" checked="checked" /><label for="default">Default</label>');
-
     swich.find('input').on('change',function() {
         var val = $(this).val();
         $('.banner_credits').each(function() {
@@ -3006,9 +2954,10 @@ function safeGetThemeArray() {
 
 //==API FUNCTION==//
 function getSafe(name, defaultValue) {
-    try{if(window[name]===undefined)throw'E';}
-    catch(E){window[name]=defaultValue;}
-    return window[name];
+    var win=typeof unsafeWindow==='undefined'?window:unsafeWindow;
+    try{if(win[name]===undefined)throw'E';}
+    catch(E){win[name]=defaultValue;}
+    return win[name];
 }
 
 //==API FUNCTION==//
@@ -3023,115 +2972,52 @@ function makeToolTip(button) {
 }
 
 //==API FUNCTION==//
-function Popup(holder, dark, cont) {
-  this.holder = holder;
-  this.dark = dark;
-  this.content = this.unscoped = cont;
-  this.scoped = null;
-  this.position = function(x, y, buff) {
-    if (this.holder != null) position(this.holder, x, y, buff);
-  }
-  this.scope = function(el) {
-      if (typeof el == 'string') {
-          el = $(el);
-          this.content.append(el);
-      }
-      return this.content = el;
-  }
-  this.unscope = function(el) {
-      this.content = this.unscoped;
-      if (typeof el !== 'undefined') this.scope(el);
-      return this.content;
-  }
-  this.find = function(el) {
-      return this.content.find(el);
-  }
-}
-
-//==API FUNCTION==//
-function makeGlobalPopup(title, fafaText, darken, close) {
-    logger.Log('makeGlobalPopup: start');
+function makePopup(title, fafaText, darken, close) {
     if (typeof (close) == 'undefined') close = true;
-    if (typeof (darken) == 'undefined') darken = 100;
-    var holder = $('<div style="position: fixed;z-index:2147483647;left:10px;top:10px" class="global_popup drop-down-pop-up-container" />');
-    $("body").append(holder);
-    
-    var dark = null;
-    if (darken) {
-        dark = $('<div class="dimmer" style="z-index:1001;" />');
-        if (typeof (darken) == 'number') dark.css('opacity', (darken / 100));
-        $('#dimmers').append(dark);
-    }
-    
-    var pop = $('<div class="drop-down-pop-up" style="width: auto" />');
-    holder.append(pop);
-    
-    var head = $('<h1 style="cursor:move">' + title + '</h1>');
-    pop.append(head);
-    if (fafaText) head.prepend("<i class=\"" + fafaText + "\" /i>");
-    head.on('mousedown', function(e) {
-        var x = e.clientX - parseFloat(holder.css('left'));
-        var y = e.clientY - parseFloat(holder.css('top'));
-        $(document).on('mousemove.popup.global', function(e) {
-            position(holder, e.clientX - x, e.clientY - y);
-        });
-        $(document).one('mouseup', function(e) {
-            $(this).off('mousemove.popup.global');
-        });
-        e.preventDefault();
-    });
-    
-    var c = $('<a id="message_close_button" class="close_button" />');
-    head.append(c);
-    $(c).click(function(e) {
-        if (close) {
-            $(dark).fadeOut('fast', function () {
-                $(this).remove()
-            });
-            $(holder).remove();
-        } else {
-           $(holder).css('display','none');
+    if (typeof (darken) == 'undefined') darken = true;
+    var pop = new PopUpMenu('','<i class="fa fa-' + fafaText + '" />' + title);
+    pop.SetCloseOnHoverOut(false);
+    pop.SetFixed(true);
+    pop.SetContent('');
+    pop.SetSoftClose(!close);
+    if (!darken) pop.SetDimmerEnabled(false);
+    if (typeof darken == 'number') {
+        var show = pop.Show;
+        pop.Show = function() {
+            show.apply(this, arguments);
+            this.dimmer.css('opacity', (darken / 100));
         }
-    });
-    
-    var content = $('<div class="drop-down-pop-up-content" />');
-    pop.append(content);
-    logger.Log('makeGlobalPopup: end');
-    return new Popup(holder, dark, content);
+    }
+    pop.element.append("<style>\
+.drop-down-pop-up-content input[type='text'], .drop-down-pop-up-content input[type='url'] {\
+    padding:8px;\
+    width:100%;\
+    border:1px solid rgb(204, 204, 204);\
+    background:none repeat scroll 0% 0% rgb(248,248,248);\
+    outline:medium none;\
+    color:rgb(51,51,51);\
+    box-shadow:0px 2px 4px rgba(0,0,0,0.1) inset;\
+    border-radius:3px;\
+    margin:5px 0px;}</style>");
+    return pop;
 }
 
 //==API FUNCTION==//
 function InvalidHexColor(color) {
-    for (var i = 0; i < colours.Names.length; i++) {
-        if (color.toLowerCase() == colours.Names[i].toLowerCase()) {
-            return i;
-        }
+    for (var i in colours.Names) {
+        if (color.toLowerCase() == colours.Names[i].toLowerCase()) return i;
     }
-
-    if (startsWith(color, '#')) {
-        color = color.substring(1, color.length);
-    }
-    
+    if (startsWith(color, '#')) color = color.substring(1, color.length);
     if (color.length != 3 && color.length != 6) return "true";
-    
-    for (var i = 0; i < color.length; i++) {
-        if (!isHexLetter(color[i])) {
-            return "true";
-        }
+    for (var i in color) {
+        if (!isHexLetter(color[i])) return "true";
     }
-    
     return "false";
 }
 
 //==API FUNCTION==//
 function isHexLetter(letter) {
-    var valid = "0123456789ABCDEF";
-    for (var t = 0; t < valid.length; t++) {
-        if (valid[t].toUpperCase() == letter.toUpperCase()) {
-            return true;
-        }
-    }
-    return false;
+    return "0123456789ABCDEF".indexOf(letter) != -1;
 }
 
 //==API FUNCTION==//
@@ -3339,18 +3225,12 @@ function BG(name, css, source) {
 //==API FUNCTION==//
 function getUserCommentThumb(size) {
     var hold = $('<div class="author" style="line-height:1.1em;" />');
-
     if (getIsLoggedIn()) {
-        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a>');
-        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
+        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
     } else {
-        hold.append('<a class="name">Anon</a>');
-        hold.append('<div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/none_64.png" /></div>');
+        hold.append('<a class="name">Anon</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/none_64.png" /></div>');
     }
-
-    var comm = $('<div class="comment" />');
-    comm.append(hold);
-    return comm;
+    return $('<div class="comment" />').append(hold);
 }
 
 //==API FUNCTION==//
@@ -4206,7 +4086,7 @@ a.premade_settings span {\
     }
     this.AppendButton = function(control, label) {
         var rev = $('<a class="styled_button styled_button_blue">' + label + '</a>');
-        $(control.parentNode).append(rev);
+        $(control).parent().append(rev);
         return rev;
     }
     this.AddButton = function(id, name, label) {
@@ -4791,11 +4671,19 @@ img[held="true"] {\
         }
         return one;
     }
-        
+    
+    var pointType = [0,0];
+    
+    function getPointsName() {
+        if (pointType[0] && pointType[1]) return 'Cookies/Ducks';
+        if (pointType[0]) return 'Cookies';
+        return 'Ducks';
+    }
+    
     function spawnCookie(scepter, x, y) {
         if (scepter && $('.cookie').length) {
             if (bank < 1) return;
-            say('Cookies: ' + --bank + '</br>Cookies Clicked: ' + score);
+            say(getPointsName() + ': ' + --bank + '</br>' + getPointsName() + ' Clicked: ' + score);
         }
         var diff = Math.log(score > 0 ? score : 1) * 300;
         var fadeTime = Math.max(2000 - diff,100);
@@ -4857,12 +4745,111 @@ img[held="true"] {\
     }
     
     function bonusDucks() {
+        function Duck(el) {
+            this.element = el;
+            this.active = false;
+            this.age = 0;
+        }
+        Duck.prototype.tick = function() {
+            if (this.active) {
+                this.age++;
+                if (this.age > 90) {
+                    this.off();
+                }
+            }
+            this.element.attr('data-age', this.age > 30 ? this.age > 60 ? 'old' : 'med' : 'young');
+            return this.active;
+        }
+        Duck.prototype.on = function() {
+            if (!this.active) {
+                this.active = true;
+                this.element.html(v);
+            }
+        }
+        Duck.prototype.off = function() {
+            if (this.active) {
+                this.active = false;
+                this.age = 0;
+                this.element.html('');
+            }
+        }
+        var v = '<div class="duck" />';
+        var cells = [];
         if (!$('.bonus_ducks').length) {
-            var pop = makeGlobalPopup('Bonus Ducks!', 'fa fa-child', false);
-            pop.content.css({'width': '700px', 'height':'750px'});
+            var pop = makePopup('Bonus Ducks!', 'fa fa-child');
+            pop.SetWidth(700);
+            pop.content.css({'height':'750px'});
             pop.content.addClass('bonus_ducks');
-            pop.content.html('<iframe style="width:100%;height:100%;" src="http://bonusducks.com" />');
-            pop.position('center', 'center');
+            pop.SetContent('<table></table>');
+            for(var i = 0; i < 10; i++) {
+                var row = $('<tr />');
+                var ROW = [];
+                cells.push(ROW);
+                for (var j = 0; j < 10; j++) {
+                    var cell = $('<td class="cell" data-row="' + i + '" data-col="' + j + '" />');
+                    row.append(cell);
+                    ROW.push(new Duck(cell));
+                }
+                pop.content.find('table').append(row);
+            }
+            pop.content.append('<style>\
+.bonus_ducks table {\
+  width: 100%;\
+  height: 100%;\
+}\
+.cell {\
+  width: 10%;\
+  height: 10%;\
+  background: rgba(0,0,0,0.3);\
+  border: solid 1px black;\
+  cursor: pointer;\
+  position: relative;\
+}\
+.cell:hover {\
+  background: rgba(0,255,0,0.3);\
+}\
+.duck {\
+  width: 90%;\
+  height: 90%;\
+  border-radius: 100%;\
+  background: green;\
+}\
+.cell[data-age=med] .duck {\
+  background: yellow;\
+}\
+.cell[data-age=old] .duck {\
+  background: red;\
+}</style>');
+            pop.Show();
+            pickOne(pickOne(cells)).on();
+
+            $(document).off('mousedown.ducks');
+            $(document).on('mousedown.ducks', '.cell', function() {
+                var row = parseInt($(this).attr('data-row'));
+                var col = parseInt($(this).attr('data-col'));
+                if (cells[row][col].active) {
+                    score++;
+                    say(getPointsName() + ': ' + score);
+                    cells[row][col].off();
+                    cells[(row + 1) % cells.length][col].on();
+                    cells[(row - 1) % cells.length][col].on();
+                    cells[row][(col + 1) % cells[row].length].on();
+                    cells[row][(col - 1) % cells[row].length].on();
+                }
+            });
+            var s = setInterval(function() {
+                var rerun = false;
+                for (var i in cells) {
+                    for (var j in cells[i]) {
+                        rerun |= cells[i][j].tick();
+                    }
+                }
+                if (!rerun) {
+                    clearTimeout(s);
+                    pop.Close();
+                    say('Game Over :(');
+                }
+            }, 300);
         }
     }
     
@@ -4904,10 +4891,8 @@ img[held="true"] {\
     function initBelle() {
         setupImg(hasDocCookie('sweetie_img_index') ? parseInt(getDocCookie('sweetie_img_index')) : 0);
         if (hasDocCookie("sweetie_posX") && hasDocCookie("sweetie_posY")) {
-            $(belle).css({
-                "top": prefY = parseFloat(getDocCookie("sweetie_posY")),
-                "left": prefX = parseFloat(getDocCookie("sweetie_posX"))
-            });
+            $(belle).css({"top": prefY = parseFloat(getDocCookie("sweetie_posY")),
+                          "left": prefX = parseFloat(getDocCookie("sweetie_posX"))});
         }
     }
     
@@ -4985,10 +4970,7 @@ function snowBG() {
         this.y= (tempy*cosRY)+(tempx*sinRY);
         this.x= (tempy*-sinRY)+(tempx*cosRY);
     }
-    
-    function randomRange(min, max) {
-        return ((Math.random()*(max-min)) + min);
-    }
+    function randomRange(min, max) {return ((Math.random()*(max-min)) + min);}
     
     return new (function () {
         var saveFocus = getSaveFocus();
