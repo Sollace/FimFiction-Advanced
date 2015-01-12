@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7
+// @version     3.7.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -3007,7 +3007,7 @@ function InvalidHexColor(color) {
     }
     if (startsWith(color, '#')) color = color.substring(1, color.length);
     if (color.length != 3 && color.length != 6) return true;
-    return color.toUpperCase().match(/^.([0-9]|[A-F])$/ig) ? false : true;
+    return color.toUpperCase().match(/^[0-9a-f]+$/ig) ? false : true;
 }
 
 //==API FUNCTION==//
