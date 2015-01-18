@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.1
+// @version     3.7.2
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -1491,7 +1491,7 @@ function applyChapterfix() {
             }, a($('.body_container'), 'background-color', 0.85), a($('.chapter_content_box'), 'border-right-color', 1.4), a($('.chapter_content_box'), 'border-left-color', 1.4))
     }
     try {
-        UpdateColours();
+        window.UpdateColours();
     } catch (e) {
         logger.Error(e);
     }
@@ -1606,6 +1606,13 @@ function setUpMainButton(toolbar, target, hold) {
             });
             addOption(items, "Find/Replace Text").click(function() {
                 makeReplacePopup(target);
+            });
+            addOption(items, "Blotter").click(function() {
+                var f = BBCodeGetSelection(target);
+                var g = !1;
+                "" == f && (f = target.value, g = !0);
+                f = f.replace(/[^\s\\]/g, "█");
+                g ? e.value = f : InsertTextAt(target, f);
             });
             setListItemWidth(items);
             inbounds($(items).parent().parent());
@@ -2253,6 +2260,10 @@ function addCss() {
 .user_toolbar > ul > li > ul ul {\
     border-bottom-left-radius: 4px;\
     border-bottom-right-radius: 4px;}\
+\
+/*Story Chapter Width Fix*/\
+.story_container {\
+    max-width: 1300px !important;}\
 \
 /*Comment insert_left/right fix*/\
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
@@ -4165,7 +4176,7 @@ function Logger(name, l) {
         Output(txt, level);
     }
     this.Error = function (txt, params) {
-        arguments.splice(1,0,1000);
+        [].splice.apply(arguments, [1,0,1000]);
         this.Log.apply(this,arguments);
     }
     this.SevereException = function (txt, excep) {
@@ -4653,6 +4664,7 @@ img[held="true"] {\
                         if (grabbedImage == this) grabbedImage = null;
                         $(this).remove();
                     } else {
+                        $('.grabbedImage').attr('held', 'false');
                         $('.grabbedImage').removeClass('grabbedImage');
                         if (grabbedImage == this) {
                             grabbedImage = null;
