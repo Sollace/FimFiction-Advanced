@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.2
+// @version     3.7.2b
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -204,7 +204,6 @@ setup(true);
 
 if (startsWith(CURRENT_LOCATION, 'manage_user/avatar')) addGravatar();
 if (startsWith(CURRENT_LOCATION, 'manage_user/account')) {
-    registerExternalAccount('other', {'name': 'Other', 'url': 'http://{account}', 'regex': /\/\/(.*)/, 'account': 'url'});
     updateAccountControls();
 }
 if ($('#chapter_container').length) applyChapterfix();
@@ -830,13 +829,6 @@ logger.Log('Checkpoint 13: script completed Succesfully');
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-function registerExternalAccount(id, item) {
-    try {
-        external_account_config[id] = item;
-    } catch (e) {}
-    $('#external_account_details').prepend('<span data-custom="1" id="external_account_details_' + id + '">' + item.url + '</span?');
-}
-
 function setAccountLogos() {
     $('.external-accounts img').each(function() {
         var me = $(this);
@@ -851,7 +843,7 @@ function setAccountLogos() {
                     if (p[0] == 'DisplayNameFF') {
                         name = p[1];
                         break;
-                    } else if (params[i] != '.deviantart.com') {
+                    } else if (params[i] != '.deviantart.com' && p[0] != 'customAccount') {
                         nparams.push(params[i]);
                     }
                 }
@@ -916,10 +908,10 @@ function setAccountLogos() {
                 me.parent().attr('title', url);
             }
 
-            if (me.attr('src') == '//www.fimfiction-static.net/images/external_accounts/da.png' && url.indexOf('deviantart') == -1) {
+            if (me.attr('src') == '//www.fimfiction-static.net/images/external_accounts/other.png') {
                 me.attr('src', getFavicon(url));
-                mw.one('error', function() {
-                    $(this).attr('src', '//www.fimfiction-static.net/images/external_accounts/other.png');
+                me.one('error', function() {
+                    $(this).attr('src', '//www.fimfiction-static.net/images/external_accounts/other.png?1');
                 });
             }
         }
@@ -928,69 +920,53 @@ function setAccountLogos() {
 }
 
 function updateAccountControls() {
-  $('.external_account').each(function() {
-    var select = $(this).find('.external_account_site');
-    var type = select.val();
-    var value = $(this).find('.external_account_value');
-    select.html('');
-    for (var i in external_account_config) {
-      select.append('<option value="' + i + '">' + external_account_config[i].name + '</option>');
-    }
-    applyControlData(select, type, value, addDisplayNameField(value.parent()));
-  });
-  $('#edit_user_form').on('submit', function() {
     $('.external_account').each(function() {
-      var select = $(this).find('.external_account_site');
-      var id = select.val();
-      var value = $(this).find('.external_account_value');
-      var name = $(this).find('.external_account_name');
-      var url = value.val();
-      value.data('backup', url);
-      if (name.val() != '') {
-        url += (url.indexOf('?') == -1 ? '?' : '&') + 'DisplayNameFF=' + name.val();
-      }
-      if ($('#external_account_details_' + id).attr('data-custom') == '1') {
-        select.val('da');
-        url += (url.indexOf('?') == -1 ? '?' : '&') + 'customAccount=' + id;
-      }
-      value.val(url);
+        var value = $(this).find('.external_account_value');
+        applyControlData(value, addDisplayNameField(value.parent()));
     });
-    $(document).one('mousemove', function() {
-      $('.external_account').each(function() {
-        var select = $(this).find('.external_account_site');
-        applyControlData(select, select.val(), $(this).find('.external_account_value'), $(this).find('.external_account_name'));
-      });
+    $('#edit_user_form').on('submit', function() {
+        $('.external_account').each(function() {
+            var value = $(this).find('.external_account_value');
+            var name = $(this).find('.external_account_name');
+            var url = value.val();
+            if (name.val() != '') {
+                url += (url.indexOf('?') == -1 ? '?' : '&') + 'DisplayNameFF=' + name.val();
+            }
+            value.val(url);
+        });
+        $(document).one('mousemove', function() {
+            $('.external_account').each(function() {
+                applyControlData($(this).find('.external_account_value'), $(this).find('.external_account_name'));
+            });
+        });
     });
-  });
 }
 
-function applyControlData(select, type, value, name) {
-  var url = value.val();
-  if (url.indexOf('?') != -1) {
-    var params = url.split('?')[1].split('&');
-    for (var i = 0; i < params.length; i++) {
-      var item = params[i].split('=');
-      if (item[0] == 'customAccount') {
-        type = item[1];
-        params.splice(i--,1);
-      } else if (item[0] == 'DisplayNameFF') {
-        name.val(item[1]);
-        params.splice(i--, 1);
-      }
+function applyControlData(value, name) {
+    var url = value.val();
+    if (url.indexOf('?') != -1) {
+        var params = url.split('?')[1].split('&');
+        for (var i = 0; i < params.length;) {
+            var item = params[i].split('=');
+            if (item[0] == 'DisplayNameFF') {
+                name.val(item[1]);
+                params.splice(i, 1);
+            } else {
+                i++;
+            }
+        }
+        value.val(url.split('?')[0] + (params.length > 0 ? '?' + params.join('&') : ''));
+        value.keyup();
     }
-    value.val(url.split('?')[0] + (params.length > 0 ? '?' + params.join('&') : ''));
-  }
-  select.val(type);
-  select.change();
 }
 
 function addDisplayNameField(target) {
-  var holder = $('<div style="display:inline-block;position:relative" />');
-  target.after(holder);
-  var name = $('<input class="external_account_name" type="text" placeholder="display name" style="width:180px;margin-left:-3px;background-position: top -100px left" />');
-  name.data('tooltip', 'Optional display name for this account');
-  holder.append(name);
-  return name;
+    var holder = $('<div style="display:inline-block;position:relative" />');
+    target.after(holder);
+    var name = $('<input class="external_account_name" type="text" placeholder="display name" style="width:180px;margin-left:-3px;background-position: top -100px left;border-radius: 0px 3px 3px 0px;" />');
+    name.data('tooltip', 'Optional display name for this account');
+    holder.append(name);
+    return name;
 }
 
 function getBookmarksGui(tab) {
@@ -2299,34 +2275,35 @@ function addCss() {
     background-color: #282828;}\
   .story-page-header > .inner, .user-page-header > .inner {\
     padding: 25px 0px 25px 15px;}\
-  header.header .focus-tile {\
+  .focus-tile {\
     position: absolute;\
     vertical-align: top;\
     padding-right: 20px;\
     width: 0px;\
     top: -45px;\
     left: 13px;\
-    transition: opacity 0.7s ease;\
-    z-index: 11 !important;}\
-  header.header .focus-tile img {\
+    z-index: 13 !important;}\
+  .focus-tile img {\
     padding: 4px;\
     background: none repeat scroll 0% 0% #FFF;\
     max-height: 147px;\
     max-width: 147px;\
     border-radius: 5px;\
     display: block;}\
-  header.header .image-container {\
+  .focus-tile.image-container {\
     top: -45px;\
     left: 33px;\
     padding: 0px 20px;\
     opacity: 1;}\
-  header.header .image-container img {\
+  .focus-tile.image-container img {\
+    border-radius: 8px;\
     max-height: 160px;\
     max-width: 220px;}\
-  body.expand-tile .story-page-header + * .focus-tile,\
-  .story-page-header:hover + * .focus-tile,\
-  body.expand-tile .user-page-header + * .focus-tile,\
-  .user-page-header:hover + * .focus-tile {\
+  body.expand-tile .story-page-header + .focus-tile,\
+  .story-page-header:hover + .focus-tile,\
+  body.expand-tile .user-page-header + .focus-tile,\
+  .user-page-header:hover + .focus-tile {\
+    transition: opacity 0.7s ease;\
     opacity: 0;}\
   header.header #title {\
     display: block !important;}}\
@@ -2817,7 +2794,7 @@ function registerBanners(items, extended) {
         };
     }
     if ($('.user-page-header, .story-page-header').length) {
-        $('header.header').append($('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container').clone().addClass('focus-tile'));
+        $('header.header').before($('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container').clone().addClass('focus-tile'));
     }
     
     $('.focus-tile').on('mouseover', function() {
@@ -2829,15 +2806,17 @@ function registerBanners(items, extended) {
     
     if ($('.user-page-header, .story-page-header').length) {
         $(window).on('resize', repos);
-        setTimeout(repos, 1);
+        setTimeout(function() {
+            repos();
+        }, 1);
     }
     
     if ($('.banner_credits').length) addBannerCredits(extended);
     
     function repos() {
         $('.focus-tile').css({
-            'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top - $('header.header .title').offset().top,
-            'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left - $('header.header .title').offset().left
+            'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top,
+            'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left
         });
     }
     
@@ -4232,7 +4211,7 @@ function Logger(name, l) {
     }
 }
 
-var MD5 = function (string) {
+function MD5(string) {
     function RotateLeft(lValue, iShiftBits) {return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));}
     function AddUnsigned(lX,lY) {
         var lX4,lY4,lX8,lY8,lResult;
@@ -4322,7 +4301,7 @@ var MD5 = function (string) {
         a=II(a,b,c,d,x[k+4], S41,0xF7537E82);d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
         a=AddUnsigned(a,AA);b=AddUnsigned(b,BB);c=AddUnsigned(c,CC);d=AddUnsigned(d,DD);}
     return (WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d)).toLowerCase();
-};
+}
 
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
@@ -4642,6 +4621,7 @@ img[held="true"] {\
             index = Math.floor(Math.random() * imgs.length);
         }
         setupImg(index);
+        updateSelection(index);
         setDocCookie('sweetie_img_index', index);
     }
     
@@ -4825,28 +4805,34 @@ function playerEnded(s) {\
         var content = 'iPkcpuD/or pmiga;ePSCA Eo(ev rmiga)eW-bolb emIgaseS;IHTFS+APECC-ooik elCciek;r+CPSCA-EeHrastH;S+APECB-nosuD cuskD;S+APECS-ahekS;ahekV girouolsy';
         pop.SetContent('<table class="properties"><tr><td class="label">' + jule(content).replace(/-/g, '</td></tr><tr><td class="label">').replace(/;/g, '</td><td>') + '</td></tr></table>');
         var sel = $('<button type="button" id="belle_type" />');
-        pop.SetFooter('<button class="styled_button" type="button" id="belle_type" >Switch Scepter ( ' + (imgs.length - 1) + '/<span>' + $(belle).attr('selected_image_index') + '</span> )</button><span></span>');
+        pop.SetFooter('<button class="styled_button" type="button" id="belle_type" >Switch Scepter ( <span>' + $(belle).attr('selected_image_index') + '</span>/' + (imgs.length - 1) + ' )</button><span></span>');
         pop.Show();
         $('#belle_type').click(function() {
             var index = (parseInt($(belle).attr('selected_image_index')) + 1) % imgs.length;
             setupImg(index);
             setDocCookie('sweetie_img_index', index);
-            $(this).find('span').html(index);
-            var me = $(this).next();
-            me.html('<span style="transition:opacity 0.5s linear">' + [
+            updateSelection(index);
+        });
+    }
+    
+    function updateSelection(index) {
+        if ($('#belle_type').length) {
+            var me = $('#belle_type');
+            me.find('span').html(index);
+            me.next().html('<span style="transition:opacity 0.5s linear">' + [
                 'Sweetie Belle',
                 'Scootaloo',
                 'Apple Bloom',
                 'Applejack',
                 'Twilight Sparkle'][index] + '</span>');
             var t = setTimeout(function() {
-                me.find('span').css('opacity', '0');
+                me.next().find('span').css('opacity', '0');
                 t = null;
             }, 250);
-            $(this).one('mousedown', function() {
+            me.one('mousedown', function() {
                if (t != null) clearTimeout(t);
             });
-        });
+        }
     }
     
     function bonusDucks() {
