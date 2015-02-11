@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.2b
+// @version     3.7.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -521,25 +521,25 @@ try {
 
             var footer = $('<div class="drop-down-pop-up-footer" />');
             pop.content.append(footer);
-            
+
             var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
             footer.append(done);
-            
+
             var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
             footer.append(preview);
-            
+
             var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
             footer.append(reset);
-            
+
             var row = $('<tr><td class="label">Image Url\n(1300x175px)</td><td><div /></td></tr>');
-            pop.find('tbody').append(row);
-            
+            pop.content.find('tbody').append(row);
+
             var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
             row.find('div').append(input);
 
             row = $('<tr><td class="label">Image Position</td><td><div /></td></tr>');
-            pop.find('tbody').append(row);
-            
+            pop.content.find('tbody').append(row);
+
             row = row.find('div');
             var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
             row.append(alignVert);
@@ -551,8 +551,8 @@ try {
             row.append(posX);
 
             row = $('<tr><td class="label">Banner Colour</td><td><div /></td></tr>');
-            pop.find('tbody').append(row);
-            
+            pop.content.find('tbody').append(row);
+
             row = row.find('div');
             var RInput = $('<input type="text" placeholder="Red" />');
             row.append(RInput);
@@ -639,7 +639,7 @@ try {
                         color = 'rgb(' + color;
                     }
                     color += ')';
-                    
+
                     if (save) {
                         setCustomBanner(url, color, pos);
                         if (customBannerindex > -1) {
@@ -723,22 +723,20 @@ try {
                 $(cban[0].children[0]).css("background-color", "#fff");
                 $(cban[0]).css("background-image", 'none');
                 finaliseThemes();
-                $("#message_close_button").click();
+                pop.Close();
             });
             done.click(function() {
                 hasPre = false;
-                try {
-                    if (updateView(true)) {
-                        $("#message_close_button").click();
-                    }
-                } catch(e) {alert(e)}
+                if (updateView(true)) {
+                    pop.Close();
+                }
             });
-            $("#message_close_button").mousedown(function() {
+            pop.element.find(".close_button").mousedown(function() {
                 if (hasPre) {
                     finaliseThemes();
                 }
             });
-            
+
             customBanner = getCustomBanner();
             if (customBanner != null) {
                 input.attr("value", customBanner[0]);
@@ -747,7 +745,7 @@ try {
                 GInput.val(color[1]);
                 BInput.val(color[2]);
                 AInput.val(color.length == 4 ? color[3] : 1);
-                
+
                 var poss = customBanner[2].split(' ');
                 var i = 0;
                 alignVert.val(poss[i]);
@@ -2223,6 +2221,10 @@ function censorStory(element) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
+/*Dimmer colour fix*/\
+.dimmer {\
+  background-color: rgba(0,0,0,0.3) !important;}\
+\
 /*Bookshelf icon colour fix*/\
 .story-toolbar .bookshelves li span {\
     color: #777;\
@@ -2511,6 +2513,22 @@ a:hover .bg_source_link {\
     top: 0px;\
     left: -10px;\
     line-height: 3em;}\
+.colour-holder li.colour-tile a {\
+    border-radius: 0px !important;}\
+.button-group .drop-down ul ul li:first-child ~ li > a, .button-group-vertical .drop-down ul li:first-child ~ li > a, * + .button-holder > li:first-child > a {\
+    border-top-left-radius: 0px !important;\
+    border-top-right-radius: 0px !important;}\
+.drop-size-pick li:nth-child(5n) a {\
+    padding-right: 11px !important;\
+    margin-right: -1px !important;}\
+.drop-size-pick li:nth-child(5) a {\
+    border-radius: 0 5px 0 0 !important;}\
+.drop-size-pick li:first-child a {\
+    border-radius: 5px 0 0 0 !important;}\
+.drop-size-pick li:last-child a {\
+    border-radius: 0 0 5px 0 !important;}\
+.drop-size-pick li:nth-last-child(5) a {\
+    border-radius: 0 0 0 5px !important;}\
 .chapter-read-all, .chapter-unread-all {\
     margin-right: 8px;\
     font-size: 14px;\
