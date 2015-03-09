@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.3
+// @version     3.7.4
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2221,6 +2221,10 @@ function censorStory(element) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
+/*Textarea fix*/\
+textarea[required] {\
+    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}\
+\
 /*Dimmer colour fix*/\
 .dimmer {\
   background-color: rgba(0,0,0,0.3) !important;}\
