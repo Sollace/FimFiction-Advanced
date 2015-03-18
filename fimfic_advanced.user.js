@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.4
+// @version     3.7.5
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -199,6 +199,7 @@ updateLogo(logo);
 updateLogoO(logoO);
 addChapterButtonsExtras();
 applyBookmarks();
+applyFeedFix();
 FimFicEvents.on('afterinfocard', setAccountLogos);
 setup(true);
 
@@ -1368,6 +1369,16 @@ function addStoryList() {
     border-color: rgba(0, 0, 0, 0.2);\
     text-shadow: none;}");
     logger.Log('story lister added successfully',10);
+}
+
+function applyFeedFix() {
+    $('body').on('click', '.feed_body img.thumbnail_image', function(e) {
+        e.preventDefault();
+        var a = $(this).parents('a').first();
+        if (a.attr('href') && a.attr('href').length > 0) {
+            a.attr('title', a.attr('href'));
+        }
+    });
 }
 
 function applyBookmarks() {
@@ -2624,18 +2635,27 @@ ul.chapters_compact .chapter_container {\
     border-color: rgba(255,255,255,0.3) !important;}\
 .content_plus_format hr {\
     opacity: 0.3;}\
-.content_format_pinkie #chapter_container #chapter_container,\
-.content_format_applejack #chapter_container #chapter_container,\
-.content_format_rarity #chapter_container #chapter_container,\
-.content_format_twilight #chapter_container #chapter_container,\
-.content_format_dash #chapter_container #chapter_container,\
-.content_format_fluttershy #chapter_container #chapter_container {\
+.chapter_content .authors-note p {\
+    background: none !important;\
+    color: inherit;\
+    border: none !important;\
+    animation: none !important;\
+    -webkit-animation: none !important;\
+    -o-animation: none !important;\
+    -ms-animation: none !important;\
+    line-height: 1.7em;}\
+.content_format_pinkie #chapter_container,\
+.content_format_applejack #chapter_container,\
+.content_format_rarity #chapter_container,\
+.content_format_twilight #chapter_container,\
+.content_format_dash #chapter_container,\
+.content_format_fluttershy #chapter_container {\
     box-shadow: 0 0 3px black;\
+    margin-top: 3px;\
+    background: rgba(0,0,0,0.1);\
+    margin-bottom: 3px;\
+    overflow: hidden;\
     border-radius: 15px;}\
-#chapter_container p:first-child {\
-    border-radius: 15px 15px 0px 0px !important;}\
-#chapter_container p:last-child {\
-    border-radius: 0px 0px 15px 15px !important;}\
 #bookshelves-sidebar > li, #bookshelves-sidebar-community > li {\
     background: #fff;\
     margin: 5px;\
