@@ -200,6 +200,7 @@ updateLogoO(logoO);
 addChapterButtonsExtras();
 applyBookmarks();
 applyFeedFix();
+setVideoSizes();
 FimFicEvents.on('afterinfocard', setAccountLogos);
 setup(true);
 
@@ -2227,6 +2228,12 @@ function censorStory(element) {
         if (endsWith(ht, 'sex') || endsWith(ht, 'mature')) return true;
     }
     return false;
+}
+
+function setVideoSizes() {
+    $('.youtube_container > iframe').each(function() {
+        $(this).css('height', (($(this).width()/560) * 315 ) + 'px');
+    });
 }
 
 function addCss() {
