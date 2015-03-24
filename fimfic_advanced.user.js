@@ -200,7 +200,7 @@ updateLogoO(logoO);
 addChapterButtonsExtras();
 applyBookmarks();
 applyFeedFix();
-setVideoSizes();
+if (getResizeVideos())setVideoSizes();
 FimFicEvents.on('afterinfocard', setAccountLogos);
 setup(true);
 
@@ -413,7 +413,13 @@ try {
         $(shuffle).click(function() {
             setShuffle(this.checked);
         });
-
+        
+        var resizeVids = tab.AddCheckBox("vid", "Resize Youtube Videos");
+        resizeVids.checked = getResizeVideos();
+        $(resizeVids).change(function() {
+            setResizeVideos(this.checked);
+        });
+        
         var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
         enableUSnow.selectedIndex = snowing;
         $(enableUSnow).change(function() {
@@ -3358,9 +3364,17 @@ function replaceTagWithOption(text, tag, withO, closeWith, without, closeOut) {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
+function getResizeVideos() {
+    return hasDocCookie('resize_vids') ? getDocCookie('resize_vids') == '1' : true;
+}
+
+function setResizeVideos(v) {
+    setDocCookie('resize_vids', v ? '1' : '0');
+}
+
+//==API FUNCTION==//
 function getCustomFont() {
-    var result = hasDocCookie('custom_font') ? getDocCookie('custom_font') : 'Default';
-    return result;
+    return hasDocCookie('custom_font') ? getDocCookie('custom_font') : 'Default';
 }
 
 function setCustomFont(v) {
