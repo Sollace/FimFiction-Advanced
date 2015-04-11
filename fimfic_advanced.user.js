@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.6
+// @version     3.7.7
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -2917,8 +2917,8 @@ function AppendPopup(message, field) {
 }
 
 //==API FUNCTION==//
-function registerBanner(name, img, source, color, pos) {
-    safeGetThemeArray().push(Banner(name,img,source,color,pos));
+function registerBanner(items, name, img, source, color, pos) {
+    items.push(Banner(name,img,source,color,pos));
 }
 
 //==API FUNCTION==//
@@ -2998,7 +2998,7 @@ function buildBanner(items) {
 function registerCustomBanner(items) {
     customBanner = getCustomBanner();
     if (customBanner != null) {
-        registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
+        registerBanner(items, "Custom", customBanner[0], "", customBanner[1], customBanner[2]);
         customBannerindex = items.length - 1;
     }
 }
