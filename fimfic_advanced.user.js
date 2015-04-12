@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.7.7
+// @version     3.8
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -147,6 +147,7 @@ var logos = [
     new BG("Luna", "http://fc03.deviantart.net/fs70/f/2014/188/5/8/fimfic_luna_by_comeha-d7pkw8u.png"),
     new BG("Sunset Shimmer", "http://fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
 ];
+var theme = 0;
 var customBannerindex = -1;
 var customBanner = getCustomBanner();
 var banners = registerBanners([
@@ -318,26 +319,16 @@ logger.Log('starting customizations setup',10);
 
 var isSliding = false;
 var time = getTime(getSlide());
-var fade = null;
+var fade = $('#fade_banner_image');
 
-if ($('#title').length) {
-    fade = $('<div id="fade_banner_image" style="width:100%;height:100%;left:-1px;" />');
-    $('#title > .home_link').prepend(fade);
+if (time > 0) {
     updateSlide();
     logger.Log('setup slideshow',9);
 }
 
 var december = (new Date()).getMonth() == 11;
-var snowing = getSnowing();
 var snower;
-if (snowing < 2 && (snowing == 0 || december)) {
-    if (snower == null) {
-        snower = snowBG();
-        logger.Log('setup Ultra Snow',9);
-    } else {
-        snower.start();
-    }
-}
+applySnowing(getSnowing());
 //--------------------------------------------------------------------------------------------------
 try {
     logger.Log('starting settings Tab setup');
@@ -455,11 +446,6 @@ try {
         hideBanner.checked = getTitleHidden();
         hideBanner.onclick = function() {
             setTitleHidden(this.checked);
-            if (this.checked) {
-                $(title).addClass("titleHidden");
-            } else {
-                $(title).removeClass("titleHidden");
-            }
         };
         logger.Log('setup enableHb');
 
@@ -485,22 +471,15 @@ try {
         });
         
         var enableUSnow = tab.AddDropDown("us", "Ultra Snow", ["Always On", "Default", "Always Off"]);
-        enableUSnow.selectedIndex = snowing;
+        enableUSnow.selectedIndex = getSnowing();
         $(enableUSnow).change(function() {
             setSnowing(this.selectedIndex);
-            if (this.selectedIndex < 2 && (this.selectedIndex == 0 || december)) {
-                if (snower == null) {
-                    snower = snowBG();
-                } else {
-                    snower.start();
-                }
-            } else if (snower != null) {
-                snower.stop();
-            }
+            tab.setEnabled('#pus', this.selectedIndex < 2);
         });
         logger.Log('setup enableUSnow');
 
         var pauseSnowBG = tab.AddCheckBox('pus', 'Pause Ultra Snow when lost focus');
+        tab.setEnabled('#pus', enableUSnow.selectedIndex < 2);
         pauseSnowBG.checked = getSaveFocus();
         $(pauseSnowBG).click(function() {
             settingsMan.set('ultra_snow_save_focus', this.checked);
@@ -784,7 +763,7 @@ try {
             reset.click(function() {
                 unsetCustomBanner();
                 if (customBannerindex > -1) {
-                    safeGetThemeArray().splice(customBannerindex, 1);
+                    banners.splice(customBannerindex, 1);
                     if (getCookie('selected_theme') == 'Custom') {
                         chooseTheme(banners, 0, true);
                     }
@@ -879,18 +858,9 @@ try {
     logger.Log('settings Tab setup completed Succesfully',10);
     logger.Log('final-init updating tab-bar position',10);
     if ($('.tabs').length && getTabsLeft()) updateTabsBarSide(true);
-//--------------------------------------------------------------------------------------------------
+    //--------------------------------------------------------------------------------------------------
 } catch (e) {if (e != 'handled') logger.SevereException('Unhandled Exception in Settings Tab: {0}', e); }
-//--------------------------------------------------------------------------------------------------
-
-setTimeout(function() {
-    if (getTitleHidden()) $(title).addClass("titleHidden");
-    $(title).css("overflow", "hidden");
-    setTimeout(function() {
-        $(title).css("transition", "height 0.5s ease");
-    }, 30);
-    logger.Log('Delayed Checkpoint: banner animations setup Succesfully');
-}, 10);
+     //--------------------------------------------------------------------------------------------------
 
 logger.Log('Checkpoint 13: script completed Succesfully');
 
@@ -2145,21 +2115,23 @@ function updateSlide(prev) {
         isSliding = true;
         var tit = $('#title a.home_link');
         setTimeout(function() {
+            fade.css({"transition": "none",
+                      "opacity": "1"});
             fade.css({
                 "background-image": tit.css("background-image"),
                 "background-position": tit.css("background-position"),
                 "background-size": tit.css("background-size")});
-            chooseTheme(banners, getShuffle() ? Math.floor(Math.random() * safeGetThemeArray().length) : (theme + 1) % safeGetThemeArray().length, true);
-            fade.css({"transition": "none",
-                      "opacity": "1"});
-            var imgUrl = tit.css('background-image');
-            imgUrl = imgUrl.substring(4,imgUrl.length - 1).replace(/"/g,'');
-            $('<img>').attr('src',imgUrl).load(function() {
+            if (getShuffle()) {
+                theme = Math.floor(Math.random() * banners.length);
+            } else {
+                theme = theme >= banners.length ? 0 : theme + 1;
+            }
+            chooseTheme(banners, theme, true);
+            $('<img>').attr('src', banners[theme].url).load(function() {
                 fade.css({"transition": "opacity 3s linear",
                           "opacity": "0"});
+                updateSlide();
             });
-            
-            updateSlide();
         }, time);
     } else {
         isSliding = false;
@@ -2168,8 +2140,7 @@ function updateSlide(prev) {
 
 function getTime(v) {
     var slideTimes = [-1, 60000, 180000, 300000, 600000, 30000];
-    if (v < 0 && v >= slideTime.length) v = 0;
-    return slideTimes[v];
+    return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];
 }
 
 function getLogoNames() {
@@ -2439,9 +2410,11 @@ a:hover .bg_source_link {\
     box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;\
     font-family: 'Segoe UI';\
     text-shadow: 1px 1px rgba(0, 0, 0, 0.3);}\
-.titleHidden {\
+.titleHidden #title {\
     height: 50px !important;}\
-.titleHidden:hover {\
+.titleHidden #title, .titleHidden .user-page-header, .titleHidden .story-page-header {\
+    overflow: hidden;}\
+.titleHidden #title:hover {\
     height: 175px !important;}\
 .drop-size-pick ul li {\
     display: inline-block !important;}\
@@ -2785,6 +2758,8 @@ function addBannerCss() {
     opacity: 0;}\
   header.header #title {\
     display: block !important;}}\
+.user_toolbar.transitionable > ul {\
+  transition: background-color 0.25s linear;}\
 .user_toolbar > ul > li {\
   background: rgba(255, 255, 255, 0.1);\
   text-shadow: none;\
@@ -2798,7 +2773,12 @@ function addBannerCss() {
   text-shadow: none;\
   background: rgba(0, 0, 0, 0.1);}\
 header.header {\
-  max-width: 1300px;}', 'banner_style');
+  max-width: 1300px;}\
+#fade_banner_image {\
+  top: 0px;\
+  bottom: 0px;\
+  left: 0px;\
+  right: 0px;}', 'banner_style');
     }
 }
 
@@ -2857,7 +2837,6 @@ function chooseTheme(items, id, save) {
         $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
-    
     catchBanners(items, id);
     theme = id;
 }
@@ -2944,26 +2923,43 @@ function registerBanners(items, extended) {
 
 function buildBanner(items) {
     addBannerCss();
+    
+    if (getTitleHidden()) $('body').addClass("titleHidden");
     if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
         $('header.header').prepend('\
-<div style="overflow:hidden" id="title" class="title">\
+<div id="title" class="title">\
   <div class="banner-buttons">\
     <a id="source_link">Source</a>\
     <a id="reset_banner" href="javascript:void(0);">Reset Selection</a>\
     <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
   </div>\
-  <a href="/" class="home_link"><div><img></div></a>\
+  <a href="/" class="home_link">\
+    <div id="fade_banner_image" />\
+    <div><img></div></a>\
   <a href="/" class="home_link_link" />\
   <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
   <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
 </div>');
         
+        var tit = $('#title a.home_link');
         $('.theme_selector_left > a')[0].onclick = function() {
-            chooseTheme(theme == 0 ? safeGetThemeArray().length - 1 : theme - 1, true);
+            cycleTheme(theme == 0 ? banners.length - 1 : theme - 1);
         };
         $('.theme_selector_right > a')[0].onclick = function() {
-            chooseTheme((theme + 1) % safeGetThemeArray().length, true);
+            cycleTheme(theme >= banners.length - 1 ? 0 : theme + 1);
         };
+        
+        function cycleTheme(index) {
+            fade.css({"transition": "none",
+                      "opacity": "1"});
+            fade.css({
+                "background-image": tit.css("background-image"),
+                "background-position": tit.css("background-position"),
+                "background-size": tit.css("background-size")});
+            chooseTheme(banners, index, true);
+            fade.css({"transition": "opacity 0.25s linear",
+                      "opacity": "0"});
+        }
     }
     if ($('.user-page-header, .story-page-header').length) {
         $('header.header').before($('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container').clone().addClass('focus-tile'));
@@ -2986,6 +2982,9 @@ function buildBanner(items) {
     logger.Log('loading custom banner...',10);
     registerCustomBanner(items);
     finaliseThemes(items);
+    setTimeout(function() {
+        $('.user_toolbar').addClass('transitionable');
+    }, 10);
     
     function repos() {
         $('.focus-tile').css({
@@ -3120,23 +3119,15 @@ function getInit() {return $('div#extraemoticons_loaded').length > 0;}
 //==API FUNCTION==//
 function finaliseThemes(items) {
     var themeId = getCookie('selected_theme');
-    $('.user_toolbar > ul').css('transition', 'none');
     if (themeId != null && themeId != undefined) {
-        for (var i in items) {
+        for (var i = 0; i < items.length; i++) {
             if (items[i].id == themeId) {
                 chooseTheme(items, i);
-                $('.user_toolbar > ul').css('transition', '');
                 return;
             }
         }
     }
     chooseTheme(items, Math.floor(Math.random() * items.length));
-    $('.user_toolbar > ul').css('transition', '');
-}
-
-//==API FUNCTION==//
-function safeGetThemeArray() {
-    return banners;
 }
 
 //==API FUNCTION==//
@@ -3817,6 +3808,20 @@ function getSnowing() {
 
 function setSnowing(v) {
     settingsMan.set("snow_bg", v);
+    applySnowing(v);
+}
+
+function applySnowing(v) {
+    if (v < 2 && (v == 0 || december)) {
+        if (snower == null) {
+            snower = snowBG();
+            logger.Log('setup Ultra Snow',9);
+        } else {
+            snower.start();
+        }
+    } else if (snower != null) {
+        snower.stop();
+    }
 }
 
 //==API FUNCTION==//
@@ -3826,6 +3831,7 @@ function getBannersEnabled() {
 
 function setBannersEnabled(v) {
     settingsMan.setB("banners", v);
+    settingsMan.updateFlagField('banners',v);
     if (v) {
         buildBanner(banners);
     } else {
@@ -3833,7 +3839,6 @@ function setBannersEnabled(v) {
         $('.user_toolbar > ul').css('background', '');
         $('.focus-tile, header.header > #title.title').remove();
     }
-    settingsMan.updateFlagField('banners',v);
 }
 
 //==API FUNCTION==//
@@ -3843,6 +3848,11 @@ function getTitleHidden() {
 
 function setTitleHidden(v) {
     settingsMan.setB("titleHidden", v);
+    if (v) {
+        $('body').addClass("titleHidden");
+    } else {
+        $('body').removeClass("titleHidden");
+    }
 }
 
 function updateBackground(c) {
