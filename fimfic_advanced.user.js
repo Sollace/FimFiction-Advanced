@@ -2337,6 +2337,24 @@ function setVideoSizes() {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
+/*Inconsistent Group lists fix*/\
+#left_column #story-groups-list > li {\
+  width: 20% !important;\
+  min-width: 180px;\
+  height: 66px;\
+  position: relative;\
+  margin-bottom: -8px;}\
+#left_column #story-groups-list > li a {\
+  position: absolute;\
+  top: 4px;\
+  bottom: 4px;\
+  left: 4px;\
+  right: 4px;\
+  margin: 0px;}\
+#story-groups-list > li a i {\
+  width: 50px;\
+  height: 50px;}\
+\
 /*Textarea fix*/\
 textarea[required] {\
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}\
@@ -2367,6 +2385,7 @@ textarea[required] {\
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
     overflow: hidden;}\
 \
+/*Editor fixes*/\
 #pm_content {\
     resize: none;\
     height: 200px;}\
@@ -2387,8 +2406,8 @@ textarea[required] {\
     color: #888;}\
 #chapter_edit_form textarea {\
     width: 100% !important;\
-    resize: y;}\
-\
+    resize: y;}", "Fimfiction_Advanced_Styling_Fixes");
+    makeStyle("\
 /*Bookmarks*/\
 .bookmark_marker {\
     background-color: #B93838;\
@@ -2889,7 +2908,7 @@ function addBannerCss() {
   top: 0px;\
   bottom: 0px;\
   left: 0px;\
-  right: 0px;}', 'banner_style');
+  right: 0px;}', 'Fimfiction_Advanced_Banner_Stylesheet');
     }
 }
 
@@ -3099,9 +3118,7 @@ function buildBanner(items) {
     
     if ($('.user-page-header, .story-page-header').length) {
         $(window).on('resize', repos);
-        setTimeout(function() {
-            repos();
-        }, 1);
+        repos();
     }
     
     logger.Log('loading custom banner...',10);
@@ -3109,7 +3126,7 @@ function buildBanner(items) {
     finaliseThemes(items);
     setTimeout(function() {
         $('.user_toolbar').addClass('transitionable');
-    }, 10);
+    }, 1);
     
     function repos() {
         $('.focus-tile').css({
