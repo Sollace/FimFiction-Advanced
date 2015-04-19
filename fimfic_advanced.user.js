@@ -132,7 +132,7 @@ var backgroundImages = [
     new BG("Poni 2.0", "url(http://fc02.deviantart.net/fs71/f/2014/124/f/1/poni_2_by_comeha-d7h2gd0.png)")
 ];
 var logos = [
-    new BG("Default", "http://www.fimfiction-static.net/images/custom_banners/logo.png"),
+    new BG("Default", staticFimFicDomain() + "/images/custom_banners/logo.png"),
     new BG("Rainbow Dash", "http://fc03.deviantart.net/fs71/f/2013/350/d/b/fimfic_rainbowdash_by_comeha-d6y58nl.png"),
     new BG("Twilight Sparkle", "http://fc07.deviantart.net/fs70/f/2013/350/9/3/fimfic_twilight_by_comeha-d6y58ng.png"),
     new BG("Pinkie Pie", "http://fc04.deviantart.net/fs71/f/2013/350/e/a/fimfic_pinkie_by_comeha-d6y5b8e.png"),
@@ -243,14 +243,8 @@ logger.Log('initializing...',10);
      
 var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 
-var color = getBGColor();
-updateBackground(color);
+applyBackground(getBGColor());
 applyCustomFont(getCustomFont());
-
-var logo = getOldLogo();
-var logoO = getLogoO();
-updateLogo(logo);
-updateLogoO(logoO);
 addChapterButtonsExtras();
 applyBookmarks();
 if (getPinUserbar()) $(window).on('scroll.userbar', updateUserbarScroll);
@@ -499,24 +493,23 @@ try {
 
         var oldLogo = tab.AddDropDown("ologo", "Logo", getLogoNames());
         $(oldLogo.children[0]).after('<option value="-1">Random</option>');
-        $(oldLogo).val(logo);
+        $(oldLogo).val(getLogo());
         $(oldLogo).change(function() {
-            setOldLogo($(this).val());
-            updateLogo($(this).val());
+            setLogo($(this).val());
         });
         logger.Log('setup oldLogo');
-
-        var enableHo = tab.AddSlider("ho", "Logo Opacity", logoO, 10, 100);
+        
+        var enableHo = tab.AddSlider("ho", "Logo Opacity", getLogoOpacity(), 10, 100);
         if (enableHo != null) {
             $(enableHo).change(function() {
-                setLogoO(this.value);
-                updateLogoO(this.value);
+                setLogoOpacity(this.value);
             });
         }
-
+    
+        var bgcolor = getBGColor();
         var backgroundImg = null;
-        var colorPick = tab.AddColorPick("bg", "Background Colour", color == 'transparent' ? '' : color, function(me) {
-            updateBackground(me.value);
+        var colorPick = tab.AddColorPick("bg", "Background Colour", bgcolor == 'transparent' ? '' : bgcolor, function(me) {
+            applyBackground(setBGColor(me.value));
             if (backgroundImg != null) {
                 for (var i = 0; i < backgroundImg.length - 1; i++) {
                     $(backgroundImg[i].children[0]).css("background-color", me.value);
@@ -526,19 +519,19 @@ try {
 
         backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
         for (var i = 0; i < backgroundImages.length; i++) {
-            backgroundImages[i].Setup(backgroundImg[i + 2], color, i);
+            backgroundImages[i].Setup(backgroundImg[i + 2], bgcolor, i);
         }
 
         backgroundImg[0].children[1].innerHTML = 'None';
-        $(backgroundImg[0].children[0]).css("background-color", color);
+        $(backgroundImg[0].children[0]).css("background-color", bgcolor);
         $(backgroundImg[0].children[0]).css("opacity", "0.8");
         $(backgroundImg[0]).click(function () {
             setBackgroundImg(-2);
-            updateBackground(getBGColor());
+            applyBackground(getBGColor());
         });
 
         backgroundImg[1].children[1].innerHTML = 'Default';
-        $(backgroundImg[1].children[0]).css("background-color", color);
+        $(backgroundImg[1].children[0]).css("background-color", bgcolor);
         $(backgroundImg[1].children[0]).css("opacity", "0.8");
         $(backgroundImg[1]).css("background-image", $('body').css('background-image'));
         $(backgroundImg[1]).click(function () {
@@ -555,7 +548,7 @@ try {
             $(this).addClass('premade_settings_selected');
         });
 
-        var bgIndex = getBackgroundImgIndex();
+        var bgIndex = getBGIndex();
         if (bgIndex > -3 && bgIndex + 2 < backgroundImg.length) {
             $(backgroundImg[bgIndex + 2]).addClass('premade_settings_selected');
         }
@@ -949,7 +942,7 @@ function setAccountLogos() {
                 me.parent().attr('title', url);
             }
 
-            if (me.attr('src') == '//www.fimfiction-static.net/images/external_accounts/other.png') {
+            if (me.attr('src') == staticFimFicDomain() + '/images/external_accounts/other.png') {
                 me.attr('src', getFavicon(getDomain(url)));
             }
         }
@@ -1155,7 +1148,7 @@ function getBookmarksGui(tab) {
                 $(this).attr('src', src.reverse().join('/'));
             }
         });
-        image.attr('src', '//www.fimfiction-static.net/images/story_images/' + itemsArray[i].bookmark[1] + '_r.png');
+        image.attr('src', staticFimFicDomain() + '/images/story_images/' + itemsArray[i].bookmark[1] + '_r.png');
         
         $(row.children()[0]).append(image);
         
@@ -1917,7 +1910,7 @@ function previewSig() {
 }
 
 function emoteHTM(name) {
-    return '<img src="//www.fimfiction-static.net/images/emoticons/' + name + '.png" style="height:27px;" ></img>';
+    return '<img src="' + staticFimFicDomain() + '/images/emoticons/' + name + '.png" style="height:27px;" ></img>';
 }
 
 function sign(target, text) {
@@ -2241,15 +2234,8 @@ function getValidLogoKeys() {
     return indexes;
 }
 
-function updateLogo(val) {
-    if ($('#title').length) {
-        val = logos[val == -1 ? pickNext(getValidLogoKeys()) : val < 0 || val >= logos.length ? 0 : val].Css;
-        $('#title .home_link img').attr("src", val);
-    }
-}
-
-function updateLogoO(o) {
-    if ($('#title').length) $('#title .home_link img').css('opacity', o / 100);
+function getLogoUrl(val) {
+    return logos[val == -1 ? pickNext(getValidLogoKeys()) : val < 0 || val >= logos.length ? 0 : val].Css;
 }
 
 function checkColor(me, preview, valid) {
@@ -2912,8 +2898,13 @@ function addBannerCss() {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
+function staticFimFicDomain() {
+    return '//static.fimfiction.net';
+}
+
+//==API FUNCTION==//
 function getFavicon(url) {
-    return 'http://www.google.com/s2/favicons?domain=' + url;
+    return 'http://www.google.com/s2/favicons?domain_url=' + url;
 }
 
 //==API FUNCTION==//
@@ -3048,7 +3039,6 @@ function registerBanners(items, extended) {
 
 function buildBanner(items) {
     addBannerCss();
-    
     if (getTitleHidden()) $('body').addClass("titleHidden");
     if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
         $('header.header').prepend('\
@@ -3057,22 +3047,27 @@ function buildBanner(items) {
     <a id="source_link">Source</a>\
     <a id="reset_banner" href="javascript:void(0);">Reset Selection</a>\
     <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
-  </div>\
+   </div>\
   <a href="/" class="home_link">\
     <div id="fade_banner_image" />\
-    <div><img></div></a>\
+    <div>\
+       <img src="' + getLogoUrl(getLogo()) + '" style="opacity: ' + (getLogoOpacity()/100) + ';">\
+    </div>\
+  </a>\
   <a href="/" class="home_link_link" />\
-  <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
-  <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
+   <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
+   <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
 </div>');
         
         var tit = $('#title a.home_link');
-        $('.theme_selector_left > a')[0].onclick = function() {
-            cycleTheme(theme == 0 ? banners.length - 1 : theme - 1);
-        };
-        $('.theme_selector_right > a')[0].onclick = function() {
-            cycleTheme(theme >= banners.length - 1 ? 0 : theme + 1);
-        };
+        if ($('.theme_selector').length) {
+            $('.theme_selector_left a')[0].onclick = function() {
+                cycleTheme(theme == 0 ? banners.length - 1 : theme - 1);
+            };
+            $('.theme_selector_right > a')[0].onclick = function() {
+                cycleTheme(theme >= banners.length - 1 ? 0 : theme + 1);
+            };
+        }
         
         function cycleTheme(index) {
             fade.css({
@@ -3505,7 +3500,7 @@ function BG(name, css, source) {
         }
         $(blank).click(function() {
             setBackgroundImg($(this).attr("data-bg-index"));
-            updateBackground(getBGColor());
+            applyBackground(getBGColor());
         });
         
         if (source != null) {
@@ -3519,9 +3514,9 @@ function BG(name, css, source) {
 function getUserCommentThumb(size) {
     var hold = $('<div class="author" style="line-height:1.1em;" />');
     if (getIsLoggedIn()) {
-        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
+        hold.append('<a class="name" href="/user/' + getUserNameEncoded() + '">' + getUserName() + '</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="' + staticFimFicDomain() + '/images/avatars/' + logged_in_user.id + '_' + size + '.png" /></div>');
     } else {
-        hold.append('<a class="name">Anon</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="//www.fimfiction-static.net/images/avatars/none_64.png" /></div>');
+        hold.append('<a class="name">Anon</a><div class="avatar"><img style="margin:0px;" height="' + size + '" width="' + size + '" src="' + staticFimFicDomain() + '/images/avatars/none_64.png" /></div>');
     }
     return $('<div class="comment" />').append(hold);
 }
@@ -3903,22 +3898,27 @@ function setCustomBanner(url, color, pos) {
 }
 
 //==API FUNCTION==//
-function getLogoO() {
+function getLogoOpacity() {
     return settingsMan.int('logo_opacity', 100);
 }
 
-function setLogoO(v) {
+function setLogoOpacity(v) {
     settingsMan.set('logo_opacity', v);
+    if ($('#title').length) {
+        $('#title .home_link img').css('opacity', v / 100);
+    }
 }
 
-
 //==API FUNCTION==//
-function getOldLogo() {
+function getLogo() {
     return settingsMan.int("oldLogo", 0);
 }
 
-function setOldLogo(v) {
+function setLogo(v) {
     settingsMan.set("oldLogo", v);
+    if ($('#title').length) {
+        $('#title .home_link img').attr("src", getLogoUrl(v));
+    }
 }
 
 //==API FUNCTION==//
@@ -3998,21 +3998,15 @@ function setTitleHidden(v) {
     }
 }
 
-function updateBackground(c) {
-    settingsMan.set("bgColor", c);
-    var img = getBackgroundImg();
+function applyBackground(c) {
+    var img = getBG();
     if (img == 'none') {
         img = $('body').css('background-image');
     }
     if (c == '' || c == 'transparent') c = $('body').css('background-color');
-    if (img != '') {
-        $('.body_container').css("background", img + " " + c);
-    } else {
-        $('.body_container').css("background", c);
-    }
-    c = $('.body_container').css('background-color').replace('(','').replace(')','').replace('rgba','').replace('rgb','').split(', ');
-    var index = getBackgroundImgIndex();
-    if (brightness(parseInt(c[0]),parseInt(c[1]),parseInt(c[2])) < 100 || (index > -1 && backgroundImages[index].Type.Key.indexOf('d') != -1)) {
+    $('.body_container').css("background", (typeof img === 'string' ? img : img.Css) + " " + c);
+    c = $('.body_container').css('background-color').replace(/rgb|a|\(|\)| /g,'').split(',');
+    if (brightness(c[0] >> 0,c[1] >> 0,c[2] >> 0) < 100 || (typeof img !== 'string' && img.Type.Key.indexOf('d') != -1)) {
         $('.breadcrumbs, .chapter-header').addClass('bright');
     } else {
         $('.breadcrumbs, .chapter-header').removeClass('bright');
@@ -4029,21 +4023,24 @@ function getBGColor() {
     return settingsMan.get("bgColor", "");
 }
 
+function setBGColor(c) {
+    settingsMan.set("bgColor", c);
+    return c;
+}
+
 //==API FUNCTION==//
-function getBackgroundImg() {
-    var index = getBackgroundImgIndex();
+function getBG() {
+    var index = getBGIndex();
     if (index < 0) {
         if (index == -1) return 'none';
-    } else {
-        try {
-            return backgroundImages[index].Css;
-        } catch (e) { }
+    } else if (index < backgroundImages.length) {
+        return backgroundImages[index];
     }
     return '';
 }
 
 //==API FUNCTION==//
-function getBackgroundImgIndex() {
+function getBGIndex() {
     return settingsMan.int("bgImg", -1);
 }
 
@@ -4120,7 +4117,7 @@ function SettingsTab(title, description, name, img, category) {
         error.setAttribute("class", "validation_error");
         error.style.display = "none";
         $(context).append(error);
-        $(error).append('<div class="message" style="margin-bottom:10px;">There were errors with the settings you chose. Please correct the fields marked<img class="icon_16" style="vertical-align:-3px;" src="//www.fimfiction-static.net/images/icons/cross.png"></img>. Hover over to see the error.</div>');
+        $(error).append('<div class="message" style="margin-bottom:10px;">There were errors with the settings you chose. Please correct the fields marked<img class="icon_16" style="vertical-align:-3px;" src="' + staticFimFicDomain() + '/images/icons/cross.png"></img>. Hover over to see the error.</div>');
 
         tabl = document.createElement("table");
         tabl.setAttribute("class", "properties");
@@ -4173,7 +4170,7 @@ function SettingsTab(title, description, name, img, category) {
                 if (tabs.length == 0) {
                     $('.content_box_header').remove();
                     tabs = $('<div class="tabs" />');
-                    tabs.append('<div class="sidebar-shadow"><div class="light-gradient"></div><div class="dark-gradient"></div></div><a><img src="//www.fimfiction-static.net/images/avatars/none_64.png"></a>');
+                    tabs.append('<div class="sidebar-shadow"><div class="light-gradient"></div><div class="dark-gradient"></div></div><a><img src="' + staticFimFicDomain() + '/images/avatars/none_64.png"></a>');
                     tabs.append('<div class="tab-collection"><h1><i class="fa fa-fw fa-cog" /><span>Account</span></h1><ul><li class="tab' + (page.split('=')[1] == 'local_settings' ? ' tab_selected' : '') + '"><a  title="Local Settings" href="/index.php?view=local_settings"><i class="fa fa-cog" /><span>Local Settings</span></a></li></ul></div>');
                     $('.user_cp').append(tabs);
                     tabs = $('.tab-collection').first();
@@ -4422,7 +4419,7 @@ a.premade_settings span {\
 
             if (buttonCount != null) {
                 for (var i = 0; i < buttonCount; i++) {
-                    $(bar).append("<a class=\"styled_button styled_button_grey\" href=\"javascript:void();\"><img src=\"//www.fimfiction-static.net/images/icons/post.png\" /></a>");
+                    $(bar).append("<a class=\"styled_button styled_button_grey\" href=\"javascript:void();\"><img src=\"" + staticFimFicDomain() + "/images/icons/post.png\" /></a>");
                 }
             }
 
@@ -4453,8 +4450,8 @@ a.premade_settings span {\
         if (has_init) {
             var me = this;
             var field = document.createElement("div");
-            $(field).append("<a class=\"styled_button form_cubmitter\" href=\"javascript:void(0);\"><img src=\"//www.fimfiction-static.net/images/icons/white/save.png\"></img>Save</a>");
-            $(field).append("<img class=\"submitting_spinner\" style=\"vertical-align:middle;display:none;\" src=\"//www.fimfiction-static.net/themes/poni2.0/images/loader_light_toolbar.gif\"></img>");
+            $(field).append("<a class=\"styled_button form_cubmitter\" href=\"javascript:void(0);\"><img src=\"" + staticFimFicDomain() + "/images/icons/white/save.png\"></img>Save</a>");
+            $(field).append("<img class=\"submitting_spinner\" style=\"vertical-align:middle;display:none;\" src=\"" + staticFimFicDomain() + "/themes/poni2.0/images/loader_light_toolbar.gif\"></img>");
             field.children[0].onclick = function() {
                 field.children[1].style.display = "block";
                 var fails = func();
@@ -5362,7 +5359,7 @@ function snowBG() {
         var particles = [];
         var container = $('body')[0];
         var particleImage = new Image();
-        particleImage.src = 'https://www.fimfiction-static.net/scripts/img/ParticleSmoke.png';
+        particleImage.src = staticFimFicDomain() + '/scripts/img/ParticleSmoke.png';
         var camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
         camera.position.z = 1000;
         var scene = new THREE.Scene();
