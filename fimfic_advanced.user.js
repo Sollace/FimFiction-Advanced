@@ -6,10 +6,10 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/ThreeCanvas.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.9
+// @version     3.9.0_1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -3105,20 +3105,24 @@ function buildBanner(items) {
             });
         }
     }
-    if ($('.user-page-header, .story-page-header').length) {
-        $('header.header').before($('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container').clone().addClass('focus-tile'));
-    }
-    
-    $('.focus-tile').on('mouseover', function() {
-        $('body').addClass('expand-tile');
-    });
-    $('.focus-tile').on('mouseleave', function() {
-        $('body').removeClass('expand-tile');
-    });
     
     if ($('.user-page-header, .story-page-header').length) {
-        $(window).on('resize', repos);
-        repos();
+        var tile = $('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container');
+        var focusTile = tile.clone().addClass('focus-tile');
+        focusTile.on('mouseenter', function() {
+            $('body').addClass('expand-tile');
+        }).on('mouseleave', function() {
+            $('body').removeClass('expand-tile');
+        });
+        focusTile.css({'top': tile.offset().top,
+                       'left': tile.offset().left});
+        $('header.header').before(focusTile);
+        $(window).on('resize', function() {
+            $('.focus-tile').css({
+                'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top,
+                'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left
+            });
+        });
     }
     
     logger.Log('loading custom banner...',10);
@@ -3127,13 +3131,6 @@ function buildBanner(items) {
     setTimeout(function() {
         $('.user_toolbar').addClass('transitionable');
     }, 1);
-    
-    function repos() {
-        $('.focus-tile').css({
-            'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top,
-            'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left
-        });
-    }
 }
 
 function registerCustomBanner(items) {
