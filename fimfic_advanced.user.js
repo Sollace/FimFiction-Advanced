@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.9.0_2
+// @version     3.9.1
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
