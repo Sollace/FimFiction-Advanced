@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.9.0_1
+// @version     3.9.0_2
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -3106,7 +3106,7 @@ function buildBanner(items) {
         }
     }
     
-    if ($('.user-page-header, .story-page-header').length) {
+    if ($('.user-page-header .avatar-container, .story-page-header .image-container').length) {
         var tile = $('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container');
         var focusTile = tile.clone().addClass('focus-tile');
         focusTile.on('mouseenter', function() {
