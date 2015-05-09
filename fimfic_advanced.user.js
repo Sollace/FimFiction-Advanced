@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @version     3.9.1
+// @version     3.9.3
 // @grant       none
 // ==/UserScript==
 //---------------------------------------------------------------------------------------------------
@@ -264,9 +264,13 @@ initCommentArea(true);
 
 logger.Log('Registering events...',10);
 
-if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
+     
+if (getAlwaysShowImages()) {
+    FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', initImageUnspoiler);
+    initImageUnspoiler();
+} else if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
+    FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', loopUnspoiler);
     loopUnspoiler();
-    FimFicEvents.on('afterpagechange aftereditComment afteraddcomment afterpreviewcomment', loopUnspoiler);
 }
 
 FimFicEvents.on('afterinfocard', setAccountLogos);
@@ -276,11 +280,6 @@ FimFicEvents.on('afternote_markread', function() {
 FimFicEvents.on('afterpm_markread', function() {
     $('#private-message-drop-down .new').removeClass('new');
 });
-
-if (getAlwaysShowImages()) {
-    FimFicEvents.on('afterpagechange', initImageUnspoiler);
-    initImageUnspoiler();
-}
 
 logger.Log('events registered successfully',10);
 
@@ -1632,12 +1631,6 @@ function loopUnspoiler() {
     }
 }
 
-function initImageUnspoiler() {
-    $('.comment_data .user_image_link').each(function() {
-        $(this).parent().after('<img class="user_image" src="' + $(this).attr('href') + '" />').remove();
-    });
-}
-
 function setUpMainButton(toolbar, target, hold) {
     logger.Log('setUpMainButton: start');
     var hasAdv = toolbar.parentNode.children.length > 6;
@@ -2135,6 +2128,12 @@ function addColorTiles(target, panel, colors) {
     }
 }
 
+function initImageUnspoiler() {
+    $('.comment_data .user_image_link').each(function() {
+        $(this).parent().after('<img class="user_image" src="' + $(this).attr('href') + '" />').remove();
+    });
+}
+
 function unspoilerImages() {
     logger.Log('unspoilerImages: start');
     var comments = $('.comment .data .comment_data');
@@ -2167,7 +2166,10 @@ function unspoilerSiblings() {
             $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
             logger.Log("unspoilerSiblings: " + url);
         } else {
-            $(this).parent().after('<br />');
+            var next = $(this).parent().next();
+            if (next != null && !next.is('br')) {
+                $(this).parent().after('<br />');
+            }
         }
     });
 }
@@ -2406,7 +2408,14 @@ textarea[required] {\
     color: #888;}\
 #chapter_edit_form textarea {\
     width: 100% !important;\
-    resize: y;}", "Fimfiction_Advanced_Styling_Fixes");
+    resize: y;}\
+\
+/*Image sizing fix for comments and PMs*/\
+.comment_data div {\
+  max-width: 100% !important;}\
+.previous_message img.user_image,\
+.comment img.user_image {\
+  max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
     makeStyle("\
 /*Bookmarks*/\
 .bookmark_marker {\
@@ -2638,8 +2647,7 @@ ul.chapters_compact .chapter_container {\
     background-color: rgb(232, 239, 246) !important;\
     border-color: rgba(0, 0, 0, 0.2) !important;\
     text-shadow: none !important;}\
-.previous_message .user_image {\
-    max-width: 100px;}\
+\
 .comment textarea {\
     padding: 8px;\
     color: rgb(68, 68, 68);\
