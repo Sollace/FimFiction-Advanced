@@ -2175,16 +2175,8 @@ function unspoilerSiblings() {
 }
 
 function mustUnspoiler(url) {
-    var splitten = url.split("?");
-    if (splitten != null && splitten.length == 2) {
-        splitten = splitten[1].split('&');
-        for (var i = 0; i < splitten.length; i++) {
-            if (splitten[i] == 'isEmote=true') {
-                return true;
-            }
-        }
-    }
-    return false;
+    var q = url.indexOf('?');
+    return q != -1 && url.substring(q + 1, url.length).indexOf('isEmote=true') != -1;
 }
 
 function updateSlide(prev) {
