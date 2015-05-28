@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @version     3.10
+// @version     3.10.1
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -1280,7 +1280,7 @@ function addChapterButtonsExtras() {
         $(this).parents('.chapters').find('i.chapter-read-icon.chapter-read').click();
     }).on('click', '.mark_all_holder.read', function() {
         $(this).parents('.chapters').find('i.chapter-read-icon:not(.chapter-read)').click();
-    }).on('click', 'a.compact_chapters', function() function() {
+    }).on('click', 'a.compact_chapters', function() {
         $(this).parents('.chapters').removeClass('chapters_expanded');
     }).on('click', 'a.comact.min', function() {
         var me = $(this).parents('.chapters');
