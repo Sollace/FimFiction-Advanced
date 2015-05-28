@@ -222,10 +222,9 @@ var fonts = (function(f) {
     }
 })(new (getSafe('FontDetector', function result() {this.test = function(a) {return a;}}))());
 var colours = (function(raw) {
-    var i = raw.length - 1;
+    var i = raw.length + 1;
     var result = {
-        Mapping: {},
-        Keys: [], Names: [],
+        Mapping: {}, Keys: [], Names: [],
         Sets: {
             'Standard Colours': [false, [0,73,70,68,107,59,103,24,112]],
             'FimFiction': [false, [113,114,115,116,117,118,119,120,121,122,123,124,125,126,127]],
@@ -234,10 +233,9 @@ var colours = (function(raw) {
         }
     }
     while ((i-=2) >= 0) {
-        result.Keys.push(raw[i - 1]);
-        result.Names.push(raw[i]);
+        result.Keys.unshift(raw[i - 1]);
+        result.Names.unshift(raw[i]);
         result.Mapping[raw[i - 1]] = raw[i];
-        i-=2;
     }
     return result;
 })(['#FFFFFF', 'White','#FFC0CB', 'Pink','#FFDAB9', 'PeachPuff','#DCDCDC', 'Gainsboro','#FFB6C1', 'LightPink','#FFE4B5', 'Moccasin','#FFDEAD', 'NavajoWhite','#F5DEB3', 'Wheat','#D3D3D3', 'LightGray','#AFEEEE', 'PaleTurquoise','#EEE8AA', 'PaleGoldenRod','#D8BFD8', 'Thistle','#B0E0E6', 'PowderBlue','#ADD8E6', 'LightBlue','#98FB98', 'PaleGreen','#B0C4DE', 'LightSteelBlue','#87CEFA', 'LightSkyBlue','#C0C0C0', 'Silver','#7FFFD4', 'Aquamarine','#90EE90', 'LightGreen','#DDA0DD', 'Plum','#F0E68C', 'Khaki','#FFA07A', 'LightSalmon','#87CEEB', 'SkyBlue','#EE82EE', 'Violet','#F08080', 'LightCoral','#FA8072', 'Salmon','#FF69B4', 'HotPink','#DEB887', 'BurlyWood','#E9967A', 'DarkSalmon','#D2B48C', 'Tan','#7B68EE', 'MediumSlateBlue','#F4A460', 'SandyBrown','#A9A9A9', 'DarkGray','#6495ED', 'CornFlowerBlue','#FF7F50', 'Coral','#DB7093', 'PaleVioletRed','#9370DB', 'MediumPurple','#BC8F8F', 'RosyBrown','#DA70D6', 'Orchid','#8FBC8B', 'DarkSeaGreen','#FF6347', 'Tomato','#66CDAA', 'MediumAquamarine','#ADFF2F', 'GreenYellow','#CD5C5C', 'IndianRed','#BA55D3', 'MediumOrchid','#BDB76B', 'DarkKhaki','#6A5ACD', 'SlateBlue','#4169E1', 'RoyalBlue','#40E0D0', 'Turquoise','#1E90FF', 'DodgerBlue','#48D1CC', 'MediumTurquoise','#FF1493', 'DeepPink','#778899', 'LightSlateGray','#8A2BE2', 'BlueViolet','#CD853F', 'Peru','#708090', 'SlateGray','#808080', 'Gray','#FF00FF', 'Magenta','#0000FF', 'Blue','#00BFFF', 'DeepSkyBlue','#5F9EA0', 'CadetBlue','#00FFFF', 'Cyan','#00FF7F', 'SpringGreen','#00FF00', 'Lime','#32CD32', 'LimeGreen','#7FFF00', 'Chartreuse','#9ACD32', 'YellowGreen','#FFFF00', 'Yellow','#FFD700', 'Gold','#FFA500', 'Orange','#FF8C00', 'DarkOrange','#FF4500', 'OrangeRed','#FF0000', 'Red','#9932CC', 'DarkOrchid','#7CFC00', 'LawnGreen','#4682B4', 'Steelblue','#00FA9A', 'MediumSpringGreen','#DAA520', 'GoldenRod','#DC143C', 'Crimson','#D2691E', 'Chocolate','#3CB371', 'MediumSeaGreen','#C71585', 'MediumVioletRed','#B22222', 'FireBrick','#9400D3', 'DarkViolet','#20B2AA', 'LightSeaGreen','#696969', 'DimGray','#00CED1', 'DarkTurquoise','#A52A2A', 'Brown','#0000CD', 'MediumBlue','#A0522D', 'Sienna','#483D8B', 'DarkSlateBlue','#B8860B', 'DarkGoldenRod','#2E8B57', 'SeaGreen','#6B8E23', 'OliveDrab','#228B22', 'ForestGreen','#8B4513', 'SaddleBrown','#556B2F', 'DarkOliveGreen','#8B008B', 'DarkMagenta','#00008B', 'DarkBlue','#008B8B', 'DarkCyan','#8B0000', 'DarkRed','#191970', 'MidnightBlue','#4B0082', 'Indigo','#800080', 'Purple','#000080', 'Navy','#008080', 'Teal','#008000', 'Green','#808000', 'Olive','#800000', 'Maroon','#2F4F4F', 'DarkSlateGray','#006400', 'DarkGreen','#000000', 'Black','#666666', 'Grey','#cccccc', 'Light Grey','#383838', 'Dark Grey','#be4343', 'Red','#be7a43', 'Orange','#afa426', 'Yellow','#7aaf26', 'Lime Green','#2caf26', 'Green','#26af6d', 'Turquoise','#26a4af', 'Light Blue','#265daf', 'Blue','#3c26af', 'Purple','#9426af', 'Violet','#af2673', 'Pink','#5f4432', 'Brown','#a66ebe', 'Twilight Sparkle','#5e51a3', 'Rarity','#e97135', 'Applejack','#ea80b0', 'Pinkie Pie','#6aaadd', 'Rainbow Dash','#e6b91f', 'Fluttershy']);
@@ -257,7 +255,6 @@ var loaded = 0;
 //--------------------------------------------------------------------------------------------------
 
 addCss();
-
 document.addEventListener("DOMContentLoaded", function(event) {
     if (typeof $ === 'function') {
         load();
@@ -266,7 +263,6 @@ document.addEventListener("DOMContentLoaded", function(event) {
 });
 chainFunctionOnto(document, 'onready', run);
 function run() {
-    logger.Start(0);
     if (loaded < 2) {
         if (loaded < 1) {
             load();
@@ -274,9 +270,6 @@ function run() {
         }
         loaded++;
         try {
-            if (getIsLoggedIn() && typeof StartNotifications === 'function') {
-                StartNotifications();
-            }
             registerEvents();
         } catch (e) {
             logger.SevereException('unhandledException in Post-init: {0}', e);
@@ -327,6 +320,7 @@ function load() {
 //--------------------------------------------------------------------------------------------------
 
 function initFimFictionAdvanced() {
+    initCommentArea(true);
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
     addChapterButtonsExtras();
@@ -359,7 +353,6 @@ function initFimFictionAdvanced() {
 function registerEvents() {
     logger.Log('Registering events...',10);
     
-    initCommentArea(true);
     FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', function() {
         initCommentArea(false);
     });
@@ -962,7 +955,7 @@ function setAccountLogo() {
         }
         if (name != null) {
             name = /^knight(y33|33|y)$/i.test(name) ? name.toLowerCase() : normalise(name);
-            me.parent().attr('title', name + (url.length ? '' : '\non ' + getSiteName(url)));
+            me.parent().attr('title', name + (url.length ? '\non ' + getSiteName(url) : ''));
         } else {
             me.parent().attr('title', url);
         }
@@ -1486,33 +1479,30 @@ function applyChapterfix() {
 function initCommentArea(hold) {
     logger.Log('initCommentArea: start');
     $("button[title='Text Colour']").each(function (index) {
-        if ($(this).attr("fimfic_adv") != "true") {
-            $(this).attr("fimfic_adv", "true");
-
+        var me = $(this);
+        if (me.attr("fimfic_adv") != "1") {
+            me.attr("fimfic_adv", "1");
             if (this.children[0].tagName == 'IMG') {
                 logger.Log('setup: changing color button icon');
-                $(this.parentNode).css('line-height', '');
-                $(this).empty();
-                $(this).append('<i class="fa fa-tint" />');
+                me.parent().css('line-height', '');
+                me.html('<i class="fa fa-tint" />');
             }
-
-            var target = $(this).parents('.bbcode-editor').find('textarea')[0];
-            betterColors($(this), target);
+            var target = me.parents('.bbcode-editor').find('textarea')[0];
+            betterColors(me, target);
             setUpMainButton(this.parentNode.parentNode, target, hold);
         }
     });
     $("button[title='Font Size']").each(function(index) {
-        if ($(this).attr("fimfic_adv") != "true") {
-            $(this).attr("fimfic_adv", "true");
-            $(this).attr('data-function', '');
-            betterSizes($(this), $(this).parents('.bbcode-editor').find('textarea')[0]);
+        var me = $(this);
+        if (me.attr('fimfic_adv') != '1') {
+            me.attr({'fimfic_adv': '1', 'data-function': ''});
+            betterSizes(me, me.parents('.bbcode-editor').find('textarea')[0]);
         }
     });
     $("button[title='Insert Image']").each(function(index) {
         if (this.children[0].tagName == 'IMG') {
             logger.Log('Changing Insert Image Logo');
-            $(this).empty();
-            $(this).append('<i class="fa fa-picture-o" />');
+            $(this).html('<i class="fa fa-picture-o" />');
         }
     });
 }
@@ -1545,11 +1535,42 @@ function initBlogPage() {
 
 function loopUnspoiler() {
     logger.Log('loopUnspoiler: loop_start');
-    if (!getExtraEmotesInit() && applyDirectImages()) {
-        if (typeof SpecialTitles !== 'undefined') {
+    if (!getExtraEmotesInit()) {
+        var comments = $('.comment_data');
+        if (comments.length) {
+            logger.Log('applyDirectImages: start');
+            comments = comments.find('.user_image_link');
+            if (comments.length) unspoilerSiblings(comments);
             SpecialTitles.setUpSpecialTitles();
         }
     }
+}
+
+function initImageUnspoiler() {
+    $('.comment_data .user_image_link').each(function() {
+        var me = $(this);
+        me.parent().after('<img class="user_image" src="' + me.attr('href') + '" />').remove();
+    });
+}
+
+function unspoilerSiblings(imgs) {
+    imgs.each(function() {
+        var url = $(this).attr('href').replace(/$(https:|http:)/g,'');
+        if (mustUnspoiler(url)) {
+            $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
+            logger.Log("unspoilerSiblings: " + url);
+        } else {
+            var next = $(this).parent().next();
+            if (next != null && !next.is('br')) {
+                $(this).parent().after('<br />');
+            }
+        }
+    });
+}
+
+function mustUnspoiler(url) {
+    var q = url.indexOf('?');
+    return q != -1 && url.substring(q + 1, url.length).indexOf('isEmote=true') != -1;
 }
 
 function setUpMainButton(toolbar, target, hold) {
@@ -2015,7 +2036,7 @@ function addColorTiles(target, panel, colors) {
     var len = colors.length;
     for (var i = 0; i < len; i++) {
         var code,name;
-        if (typeof(colors[i]) == 'string') {
+        if (typeof colors[i] == 'string') {
             code = colors[i];
             name = colours.Mapping[code];
             if (name == null) name = code;
@@ -2025,12 +2046,11 @@ function addColorTiles(target, panel, colors) {
                 code = '';
             } else {
                 code = colours.Keys[colors[i]];
-                name = colours.Mapping[code];
+                name = colours.Names[colors[i]];
                 if (name == '') name = code;
             }
         }
-
-        var a = $('<a><span style="background-color:' + code + ' !important" class="color-tile" /></a>');
+        var a = $('<a><span data-index="' + colors[i] + '" style="background-color:' + code + ' !important" class="color-tile" /></a>');
         var item = $('<li class="colour-tile" />');
         item.append(a);
         panel.append(item);
@@ -2051,44 +2071,6 @@ function addColorTiles(target, panel, colors) {
             });
         }
     }
-}
-
-function initImageUnspoiler() {
-    $('.comment_data .user_image_link').each(function() {
-        $(this).parent().after('<img class="user_image" src="' + $(this).attr('href') + '" />').remove();
-    });
-}
-
-function applyDirectImages() {
-    logger.Log('applyDirectImages: start');
-    var imgs = $('.comment_data .user_image_link');
-    if (imgs.length > 0) {
-        unspoilerSiblings(imgs);
-        logger.Log('applyDirectImages: end with true');
-        return true;
-    }
-    logger.Log('applyDirectImages: end with false');
-    return false;
-}
-
-function unspoilerSiblings(imgs) {
-    imgs.each(function() {
-        var url = $(this).attr('href').replace(/$(https:|http:)/g,'');
-        if (mustUnspoiler(url)) {
-            $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
-            logger.Log("unspoilerSiblings: " + url);
-        } else {
-            var next = $(this).parent().next();
-            if (next != null && !next.is('br')) {
-                $(this).parent().after('<br />');
-            }
-        }
-    });
-}
-
-function mustUnspoiler(url) {
-    var q = url.indexOf('?');
-    return q != -1 && url.substring(q + 1, url.length).indexOf('isEmote=true') != -1;
 }
 
 function updateSlide() {
@@ -2255,9 +2237,10 @@ function registerBanners(extended) {
 
 function buildBanner() {
     addBannerCss();
+    addMinorBannerCss();
     if (getTitleHidden()) $('body').addClass("titleHidden");
     if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
-        $('header.header').prepend('\
+        $('header.header').before($('.user-page-header, .story-page-header')).prepend('\
 <div id="title" class="title">\
     <div class="banner-buttons">\
        <a id="source_link">Source</a>\
@@ -2945,109 +2928,179 @@ form > .content_box {\
 }
 
 function addBannerCss() {
-    if (!$('banner_style').length) {
-        makeStyle('\
+    addMinorBannerCss();
+    if ($('Fimfiction_Advanced_Banner_Stylesheet').length) return;
+    makeStyle('\
 @media all and (max-width: 700px) {\
     .focus-tile {\
        display: none;}}\
+@media all and (min-width: 701px) {\
+  header.header #title {\
+        display: block !important;}}\
 @media all and (min-width: 700px) {\
-.user-page-header, .story-page-header {\
+    .user-page-header ~ header.header .theme_selector a,\
+    .story-page-header ~ header.header .theme_selector a {\
+        line-height: 275px;}\
+    body.expand-tile header.header .title,\
+    .user-page-header:hover ~  header.header .title,\
+    .story-page-header:hover ~ header.header .title {\
+        height: 20px;}\
+        header.header .title {\
+        transition: height 0.5s ease;}\
+    body.expand-tile header.header .title,\
+    .user-page-header:hover ~  header.header .title,\
+    .story-page-header:hover ~ header.header .title {\
+        transition: height 0.5s 0.6s ease !important;}\
+\
+    .user_toolbar > ul {\
+        box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
+        border-top: 1px solid rgba(0, 0, 0, 0.2);\
+        border-bottom: 1px solid rgba(0, 0, 0, 0.2);}\
+        header.header .title {\
+        overflow: hidden;\
+        background-color: #282828;}\
+    .focus-tile {\
+        margin-top: 1px;\
+        margin-left: 1px;\
+        position: absolute;\
+        vertical-align: top;\
+        padding-right: 20px;\
+        width: 0px;\
+        top: -45px;\
+        left: 13px;\
+        z-index: 13 !important;}\
+    .focus-tile img {\
+        max-height: 160px;\
+        max-width: 160px;\
+        padding: 4px;\
+        border-radius: 5px;\
+        background: #FFF;\
+        box-sizing: content-box;\
+        background-clip: padding-box;\
+        border-color: rgba(0, 0, 0, 0.2);\
+        display: block;}\
+    .focus-tile.image-container {\
+        top: -45px;\
+        left: 33px;\
+        opacity: 1;}\
+    .focus-tile.image-container img {\
+        border-radius: 8px;\
+        max-height: 160px;\
+        max-width: 220px;}\
+    body.expand-tile .story-page-header + .focus-tile,\
+    .story-page-header:hover + .focus-tile,\
+    body.expand-tile .user-page-header + .focus-tile,\
+    .user-page-header:hover + .focus-tile {\
+        transition: opacity 0.7s ease;\
+        opacity: 0;}\
+    .user_toolbar.transitionable > ul {\
+        transition: background-color 0.25s linear;}\
+    .user_toolbar > ul > li {\
+        background: rgba(255, 255, 255, 0.1);\
+        text-shadow: none;\
+        color: rgba(0, 0, 0, 0.85);\
+        border-right: 1px solid rgba(0, 0, 0, 0.2);\
+        border-top: 1px solid rgba(0, 0, 0, 0.2);\
+        margin: -1px 0px 0px;}\
+    .user_toolbar > ul > li:first-of-type {\
+        border-left: 1px solid rgba(0, 0, 0, 0.2);}\
+    .user_toolbar > ul > li:hover {\
+        text-shadow: none;\
+        background: rgba(0, 0, 0, 0.1);}\
+    .user_toolbar {\
+        position: relative;}\
+    .user_toolbar::before {\
+        content: "";\
+        pointer-events: none;\
+        position: absolute;\
+        top: 0px;\
+        left: 0px;\
+        right: 0px;\
+        height: 38px;\
+        box-shadow: 0px 20px 20px rgba(255,255,255,0.06) inset;}\
+    .home_link {\
+        height: 175px;\
+        background-size: cover !important;}\
+    #fade_banner_image {\
+        top: 0px;\
+        bottom: 0px;\
+        left: 0px;\
+        right: 0px;}}', 'Fimfiction_Advanced_Banner_Stylesheet');
+}
+
+function addMinorBannerCss() {
+    if ($('Fimfiction_Advanced_UserBanner_Stylesheet').length) return;
+    makeStyle('\
+@media all and (max-width: 700px) {\
+  .user-page-header, .story-page-header {\
+    box-shadow: none;}}\
+@media all and (max-width: 950px) {\
+  .focus-tile.avatar-container img {\
+    width: 80px;\
+    height: 80px;}}\
+@media all and (min-width: 700px) {\
+  .user-page-header, .story-page-header {\
     height: 70px;\
-    transition: height 0.5s ease;}\
-.user-page-header ~ header.header .theme_selector a,\
-.story-page-header ~ header.header .theme_selector a {\
-    line-height: 275px;}\
-    body.expand-tile .user-page-header,\
-    body.expand-tile .story-page-header,\
-.user-page-header:hover,\
-.story-page-header:hover {\
-    transition: height 0.5s 0.6s ease;\
-    height: 300px;}\
-    body.expand-tile header.header .title,\
-.user-page-header:hover ~  header.header .title,\
-.story-page-header:hover ~ header.header .title {\
-    height: 20px;}\
-    header.header .title {\
-    transition: height 0.5s ease;}\
-    body.expand-tile header.header .title,\
-.user-page-header:hover ~  header.header .title,\
-.story-page-header:hover ~ header.header .title {\
-    transition: height 0.5s 0.6s ease !important;}\
-.user_toolbar > ul {\
-    box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
-    border-top: 1px solid rgba(0, 0, 0, 0.2);\
-    border-bottom: 1px solid rgba(0, 0, 0, 0.2);}\
-    header.header .title {\
-    overflow: hidden;\
-    background-color: #282828;}\
-.story-page-header > .inner, .user-page-header > .inner {\
+    transition: height 0.5s ease;\
+    border: none;\
+    box-shadow: none;}\
+  .story-page-header > .inner, .user-page-header > .inner {\
     padding: 25px 0px 25px 15px;}\
-.focus-tile {\
-    position: absolute;\
-    vertical-align: top;\
-    padding-right: 20px;\
-    width: 0px;\
-    top: -45px;\
-    left: 13px;\
-    z-index: 13 !important;}\
-.focus-tile img {\
-    padding: 4px;\
-    background: none repeat scroll 0% 0% #FFF;\
-    max-height: 147px;\
-    max-width: 147px;\
-    border-radius: 5px;\
-    display: block;}\
-.focus-tile.image-container {\
-    top: -45px;\
-    left: 33px;\
-    padding: 0px 20px;\
-    opacity: 1;}\
-.focus-tile.image-container img {\
-    border-radius: 8px;\
-    max-height: 160px;\
-    max-width: 220px;}\
-body.expand-tile .story-page-header + .focus-tile,\
-.story-page-header:hover + .focus-tile,\
-body.expand-tile .user-page-header + .focus-tile,\
-.user-page-header:hover + .focus-tile {\
-    transition: opacity 0.7s ease;\
-    opacity: 0;}\
-header.header #title {\
-    display: block !important;}\
-.user_toolbar.transitionable > ul {\
-    transition: background-color 0.25s linear;}\
-.user_toolbar > ul > li {\
-    background: rgba(255, 255, 255, 0.1);\
-    text-shadow: none;\
-    color: rgba(0, 0, 0, 0.85);\
-    border-right: 1px solid rgba(0, 0, 0, 0.2);\
-    border-top: 1px solid rgba(0, 0, 0, 0.2);\
-    margin: -1px 0px 0px;}\
-.user_toolbar > ul > li:first-of-type {\
-    border-left: 1px solid rgba(0, 0, 0, 0.2);}\
-.user_toolbar > ul > li:hover {\
-    text-shadow: none;\
-    background: rgba(0, 0, 0, 0.1);}\
-.user_toolbar {\
-    position: relative;}\
-.user_toolbar::before {\
-    content: "";\
-    pointer-events: none;\
-    position: absolute;\
-    top: 0px;\
-    left: 0px;\
-    right: 0px;\
-    height: 38px;\
-    box-shadow: 0px 20px 20px rgba(255,255,255,0.06) inset;}\
-.home_link {\
-    height: 175px;\
-    background-size: cover !important;}\
-#fade_banner_image {\
-    top: 0px;\
-    bottom: 0px;\
-    left: 0px;\
-    right: 0px;}', 'Fimfiction_Advanced_Banner_Stylesheet');
-    }
+  body.expand-tile .user-page-header,\
+  body.expand-tile .story-page-header,\
+  .user-page-header:hover,\
+  .story-page-header:hover {\
+    transition: height 0.5s 0.6s ease;\
+    height: 255px;}\
+  .user-page-header ul li a,\
+  .user-page-header ul li a:before,\
+  .user-page-header ul li a span {\
+    color: #ccc !important;\
+    text-shadow: none !important;}\
+  .user-page-header ul li a {\
+    border-radius: 4px;\
+    margin: 2px !important;\
+    background: transparent linear-gradient(to bottom, #444 0%, #333 100%) repeat scroll 0% 0% !important;\
+    box-shadow: 0px 1px #555 inset !important;\
+    border: 1px solid #222 !important;\
+    text-shadow: -1px -1px rgba(0, 0, 0, 0.2) !important;}}\
+.story-page-header h1 .button-group .drop-down-expander,\
+.user-page-header h1 .button-group .drop-down-expander {\
+  background: transparent linear-gradient(to bottom, #555 0%, #444 100%) repeat scroll 0% 0%;\
+  border: 1px solid #444;\
+  color: #222;\
+  text-shadow: 1px 1px #222;}\
+.user-page-header, .story-page-header {\
+  background-color: rgba(28,28,28,0.9);\
+  color: #bbb;\
+  text-shadow: none;\
+  overflow: hidden;\
+  padding: 0 10px 0 10px;}\
+.user-page-header .tabs {\
+  margin-top: 10px;\
+  bottom: initial !important;}\
+.story-page-header > .inner hr, .user-page-header > .inner hr {\
+  border-color: rgba(0, 0, 0, 0.3) -moz-use-text-color rgba(255, 255, 255, 0.1) !important;}\
+.user-page-header ol, .story-page-header ol {\
+  direction: rtl;\
+  top: 0px;\
+  right: 0px;\
+  bottom: auto;\
+  left: auto;\
+  border: none;\
+  background: none !important;}\
+.story-page-header > .inner h1, .user-page-header > .inner h1,\
+.user-page-header ol b, .story-page-header ol b {\
+  color: #fff;}\
+.story-page-header > .inner h1 .author {\
+  color: #bbb;}\
+.story-page-header > .inner, .user-page-header > .inner {\
+  width: 100%;\
+  padding: 15px 0px !important;}\
+.user-page-header .tabs li.selected a::after {\
+  display: none !important;}\
+.user-page-header .tabs li.selected a {\
+  z-index: 0 !important;}', 'Fimfiction_Advanced_UserBanner_Stylesheet');
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3297,7 +3350,7 @@ function setBannersEnabled(v) {
     if (v) {
         buildBanner(banners);
     } else {
-        $('#banner_style').remove();
+        $('#Fimfiction_Advanced_Banner_Stylesheet, #Fimfiction_Advanced_UserBanner_Stylesheet').remove();
         $('.user_toolbar > ul').css('background', '');
         $('.focus-tile, header.header > #title.title').remove();
     }
@@ -3337,9 +3390,9 @@ function applyBackground(c) {
     $('.body_container').css("background", (typeof img === 'string' ? img : img.Css) + " " + c);
     c = $('.body_container').css('background-color').replace(/rgb|a|\(|\)| /g,'').split(',');
     if (brightness(c[0] >> 0,c[1] >> 0,c[2] >> 0) < 100 || (typeof img !== 'string' && img.Type.Key.indexOf('d') != -1)) {
-        $('.breadcrumbs, .chapter-header').addClass('bright');
+        $('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1').addClass('bright');
     } else {
-        $('.breadcrumbs, .chapter-header').removeClass('bright');
+        $('.bright').removeClass('bright');
     }
 }
 
