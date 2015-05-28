@@ -2452,6 +2452,10 @@ function changeBanner(img, color, pos) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
+/*Blog preview fix*/\
+#blog_preview .user-image {\
+    max-width: 1000px !important;}\
+\
 /*Inconsistent Group lists fix*/\
 #left_column #story-groups-list > li {\
     width: 20% !important;\
