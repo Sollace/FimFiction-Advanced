@@ -258,11 +258,15 @@ addCss();
 document.addEventListener("DOMContentLoaded", function(event) {
     if ((~loaded & 1) && isJQuery()) {
         loaded |= 1;
+        logger.Start(0);
         load();
+        logger.Log('event: DOMContentLoaded', 2);
     }
 });
 chainFunctionOnto(document, 'onready', run);
 function run() {
+    logger.Start(0);
+    logger.Log('event: onready', 2);
     if (~loaded & 3) {
         loaded |= 2;
         if (~loaded & 1) {
@@ -307,9 +311,10 @@ function load() {
             logger.SevereException('Unhandled Exception in Settings Tab: {0}', e);
         }
         if ($('.tabs').length && getTabsLeft()) {
-            logger.Log('final-init updating tab-bar position',10);
+            logger.Log('final-init updating tab-bar position', 10);
             updateTabsBarSide(true);
         }
+        logger.Log('Setup complete successfully',10);
     } catch (e) {
         logger.SevereException('unhandledException in Ready-init: {0}', e);
     }
@@ -1476,33 +1481,39 @@ function applyChapterfix() {
 
 function initCommentArea(hold) {
     logger.Log('initCommentArea: start');
-    $("button[title='Text Colour']").each(function (index) {
-        var me = $(this);
+    var buttons = $("button[title='Text Colour']");
+    for (var i = 0, len = buttons.length; i < len; i++) {
+        var me = $(buttons[i]);
         if (me.attr("fimfic_adv") != "1") {
             me.attr("fimfic_adv", "1");
-            if (this.children[0].tagName == 'IMG') {
-                logger.Log('setup: changing color button icon');
+            if (me.children()[0].tagName == 'IMG') {
+                logger.Log('setup: changing color button icon (' + i + ')');
                 me.parent().css('line-height', '');
                 me.html('<i class="fa fa-tint" />');
             }
             var target = me.parents('.bbcode-editor').find('textarea')[0];
+            logger.Log('betterColors: start (' + i + ')');
             betterColors(me, target);
-            setUpMainButton(this.parentNode.parentNode, target, hold);
+            logger.Log('setUpMainButton: start (' + i + ')');
+            setUpMainButton(me.parent().parent()[0], target, hold);
         }
-    });
-    $("button[title='Font Size']").each(function(index) {
-        var me = $(this);
+    }
+    var fontSizes = $("button[title='Font Size']");
+    for (var i = 0, len = fontSizes.length; i < len; i++) {
+        var me = $(fontSizes[i]);
         if (me.attr('fimfic_adv') != '1') {
             me.attr({'fimfic_adv': '1', 'data-function': ''});
+            logger.Log('betterSizes: start (' + i + ')');
             betterSizes(me, me.parents('.bbcode-editor').find('textarea')[0]);
         }
-    });
-    $("button[title='Insert Image']").each(function(index) {
-        if (this.children[0].tagName == 'IMG') {
-            logger.Log('Changing Insert Image Logo');
-            $(this).html('<i class="fa fa-picture-o" />');
+    }
+    var insertImg = $("button[title='Insert Image']");
+    for (var i = 0, len = insertImg.length; i < len; i++) {
+        if (insertImg[i].children[0].tagName == 'IMG') {
+            logger.Log('Changing Insert Image Logo (' + i + ')');
+            $(insertImg[i]).html('<i class="fa fa-picture-o" />');
         }
-    });
+    }
 }
 
 function initBlogPage() {
@@ -1572,7 +1583,6 @@ function mustUnspoiler(url) {
 }
 
 function setUpMainButton(toolbar, target, hold) {
-    logger.Log('setUpMainButton: start');
     var hasAdv = toolbar.parentNode.children.length > 6;
     makeButton(toolbar, "More Options", "fa fa-flag").on("click", function () {
         if (!$(this).parent().find('.drop-down').length) {
@@ -1885,7 +1895,6 @@ function hasSigned(value, format) {
 }
 
 function betterSizes(button, target) {
-    logger.Log('betterSizes: start');
     button.attr('data-function', '');
     button.attr('data-init','true');
     button.click(function() {
@@ -1913,11 +1922,9 @@ function betterSizes(button, target) {
             }
         }
     });
-    logger.Log('betterSizes: end');
 }
 
 function betterColors(button, target) {
-    logger.Log('betterColors: start');
     button.attr('data-function', '');
     button.attr('data-init','true');
     button.click(function() {
