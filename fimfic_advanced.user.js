@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @version     3.10.1
+// @version     3.10.2
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -256,19 +256,19 @@ var loaded = 0;
 
 addCss();
 document.addEventListener("DOMContentLoaded", function(event) {
-    if (typeof $ === 'function') {
+    if ((~loaded & 1) && isJQuery()) {
+        loaded |= 1;
         load();
-        loaded++;
     }
 });
 chainFunctionOnto(document, 'onready', run);
 function run() {
-    if (loaded < 2) {
-        if (loaded < 1) {
+    if (~loaded & 3) {
+        loaded |= 2;
+        if (~loaded & 1) {
+            loaded |= 1;
             load();
-            loaded++;
         }
-        loaded++;
         try {
             registerEvents();
         } catch (e) {
@@ -323,7 +323,7 @@ function initFimFictionAdvanced() {
     initCommentArea(true);
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
-    addChapterButtonsExtras();
+    applyChapterButtons();
     applyBookmarks();
     if (getPinUserbar()) $(window).on('scroll.userbar', updateUserbarScroll);
     if (getFancyBanners() && getBannersEnabled()) $(window).on('scroll.banners', updateBannerScroll);
@@ -395,19 +395,21 @@ function initSettingsTabs() {
 }
 
 function insertBookmarksButton() {
-    var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark" /><span>Bookmarks ( ' + getTotalBookmarks() + ' )</span></a>');
-    var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
-    button.prepend(bkm);
-    var latst = getLatestBookmark();
-    bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
-    button.find('ul').append(bkm);
-    bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
-    button.find('ul').append(bkm);
-    bkm.click(function() {
-        removeAllBookmarks();
-        $('.bkm_number').text('Bookmarks ( 0 )');
-    });
-    $('.user_toolbar .bookshelves').parents('li').after(button);
+    if (!$('#bkm_button').length) {
+        var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark" /><span>Bookmarks ( ' + getTotalBookmarks() + ' )</span></a>');
+        var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
+        button.prepend(bkm);
+        var latst = getLatestBookmark();
+        bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
+        button.find('ul').append(bkm);
+        bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
+        button.find('ul').append(bkm);
+        bkm.click(function() {
+            removeAllBookmarks();
+            $('.bkm_number').text('Bookmarks ( 0 )');
+        });
+        $('.user_toolbar ul > li ul.bookshelves').first().parents('li').after(button);
+    }
 }
 
 function buildSettingsTab(tab) {
@@ -820,11 +822,11 @@ function buildSettingsTab(tab) {
             if (customBannerindex > -1) {
                 banners.splice(customBannerindex, 1);
                 if (getCookie('selected_theme') == 'Custom') {
-                    chooseTheme(0, true);
+                    chooseTheme(-1, true);
                 }
                 customBannerindex = -1;
             }
-
+            
             cban[0].children[0].innerHTML = '';
             $(cban[0].children[0]).css("background-color", "#fff");
             $(cban[0]).css("background-image", 'none');
@@ -1122,19 +1124,15 @@ function buildBookmarksGui(tab) {
         $('.bookmark_entry').remove();
         var start = pageNumber * 10;
         var len = itemsArray.length;
+        alert(JSON.stringify(itemsArray));
         for (var i = start; i < start + 10 && i < len; i++) {
-            var row;
-            if (itemsArray[i].me == null || itemsArray[i].me.error != 'true') {
-                row = $('<tr class="bookmark_entry" style="transition: opacity 0.25s ease-in-out;opacity:0;"><td class="label" style="width:120px;" /><td class="bookmark_item" /><td /></tr>');
-                $('.content_box > .main').attr('data-pending-loads', ++pending_loads);
-                $('#book_loader').css('display', 'block');
-                tab.AddRaw(row);
+            var row = $('<tr class="bookmark_entry" style="transition: opacity 0.25s ease-in-out;opacity:0;"><td class="label" style="width:120px;" /><td class="bookmark_item" /><td /></tr>');
+            $('#book_loader').css('display', 'block');
+            tab.AddRaw(row);
+            if (!itemsArray[i].me) {
+                itemsArray[i].me = getBookmarkData(itemsArray[i].key);
             }
-            if (itemsArray[i].me != null) {
-                if (itemsArray[i].me.error != true) {
-                    configureItem(row, itemsArray[i].me, i);
-                }
-            }
+            configureItem(row, itemsArray[i].me, i);
         }
     }
 
@@ -1146,7 +1144,6 @@ function buildBookmarksGui(tab) {
     function configureItem(row, me, i) {
         if (pending_loads > 0) pending_loads--
         if (pending_loads == 0) $('#book_loader').css('display', 'none');
-
         var image = $('<img class="bookmark_img" />').on('error', function() {
             var src = $(this).attr('src');
             if (endsWith(src, '.png')) {
@@ -1156,18 +1153,17 @@ function buildBookmarksGui(tab) {
             }
         });
         image.attr('src', staticFimFicDomain() + '/images/story_images/' + itemsArray[i].bookmark[1] + '_r.png');
-        
         $(row.children()[0]).append(image);
-
+        
         var titf = urlSafe(me.title);
         var chapf = urlSafe(me.chapTitle);
         var story = '//www.fimfiction.net/story/' + itemsArray[i].bookmark[1] + '/' + titf;
         var chap = '//www.fimfiction.net/' + (itemsArray[i].bookmark[0] == 'published' ? 'story/' + itemsArray[i].bookmark[1] + '/' : 'chapter/') + itemsArray[i].bookmark[2];
         chap += (itemsArray[i].bookmark[0] == 'published' ? '/' + titf + '/' + chapf : ''); 
-
+        
         $(row.children()[1]).append('<div><span class="chapter">' + (i + 1) + '. </span><a class="chapter" href="' + chap + '">' + me.chapTitle + '</a></div>');
         $(row.children()[1]).append('<span class="subText"> in <a class="story_name" href="' + story + '">' + me.title + '</a></span>');
-
+        
         var delBut = $('<a data-item-index="' + i + '" cookieName="' + itemsArray[i].key + '" style="float:right;text-align:center;" title="Delete" class="styled_button styled_button_red"><i class="fa fa-trash-o" style="margin:0px;" /></a>');
         delBut.click(function() {
             var ek = $(this).parent().parent();
@@ -1240,42 +1236,8 @@ function updatePinnedWithMax(target, pinClass, bounder) {
     }
 }
 
-function addChapterButtonsExtras() {
-    var loggedIn = getIsLoggedIn();
-    $('ul.chapters').each(function() {
-        var me = $(this);
-        var compact = me.find('li a.chapter_link').length > 1;
-        if (compact || loggedIn) {
-            var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
-            me.prepend(extra);
-            if (loggedIn) {
-                extra.append('<div class="mark_all_holder read"><i class="chapter-read-all" /><span class="date">mark all Read</a></div>');
-                extra.append('<div class="mark_all_holder unread"><i class="chapter-unread-all" /><span class="date">mark all Unread</a></div>');
-                var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
-                if (unreadChaps.length) {
-                    unreadChaps = unreadChaps.first().parent();
-                    unreadChaps.css('transition', 'background 0.5s ease 1s');
-                    var unreadTit = unreadChaps.find('.chapter_link');
-                    var unreadDat = unreadChaps.find('.date').clone().children().remove().end().text();
-                    var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
-                    var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
-                    extra.append(gotoUnread);
-                    extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
-                    gotoUnread.hover(function() {
-                        unreadChaps.addClass('chapter_highlighted');
-                    }, function() {
-                        unreadChaps.removeClass('chapter_highlighted');
-                    });
-                }
-            }
-            if (compact) {
-                extra.after('<div class="all_chapters_hidden"><li>All chapters hidden</li></div>');
-                extra.append('<a class="comact min" style="float:right;" href="javascript:void();" >Minimize</a>');
-                extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
-            }
-            extra.append('<a class="compact_chapters" style="float:right;" href="javascript:void();" >Hide Chapters</a>');
-        }
-    });
+function applyChapterButtons() {
+    $('ul.chapters').each(addChapterButtonsExtras);
     $(document).on('click', '.mark_all_holder.unread', function() {
         $(this).parents('.chapters').find('i.chapter-read-icon.chapter-read').click();
     }).on('click', '.mark_all_holder.read', function() {
@@ -1292,6 +1254,42 @@ function addChapterButtonsExtras() {
             this.innerHTML = 'Maximize';
         }
     });
+}
+
+function addChapterButtonsExtras() {
+    var me = $(this);
+    var loggedIn = getIsLoggedIn();
+    var compact = me.find('li a.chapter_link').length > 1;
+    if (compact || loggedIn) {
+        var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
+        me.prepend(extra);
+        if (loggedIn) {
+            extra.append('<div class="mark_all_holder read"><i class="chapter-read-all" /><span class="date">mark all Read</a></div>');
+            extra.append('<div class="mark_all_holder unread"><i class="chapter-unread-all" /><span class="date">mark all Unread</a></div>');
+            var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
+            if (unreadChaps.length) {
+                unreadChaps = unreadChaps.first().parent();
+                unreadChaps.css('transition', 'background 0.5s ease 1s');
+                var unreadTit = unreadChaps.find('.chapter_link');
+                var unreadDat = unreadChaps.find('.date').clone().children().remove().end().text();
+                var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
+                var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
+                extra.append(gotoUnread);
+                extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
+                gotoUnread.hover(function() {
+                    unreadChaps.addClass('chapter_highlighted');
+                }, function() {
+                    unreadChaps.removeClass('chapter_highlighted');
+                });
+            }
+        }
+        if (compact) {
+            extra.after('<div class="all_chapters_hidden"><li>All chapters hidden</li></div>');
+            extra.append('<a class="comact min" style="float:right;" href="javascript:void();" >Minimize</a>');
+            extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
+        }
+        extra.append('<a class="compact_chapters" style="float:right;" href="javascript:void();" >Hide Chapters</a>');
+    }
 }
 
 function makeList(element, ordered) {
@@ -2380,31 +2378,33 @@ function finaliseThemes() {
             }
         }
     }
-    chooseTheme(Math.floor(Math.random() * banners.length));
+    chooseTheme(-1);
 }
 
 function chooseTheme(id, save) {
-    if (save == true) {
-        setCookie("selected_theme", banners[id].id, 365);
+    if (save) {
+        setCookie("selected_theme", id < 0 || id > banners.length ? '' : banners[id].id, 365);
+    }
+    
+    if (id < 0 || id > banners.length) {
+        id = Math.floor(Math.random() * banners.length);
     }
     
     $('#title a.home_link').css('background-image','url("' + banners[id].url + '")');
     if (banners[id].source == "") {
         $('#source_link').addClass('hidden');
     } else {
-        $('#source_link').attr('href', banners[id].source);
         $('#source_link').removeClass('hidden');
+        $('#source_link').attr('href', banners[id].source);
     }
 
-    if (banners[id].colour != null && banners[id].colour != "") {
+    if (banners[id].colour && banners[id].colour != "") {
         $('.user_toolbar > ul').css('background', banners[id].colour);
     }
 
-    if (banners[id].position != null && banners[id].position != "") {
-        $('#title a.home_link').css('background-size', '1300px');
+    if (banners[id].position && banners[id].position != "") {
         $('#title a.home_link').css('background-position', banners[id].position);
     } else {
-        $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
     catchBanners(id);
@@ -3205,7 +3205,7 @@ function getFullBookmark(num) {
     entry.init = function(data) {
         this.data = data;
         this.url = {};
-        if (data != null && data.error != 'true') {
+        if (data != null) {
             this.url.title = urlSafe(data.title);
             this.url.chapTitle = urlSafe(data.chapTitle);
             this.url.story = '//www.fimfiction.net/story/' + this.bookmark[1] + '/' + this.url.title;
@@ -3225,7 +3225,6 @@ function getBookmarkData(name) {
         var data = settingsMan.get(name + '_bookmark_d').split('\n');
         result.title = data[0];
         result.chapTitle = data[1];
-        result.error = false;
     }
     return result;
 }
@@ -3405,7 +3404,9 @@ function applyBackground(c) {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
-function registerBanner(items, name, img, source, color, pos) {banners.push(Banner(name,img,source,color,pos));}
+function registerBanner(name, img, source, color, pos) {
+    banners.push(Banner(name,img,source,color,pos));
+}
 
 //==API FUNCTION==//
 function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
