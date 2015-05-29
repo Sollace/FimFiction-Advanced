@@ -258,14 +258,14 @@ addCss();
 document.addEventListener("DOMContentLoaded", function(event) {
     if ((~loaded & 1) && isJQuery()) {
         loaded |= 1;
-        logger.Start(0);
-        load();
+        //logger.Start(0);
         logger.Log('event: DOMContentLoaded', 2);
+        load();
     }
 });
 chainFunctionOnto(document, 'onready', run);
 function run() {
-    logger.Start(0);
+    //logger.Start(0);
     logger.Log('event: onready', 2);
     if (~loaded & 3) {
         loaded |= 2;
