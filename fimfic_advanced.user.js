@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @version     3.10.2
+// @version     3.10.3
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -419,13 +419,22 @@ function insertBookmarksButton() {
 
 function buildSettingsTab(tab) {
     tab.StartEndSection("General Settings");
-    tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).change(function() {
-        setSweetieEnabled(this.checked);
-        if ($('#belle').length) {
-            $('#belle').css('display', this.checked ? "block" : "none");
-        } else if (this.checked) {
-            setupSweetie();
+    
+    tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).change(function() {
+        if (getPinUserbar() != this.checked) {
+            setPinUserbar(this.checked);
+            if (this.checked) {
+                $(window).on('scroll.userbar', updateUserbarScroll);
+                updateUserbarScroll();
+            } else {
+                $(window).off('scroll.userbar');
+                $('.fix_userbar').removeClass('fix_userbar');
+            }
         }
+    });
+    
+    tab.AddCheckBox("vid", "Resize Youtube Videos", getResizeVideos()).change(function() {
+        setResizeVideos(this.checked);
     });
     
     tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).change(function() {
@@ -436,11 +445,20 @@ function buildSettingsTab(tab) {
         setAlwaysShowImages(this.checked);
     });
     
+    tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).change(function() {
+        setSweetieEnabled(this.checked);
+        if ($('#belle').length) {
+            $('#belle').css('display', this.checked ? "block" : "none");
+        } else if (this.checked) {
+            setupSweetie();
+        }
+    });
+    
     tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
         setTabsLeft($(this).val() == '1');
         updateTabsBarSide($(this).val() == '1');
     });
-
+    
     var fontSelect = tab.AddDropDown("ffs", "Site Font", []);
     for (var i in fonts) {
         var group = $('<optgroup label="' + i + '"/>');
@@ -482,18 +500,7 @@ function buildSettingsTab(tab) {
         this.value = getStoryWidth();
     });
     
-    tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).change(function() {
-        if (getPinUserbar() != this.checked) {
-            setPinUserbar(this.checked);
-            if (this.checked) {
-                $(window).on('scroll.userbar', updateUserbarScroll);
-                updateUserbarScroll();
-            } else {
-                $(window).off('scroll.userbar');
-                $('.fix_userbar').removeClass('fix_userbar');
-            }
-        }
-    });
+    tab.StartEndSection("Banners");
 
     tab.AddCheckBox("eb", "Enable Banners", getBannersEnabled()).change(function() {
         setBannersEnabled(this.checked);
@@ -509,9 +516,9 @@ function buildSettingsTab(tab) {
             setFancyBanners(this.checked);
         }
     });
-
+    
     function updateBannersOptions() {
-        tab.setEnabled('#fancyB,#hb,#sl,#shuf,#bannerCust', getBannersEnabled());
+        tab.setEnabled('#fancyB,#hb,#sl,#shuf,#bannerCust' + (enableUSnow[0].selectedIndex < 2 ? ',#uss' : ''), getBannersEnabled());
     }
     
     function updateSliderOptions() {
@@ -519,7 +526,7 @@ function buildSettingsTab(tab) {
     }
     
     function updateSnowOptions() {
-        tab.setEnabled('#pus,#uss', enableUSnow[0].selectedIndex < 2);
+        tab.setEnabled('#pus' + (getBannersEnabled() ? ',#uss' : ''), enableUSnow[0].selectedIndex < 2);
     }
     
     tab.AddCheckBox("hb", "Hide Banner", getTitleHidden()).change(function() {
@@ -538,9 +545,7 @@ function buildSettingsTab(tab) {
     });
     updateSliderOptions();
     
-    tab.AddCheckBox("vid", "Resize Youtube Videos", getResizeVideos()).change(function() {
-        setResizeVideos(this.checked);
-    });
+    tab.StartEndSection("Christmasy Stuff");
     
     var enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getSnowing()).change(function() {
         setSnowing(this.selectedIndex);
@@ -3141,8 +3146,8 @@ function defSig() {return "%message%\n\n--[i]%name%[/i]";}
 function getWideNotes() {return settingsMan.getB("wideAuthorNotes", true);}
 function setWideNotes(v) {settingsMan.setB("wideAuthorNotes", v);}
 
-function getSaveFocus() {return settingsMan.getB("ultra_snow_save_focus", true);}
-function setSaveFocus(v) {settingsMan.set('ultra_snow_save_focus', v);if (snower != null) snower.SetSaveFocus(v);}
+function getSaveFocus() {return settingsMan.getB('ultra_snow_save_focus', true);}
+function setSaveFocus(v) {settingsMan.setB('ultra_snow_save_focus', v);if (snower != null) snower.SetSaveFocus(v);}
 
 function getShuffle() {return settingsMan.getB("shuffle_slideShow", true);}
 function setShuffle(v) {settingsMan.setB("shuffle_slideShow", v);}
@@ -3328,7 +3333,7 @@ function setSnowing(v) {
 }
 function getBGSnow() {return settingsMan.getB("snow_mode", false);}
 function setBGSnow(v) {
-    settingsMan.set("snow_mode", v);
+    settingsMan.setB("snow_mode", v);
     if (snower != null) {
         snower.dispose();
         snower = null;
@@ -3339,7 +3344,7 @@ function setBGSnow(v) {
 function applySnowing(g, v) {
     if (v < 2 && (v == 0 || DECEMBER)) {
         if (snower == null) {
-            if (g) {
+            if (g && $('#title .home_link').length) {
                 snower = snowBG($(window), $('#title .home_link'), false);
             } else {
                snower = snowBG($(window), $('body'), true);
