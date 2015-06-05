@@ -7,10 +7,10 @@
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/SpecialTitles.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @version     3.10.3
 // @grant       none
 // @run-at      document-start
