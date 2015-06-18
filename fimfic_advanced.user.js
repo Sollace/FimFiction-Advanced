@@ -10,8 +10,8 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
-// @version     3.10.3
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @version     3.10.4
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -389,13 +389,13 @@ function initSettingsTabs() {
     var tab;
     if (getIsLoggedIn()) {
         insertBookmarksButton();
-        tab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content');
+        tab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content', 'book');
         if (tab.HasInit()) {
             $('#SettingsPage_Parent').css('min-height', '607px');
             buildBookmarksGui(tab);
         }
     }
-    tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account');
+    tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account', 'cog');
     if (tab.HasInit()) buildSettingsTab(tab);
 }
 
@@ -736,19 +736,8 @@ function buildSettingsTab(tab) {
 
                 var vert = alignVert.val();
                 var hor = alignHor.val();
-                var x = 0;
-                try {
-                    if (posX.val() != '') x = parseInt(posX.val());
-                } catch (e) {
-                    x = 0;
-                }
-
-                var y = 0;
-                try {
-                    if (posY.val() != '') y = parseInt(posY.val());
-                } catch (e) {
-                    y = 0;
-                }
+                var x = tryParseInt(posX.val(), 0);
+                var y = tryParseInt(posY.val(), 0);
 
                 var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
                 if (AInput.val() != '1' && AInput.val() != '') {
@@ -821,7 +810,7 @@ function buildSettingsTab(tab) {
                     color = 'rgb(' + color;
                 }
                 color += ')';
-                changeBanner(url, color, pos);
+                changeBanner(null, url, color, pos);
                 $('#add_banner_error').addClass('hidden');
             } else {
                 $('#add_banner_error').removeClass('hidden');
@@ -1134,7 +1123,6 @@ function buildBookmarksGui(tab) {
         $('.bookmark_entry').remove();
         var start = pageNumber * 10;
         var len = itemsArray.length;
-        alert(JSON.stringify(itemsArray));
         for (var i = start; i < start + 10 && i < len; i++) {
             var row = $('<tr class="bookmark_entry" style="transition: opacity 0.25s ease-in-out;opacity:0;"><td class="label" style="width:120px;" /><td class="bookmark_item" /><td /></tr>');
             $('#book_loader').css('display', 'block');
@@ -1263,13 +1251,20 @@ function applyChapterButtons() {
             me.addClass('chapters_compact');
             this.innerHTML = 'Maximize';
         }
+    }).on('click', 'a.comact.max', function() {
+        var me = $(this).parents('.chapters');
+        if (me.hasClass('chapters_compact')) {
+            me.removeClass('chapters_compact');
+            $('a.comact.min').html('Minimize');
+        }
     });
 }
 
 function addChapterButtonsExtras() {
     var me = $(this);
     var loggedIn = getIsLoggedIn();
-    var compact = me.find('li a.chapter_link').length > 1;
+    var chapters = me.find('li a.chapter_link');
+    var compact = chapters.length > 1;
     if (compact || loggedIn) {
         var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
         me.prepend(extra);
@@ -1291,14 +1286,16 @@ function addChapterButtonsExtras() {
                 }, function() {
                     unreadChaps.removeClass('chapter_highlighted');
                 });
+                
+                extra.append('<a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
+                extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
             }
         }
+        
         if (compact) {
-            extra.after('<div class="all_chapters_hidden"><li>All chapters hidden</li></div>');
-            extra.append('<a class="comact min" style="float:right;" href="javascript:void();" >Minimize</a>');
-            extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
+            extra.after('<div class="all_chapters_hidden"><li>' + chapters.length + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
+            extra.append('<a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
         }
-        extra.append('<a class="compact_chapters" style="float:right;" href="javascript:void();" >Hide Chapters</a>');
     }
 }
 
@@ -2326,15 +2323,9 @@ function registerCustomBanner(items) {
 
 function addBannerCredits(items) {
     $('.theme input').prop('type','radio');
-    $('form input[type="submit"]').after('<button class="styled_button" id="save_banners" type="button">Save Selection</button>').remove();
-    $('#save_banners').on('click', function() {
-        if ($('form input:checked').length) {
-            setCookie('selected_theme', $('.banner_credits input:checked').val());
-            finaliseThemes();
-        }
-    });
+    $('form input[type="submit"]').remove();
     
-    var swich = $('<div id="banner_switcher" style="display:block;text-align:center"><div class="toggleable-radio toggleable-radio-2" ><a /></div></div>');
+    var swich = $('<div id="banner_switcher" style="display:block;text-align:center"><div class="inner" ><div class="toggleable-radio toggleable-radio-2" ><a /></div><button class="styled_button styled_button_grey" id="save_banners" type="button"><i class="fa fa-save" /> Save</button></div></div>');
     $('.banner_credits').parent().before(swich);
     $('.banner_credits').attr('data-group','default');
     swich = swich.find('.toggleable-radio');
@@ -2351,9 +2342,16 @@ function addBannerCredits(items) {
         banners.first().parent().css('height', ($(banners[offset]).height() + 100) + 'px');
         banners.css('transform', 'translate(-' + (offset * 100) + '%,0)');
     });
-
+    
+    $('#save_banners').on('click', function() {
+        if ($('form input:checked').length) {
+            setCookie('selected_theme', $('.banner_credits input:checked').val());
+            finaliseThemes();
+        }
+    });
+    
     $(window).on('scroll', function() {
-        updatePinnedWithMax('#banner_switcher','switcher');
+        updatePinnedWithMax('#banner_switcher','switcher', $('.banner_credits').parent());
     });
     
     var holder = $('<div class="banner_credits" data-group="advanced" />');
@@ -2402,25 +2400,32 @@ function chooseTheme(id, save) {
         id = Math.floor(Math.random() * banners.length);
     }
     
-    $('#title a.home_link').css('background-image','url("' + banners[id].url + '")');
-    if (banners[id].source == "") {
-        $('#source_link').addClass('hidden');
-    } else {
+    changeBanner(banners[id].source, banners[id].url, banners[id].colour, banners[id].position);
+    theme = id;
+    catchBanners(id);
+}
+
+function changeBanner(source, img, color, pos) {
+    $('#title a.home_link').css('background-image','url("' + img + '")');
+    
+    if (source && source.length) {
         $('#source_link').removeClass('hidden');
-        $('#source_link').attr('href', banners[id].source);
-    }
-
-    if (banners[id].colour && banners[id].colour != "") {
-        $('.user_toolbar > ul').css('background', banners[id].colour);
-    }
-
-    if (banners[id].position && banners[id].position != "") {
-        $('#title a.home_link').css('background-position', banners[id].position);
+        $('#source_link').attr('href', source);
     } else {
+        $('#source_link').addClass('hidden');
+    }
+    
+    if (color && color.length) {
+        $('.user_toolbar > ul').css('background', color);
+    }
+    
+    if (pos && pos.length) {
+        $('#title a.home_link').css('background-size', '1300px');
+        $('#title a.home_link').css('background-position', pos);
+    } else {
+        $('#title a.home_link').css('background-size', '');
         $('#title a.home_link').css('background-position', '');
     }
-    catchBanners(id);
-    theme = id;
 }
 
 function catchBanners(id) {
@@ -2445,19 +2450,6 @@ function catchBanners(id) {
             img.remove();
             img = null;
         });
-    }
-}
-
-function changeBanner(img, color, pos) {
-    $('#title a.home_link').css('background-image','url("' + img + '")');
-    $('.user_toolbar > ul').css('background-color', color);
-
-    if (pos != null && pos != undefined && pos != '') {
-        $('#title a.home_link').css('background-size', '1300px');
-        $('#title a.home_link').css('background-position', pos);
-    } else {
-        $('#title a.home_link').css('background-size', '');
-        $('#title a.home_link').css('background-position', '');
     }
 }
 
@@ -2892,7 +2884,7 @@ font-family: FontAwesome;}\
     margin-top: 55px;}\
 .pin_nav_bar.fix_feed .feed-toolbar {\
     top: 45px;}" + 
-    (endsWith(document.location.href, '?view=page&page=banner_credits') ? "\
+    (endsWith(document.location.href.split('#')[0], '?view=page&page=banner_credits') ? "\
 noscript + .content_box, form + .content_box, form > .content_box iframe {\
     display: none;}\
     form > .content_box {\
@@ -2922,6 +2914,25 @@ form > .content_box {\
 \
 #banner_switcher {\
     height: 50px;}\
+#banner_switcher .inner {\
+  width: auto;\
+  position: relative;}\
+#save_banners {\
+  position: absolute;\
+  left: 10px;}\
+.fix_switcher #save_banners {\
+  background: transparent linear-gradient(to bottom, #444 0%, #404040 100%) repeat scroll 0% 0%;\
+  box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.1) inset;\
+  border: 1px solid rgba(0, 0, 0, 0.2);}\
+.fix_switcher #save_banners:hover {\
+  background: transparent linear-gradient(to bottom, #555 0%, #505050 100%) repeat scroll 0% 0%;}\
+.fix_switcher #save_banners:active {\
+  background: transparent linear-gradient(to bottom, #444 0%, #404040 100%) repeat scroll 0% 0%;\
+  box-shadow: 0px 3px 5px #373737 inset;}\
+.fix_switcher #save_banners, .fix_switcher #save_banners .fa {\
+  color: #FFF;\
+  text-shadow: -1px -1px rgba(0, 0, 0, 0.1);\
+  font-weight: bold;}\
 .fix_switcher #banner_switcher {\
     position: fixed;\
     top: 0px;\
@@ -3499,7 +3510,7 @@ function BG(name, css, source) {
 }
 
 //==API FUNCTION==//
-function SettingsTab(title, description, name, img, category) {
+function SettingsTab(title, description, name, img, category, categoryIcon) {
     var context, tabl, error;
     var has_init = false;
     preInit();
@@ -3549,25 +3560,44 @@ function SettingsTab(title, description, name, img, category) {
             }
             if (!tabs.length && $('.user-cp-content').length) {
                 $('.content_box_header').remove();
-                tabs = $('<div class="tabs" />' +
-                         '<div class="sidebar-shadow"><div class="light-gradient"></div><div class="dark-gradient"></div></div><a><img src="' + staticFimFicDomain() + '/images/avatars/none_64.png"></a>' +
-                         '<div class="tab-collection"><h1><i class="fa fa-fw fa-cog" /> <span>Account</span></h1><ul><li class="tab' + (isSettingsPage ? ' tab_selected' : '') + '"><a  title="Local Settings" href="/index.php?view=local_settings"><i class="fa fa-cog" /><span>Local Settings</span></a></li></ul></div>');
+                tabs = $('<div class="tabs" >' +
+                             '<div class="sidebar-shadow">' + 
+                                '<div class="light-gradient" />' + 
+                                '<div class="dark-gradient" />' + 
+                             '</div>' + 
+                             '<a><img src="' + staticFimFicDomain() + '/images/avatars/none_64.png"></a>' +
+                             '<div class="tab-collection">' + 
+                                '<h1><i class="fa fa-fw fa-cog" /> <span>Account</span></h1>' + 
+                                '<ul>' +
+                                   '<li class="tab' + (isSettingsPage ? ' tab_selected' : '') + '">' + 
+                                      '<a  title="Local Settings" href="/index.php?view=local_settings">' + 
+                                         '<i class="fa fa-cog" />' + 
+                                         '<span>Local Settings</span>' + 
+                                      '</a>' + 
+                                   '</li>' + 
+                                '</ul>' + 
+                            '</div>' +
+                        '</div>');
                 $('.user_cp').append(tabs);
                 tabs = tabs.find('.tab-collection');
             }
         }
+        var tab = null;
         for (var i = 0, len = tabs.length; i < len; i++) {
-            var tab = $(tabs[i]);
-            if (tab.find('h1 span').text() == category) {
-                tabs = tab;
+            var item = $(tabs[i]);
+            if (item.find('h1 span').text() == category) {
+                tab = item;
                 break;
             }
         }
-        if (tabs.length) {
-            tabs = tabs.first();
+        if (!tab) {
+            tab = $('<div class="tab-collection"><h1><i class="fa fa-fw fa-' + categoryIcon + '" /> <span>' + category + '</span></h1><ul /></div>');
+            tabs.last().css('margin-bottom', '20px').after(tab);
+        }
+        if (tab) {
             for (var i = 0, len = registered.length; i < len; i++) {
                 if (!$('li[pageName="' + registered[i][0] + '"]').length) {
-                    tabs.find('ul').append('<li class="tab" pageName=' + registered[i][0] + '><a href="' + (isIndexPage ? "/index.php?view=" : "/manage_user/") + registered[i][0] + '"><i class="' + registered[i][1] + '"></i><span>' + registered[i][2] + '</span></a></li>');
+                    tab.find('ul').append('<li class="tab" pageName=' + registered[i][0] + '><a href="' + (isIndexPage ? "/index.php?view=" : "/manage_user/") + registered[i][0] + '"><i class="' + registered[i][1] + '"></i><span>' + registered[i][2] + '</span></a></li>');
                 }
             }
             if ((isIndexPage ? indexPage[1].split('&')[0] : page).split('#')[0] == name) {
