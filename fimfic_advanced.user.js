@@ -1,6 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
+// @version     3.10.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -11,7 +12,6 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @version     3.10.4
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -413,7 +413,7 @@ function insertBookmarksButton() {
             removeAllBookmarks();
             $('.bkm_number').text('Bookmarks ( 0 )');
         });
-        $('.user_toolbar ul > li ul.bookshelves').first().parents('li').after(button);
+        $('.user_toolbar ul > li ul.bookshelves').first().closest('li').after(button);
     }
 }
 
@@ -1237,13 +1237,13 @@ function updatePinnedWithMax(target, pinClass, bounder) {
 function applyChapterButtons() {
     $('ul.chapters').each(addChapterButtonsExtras);
     $(document).on('click', '.mark_all_holder.unread', function() {
-        $(this).parents('.chapters').find('i.chapter-read-icon.chapter-read').click();
+        $(this).closest('.chapters').find('i.chapter-read-icon.chapter-read').click();
     }).on('click', '.mark_all_holder.read', function() {
-        $(this).parents('.chapters').find('i.chapter-read-icon:not(.chapter-read)').click();
+        $(this).closest('.chapters').find('i.chapter-read-icon:not(.chapter-read)').click();
     }).on('click', 'a.compact_chapters', function() {
-        $(this).parents('.chapters').removeClass('chapters_expanded');
+        $(this).closest('.chapters').removeClass('chapters_expanded');
     }).on('click', 'a.comact.min', function() {
-        var me = $(this).parents('.chapters');
+        var me = $(this).closest('.chapters');
         if (me.hasClass('chapters_compact')) {
             me.removeClass('chapters_compact');
             this.innerHTML = 'Minimize';
@@ -1252,7 +1252,7 @@ function applyChapterButtons() {
             this.innerHTML = 'Maximize';
         }
     }).on('click', 'a.comact.max', function() {
-        var me = $(this).parents('.chapters');
+        var me = $(this).closest('.chapters');
         if (me.hasClass('chapters_compact')) {
             me.removeClass('chapters_compact');
             $('a.comact.min').html('Minimize');
@@ -1263,8 +1263,8 @@ function applyChapterButtons() {
 function addChapterButtonsExtras() {
     var me = $(this);
     var loggedIn = getIsLoggedIn();
-    var chapters = me.find('li a.chapter_link');
-    var compact = chapters.length > 1;
+    var chapters = me.find('li a.chapter_link').length;
+    var compact = chapters > 1;
     if (compact || loggedIn) {
         var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
         me.prepend(extra);
@@ -1280,21 +1280,18 @@ function addChapterButtonsExtras() {
                 var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
                 var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
                 extra.append(gotoUnread);
-                extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
                 gotoUnread.hover(function() {
                     unreadChaps.addClass('chapter_highlighted');
                 }, function() {
                     unreadChaps.removeClass('chapter_highlighted');
                 });
                 
-                extra.append('<a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
-                extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
             }
         }
-        
         if (compact) {
-            extra.after('<div class="all_chapters_hidden"><li>' + chapters.length + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
-            extra.append('<a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
+            extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
+            extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
+            extra.after('<div class="all_chapters_hidden"><li>' + chapters + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
         }
     }
 }
@@ -3382,7 +3379,7 @@ function setBannersEnabled(v) {
     }
 }
 
-function getTitleHidden() {return settingsMan.getB("titleHidden", true);}
+function getTitleHidden() {return settingsMan.getB("titleHidden", false);}
 function setTitleHidden(v) {
     settingsMan.setB("titleHidden", v);
     if (v) {
@@ -3565,7 +3562,7 @@ function SettingsTab(title, description, name, img, category, categoryIcon) {
                                 '<div class="light-gradient" />' + 
                                 '<div class="dark-gradient" />' + 
                              '</div>' + 
-                             '<a><img src="' + staticFimFicDomain() + '/images/avatars/none_64.png"></a>' +
+                             '<a><img src="' + getDefaultAvatar() + "></a>' +
                              '<div class="tab-collection">' + 
                                 '<h1><i class="fa fa-fw fa-cog" /> <span>Account</span></h1>' + 
                                 '<ul>' +
