@@ -15,29 +15,11 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-//==================================================================================================
-function reverse(me){return me && me.length > 1 ? me.split('').reverse().join('') : me;}
-function endsWith(me,it){return reverse(me).indexOf(reverse(it)) == 0;}
-function pickNext(arr){return arr[Math.max((new Date()).getSeconds() % arr.length,0)];}
-function normalise(me){
-    if(me==null)return me;
-    var result='';var space = true;var len = me.length;
-    for(var i=0;i<len;i++){result+=space?me[i].toUpperCase():me[i].toLowerCase();space=me[i]==' ';}
-    return result;}
-function replaceAll(find,replace,me){
-    var escapeRegExp=function(str){return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,"\\$&");}
-    return me.replace(new RegExp(escapeRegExp(find),'g'),replace);}
-function jule(s) {
-    var a='';var len = s.length;for (var i=0;i<len;i+=2){a+=(i<len-1?s[i+1]:'')+s[i];}return a;}
-function urlSafe(me){
-    var result = me.toLowerCase().replace(/[^a-z0-9_-]/gi,'-');
-    while (result.indexOf('--') != -1) result = result.replace(/--/g,'-');
-    return result.replace(/-$/g,'');}
+var VERSION = '3.10.4',
+    DECEMBER = (new Date()).getMonth() == 11,
+    CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
-//--------------------------------------------------------------------------------------------------
-//-------------------------------------------DATA---------------------------------------------------
-//--------------------------------------------------------------------------------------------------
 var settingsMan = {
     keys: function() {
         var keys = [];
@@ -95,6 +77,9 @@ var settingsMan = {
         $('html').first().attr('fimfic_adv', current);
     }
 };
+//--------------------------------------------------------------------------------------------------
+//-------------------------------------------DATA---------------------------------------------------
+//--------------------------------------------------------------------------------------------------
 var backgroundImages = [
     new BG("Light","url(//fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png)"),
     new BG("Dark","url(//fc04.deviantart.net/fs71/f/2013/342/5/3/cloth_dark_by_comeha-d6x61vl.png)"),
@@ -138,8 +123,7 @@ var logos = [
     new BG("Sunset Shimmer", "//fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
 ];
 var theme = 0;
-var customBannerindex = -1;
-var customBanner = getCustomBanner();
+var customBanner = getCustomBanner(), customBannerindex = -1;
 var banners = [
     Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "rgb(164, 110, 60)"),
     Ban("aeron_fluttershy", "//aeronjvl.deviantart.com/art/Nature-326303180", "rgb(164, 122, 60)"),
@@ -210,7 +194,7 @@ var externalUrls = [
 var fonts = (function(f) {
     function a(arr, un) {
         arr = f.test(arr.split(';')).sort();
-        if (un) [].unshift.apply(arr, un.split(';'));
+        if (un) arr.unshift.apply(arr, un.split(';'));
         return arr;
     }
     return {
@@ -240,20 +224,14 @@ var colours = (function(raw) {
     return result;
 })(['#FFFFFF', 'White','#FFC0CB', 'Pink','#FFDAB9', 'PeachPuff','#DCDCDC', 'Gainsboro','#FFB6C1', 'LightPink','#FFE4B5', 'Moccasin','#FFDEAD', 'NavajoWhite','#F5DEB3', 'Wheat','#D3D3D3', 'LightGray','#AFEEEE', 'PaleTurquoise','#EEE8AA', 'PaleGoldenRod','#D8BFD8', 'Thistle','#B0E0E6', 'PowderBlue','#ADD8E6', 'LightBlue','#98FB98', 'PaleGreen','#B0C4DE', 'LightSteelBlue','#87CEFA', 'LightSkyBlue','#C0C0C0', 'Silver','#7FFFD4', 'Aquamarine','#90EE90', 'LightGreen','#DDA0DD', 'Plum','#F0E68C', 'Khaki','#FFA07A', 'LightSalmon','#87CEEB', 'SkyBlue','#EE82EE', 'Violet','#F08080', 'LightCoral','#FA8072', 'Salmon','#FF69B4', 'HotPink','#DEB887', 'BurlyWood','#E9967A', 'DarkSalmon','#D2B48C', 'Tan','#7B68EE', 'MediumSlateBlue','#F4A460', 'SandyBrown','#A9A9A9', 'DarkGray','#6495ED', 'CornFlowerBlue','#FF7F50', 'Coral','#DB7093', 'PaleVioletRed','#9370DB', 'MediumPurple','#BC8F8F', 'RosyBrown','#DA70D6', 'Orchid','#8FBC8B', 'DarkSeaGreen','#FF6347', 'Tomato','#66CDAA', 'MediumAquamarine','#ADFF2F', 'GreenYellow','#CD5C5C', 'IndianRed','#BA55D3', 'MediumOrchid','#BDB76B', 'DarkKhaki','#6A5ACD', 'SlateBlue','#4169E1', 'RoyalBlue','#40E0D0', 'Turquoise','#1E90FF', 'DodgerBlue','#48D1CC', 'MediumTurquoise','#FF1493', 'DeepPink','#778899', 'LightSlateGray','#8A2BE2', 'BlueViolet','#CD853F', 'Peru','#708090', 'SlateGray','#808080', 'Gray','#FF00FF', 'Magenta','#0000FF', 'Blue','#00BFFF', 'DeepSkyBlue','#5F9EA0', 'CadetBlue','#00FFFF', 'Cyan','#00FF7F', 'SpringGreen','#00FF00', 'Lime','#32CD32', 'LimeGreen','#7FFF00', 'Chartreuse','#9ACD32', 'YellowGreen','#FFFF00', 'Yellow','#FFD700', 'Gold','#FFA500', 'Orange','#FF8C00', 'DarkOrange','#FF4500', 'OrangeRed','#FF0000', 'Red','#9932CC', 'DarkOrchid','#7CFC00', 'LawnGreen','#4682B4', 'Steelblue','#00FA9A', 'MediumSpringGreen','#DAA520', 'GoldenRod','#DC143C', 'Crimson','#D2691E', 'Chocolate','#3CB371', 'MediumSeaGreen','#C71585', 'MediumVioletRed','#B22222', 'FireBrick','#9400D3', 'DarkViolet','#20B2AA', 'LightSeaGreen','#696969', 'DimGray','#00CED1', 'DarkTurquoise','#A52A2A', 'Brown','#0000CD', 'MediumBlue','#A0522D', 'Sienna','#483D8B', 'DarkSlateBlue','#B8860B', 'DarkGoldenRod','#2E8B57', 'SeaGreen','#6B8E23', 'OliveDrab','#228B22', 'ForestGreen','#8B4513', 'SaddleBrown','#556B2F', 'DarkOliveGreen','#8B008B', 'DarkMagenta','#00008B', 'DarkBlue','#008B8B', 'DarkCyan','#8B0000', 'DarkRed','#191970', 'MidnightBlue','#4B0082', 'Indigo','#800080', 'Purple','#000080', 'Navy','#008080', 'Teal','#008000', 'Green','#808000', 'Olive','#800000', 'Maroon','#2F4F4F', 'DarkSlateGray','#006400', 'DarkGreen','#000000', 'Black','#666666', 'Grey','#cccccc', 'Light Grey','#383838', 'Dark Grey','#be4343', 'Red','#be7a43', 'Orange','#afa426', 'Yellow','#7aaf26', 'Lime Green','#2caf26', 'Green','#26af6d', 'Turquoise','#26a4af', 'Light Blue','#265daf', 'Blue','#3c26af', 'Purple','#9426af', 'Violet','#af2673', 'Pink','#5f4432', 'Brown','#a66ebe', 'Twilight Sparkle','#5e51a3', 'Rarity','#e97135', 'Applejack','#ea80b0', 'Pinkie Pie','#6aaadd', 'Rainbow Dash','#e6b91f', 'Fluttershy']);
 
-var DECEMBER = (new Date()).getMonth() == 11;
-var CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
-
-var snower;
-var isSliding = false;
-var slideTimes = [-1, 60000, 180000, 300000, 600000, 30000];
-var slideshowTimer;
-var fade;
-var loaded = 0;
+var snower, slideshowTimer, fade;
+var isSliding = false, slideTimes = [-1, 60000, 180000, 300000, 600000, 30000];
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------BOILER PLATE------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+var loaded = 0;
 addCss();
 document.addEventListener("DOMContentLoaded", function(event) {
     if ((~loaded & 1) && isJQuery()) {
@@ -285,9 +263,7 @@ function chainFunctionOnto(target, name, handler) {
     var _old = target[name];
     target[name] = function() {
         handler.apply(this, arguments);
-        if (typeof _old === 'function') {
-            _old.apply(this, arguments);
-        }
+        if (typeof _old === 'function') _old.apply(this, arguments);
     }
 }
 
@@ -296,6 +272,8 @@ function chainFunctionOnto(target, name, handler) {
 //--------------------------------------------------------------------------------------------------
 
 function load() {
+    addVersionInfo(VERSION);
+    var start = (new Date()).getTime();
     try {
         $('html').attr('FimFic_Adv','');
         logger.Log('initializing...',10);
@@ -318,6 +296,7 @@ function load() {
     } catch (e) {
         logger.SevereException('unhandledException in Ready-init: {0}', e);
     }
+    addFooterData('Script applied in <a>' + ((new Date()).getTime() - start)/1000 + ' seconds</a>');
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -351,7 +330,6 @@ function initFimFictionAdvanced() {
         logger.Log('starting slideshow',9);
         updateSlide();
     }
-    
     applySnowing(getBGSnow(), getSnowing());
 }
 
@@ -3419,14 +3397,66 @@ function applyBackground(c) {
     }
 }
 
+function addVersionInfo(version) {
+    addFooterData('Page running <a>FimFiction Advanced ' + version + '</a>');
+}
+
+function addFooterData(data) {
+    var footer = $('.footer');
+    if (footer.length) {
+        footer.first().find('.block')[0].innerHTML += '<br>' + data;
+    }
+}
+
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------API FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
-function registerBanner(name, img, source, color, pos) {
-    banners.push(Banner(name,img,source,color,pos));
+function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('')  : me;}
+
+//==API FUNCTION==//
+function endsWith(me, it) {return reverse(me).indexOf(reverse(it)) == 0;}
+
+//==API FUNCTION==//
+function pickNext(arr) {return arr[Math.max((new Date()).getSeconds() % arr.length, 0)];}
+
+//==API FUNCTION==//
+function escapeRegExp(s) {return s.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');}
+
+//==API FUNCTION==//
+function replaceAll(find, replace, me) {return me.replace(new RegExp(escapeRegExp(find), 'g'), replace);}
+
+//==API FUNCTION==//
+function normalise(me) {
+    if (me == null) return me;
+    var result = '';
+    var space = true;
+    var len = me.length;
+    for (var i = 0; i < len; i++) {
+        result += space ? me[i].toUpperCase()  : me[i].toLowerCase();
+        space = me[i] == ' ';
+    }
+    return result;
 }
+
+//==API FUNCTION==//
+function jule(s) {
+    var a = '';
+    var len = s.length;
+    for (var i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
+    return a;
+}
+
+//==API FUNCTION==//
+function urlSafe(me) {
+    var result = me.toLowerCase().replace(/[^a-z0-9_-]/gi, '-');
+    while (result.indexOf('--') != - 1) result = result.replace(/--/g, '-');
+    return result.replace(/-$/g, '');
+}
+
+//==API FUNCTION==//
+function registerBanner(name, img, source, color, pos) {banners.push(Banner(name,img,source,color,pos));}
 
 //==API FUNCTION==//
 function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
