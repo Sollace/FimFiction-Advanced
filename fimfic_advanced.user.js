@@ -224,8 +224,8 @@ var colours = (function(raw) {
     return result;
 })(['#FFFFFF', 'White','#FFC0CB', 'Pink','#FFDAB9', 'PeachPuff','#DCDCDC', 'Gainsboro','#FFB6C1', 'LightPink','#FFE4B5', 'Moccasin','#FFDEAD', 'NavajoWhite','#F5DEB3', 'Wheat','#D3D3D3', 'LightGray','#AFEEEE', 'PaleTurquoise','#EEE8AA', 'PaleGoldenRod','#D8BFD8', 'Thistle','#B0E0E6', 'PowderBlue','#ADD8E6', 'LightBlue','#98FB98', 'PaleGreen','#B0C4DE', 'LightSteelBlue','#87CEFA', 'LightSkyBlue','#C0C0C0', 'Silver','#7FFFD4', 'Aquamarine','#90EE90', 'LightGreen','#DDA0DD', 'Plum','#F0E68C', 'Khaki','#FFA07A', 'LightSalmon','#87CEEB', 'SkyBlue','#EE82EE', 'Violet','#F08080', 'LightCoral','#FA8072', 'Salmon','#FF69B4', 'HotPink','#DEB887', 'BurlyWood','#E9967A', 'DarkSalmon','#D2B48C', 'Tan','#7B68EE', 'MediumSlateBlue','#F4A460', 'SandyBrown','#A9A9A9', 'DarkGray','#6495ED', 'CornFlowerBlue','#FF7F50', 'Coral','#DB7093', 'PaleVioletRed','#9370DB', 'MediumPurple','#BC8F8F', 'RosyBrown','#DA70D6', 'Orchid','#8FBC8B', 'DarkSeaGreen','#FF6347', 'Tomato','#66CDAA', 'MediumAquamarine','#ADFF2F', 'GreenYellow','#CD5C5C', 'IndianRed','#BA55D3', 'MediumOrchid','#BDB76B', 'DarkKhaki','#6A5ACD', 'SlateBlue','#4169E1', 'RoyalBlue','#40E0D0', 'Turquoise','#1E90FF', 'DodgerBlue','#48D1CC', 'MediumTurquoise','#FF1493', 'DeepPink','#778899', 'LightSlateGray','#8A2BE2', 'BlueViolet','#CD853F', 'Peru','#708090', 'SlateGray','#808080', 'Gray','#FF00FF', 'Magenta','#0000FF', 'Blue','#00BFFF', 'DeepSkyBlue','#5F9EA0', 'CadetBlue','#00FFFF', 'Cyan','#00FF7F', 'SpringGreen','#00FF00', 'Lime','#32CD32', 'LimeGreen','#7FFF00', 'Chartreuse','#9ACD32', 'YellowGreen','#FFFF00', 'Yellow','#FFD700', 'Gold','#FFA500', 'Orange','#FF8C00', 'DarkOrange','#FF4500', 'OrangeRed','#FF0000', 'Red','#9932CC', 'DarkOrchid','#7CFC00', 'LawnGreen','#4682B4', 'Steelblue','#00FA9A', 'MediumSpringGreen','#DAA520', 'GoldenRod','#DC143C', 'Crimson','#D2691E', 'Chocolate','#3CB371', 'MediumSeaGreen','#C71585', 'MediumVioletRed','#B22222', 'FireBrick','#9400D3', 'DarkViolet','#20B2AA', 'LightSeaGreen','#696969', 'DimGray','#00CED1', 'DarkTurquoise','#A52A2A', 'Brown','#0000CD', 'MediumBlue','#A0522D', 'Sienna','#483D8B', 'DarkSlateBlue','#B8860B', 'DarkGoldenRod','#2E8B57', 'SeaGreen','#6B8E23', 'OliveDrab','#228B22', 'ForestGreen','#8B4513', 'SaddleBrown','#556B2F', 'DarkOliveGreen','#8B008B', 'DarkMagenta','#00008B', 'DarkBlue','#008B8B', 'DarkCyan','#8B0000', 'DarkRed','#191970', 'MidnightBlue','#4B0082', 'Indigo','#800080', 'Purple','#000080', 'Navy','#008080', 'Teal','#008000', 'Green','#808000', 'Olive','#800000', 'Maroon','#2F4F4F', 'DarkSlateGray','#006400', 'DarkGreen','#000000', 'Black','#666666', 'Grey','#cccccc', 'Light Grey','#383838', 'Dark Grey','#be4343', 'Red','#be7a43', 'Orange','#afa426', 'Yellow','#7aaf26', 'Lime Green','#2caf26', 'Green','#26af6d', 'Turquoise','#26a4af', 'Light Blue','#265daf', 'Blue','#3c26af', 'Purple','#9426af', 'Violet','#af2673', 'Pink','#5f4432', 'Brown','#a66ebe', 'Twilight Sparkle','#5e51a3', 'Rarity','#e97135', 'Applejack','#ea80b0', 'Pinkie Pie','#6aaadd', 'Rainbow Dash','#e6b91f', 'Fluttershy']);
 
-var snower, slideshowTimer, fade;
-var isSliding = false, slideTimes = [-1, 60000, 180000, 300000, 600000, 30000];
+var snower;
+var slider = new Slider();
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------BOILER PLATE------------------------------------------------
@@ -328,7 +328,7 @@ function initFimFictionAdvanced() {
 
     if (getSlide() > 0) {
         logger.Log('starting slideshow',9);
-        updateSlide();
+        slider.updateSlide();
     }
     applySnowing(getBGSnow(), getSnowing());
 }
@@ -511,10 +511,9 @@ function buildSettingsTab(tab) {
         setTitleHidden(this.checked);
     });
 
-    var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Fast"],
-                    getSlide()).change(function() {
+    var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"], getSlide()).change(function() {
         setSlide(this.selectedIndex);
-        updateSlide();
+        slider.updateSlide();
         updateSliderOptions();
     });
     
@@ -2055,40 +2054,6 @@ function addColorTiles(target, panel, colors) {
     }
 }
 
-function updateSlide() {
-    if (isSliding) {
-        clearTimeout(slideshowTimer);
-        isSliding = false;
-    }
-    var slide = getSlide();
-    if (slide > 0 && fade != null) {
-        isSliding = true;
-        var tit = $('#title a.home_link');
-        slideshowTimer = setTimeout(function() {
-            fade.css({"transition": "none", "opacity": "1"});
-            fade.css({
-                "background-image": tit.css("background-image"),
-                "background-position": tit.css("background-position"),
-                "background-size": tit.css("background-size")});
-            if (getShuffle()) {
-                theme = Math.floor(Math.random() * (banners.length - 1));
-            } else {
-                theme = theme + 1 >= banners.length ? 0 : theme + 1;
-            }
-            $('<img>').attr('src', banners[theme].url).load(function() {
-                $('.user_toolbar > ul').css("transition-duration", "3s");
-                chooseTheme(theme, true);
-                setTimeout(function() {
-                    $('.user_toolbar > ul').css("transition-duration", "");
-                }, 3000);
-                fade.css({"transition": "opacity 3s linear", "opacity": "0"});
-                isSliding = false;
-                updateSlide();
-            });
-        }, getTime(slide));
-    }
-}
-
 function getLogoNames() {
     var result = [];
     var len = logos.length;
@@ -2238,25 +2203,13 @@ function buildBanner() {
     <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
 </div>');
         
-        var tit = $('#title a.home_link');
         if ($('.theme_selector').length) {
             $('.theme_selector_left a')[0].onclick = function() {
-                cycleTheme(theme == 0 ? banners.length - 1 : theme - 1);
+                slider.select(theme == 0 ? banners.length - 1 : theme - 1);
             };
             $('.theme_selector_right > a')[0].onclick = function() {
-                cycleTheme(theme >= banners.length - 1 ? 0 : theme + 1);
+                slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
             };
-        }
-
-        function cycleTheme(index) {
-            fade.css({"transition": "none", "opacity": "1"});
-            fade.css({
-                "background-image": tit.css("background-image"),
-                "background-position": tit.css("background-position"),
-                "background-size": tit.css("background-size")
-            });
-            chooseTheme(index, true);
-            fade.css({"transition": "opacity 0.25s linear", "opacity": "0"});
         }
     }
 
@@ -2279,7 +2232,7 @@ function buildBanner() {
         });
     }
     
-    fade = $('#fade_banner_image');
+    slider.ready();
     registerCustomBanner();
     finaliseThemes();
     setTimeout(function() {
@@ -2930,7 +2883,6 @@ form > .content_box {\
 }
 
 function addBannerCss() {
-    addMinorBannerCss();
     if ($('Fimfiction_Advanced_Banner_Stylesheet').length) return;
     makeStyle('\
 @media all and (max-width: 700px) {\
@@ -3123,7 +3075,6 @@ function setSweetieEnabled(val) {settingsMan.setB("sweetie_staff_enabled", val);
 
 function getSlide() {return settingsMan.int("slideShow", 0);}
 function setSlide(v) {settingsMan.set("slideShow", v);}
-function getTime(v) {return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];}
 
 function getSig() {return settingsMan.get("user_sig", defSig());}
 function setSig(v) {settingsMan.set("user_sig", v);}
@@ -3133,7 +3084,7 @@ function getWideNotes() {return settingsMan.getB("wideAuthorNotes", true);}
 function setWideNotes(v) {settingsMan.setB("wideAuthorNotes", v);}
 
 function getSaveFocus() {return settingsMan.getB('ultra_snow_save_focus', true);}
-function setSaveFocus(v) {settingsMan.setB('ultra_snow_save_focus', v);if (snower != null) snower.SetSaveFocus(v);}
+function setSaveFocus(v) {settingsMan.setB('ultra_snow_save_focus', v);if (snower) snower.SetSaveFocus(v);}
 
 function getShuffle() {return settingsMan.getB("shuffle_slideShow", true);}
 function setShuffle(v) {settingsMan.setB("shuffle_slideShow", v);}
@@ -3320,7 +3271,7 @@ function setSnowing(v) {
 function getBGSnow() {return settingsMan.getB("snow_mode", false);}
 function setBGSnow(v) {
     settingsMan.setB("snow_mode", v);
-    if (snower != null) {
+    if (snower) {
         snower.dispose();
         snower = null;
         applySnowing(v, getSnowing());
@@ -3329,7 +3280,7 @@ function setBGSnow(v) {
 
 function applySnowing(g, v) {
     if (v < 2 && (v == 0 || DECEMBER)) {
-        if (snower == null) {
+        if (!snower) {
             if (g && $('#title .home_link').length) {
                 snower = snowBG($(window), $('#title .home_link'), false);
             } else {
@@ -3339,7 +3290,7 @@ function applySnowing(g, v) {
         } else {
             snower.start();
         }
-    } else if (snower != null) {
+    } else if (snower) {
         snower.stop();
     }
 }
@@ -3866,6 +3817,67 @@ div.colour_pick {\
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 //--------------------------------------------------------------------------------------------------
+
+function Slider() {
+    var slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000];
+    var fade, tit, isSliding, slideshowTimer;
+    var me = {
+        ready: function() {
+            fade = $('#fade_banner_image');
+            tit = $('#title a.home_link');
+        },
+        updateSlide: function() {
+            if (isSliding) {
+                clearTimeout(slideshowTimer);
+                isSliding = false;
+            }
+            var slide = getSlide();
+            if (slide > 0 && fade) {
+                isSliding = true;
+                slideshowTimer = setTimeout(transitionStart, getTime(slide));
+            }
+        },
+        select: function(index) {
+            fade.css({"transition": "none", "opacity": "1"});
+            fade.css({
+                "background-image": tit.css("background-image"),
+                "background-position": tit.css("background-position"),
+                "background-size": tit.css("background-size")
+            });
+            chooseTheme(index, true);
+            fade.css({"transition": "opacity 0.25s linear", "opacity": "0"});
+        }
+    }
+    
+    function loadImg() {
+        $('.user_toolbar > ul').css("transition-duration", "3s");
+        chooseTheme(theme, true);
+        setTimeout(transitionEnd, 3000);
+        fade.css({"transition": "opacity 3s linear", "opacity": "0"});
+        isSliding = false;
+        me.updateSlide();
+    }
+    
+    function transitionStart() {
+        fade.css({"transition": "none", "opacity": "1"});
+        fade.css({
+            "background-image": tit.css("background-image"),
+            "background-position": tit.css("background-position"),
+            "background-size": tit.css("background-size")});
+        if (getShuffle()) {
+            theme = Math.floor(Math.random() * (banners.length - 1));
+        } else {
+            theme = theme + 1 >= banners.length ? 0 : theme + 1;
+        }
+        $('<img>').attr('src', banners[theme].url).load(loadImg);
+    }
+
+    function transitionEnd() {$('.user_toolbar > ul').css("transition-duration", "");}
+    function getTime(v) {return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];}
+
+    return me;
+}
+
 function setupSweetie() {
     logger.Log('setupSweetie: start');
     var lastX = -1;
@@ -4584,9 +4596,7 @@ function playerEnded(s) {\
         $('#belle .options_container').css('opacity', container.children().length ? 1 : 0);
     }
     
-    function getImage(i) {
-        return 'data:image/png;base64,' + imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i];
-    }
+    function getImage(i) {return 'data:image/png;base64,' + imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i];}
 
     function initBelle() {
         setupImg(settingsMan.int('sweetie_img_index', 0));
@@ -4673,17 +4683,15 @@ function snowBG(env, cont, fix) {
         this.x= (tempy*-sinRY)+(tempx*cosRY);
     }
     function randomRange(min, max) {return ((Math.random()*(max-min)) + min);}
-    return new (function () {
+    return (function () {
         var saveFocus = getSaveFocus();
         var mouseX = 0, mouseY = 0;
         $(window).on('mousemove.snow', function (e) {
             mouseX = e.clientX;
             mouseY = e.clientY;
         });
-        var SCREEN_WIDTH = env.width();
-        var SCREEN_HEIGHT = env.height();
-        var windowHalfX = SCREEN_WIDTH / 2;
-        var windowHalfY = SCREEN_HEIGHT / 2;
+        var SCREEN_WIDTH = env.width(), SCREEN_HEIGHT = env.height();
+        var windowHalfX = SCREEN_WIDTH / 2, windowHalfY = SCREEN_HEIGHT / 2;
         var particles = [];
         var container = cont[0];
         var particleImage = new Image();
@@ -4704,10 +4712,7 @@ function snowBG(env, cont, fix) {
             scene.add(particle);
             particles.push(particle);
         }
-        renderer.domElement.onmousedown = function (event) {
-            event.preventDefault();
-        }
-        container.insertBefore(renderer.domElement, container.children[0]);
+        $(container).prepend(renderer.domElement);
         $(renderer.domElement).css({ 'pointer-events': 'none' });
         if (fix) $(renderer.domElement).css({ 'position': 'fixed', 'top': '0px', 'left': '0px' });
         var ticker = window.setInterval(loop, 1000 / 60);
@@ -4730,22 +4735,25 @@ function snowBG(env, cont, fix) {
                 renderer.render(scene, camera);
             }
         }
-        
-        this.SetSaveFocus = function (v) {saveFocus = v;}
-        this.start = function () {
-            if (ticker == null) ticker = window.setInterval(loop, 1000 / 60);
-            $(renderer.domElement).css('display', 'block');
-        }
-        this.stop = function () {
-            if (ticker != null) {
-                window.clearInterval(ticker);
-                ticker = null;
+        return {
+            SetSaveFocus: function (v) {saveFocus = v;},
+            start: function () {
+                if (ticker == null) ticker = window.setInterval(loop, 1000 / 60);
+                $(renderer.domElement).css('display', 'block');
+            },
+            stop: function () {
+                if (ticker != null) {
+                    window.clearInterval(ticker);
+                    ticker = null;
+                }
+                $(renderer.domElement).css('display', 'none');
+            },
+            dispose: function() {
+                this.stop();
+                $(renderer.domElement).remove();
+                $(window).off('mousemove.snow');
             }
-            $(renderer.domElement).css('display', 'none');
         }
-        this.dispose = function() {
-            this.stop();
-            $(renderer.domElement).remove();
-        }
+        
     })();
 }
