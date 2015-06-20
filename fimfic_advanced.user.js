@@ -3562,7 +3562,7 @@ function SettingsTab(title, description, name, img, category, categoryIcon) {
                                 '<div class="light-gradient" />' + 
                                 '<div class="dark-gradient" />' + 
                              '</div>' + 
-                             '<a><img src="' + getDefaultAvatar() + "></a>' +
+                             '<a><img src="' + getDefaultAvatar() + '"></a>' +
                              '<div class="tab-collection">' + 
                                 '<h1><i class="fa fa-fw fa-cog" /> <span>Account</span></h1>' + 
                                 '<ul>' +
