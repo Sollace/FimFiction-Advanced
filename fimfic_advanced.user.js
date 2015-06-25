@@ -1565,64 +1565,35 @@ function setUpMainButton(toolbar, target, hold) {
                     InsertBBCodeTag(target, 'right');
                 });
                 if (!hasAdv) {
-                    addOption(this, "Center Align").click(function() {
-                        InsertBBCodeTag(target, 'center');
-                    })
-                    addOption(this, "Horizontal Rule").click(function() {
-                        InsertBBCodeTag(target, 'hr');
-                    });
-                    addOption(this, "Indent Paragraphs").click(function() {
-                        var f = BBCodeGetSelection(target);
-                        var g = !1;
-                        "" == f && (f = e.value, g = !0);
-                        f = f.replace(/\n/g, "\n\t");
-                        g ? e.value = f : InsertTextAt(target, f);
-                    });
-                    addOption(this, "Outdent Paragraphs").click(function() {
-                        var f = BBCodeGetSelection(target);
-                        var g = !1;
-                        "" == f && (f = target.value, g = !0);
-                        f = f.replace(/\n\t/g, "\n");
-                        g ? e.value = f : InsertTextAt(target, f);
-                    });
+                    addOption(this, "Center Align").click(function() {InsertBBCodeTag(target, 'center');});
+                    addOption(this, "Horizontal Rule").click(function() {InsertBBCodeTag(target, 'hr');});
+                    addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
+                    addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
                 }
-                addOption(this, "Left Insert").click(function() {
-                    InsertBBCodeTag(target, 'left_insert');
-                });
-                addOption(this, "Right Insert").click(function() {
-                    InsertBBCodeTag(target, 'right_insert');
-                });
-                addOption(this, "Ordered List").click(function () {
-                    makeList(target, true);
-                });
-                addOption(this, "Unordered List").click(function () {
-                    makeList(target, false);
-                });
-                addOption(this, "Icon").click(function() {
-                    makeInsertIconPopup(target);
-                });
+                addOption(this, "Left Insert").click(function() {InsertBBCodeTag(target, 'left_insert');});
+                addOption(this, "Right Insert").click(function() {InsertBBCodeTag(target, 'right_insert');});
+                addOption(this, "Ordered List").click(function () {makeList(target, true);});
+                addOption(this, "Unordered List").click(function () {makeList(target, false);});
+                addOption(this, "Green Text").click(function () {makeGreen(target);});
+                addOption(this, "Icon").click(function() {makeInsertIconPopup(target);});
             });
 
-            addOption(items, "Sign").click(function() {
-                sign(target);
-            });
-            addOption(items, "Insert Direct Image").click(function() {
-                makeImagePopup(target);
-            });
-            addOption(items, "Find/Replace Text").click(function() {
-                makeReplacePopup(target);
-            });
-            addOption(items, "Blotter").click(function() {
-                var f = BBCodeGetSelection(target);
-                var g = !1;
-                "" == f && (f = target.value, g = !0);
-                f = f.replace(/[^\s\\]/g, "█");
-                g ? e.value = f : InsertTextAt(target, f);
-            });
+            addOption(items, "Sign").click(function() {sign(target);});
+            addOption(items, "Insert Direct Image").click(function() {makeImagePopup(target);});
+            addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(target);});
+            addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
             setListItemWidth(items);
             inbounds($(items).parent().parent());
         }
     });
+    
+    function handleIndent(e, start, end) {
+        var f = BBCodeGetSelection(target);
+        var g = !1;
+        "" == f && (f = target.value, g = !0);
+        f = f.replace(start, end);
+        g ? e.value = f : InsertTextAt(target, f);
+    }
 }
 
 function makeInsertIconPopup(target) {
