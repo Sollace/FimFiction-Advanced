@@ -11,7 +11,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -25,57 +25,21 @@ var settingsMan = {
         var keys = [];
         var i = localStorage.length;
         while (i--) keys.unshift(localStorage.key(i));
-        return keys;
-    },
-    has: function(key) {
-        return localStorage[key] !== undefined;
-    },
-    get: function(key, def) {
-        logger.Log('settingsMan.get: ' + key);
-        if (this.has(key)) {
-            return localStorage[key];
-        }
-        return def;
-    },
-    getB: function(key, def) {
-        if (this.has(key)) {
-            return localStorage[key] == 'true' || localStorage[key] == '1' || !!localStorage[key];
-        }
-        return def;
-    },
-    int: function(key, def) {
-        if (this.has(key)) {
-            return parseInt(localStorage[key]);
-        }
-        return def;
-    },
-    float: function(key, def) {
-        if (this.has(key)) {
-            return parseFloat(localStorage[key]);
-        }
-        return def;
-    },
-    set: function(key, val) {
-        logger.Log('settingsMan.set: ' + key);
-        localStorage[key] = val;
-    },
-    setB: function(key, bool) {
-        this.set(key, bool ? '1' : '');
-    },
-    remove: function(key) {
-        localStorage.removeItem(key);
-    },
+        return keys;},
+    has: function(key) {return localStorage[key] !== undefined;},
+    get: function(key, def) {return this.has(key) ? localStorage[key] : def;},
+    getB: function(key, def) {return this.has(key) ? (localStorage[key] == 'true' || localStorage[key] == '1' || !!localStorage[key]) : def;},
+    int: function(key, def) {return this.has(key) ? parseInt(localStorage[key]) : def;},
+    float: function(key, def) {return this.has(key) ? parseFloat(localStorage[key]) : def;},
+    set: function(key, val) {localStorage[key] = val;},
+    setB: function(key, bool) {this.set(key, bool ? '1' : '');},
+    remove: function(key) {localStorage.removeItem(key);},
     updateFlagField: function(key, value) {
         var current = $('html').attr('fimfic_adv');
         if (current == undefined || current == null) current = '';
-        current = $.grep(current.split(','), function(i) {
-            return (value || i != key) && i != '';
-        }).join(',');
-        if (value && current.indexOf(key) == -1) {
-            current += (current == '' ? '' : ',') + key;
-        }
-        $('html').first().attr('fimfic_adv', current);
-    }
+        current = $.grep(current.split(','), function(i) {return (value || i != key) && i != '';}).join(',');
+        if (value && current.indexOf(key) == -1) current += (current == '' ? '' : ',') + key;
+        $('html').first().attr('fimfic_adv', current);}
 };
 //--------------------------------------------------------------------------------------------------
 //-------------------------------------------DATA---------------------------------------------------
@@ -223,7 +187,6 @@ var colours = (function(raw) {
     }
     return result;
 })(['#FFFFFF', 'White','#FFC0CB', 'Pink','#FFDAB9', 'PeachPuff','#DCDCDC', 'Gainsboro','#FFB6C1', 'LightPink','#FFE4B5', 'Moccasin','#FFDEAD', 'NavajoWhite','#F5DEB3', 'Wheat','#D3D3D3', 'LightGray','#AFEEEE', 'PaleTurquoise','#EEE8AA', 'PaleGoldenRod','#D8BFD8', 'Thistle','#B0E0E6', 'PowderBlue','#ADD8E6', 'LightBlue','#98FB98', 'PaleGreen','#B0C4DE', 'LightSteelBlue','#87CEFA', 'LightSkyBlue','#C0C0C0', 'Silver','#7FFFD4', 'Aquamarine','#90EE90', 'LightGreen','#DDA0DD', 'Plum','#F0E68C', 'Khaki','#FFA07A', 'LightSalmon','#87CEEB', 'SkyBlue','#EE82EE', 'Violet','#F08080', 'LightCoral','#FA8072', 'Salmon','#FF69B4', 'HotPink','#DEB887', 'BurlyWood','#E9967A', 'DarkSalmon','#D2B48C', 'Tan','#7B68EE', 'MediumSlateBlue','#F4A460', 'SandyBrown','#A9A9A9', 'DarkGray','#6495ED', 'CornFlowerBlue','#FF7F50', 'Coral','#DB7093', 'PaleVioletRed','#9370DB', 'MediumPurple','#BC8F8F', 'RosyBrown','#DA70D6', 'Orchid','#8FBC8B', 'DarkSeaGreen','#FF6347', 'Tomato','#66CDAA', 'MediumAquamarine','#ADFF2F', 'GreenYellow','#CD5C5C', 'IndianRed','#BA55D3', 'MediumOrchid','#BDB76B', 'DarkKhaki','#6A5ACD', 'SlateBlue','#4169E1', 'RoyalBlue','#40E0D0', 'Turquoise','#1E90FF', 'DodgerBlue','#48D1CC', 'MediumTurquoise','#FF1493', 'DeepPink','#778899', 'LightSlateGray','#8A2BE2', 'BlueViolet','#CD853F', 'Peru','#708090', 'SlateGray','#808080', 'Gray','#FF00FF', 'Magenta','#0000FF', 'Blue','#00BFFF', 'DeepSkyBlue','#5F9EA0', 'CadetBlue','#00FFFF', 'Cyan','#00FF7F', 'SpringGreen','#00FF00', 'Lime','#32CD32', 'LimeGreen','#7FFF00', 'Chartreuse','#9ACD32', 'YellowGreen','#FFFF00', 'Yellow','#FFD700', 'Gold','#FFA500', 'Orange','#FF8C00', 'DarkOrange','#FF4500', 'OrangeRed','#FF0000', 'Red','#9932CC', 'DarkOrchid','#7CFC00', 'LawnGreen','#4682B4', 'Steelblue','#00FA9A', 'MediumSpringGreen','#DAA520', 'GoldenRod','#DC143C', 'Crimson','#D2691E', 'Chocolate','#3CB371', 'MediumSeaGreen','#C71585', 'MediumVioletRed','#B22222', 'FireBrick','#9400D3', 'DarkViolet','#20B2AA', 'LightSeaGreen','#696969', 'DimGray','#00CED1', 'DarkTurquoise','#A52A2A', 'Brown','#0000CD', 'MediumBlue','#A0522D', 'Sienna','#483D8B', 'DarkSlateBlue','#B8860B', 'DarkGoldenRod','#2E8B57', 'SeaGreen','#6B8E23', 'OliveDrab','#228B22', 'ForestGreen','#8B4513', 'SaddleBrown','#556B2F', 'DarkOliveGreen','#8B008B', 'DarkMagenta','#00008B', 'DarkBlue','#008B8B', 'DarkCyan','#8B0000', 'DarkRed','#191970', 'MidnightBlue','#4B0082', 'Indigo','#800080', 'Purple','#000080', 'Navy','#008080', 'Teal','#008000', 'Green','#808000', 'Olive','#800000', 'Maroon','#2F4F4F', 'DarkSlateGray','#006400', 'DarkGreen','#000000', 'Black','#666666', 'Grey','#cccccc', 'Light Grey','#383838', 'Dark Grey','#be4343', 'Red','#be7a43', 'Orange','#afa426', 'Yellow','#7aaf26', 'Lime Green','#2caf26', 'Green','#26af6d', 'Turquoise','#26a4af', 'Light Blue','#265daf', 'Blue','#3c26af', 'Purple','#9426af', 'Violet','#af2673', 'Pink','#5f4432', 'Brown','#a66ebe', 'Twilight Sparkle','#5e51a3', 'Rarity','#e97135', 'Applejack','#ea80b0', 'Pinkie Pie','#6aaadd', 'Rainbow Dash','#e6b91f', 'Fluttershy']);
-
 var snower;
 var slider = new Slider();
 
@@ -241,8 +204,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         load();
     }
 });
-chainFunctionOnto(document, 'onready', run);
-function run() {
+chainFunctionOnto(document, 'onready', function() {
     //logger.Start(0);
     logger.Log('event: onready', 2);
     if (~loaded & 3) {
@@ -257,8 +219,9 @@ function run() {
             logger.SevereException('unhandledException in Post-init: {0}', e);
         }
     }
-}
+});
 
+//==API FUNCTION==//
 function chainFunctionOnto(target, name, handler) {
     var _old = target[name];
     target[name] = function() {
@@ -366,7 +329,7 @@ function initSettingsTabs() {
     logger.Log('starting settings Tab setup');
     var tab;
     if (getIsLoggedIn()) {
-        insertBookmarksButton();
+        if (getEnableBookmarksMenu()) insertBookmarksButton();
         tab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content', 'book');
         if (tab.HasInit()) {
             $('#SettingsPage_Parent').css('min-height', '607px');
@@ -397,6 +360,10 @@ function insertBookmarksButton() {
 
 function buildSettingsTab(tab) {
     tab.StartEndSection("General Settings");
+    
+    tab.AddCheckBox("bkm", "Show Bookmarks Menu", getEnableBookmarksMenu()).change(function() {
+        setEnableBookmarksMenu(this.checked);
+    });
     
     tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).change(function() {
         if (getPinUserbar() != this.checked) {
@@ -841,7 +808,7 @@ function buildSettingsTab(tab) {
     updateBannersOptions();
     tab.StartEndSection("Signatures");
     
-    var sigText = $(tab.AddTextArea("sig", '', getSig()));
+    var sigText = tab.AddTextArea("sig", '', getSig());
     sigText.css({"min-height": "150px","min-width": "100%","resize": "vertical"});
     addTooltip("<u>Magic Strings</u><br ><div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>\
         %name% - the name of the current user<br />\
@@ -1273,6 +1240,35 @@ function addChapterButtonsExtras() {
     }
 }
 
+function makeGreen(element) {
+    var start = element.selectionStart;
+    var end = element.selectionEnd;
+    var before = element.value.substring(0, start);
+    var after = element.value.substring(end, element.value.length);
+    var top = element.scrollTop;
+    var selected = end - start > 0 ? element.value.substring(start, end) : '';
+    var toggle = true;
+    selected = selected.split('\n');
+    var len = selected.length;
+    for (var i = 0; i < len; i++) {
+        if (selected[i].indexOf('[color=#789922]>') != 0) {
+            selected[i] = '[color=#789922]>' + selected[i] + '[/color]';
+            toggle = false;
+        }
+    }
+    if (toggle) {
+        while (len--) {
+            selected[len] = selected[len].replace(/^\[color=#789922\]>(.*)\[\/color\]$/g, '$1');
+        }
+    }
+    selected = selected.join('\n');
+    element.value = before + selected + after;
+    element.selectionStart = start;
+    element.selectionEnd = start + selected.length;
+    element.scrollTop = top;
+    $(element).focus();
+}
+
 function makeList(element, ordered) {
     var start = element.selectionStart;
     var end = element.selectionEnd;
@@ -1304,7 +1300,7 @@ function makeList(element, ordered) {
     }
     if (toggle) {
         while (len--) {
-            selected[i] = selected[i].replace(/\t\[b\]([0-9]*.|·)\[\/b\] /g, '');
+            selected[len] = selected[len].replace(/\t\[b\]([0-9]*.|·)\[\/b\] /g, '');
         }
     }
     selected = selected.join('\n');
@@ -2182,6 +2178,10 @@ function registerBanners(extended) {
     if ($('.banner_credits').length) addBannerCredits(extended);
 }
 
+function registerBanner(name, img, source, color, pos) {
+    banners.push(Banner(name,img,source,color,pos));
+}
+
 function buildBanner() {
     addBannerCss();
     addMinorBannerCss();
@@ -2379,6 +2379,15 @@ function catchBanners(id) {
             img = null;
         });
     }
+}
+
+function addVersionInfo(version) {
+    addFooterData('Page running <a>FimFiction Advanced ' + version + '</a>');
+}
+
+function addFooterData(data) {
+    var footer = $('.footer');
+    if (footer.length) footer.first().find('.block')[0].innerHTML += '<br>' + data;
 }
 
 function addCss() {
@@ -3197,12 +3206,13 @@ function getTotalBookmarks() {
     var result = 0;
     var keys = settingsMan.keys();
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('bookmark_position') != -1) {
-            result++;
-        }
+        if (keys[i].indexOf('bookmark_position') != -1) result++;
     }
     return result;
 }
+
+function getEnableBookmarksMenu() {return settingsMan.getB("bookmarks_menu", true);}
+function setEnableBookmarksMenu(v) {settingsMan.setB("bookmarks_menu", v);}
 
 function getTabsLeft() {return settingsMan.getB("tabs_side", false);}
 function setTabsLeft(v) {settingsMan.setB("tabs_side", v);}
@@ -3219,9 +3229,7 @@ function updateTabsBarSide(v) {
 function getStoryWidth() {
     if (settingsMan.has("storyWidth")) {
         var result = settingsMan.get("storyWidth",'0');
-        if (parseInt(result) > 0) {
-            return result;
-        }
+        if (parseInt(result) > 0) return result;
     }
     return '46em';
 }
@@ -3250,17 +3258,13 @@ function setCustomBanner(url, color, pos) {
 function getLogoOpacity() {return settingsMan.int('logo_opacity', 100);}
 function setLogoOpacity(v) {
     settingsMan.set('logo_opacity', v);
-    if ($('#title').length) {
-        $('#title .home_link img').css('opacity', v / 100);
-    }
+    if ($('#title').length) $('#title .home_link img').css('opacity', v / 100);
 }
 
 function getLogo() {return settingsMan.int("oldLogo", 0);}
 function setLogo(v) {
     settingsMan.set("oldLogo", v);
-    if ($('#title').length) {
-        $('#title .home_link img').attr("src", getLogoUrl(v));
-    }
+    if ($('#title').length) $('#title .home_link img').attr("src", getLogoUrl(v));
 }
 
 function getSnowing() {return settingsMan.int("snow_bg", 1);}
@@ -3335,9 +3339,7 @@ function getBG() {
 
 function applyBackground(c) {
     var img = getBG();
-    if (img == 'none') {
-        img = $('body').css('background-image');
-    }
+    if (img == 'none') img = $('body').css('background-image');
     if (c == '' || c == 'transparent') c = $('body').css('background-color');
     $('.body_container').css("background", (typeof img === 'string' ? img : img.Css) + " " + c);
     c = $('.body_container').css('background-color').replace(/rgb|a|\(|\)| /g,'').split(',');
@@ -3348,14 +3350,65 @@ function applyBackground(c) {
     }
 }
 
-function addVersionInfo(version) {
-    addFooterData('Page running <a>FimFiction Advanced ' + version + '</a>');
+//--------------------------------------------------------------------------------------------------
+//---------------------------------------DATA STRUCTURES--------------------------------------------
+//--------------------------------------------------------------------------------------------------
+
+function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
+function Banner(name,img,source,color,pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position':pos};}
+
+function CBG(type, p, bg2) {
+    if (typeof (p) == 'string') {
+        bg2.Type = {Key: type,param: p};
+        return bg2;
+    }
+    p.Type = {Key: type,param: ''};
+    return p;
 }
 
-function addFooterData(data) {
-    var footer = $('.footer');
-    if (footer.length) {
-        footer.first().find('.block')[0].innerHTML += '<br>' + data;
+function BG(name, css, source) {
+    this.Able = typeof (name) == 'string';
+    this.Type = { Key: '', param: '' };
+    this.Css = css;
+    this.Name = name;
+    this.Setup = function(blank, c, i) {
+        blank.children[1].innerHTML = name;
+        $(blank.children[0]).css("background-color", c);
+        $(blank.children[0]).css("opacity", "0.8");
+        var css = this.Css.replace(/ fixed/g, "");
+        if (this.Type.Key.indexOf('k') != -1) {
+            css = css.split(' ');
+            for (var o = 0; o < css.length - 1; o++) {
+                switch (css[o]) {
+                    case 'top':
+                    case 'bottom':
+                    case 'left':
+                    case 'right':
+                        if (endsWith(css[o + 1], 'px')) {
+                            css.splice(o + 1, 1);
+                        }
+                }
+            }
+            css = css.join(' ');
+        }
+        $(blank).css("background", css);
+        $(blank).attr("data-bg-index", i);
+        if (this.Type.Key.indexOf('p') == -1) $(blank).css("background-position", "center center");
+        if (this.Type.Key.indexOf('c') != -1) {
+            $(blank).css("background-size", "contain");
+        } else if (this.Type.Key.indexOf('k') != -1) {
+            $(blank).css("background-size", this.Type.param);
+        } else {
+            $(blank).css("background-size", "cover");
+        }
+        $(blank).click(function() {
+            setBackgroundImg($(this).attr("data-bg-index"));
+            applyBackground(getBGColor());
+        });
+        if (source != null) {
+            $(blank).css('position', 'relative');
+            $(blank).append('<a class="bg_source_link" href="' + source + '" >Source</a>');
+        }
     }
 }
 
@@ -3407,15 +3460,6 @@ function urlSafe(me) {
 }
 
 //==API FUNCTION==//
-function registerBanner(name, img, source, color, pos) {banners.push(Banner(name,img,source,color,pos));}
-
-//==API FUNCTION==//
-function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
-
-//==API FUNCTION==//
-function Banner(name,img,source,color,pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position':pos};}
-
-//==API FUNCTION==//
 //Returns true if Extra emoticons has already been initialized on this page
 function getExtraEmotesInit() {return $('div#extraemoticons_loaded').length > 0;}
 
@@ -3428,63 +3472,6 @@ function InvalidHexColor(color) {
     if (color.indexOf('#') == 0) color = color.substring(1, color.length);
     if (color.length != 3 && color.length != 6) return true;
     return !color.test(/^[0-9a-f]+$/ig);
-}
-
-//==API FUNCTION==//
-function CBG(type, p, bg2) {
-    if (typeof (p) == 'string') {
-        bg2.Type = {Key: type,param: p};
-        return bg2;
-    }
-    p.Type = {Key: type,param: ''};
-    return p;
-}
-
-//==API FUNCTION==//
-function BG(name, css, source) {
-    this.Able = typeof (name) == 'string';
-    this.Type = { Key: '', param: '' };
-    this.Css = css;
-    this.Name = name;
-    this.Setup = function(blank, c, i) {
-        blank.children[1].innerHTML = name;
-        $(blank.children[0]).css("background-color", c);
-        $(blank.children[0]).css("opacity", "0.8");
-        var css = this.Css.replace(/ fixed/g, "");
-        if (this.Type.Key.indexOf('k') != -1) {
-            css = css.split(' ');
-            for (var o = 0; o < css.length - 1; o++) {
-                switch (css[o]) {
-                    case 'top':
-                    case 'bottom':
-                    case 'left':
-                    case 'right':
-                        if (endsWith(css[o + 1], 'px')) {
-                            css.splice(o + 1, 1);
-                        }
-                }
-            }
-            css = css.join(' ');
-        }
-        $(blank).css("background", css);
-        $(blank).attr("data-bg-index", i);
-        if (this.Type.Key.indexOf('p') == -1) $(blank).css("background-position", "center center");
-        if (this.Type.Key.indexOf('c') != -1) {
-            $(blank).css("background-size", "contain");
-        } else if (this.Type.Key.indexOf('k') != -1) {
-            $(blank).css("background-size", this.Type.param);
-        } else {
-            $(blank).css("background-size", "cover");
-        }
-        $(blank).click(function() {
-            setBackgroundImg($(this).attr("data-bg-index"));
-            applyBackground(getBGColor());
-        });
-        if (source != null) {
-            $(blank).css('position', 'relative');
-            $(blank).append('<a class="bg_source_link" href="' + source + '" >Source</a>');
-        }
-    }
 }
 
 //==API FUNCTION==//
@@ -3807,9 +3794,7 @@ div.colour_pick {\
             $(this).find('input,select,button').attr('disabled', !enable);
         });
         el.parent().find('.premade_settings,label,select').each(function() {
-            $(this).css(enable ?
-                        {'opacity':'', 'pointer-events': ''} :
-                        {'opacity':'0.5','pointer-events': 'none'});
+            $(this).css(enable ? {'opacity':'', 'pointer-events': ''} : {'opacity':'0.5','pointer-events': 'none'});
         });
     }
 }
