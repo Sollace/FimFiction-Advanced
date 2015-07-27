@@ -15,6 +15,7 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
 var VERSION = '3.10.5',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
@@ -129,19 +130,19 @@ var banners = [
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599a")
 ];
 var extraBanners = [
-    Banner("sleeping_bath_bloom", "//fc07.deviantart.net/fs71/f/2013/363/7/d/sleeping_bath_bloom_by_comeha-d6zwhn1.jpg", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
-    Banner("flutterby_dash", "//fc04.deviantart.net/fs71/f/2013/364/d/7/flutterby_dash_by_comeha-d6zzy8w.jpg", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
-    Banner("mommy_derp", "//fc08.deviantart.net/fs71/f/2013/364/a/e/mommy_derp_by_comeha-d700c89.jpg", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
-    Banner("flutter_bite", "//fc07.deviantart.net/fs71/f/2014/016/3/d/flutterbite_by_comeha-d72ef26.jpg", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"),
-    Banner("movie_night", "//fc04.deviantart.net/fs71/f/2014/016/c/0/movie_night_by_comeha-d72eswd.png", "//dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"),
-    Banner("anitpodes", "//fc05.deviantart.net/fs71/f/2014/022/0/7/antipodes_by_comeha-d7383b9.jpg", "//www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
-    Banner("steampunk", "//fc07.deviantart.net/fs71/f/2014/026/0/b/steampunk_by_comeha-d73scy1.jpg", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
-    Banner("flutter_bee", "//fc09.deviantart.net/fs70/f/2014/072/b/6/flutterbee3_by_comeha-d7a0n4w.jpg", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
-    Banner("cmc_roped", "//fc06.deviantart.net/fs70/f/2014/072/6/d/cmc_roped_by_comeha-d7a0liy.jpg", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
-    Banner("twi_revenge", "//fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "//zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)"),
-    Banner("solar_flare", "//fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", ["right",0,"center",0]),
-    Banner("serene", "//fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
-    Banner("nightwork", "//fc07.deviantart.net/fs71/f/2014/313/d/f/nightwork_by_comeha-d85teut.png", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)"),
+    Ban2("sleeping_bath_bloom", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
+    Ban2("flutterby_dash", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
+    Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
+    Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"),
+    Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"),
+    Ban2("anitpodes", "//www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
+    Ban2("steampunk", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
+    Ban2("flutter_bee", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
+    Ban2("cmc_roped", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
+    Ban2("twi_revenge", "//zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)"),
+    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", ["right",0,"center",0]),
+    Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
+    Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)"),
     Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "rgb(105,66,85)")
 ];
 var externalUrls = [
@@ -3341,8 +3342,8 @@ function applyBackground(c) {
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
-function Ban2(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners2/' + name + '.jpg', source, color, pos);}
+function Ban(name, source, color, pos) {return Banner(name, GITHUB + '/banners/' + name + '.jpg', source, color, pos);}
+function Ban2(name, source, color, pos) {return Banner(name, GITHUB + '/banners2/' + name + '.jpg', source, color, pos);}
 function Banner(name,img,source,color, pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null)};}
 
 function Pos(poss) {
