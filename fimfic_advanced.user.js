@@ -15,7 +15,7 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
 var VERSION = '3.10.5',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
@@ -135,7 +135,7 @@ var extraBanners = [
     Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
     Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"),
     Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"),
-    Ban2("anitpodes", "//www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
+    Ban2("antipodes", "//www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
     Ban2("steampunk", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
     Ban2("flutter_bee", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
     Ban2("cmc_roped", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
@@ -143,7 +143,7 @@ var extraBanners = [
     Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", ["right",0,"center",0]),
     Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
     Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "rgb(105,66,85)")
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "rgb(105,66,85)", ["center", 0, "bottom", 0])
 ];
 var externalUrls = [
     [/minecraftforum.*\/members\/([^\/]*)/, 1],
