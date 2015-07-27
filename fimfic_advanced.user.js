@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.10.4
+// @version     3.10.5
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -15,7 +15,7 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var VERSION = '3.10.4',
+var VERSION = '3.10.5',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -138,10 +138,11 @@ var extraBanners = [
     Banner("steampunk", "//fc07.deviantart.net/fs71/f/2014/026/0/b/steampunk_by_comeha-d73scy1.jpg", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
     Banner("flutter_bee", "//fc09.deviantart.net/fs70/f/2014/072/b/6/flutterbee3_by_comeha-d7a0n4w.jpg", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
     Banner("cmc_roped", "//fc06.deviantart.net/fs70/f/2014/072/6/d/cmc_roped_by_comeha-d7a0liy.jpg", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
-    Banner("twi_revenge", "//fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "//zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)", "center center"),
-    Banner("solar_flare", "//fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", "center right 0px"),
+    Banner("twi_revenge", "//fc02.deviantart.net/fs71/f/2014/102/c/3/revenge_by_comeha-d7e4arl.png", "//zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)"),
+    Banner("solar_flare", "//fc08.deviantart.net/fs71/f/2014/149/b/4/solar_flare_by_comeha-d7k81gm.png", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", ["right",0,"center",0]),
     Banner("serene", "//fc06.deviantart.net/fs71/f/2014/158/e/5/serene_by_comeha-d7levgz.jpg", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
-    Banner("nightwork", "//fc07.deviantart.net/fs71/f/2014/313/d/f/nightwork_by_comeha-d85teut.png", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)")
+    Banner("nightwork", "//fc07.deviantart.net/fs71/f/2014/313/d/f/nightwork_by_comeha-d85teut.png", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)"),
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "rgb(105,66,85)")
 ];
 var externalUrls = [
     [/minecraftforum.*\/members\/([^\/]*)/, 1],
@@ -302,6 +303,8 @@ function registerEvents() {
     FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', function() {
         initCommentArea(false);
     });
+    
+    FimFicEvents.on('aftereditmodule', setVideoSizes);
     
     if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
         if (getAlwaysShowImages()) {
@@ -682,21 +685,20 @@ function buildSettingsTab(tab) {
                 var hor = alignHor.val();
                 var x = tryParseInt(posX.val(), 0);
                 var y = tryParseInt(posY.val(), 0);
-
-                var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
+                
                 if (AInput.val() != '1' && AInput.val() != '') {
                     color = 'rgba(' + color + ',' + AInput.val();
                 } else {
                     color = 'rgb(' + color;
                 }
                 color += ')';
-
+                
                 if (save) {
-                    setCustomBanner(url, color, pos);
+                    setCustomBanner(url, color, [hor, x, vert, y]);
                     if (customBannerindex > -1) {
-                        banners[customBannerindex] = Banner('Custom', url, '', color, pos);
+                        banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
                     } else {
-                        banners.push(Banner('Custom', url, '', color, pos));
+                        banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
                         customBannerindex = banners.length - 1;
                     }
                 }
@@ -728,24 +730,9 @@ function buildSettingsTab(tab) {
 
                 var vert = alignVert.val();
                 var hor = alignHor.val();
-                var x = 0;
-                try {
-                    if (posX.val() != '') {
-                        x = parseInt(posX.val());
-                    }
-                } catch (e) {
-                    x = 0;
-                }
-
-                var y = 0;
-                try {
-                    if (posY.val() != '') {
-                        y = parseInt(posY.val());
-                    }
-                } catch (e) {
-                    y = 0;
-                }
-
+                var x = tryParseInt(posX.val(), 0);
+                var y = tryParseInt(posY.val(), 0);
+                
                 var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
 
                 if (AInput.val() != '1' && AInput.val() != '') {
@@ -795,12 +782,13 @@ function buildSettingsTab(tab) {
             BInput.val(color[2]);
             AInput.val(color.length == 4 ? color[3] : 1);
 
-            var poss = customBanner[2].split(' ');
+            var poss = customBanner[2];
             var i = 0;
-            alignVert.val(poss[i]);
-            if (poss[i] != 'center') posY.val(poss[++i]);
-            alignHor.val(poss[++i]);
-            if (poss[i] != 'center') posX.val(poss[++i]);
+            alignHor.val(poss[i++]);
+            if (poss[i] != 'center') posX.val(poss[i]);
+            i++;
+            alignVert.val(poss[i++]);
+            if (poss[i] != 'center') posY.val(poss[i]);
         }
         pop.Show();
     });
@@ -1132,11 +1120,28 @@ function buildBookmarksGui(tab) {
 function updateBannerScroll() {
     var home_link = $('.home_link');
     var top = home_link.offset().top;
+    var offset = banners[theme].position;
     if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
         var top = window.scrollY - top;
-        $('.home_link, #fade_banner_image').css('background-position', 'center ' + (top - top * 0.7) + 'px');
+        var fX = offset ? offset['position-x'] : 'center';
+        var X = fX != 'center' ? ' ' + offset.x + 'px' : '';
+        var fY = offset ? offset['position-y'] : '';
+        var Y = '';
+        if (offset) {
+            if (offset['position-y'] == 'center') {
+                Y = 'calc(50% + ' + (top - top * 0.7) + 'px)';
+                fY = 'top';
+            } else if (offset['position-y'] == 'bottom') {
+                Y = (offset.y - (top - top * 0.7)) + 'px';
+            } else {
+                Y = (offset.y + (top - top * 0.7)) + 'px';
+            }
+        } else {
+            Y = (top - top * 0.7) + 'px';
+        }
+        $('.home_link, #fade_banner_image').css('background-position', fX + ' ' + X + ' ' + fY + ' ' + Y);
     } else {
-        $('.home_link, #fade_banner_image').css('background-position', '');
+        $('.home_link, #fade_banner_image').css('background-position', offset ? offset : '');
     }
 }
 
@@ -2141,7 +2146,7 @@ function setVideoSizes() {
 }
 
 function registerBanners(extended) {
-    [].push.apply(banners, extended);
+    banners.push.apply(banners, extended);
     if (getBannersEnabled()) {
         settingsMan.updateFlagField('banners',true);
         buildBanner();
@@ -2318,7 +2323,7 @@ function changeBanner(source, img, color, pos) {
         $('.user_toolbar > ul').css('background', color);
     }
     
-    if (pos && pos.length) {
+    if (pos) {
         $('#title a.home_link').css('background-size', '1300px');
         $('#title a.home_link').css('background-position', pos);
     } else {
@@ -3215,12 +3220,23 @@ function getCustomBanner() {
         if (url == null || url == undefined) url = '';
         if (color == null || color == undefined) color = '';
         if (pos == null || pos == undefined) pos = '';
+        pos = pos.split(' ');
+        if (pos.length < 4 || pos[0] == 'top' || pos[0] == 'bottom'){
+            var newPos = ['center', '0', 'center', '0'];
+            var i = 0;
+            newPos[2] = pos[i];
+            if (pos[i] != 'center') newPos[3] = pos[++i];
+            newPos[0] = poss[++i];
+            if (pos[i] != 'center') newPos[1] = pos[++i];
+            pos = newPos;
+        }
         return [url,color,pos];
     }
     return null;
 }
 function unsetCustomBanner() {setCustomBanner('-none-', '-none-', '-none-');}
 function setCustomBanner(url, color, pos) {
+    if (typeof pos !== 'string') pos = pos.join(' ');
     settingsMan.set("customBannerUrl", url);
     settingsMan.set("customBannerColor", color);
     settingsMan.set("customBannerPosition", pos);
@@ -3326,7 +3342,35 @@ function applyBackground(c) {
 //--------------------------------------------------------------------------------------------------
 
 function Ban(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners/' + name + '.jpg', source, color, pos);}
-function Banner(name,img,source,color,pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position':pos};}
+function Ban2(name, source, color, pos) {return Banner(name, '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/banners2/' + name + '.jpg', source, color, pos);}
+function Banner(name,img,source,color, pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null)};}
+
+function Pos(poss) {
+    var result = {
+        'position-x': '',
+        'x': 0,
+        'position-y': '',
+        'y': 0,
+        'toString': function() {
+            var string = result['position-x'];
+            if (string != 'center') {
+                string += ' ' + result['x'] + 'px';
+            }
+            string += ' ' + result['position-y'];
+            if (result['position-y'] != 'center') {
+                string += ' ' + result['y'] + 'px';
+            }
+            return string;
+        }
+    }
+    var i = 0;
+    result['position-x'] = poss[i++];
+    if (poss[i] != 'center') result['x'] = poss[i];
+    i++
+    result['position-y'] = poss[i++];
+    if (poss[i] != 'center') result['y'] = poss[i];
+    return result;
+}
 
 function CBG(type, p, bg2) {
     if (typeof (p) == 'string') {
