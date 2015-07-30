@@ -73,19 +73,20 @@ var backgroundImages = [
 ];
 var logos = [
     new BG("Default", staticFimFicDomain() + "/images/custom_banners/logo.png"),
-    new BG("Rainbow Dash", "//fc03.deviantart.net/fs71/f/2013/350/d/b/fimfic_rainbowdash_by_comeha-d6y58nl.png"),
-    new BG("Twilight Sparkle", "//fc07.deviantart.net/fs70/f/2013/350/9/3/fimfic_twilight_by_comeha-d6y58ng.png"),
-    new BG("Pinkie Pie", "//fc04.deviantart.net/fs71/f/2013/350/e/a/fimfic_pinkie_by_comeha-d6y5b8e.png"),
-    new BG("Rarity", "//fc06.deviantart.net/fs71/f/2013/351/b/7/fimfic_rarity_by_comeha-d6yauy1.png"),
-    new BG("Applejack", "//fc08.deviantart.net/fs70/f/2013/353/c/5/fimfic_apple_by_comeha-d6yisu2.png"),
-    new BG("Fluttershy", "//fc03.deviantart.net/fs71/f/2013/353/e/c/fimfic_fluttershy_by_comeha-d6yhsxx.png"),
-    new BG("Lyra Heartstrings", "//fc00.deviantart.net/fs71/f/2014/073/1/a/fimfic_lyra_by_comeha-d7a5mjk.png"),
+    LOGO("Rainbow Dash"),
+    LOGO("Twilight Sparkle"),
+    LOGO("Pinkie Pie"),
+    LOGO("Rarity"),
+    LOGO("Applejack"),
+    LOGO("Fluttershy"),
+    LOGO("Lyra Heartstrings"),
     new BG(), // Octavia
-    new BG("Vinyl Scratch", "//fc04.deviantart.net/fs70/f/2014/072/a/1/fimfic_vinyl_by_comeha-d7a0uto.png"),
-    new BG("Derpy Hooves", "//fc03.deviantart.net/fs71/f/2014/107/0/7/fimfic_derpy_by_comeha-d7eueel.png"),
-    new BG("Celestia", "//fc08.deviantart.net/fs70/f/2014/187/d/a/fimfic_celestia_by_comeha-d7pgpel.png"),
-    new BG("Luna", "//fc03.deviantart.net/fs70/f/2014/188/5/8/fimfic_luna_by_comeha-d7pkw8u.png"),
-    new BG("Sunset Shimmer", "//fc07.deviantart.net/fs71/f/2014/297/5/a/fimfic_sunset_by_comeha-d83yhl9.png")
+    LOGO("Vinyl Scratch"),
+    LOGO("Derpy Hooves"),
+    LOGO("Celestia"),
+    LOGO("Luna"),
+    LOGO("Sunset Shimmer"),
+    LOGO("Starlight Glimmer")
 ];
 var theme = 0;
 var customBanner = getCustomBanner(), customBannerindex = -1;
@@ -3371,6 +3372,10 @@ function Pos(poss) {
     result['position-y'] = poss[i++];
     if (poss[i] != 'center') result['y'] = poss[i];
     return result;
+}
+
+function LOGO(name) {
+    return new BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');
 }
 
 function CBG(type, p, bg2) {
