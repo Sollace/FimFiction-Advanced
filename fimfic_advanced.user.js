@@ -22,11 +22,7 @@ var VERSION = '3.10.5',
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 var settingsMan = {
-    keys: function() {
-        var keys = [];
-        var i = localStorage.length;
-        while (i--) keys.unshift(localStorage.key(i));
-        return keys;},
+    keys: function() {return Object.keys(localStorage);},
     has: function(key) {return localStorage[key] !== undefined;},
     get: function(key, def) {return this.has(key) ? localStorage[key] : def;},
     getB: function(key, def) {return this.has(key) ? (localStorage[key] == 'true' || localStorage[key] == '1' || !!localStorage[key]) : def;},
@@ -525,6 +521,7 @@ function buildSettingsTab(tab) {
     
     var bgcolor = getBGColor();
     var backgroundImg = null;
+    makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
     var colorPick = tab.AddColorPick("bg", "Background Colour", bgcolor == 'transparent' ? '' : bgcolor, function(me) {
         applyBackground(setBGColor(me.value));
         var i = backgroundImg.length - 1;
@@ -532,8 +529,20 @@ function buildSettingsTab(tab) {
             $(backgroundImg[i].children[0]).css("background-color", me.value);
         }
     });
+    tab.AppendButton(colorPick[0], '<i class="fa fa-camera" />From Toolbar').on('click', function() {
+        colorPick.val(rgb2hex($('.user_toolbar > ul').css('background-color')));
+        colorPick.change();
+    }).css('margin-left','10px');
     
-    backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 0);
+    function rgb2hex(rgb) {
+        rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+        function hex(x) {
+            return ("0" + parseInt(x).toString(16)).slice(-2);
+        }
+        return "#" + hex(rgb[1]) + hex(rgb[2]) + hex(rgb[3]);
+    }
+    
+    backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 1);
     var i = backgroundImages.length;
     while (i--) {
         backgroundImages[i].Setup(backgroundImg[i + 2], bgcolor, i);
@@ -677,8 +686,7 @@ function buildSettingsTab(tab) {
             }
             return false;
         }
-
-
+        
         var updateView = function(save) {
             if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
                 var url = input.val();
@@ -716,7 +724,6 @@ function buildSettingsTab(tab) {
                 } else {
                     finaliseThemes();
                 }
-
                 $('#add_banner_error').addClass('hidden');
                 return true;
             }
@@ -1105,12 +1112,8 @@ function buildBookmarksGui(tab) {
     }
 }
 
-function bannerScrollOn() {
-    $(window).on('scroll.banners', updateBannerScroll);
-}
-function bannersScrollOff() {
-    $(window).off('scroll.banners');
-}
+function bannerScrollOn() {$(window).on('scroll.banners', updateBannerScroll);}
+function bannersScrollOff() {$(window).off('scroll.banners');}
 function updateBannerScroll(position) {
     var home_link = $('.home_link');
     var top = home_link.offset().top;
@@ -1140,14 +1143,8 @@ function updateBannerScroll(position) {
     }
 }
 
-function updateUserbarScroll() {
-    updatePinned('.user_toolbar', 'userbar');
-}
-
-function updateFeedScroll() {
-    updatePinned('.feed-toolbar', 'feed');
-}
-
+function updateUserbarScroll() {updatePinned('.user_toolbar', 'userbar');}
+function updateFeedScroll() {updatePinned('.feed-toolbar', 'feed');}
 function updatePinned(target, pinClass) {
     var min = window.scrollY + ($('.pin_nav_bar').length ? 45 : 0);
     if (!$('.fix_' + pinClass).length) {
@@ -1161,7 +1158,6 @@ function updatePinned(target, pinClass) {
         }
     }
 }
-
 function updatePinnedWithMax(target, pinClass, bounder) {
     var max = bounder ? $(bounder) : $(target).parent();
     max = max.offset().top + max.height() - 100;
@@ -1413,6 +1409,10 @@ function applyBookmarks() {
 
 function applyChapterfix() {
     logger.Log('applyChapterfix');
+    var b = null,
+        c = null,
+        d = null,
+        e = null;
     window.UpdateColours = function() {
         var clazz = "content_format_" + LocalStorageGet("format_colours");
         $('.' + clazz).removeClass(clazz);
@@ -1422,25 +1422,32 @@ function applyChapterfix() {
         $('.chapter_footer, .chapter .rating_container .button_container a,  #chapter_title').addClass('content_plus_format');
         $('.content_plus_format, #chapter_title').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color'));
         LocalStorageSet('format_colours', clazz);
-        UpdatePageBackgroundColor();
+        ComputeBackgroundColor();
+    }
+    window.ComputeBackgroundColor = function() {
+        $('.body_container'/*document.body*/).css('background-color', '');
+        c = extractColor($(document.body).attr('data-base-color')/*$(document.body).css('background-color')*/);
+        d = extractColor($('#chapter_format').css('background-color'));
+        var f = 127 > 0.39 * d[0] + 0.5 * d[1] + 0.11 * d[2];
+        e = colorMult(d, f ? 0.85 : 0.95);
+        f = rgbToCSS(colorMult(d, f ? 1.4 : 0.82));
+        $('.chapter_content_box').css({
+            'border-left-color': f,
+            'border-right-color': f
+            ,'border-bottom-color': f/**/
+        });
+        b = null;
+        UpdatePageBackgroundColor/*a*/();
     }
     window.UpdatePageBackgroundColor = function() {
-        var a = $('#chapter_toolbar_container');
-        var b = a.parents('.chapter');
-        if (!a.data('start_y')) a.data('start_y', a.offset().top + 50);
-        var c = function (a) {
-            return 1 < a ? 1 : 0 > a ? 0 : a;
-        }
-        ((Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (b.offset().top + b.height()))) / 200);
-        d = extractColor($('#chapter_format').css('background-color'));
-        $('.body_container').css('background-color', getBGColor());
-        $('.chapter_content_box').css('border-color', '');
-        127 > 0.39 * d[0] +
-            0.5 * d[1] + 0.11 * d[2] && (a = function (a, b, g) {
-                return a.css(b, rgbToCSS(colorBlend(extractColor(a.css(b)), colorMult(d, g), c)))
-            }, a($('.body_container'), 'background-color', 0.85), a($('.chapter_content_box'), 'border-right-color', 1.4), a($('.chapter_content_box'), 'border-left-color', 1.4))
+        var a = $('#chapter_toolbar_container'),d = a.parents('.chapter');
+        a.data('start_y') || a.data('start_y', a.offset().top + 50);
+        a = (Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (d.offset().top + d.height()))) / 200;
+        a = 1 < a ? 1 : 0 > a ? 0 : a;
+        a != b && $('.body_container'/*document.body*/).css('background-color', rgbToCSS(colorBlend(c, e, a)))
     }
     try {
+        $(document.body).attr('data-base-color', $('.body_container').css('background-color'));
         window.UpdateColours();
     } catch (e) {
         logger.Error(e);
@@ -2367,6 +2374,10 @@ function addCss() {
 table.properties > tbody > tr.bookmark_entry:last-child td {\
     border-bottom: 1px solid #DDD !important;}\
 \
+/*fix for dotted lines around Banner selectors*/\
+header.header .theme_selector a {\
+  outline: 0 !important;}\
+\
 /*Blog preview fix*/\
 #blog_preview {\
     max-width: 1036px !important;}\
@@ -2868,6 +2879,8 @@ form > .content_box {\
 function addBannerCss() {
     if ($('Fimfiction_Advanced_Banner_Stylesheet').length) return;
     makeStyle('\
+header.header .home_link {\
+    border: none !important;}\
 @media all and (max-width: 700px) {\
     .focus-tile {\
        display: none;}}\
@@ -2955,7 +2968,7 @@ function addBannerCss() {
         right: 0px;\
         height: 38px;\
         box-shadow: 0px 20px 20px rgba(255,255,255,0.06) inset;}\
-    .home_link {\
+    header.header .home_link {\
         height: 175px;\
         background-size: cover !important;}\
     #fade_banner_image {\
