@@ -10,8 +10,9 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -76,7 +77,7 @@ var logos = [
     LOGO("Applejack"),
     LOGO("Fluttershy"),
     LOGO("Lyra Heartstrings"),
-    new BG(), // Octavia
+    LOGO("Octavia"),
     LOGO("Vinyl Scratch"),
     LOGO("Derpy Hooves"),
     LOGO("Celestia"),
@@ -87,64 +88,64 @@ var logos = [
 var theme = 0;
 var customBanner = getCustomBanner(), customBannerindex = -1;
 var banners = [
-    Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "rgb(164, 110, 60)"),
-    Ban("aeron_fluttershy", "//aeronjvl.deviantart.com/art/Nature-326303180", "rgb(164, 122, 60)"),
-    Ban("aeron_philomena", "//ajvl.deviantart.com/art/Philomena-Equestria-s-Finest-Phoenix-310217164", "rgb(76, 112, 126)"),
-    Ban("aeron_celestia", "//aeronjvl.deviantart.com/art/Path-to-Canterlot-340639474", "rgb(76, 126, 110)"),
-    Ban("derpy_dash", "//ponykillerx.deviantart.com/art/Full-Armour-D-vs-D-288729315", "rgb(87, 102, 111)"),
-    Ban("ponykiller_trixie", "//ponykillerx.deviantart.com/art/No-Title-Wallpaper-Version-287646346", "rgb(83, 76, 121)"),
-    Ban("yamio_fluttershy", "//yamio.deviantart.com/art/Fluttershy-285372865", "rgb(140, 151, 83)"),
-    Ban("ratofdrawn_1", "//ratofdrawn.deviantart.com/art/Wet-Fun-317158001", "rgb(146, 164, 60)"),
-    Ban("ratofdrawn_rarijack", "//ratofdrawn.deviantart.com/art/Differences-343226962", "rgb(100, 133, 190)"),
-    Ban("solar_luna", "//soapie-solar.deviantart.com/art/Chibi-Luna-Star-Fishing-340002341", "rgb(72, 60, 164)"),
-    Ban("solar_group", "//soapie-solar.deviantart.com/art/Forest-Foundation-283012970", "rgb(131, 164, 60)"),
-    Ban("uc77_1", "//uc77.deviantart.com/art/Ponies-Dig-Giant-Robots-281071953", "rgb(164, 135, 60)"),
-    Ban("cmaggot_fluttershy", "//cmaggot.deviantart.com/art/Dangerous-Mission-342068171", "rgb(77, 60, 164)"),
-    Ban("rainbow_ss", "//derpiboo.ru/41558", "rgb(164, 114, 60)"),
-    Ban("rainbow_markerpone", "//derpiboo.ru/131068", "rgb(69, 100, 96)"),
-    Ban("rainbow_roseluck", "//derpiboo.ru/50361", "rgb(164, 60, 152)"),
-    Ban("jj_trixie", "//johnjoseco.deviantart.com/art/Trixie-s-Life-is-so-Hard-340685374", "rgb(60, 114, 164)"),
-    Ban("anima_1", "//spiritto.deviantart.com/art/C-mon-lift-your-Spirit-324914801", "rgb(60, 118, 164)"),
-    Ban("mew_pinkie", "//mewball.deviantart.com/art/Reflect-338427890", "rgb(60, 147, 164)"),
-    Ban("tsitra_dash", "//tsitra360.deviantart.com/art/Morning-Flight-331710988", "rgb(60, 89, 164)"),
-    Ban("knifeh_scoots", "//knifeh.deviantart.com/art/Scootaloo-326771443", "rgb(164, 127, 60)"),
-    Ban("noben_celestia", "//noben.deviantart.com/art/Sunrise-in-Equestria-280309698", "rgb(164, 89, 60)"),
-    Ban("ep_shady_trough", "//equestria-prevails.deviantart.com/art/The-Shady-Trough-319986368", "rgb(77, 60, 164)"),
-    Ban("spittfire_1", "//spittfireart.deviantart.com/art/The-Report-Commission-340421670", "rgb(60, 85, 164)"),
-    Ban("blitzpony_luna", "//blitzpony.deviantart.com/art/S-hard-to-say-359899432", "rgb(75, 77, 85)"),
-    Ban("gsphere_scoots", "//lionel23.deviantart.com/art/The-Newbie-set-an-Academy-Record-356826950", "rgb(71, 127, 179)"),
-    Ban("stoic_celestia", "//thestoicmachine.deviantart.com/art/Radiant-Malevolence-213959523", "rgb(112, 108, 167)"),
-    Ban("moe_canterlot", "//derpibooru.org/25", "rgb(134, 125, 88)"),
-    Ban("alasou_costumes", "//alasou.deviantart.com/art/Costume-Swap-party-381670764", "rgb(119, 88, 134)"),
-    Ban("pridark_luna", "//pridark.deviantart.com/art/A-Wonderful-Night-381504014", "rgb(82, 90, 143)"),
-    Ban("gign_flutterdash", "//gign-3208.deviantart.com/art/In-the-attic-377732207", "rgb(165, 87, 68)"),
-    Ban("goben_forest", "//noben.deviantart.com/art/Giggling-at-the-Ghosties-356451219", "rgb(85, 107, 128)"),
-    Ban("devinian_lyra_bonbon", "//devinian.deviantart.com/art/Story-of-the-bench-373750983", "rgb(104, 136, 90)"),
-    Ban("devinian_fluttershy", "//devinian.deviantart.com/art/Picnic-with-Kindness-351639714", "rgb(116, 145, 66)"),
-    Ban("jackalynn_pinkiedash", "//jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "rgb(69, 132, 182)"),
-    Ban("yakovlev_fluttershy", "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5e7520"),
-    Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9e75a9"),
-    Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599a")
+    Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
+    Ban("aeron_fluttershy", "//aeronjvl.deviantart.com/art/Nature-326303180", "#A47A3C"),
+    Ban("aeron_philomena", "//ajvl.deviantart.com/art/Philomena-Equestria-s-Finest-Phoenix-310217164", "#4C7A7E"),
+    Ban("aeron_celestia", "//aeronjvl.deviantart.com/art/Path-to-Canterlot-340639474", "#4C7E6E"),
+    Ban("derpy_dash", "//ponykillerx.deviantart.com/art/Full-Armour-D-vs-D-288729315", "#57666F"),
+    Ban("ponykiller_trixie", "//ponykillerx.deviantart.com/art/No-Title-Wallpaper-Version-287646346", "#534C79"),
+    Ban("yamio_fluttershy", "//yamio.deviantart.com/art/Fluttershy-285372865", "#8C9753"),
+    Ban("ratofdrawn_1", "//ratofdrawn.deviantart.com/art/Wet-Fun-317158001", "#92A43C"),
+    Ban("ratofdrawn_rarijack", "//ratofdrawn.deviantart.com/art/Differences-343226962", "#6485BE"),
+    Ban("solar_luna", "//soapie-solar.deviantart.com/art/Chibi-Luna-Star-Fishing-340002341", "#483CA4"),
+    Ban("solar_group", "//soapie-solar.deviantart.com/art/Forest-Foundation-283012970", "#83A43C"),
+    Ban("uc77_1", "//uc77.deviantart.com/art/Ponies-Dig-Giant-Robots-281071953", "#A4873C"),
+    Ban("cmaggot_fluttershy", "//cmaggot.deviantart.com/art/Dangerous-Mission-342068171", "#4D3CA4"),
+    Ban("rainbow_ss", "//derpibooru.org/41558", "#A4723C"),
+    Ban("rainbow_markerpone", "//derpibooru.org/131068", "#456460"),
+    Ban("rainbow_roseluck", "//derpibooru.org/50361", "#A43C98"),
+    Ban("jj_trixie", "//johnjoseco.deviantart.com/art/Trixie-s-Life-is-so-Hard-340685374", "#3C72A4"),
+    Ban("anima_1", "//spiritto.deviantart.com/art/C-mon-lift-your-Spirit-324914801", "#3C76A4"),
+    Ban("mew_pinkie", "//mewball.deviantart.com/art/Reflect-338427890", "#3C93A4"),
+    Ban("tsitra_dash", "//tsitra360.deviantart.com/art/Morning-Flight-331710988", "#3A59A4"),
+    Ban("knifeh_scoots", "//knifeh.deviantart.com/art/Scootaloo-326771443", "#A47F3C"),
+    Ban("noben_celestia", "//noben.deviantart.com/art/Sunrise-in-Equestria-280309698", "#A4593C"),
+    Ban("ep_shady_trough", "//equestria-prevails.deviantart.com/art/The-Shady-Trough-319986368", "#4D3CA4"),
+    Ban("spittfire_1", "//spittfireart.deviantart.com/art/The-Report-Commission-340421670", "#3C55A4"),
+    Ban("blitzpony_luna", "//blitzpony.deviantart.com/art/S-hard-to-say-359899432", "#4B4D55"),
+    Ban("gsphere_scoots", "//lionel23.deviantart.com/art/The-Newbie-set-an-Academy-Record-356826950", "#477FB3"),
+    Ban("stoic_celestia", "//thestoicmachine.deviantart.com/art/Radiant-Malevolence-213959523", "#706CA7"),
+    Ban("moe_canterlot", "//derpibooru.org/25", "#867D58"),
+    Ban("alasou_costumes", "//alasou.deviantart.com/art/Costume-Swap-party-381670764", "#775886"),
+    Ban("pridark_luna", "//pridark.deviantart.com/art/A-Wonderful-Night-381504014", "#525A8F"),
+    Ban("gign_flutterdash", "//gign-3208.deviantart.com/art/In-the-attic-377732207", "#A55744"),
+    Ban("goben_forest", "//noben.deviantart.com/art/Giggling-at-the-Ghosties-356451219", "#556B80"),
+    Ban("devinian_lyra_bonbon", "//devinian.deviantart.com/art/Story-of-the-bench-373750983", "#68885A"),
+    Ban("devinian_fluttershy", "//devinian.deviantart.com/art/Picnic-with-Kindness-351639714", "#749142"),
+    Ban("jackalynn_pinkiedash", "//jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "#4584B6"),
+    Ban("yakovlev_fluttershy", "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5E7520"),
+    Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
+    Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
 ];
 var extraBanners = [
-    Ban2("sleeping_bath_bloom", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "rgb(146,27,87)"),
-    Ban2("flutterby_dash", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "rgb(215,113,164)"),
-    Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(239,237,150)"),
-    Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "rgb(110,20,20)"),
-    Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "rgb(112,69,130)"),
-    Ban2("antipodes", "//www.fimfiction.net/user/ToixStory", "rgb(236, 188, 106)"),
-    Ban2("steampunk", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "rgb(118,77,23)"),
+    Ban2("sleeping_bath_bloom", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "#921B57"),
+    Ban2("flutterby_dash", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "#D771A4"),
+    Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "#EFED96"),
+    Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "#6E1414"),
+    Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "#704582"),
+    Ban2("antipodes", "//www.fimfiction.net/user/ToixStory", "#ECBC6A"),
+    Ban2("steampunk", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "#764D17"),
     Ban2("flutter_bee", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
     Ban2("cmc_roped", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
-    Ban2("twi_revenge", "//zacatron94.deviantart.com/art/Revenge-446974245", "rgba(75,33,100,1)"),
-    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "rgb(173,22,11)", ["right",0,"center",0]),
-    Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "rgb(46,115,122)"),
-    Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "rgb(158,117,169)"),
+    Ban2("twi_revenge", "//zacatron94.deviantart.com/art/Revenge-446974245", "#4B2164"),
+    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "#AD160B", ["right",0,"center",0]),
+    Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "#2E737A"),
+    Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "#9E75A9"),
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "rgb(105,66,85)", ["center", 0, "bottom", 0])
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0])
 ];
 var externalUrls = [
-    [/minecraftforum.*\/members\/([^\/]*)/, 1],
+    [/minecraftforum.*\/members\/([^\/]*)/,1],
     [/intensedebate.*\/(people|profiles)\/([^\/]*)/,2],
     [/fanfiction.*~([^\/]*)/,1],
     [/twitter.*\/([^\/]*)$/,1],
@@ -162,7 +163,7 @@ var fonts = (function(f) {
         return arr;
     }
     return {
-        'FimFiction': a('Equestria;Celestia Redux;Celestia Redux Alternate;FontAwesome', 'Default;Classic'),
+        'FimFiction': a('Equestria;Celestia Redux;Celestia Redux Alternate;FontAwesome','Default;Classic'),
         'Browser Defaults': 'Serif;Sans-Serif;Monospace'.split(';'),
         'Serif': a('Calisto MT;Cambria;Constantia;Georgia;Lucida Bright;Palatino Linotype;Rockwell;Times New Roman'),
         'Sans Serif': a('Arial;Candara;Corbel;Fanklin Gothic;Gill Sans MT;Helvetica;Lucida Sans;Microsoft Sans Serif;Open Sans;Segio UI;Tahoma;Trebuchet MS;Verdana'),
@@ -170,16 +171,16 @@ var fonts = (function(f) {
     }
 })(new (getSafe('FontDetector', function result() {this.test = function(a) {return a;}}))());
 var colours = (function(raw) {
-    var i = raw.length + 1;
     var result = {
         Mapping: {}, Keys: [], Names: [],
         Sets: {
-            'Standard Colours': [false, [0,73,70,68,107,59,103,24,112]],
-            'FimFiction': [false, [113,114,115,116,117,118,119,120,121,122,123,124,125,126,127]],
-            'Mane Six': [false, [128,129,130,131,132,133]],
-            'More Colours': [true, [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112]]
+            'Standard Colours': [false,[0,73,70,68,107,59,103,24,112]],
+            'FimFiction': [false,[113,114,115,116,117,118,119,120,121,122,123,124,125,126,127]],
+            'Mane Six': [false,[128,129,130,131,132,133]],
+            'More Colours': [true,[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112]]
         }
     }
+    var i = raw.length + 1;
     while ((i-=2) >= 0) {
         result.Keys.unshift(raw[i - 1]);
         result.Names.unshift(raw[i]);
@@ -199,13 +200,11 @@ addCss();
 document.addEventListener("DOMContentLoaded", function(event) {
     if ((~loaded & 1) && isJQuery()) {
         loaded |= 1;
-        //logger.Start(0);
         logger.Log('event: DOMContentLoaded', 2);
         load();
     }
 });
 chainFunctionOnto(document, 'onready', function() {
-    //logger.Start(0);
     logger.Log('event: onready', 2);
     if (~loaded & 3) {
         loaded |= 2;
@@ -281,14 +280,10 @@ function initFimFictionAdvanced() {
     if (getResizeVideos()) setVideoSizes();
     if (CURRENT_LOCATION.indexOf('manage_user/account') == 0) updateAccountControls();
     if ($('#chapter_container').length) applyChapterfix();
-
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
-
     if (isMyBlogPage()) initBlogPage();
     if (getSweetieEnabled()) setupSweetie();
-
     logger.Log('starting customizations setup',10);
-
     if (getSlide() > 0) {
         logger.Log('starting slideshow',9);
         slider.updateSlide();
@@ -332,13 +327,13 @@ function initSettingsTabs() {
     var tab;
     if (getIsLoggedIn()) {
         if (getEnableBookmarksMenu()) insertBookmarksButton();
-        tab = new SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content', 'book');
+        tab = new FimFicSettings.SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content', 'book');
         if (tab.HasInit()) {
             $('#SettingsPage_Parent').css('min-height', '607px');
             buildBookmarksGui(tab);
         }
     }
-    tab = new SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account', 'cog');
+    tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account', 'cog');
     if (tab.HasInit()) buildSettingsTab(tab);
 }
 
@@ -3511,331 +3506,6 @@ function InvalidHexColor(color) {
     return !color.test(/^[0-9a-f]+$/ig);
 }
 
-//==API FUNCTION==//
-function SettingsTab(title, description, name, img, category, categoryIcon) {
-    var context, tabl, error;
-    var has_init = false;
-    preInit();
-    
-    function isCustomTabPage(page, registered) {
-        var i = registered.length;
-        var match = page.split("=")[1];
-        while (i--) {
-            if (match == registered[i][0]) return true;
-        }
-        return false;
-    }
-    function init(canvas) {
-        canvas.append('<div class="user-cp-content-box"><h1><i class="fa ' + img + '" />' + description + '</h1><form><div id="SettingsPage_Parent"><table class="properties"><tbody></tbody></table></div></form></div>');
-        context = canvas.find('form');
-        tabl = context.find('tbody');
-        error = $('<div id="validation_error_message" class="validation_error" style="display:none;" ><div class="message" style="margin-bottom:10px;">There were errors with the settings you chose. Please correct the fields marked<img class="icon_16" style="vertical-align:-3px;" src="' + staticFimFicDomain() + '/images/icons/cross.png"></img>. Hover over to see the error.</div></div>');
-        context.append(error);
-        has_init = true;
-    }
-    function preInit() {
-        if (category == '' || category == null) category = 'Account';
-        var registered = getSafe('settingsTabsRegister', []);
-        registered.push([name,img,title,category]);
-        var page = document.location.href.split('/').reverse()[0];
-        var indexPage = page.split('=');
-        var isSettingsPage = indexPage[1] == 'local_settings'
-        var isIndexPage = indexPage[0] == 'index.php?view';
-        var tabs = $('.tab-collection');
-        if (isIndexPage) {
-            if (isSettingsPage) {
-                if ($('.user-cp-content-box > form').length > 1) {
-                    $('.user-cp-content-box').first().remove();
-                }
-                var form = $('.user_cp');
-                if (!$('.user-cp-content').length) {
-                    form.append('<div class="user-cp-content" />');
-                    form.find('.user-cp-content').append(form.find('.user-cp-content-box'));
-                }
-                form.attr("style", "overflow:hidden; display:table; width:100%; margin-bottom:30px;");
-                var p = form.parent();
-                if (!p.hasClass('inner')) {
-                    p.after(form).remove();
-                }
-            } else if (!tabs.length && isCustomTabPage(page, registered)) {
-                $('.content_box').after('<div class="user_cp" style="overflow:hidden; display:table; width:100%; margin-bottom:30px;"><div class="user-cp-content" /></div>').remove();
-            }
-            if (!tabs.length && $('.user-cp-content').length) {
-                $('.content_box_header').remove();
-                tabs = $('<div class="tabs" >' +
-                             '<div class="sidebar-shadow">' + 
-                                '<div class="light-gradient" />' + 
-                                '<div class="dark-gradient" />' + 
-                             '</div>' + 
-                             '<a><img src="' + getDefaultAvatar() + '"></a>' +
-                             '<div class="tab-collection">' + 
-                                '<h1><i class="fa fa-fw fa-cog" /> <span>Account</span></h1>' + 
-                                '<ul>' +
-                                   '<li class="tab' + (isSettingsPage ? ' tab_selected' : '') + '">' + 
-                                      '<a  title="Local Settings" href="/index.php?view=local_settings">' + 
-                                         '<i class="fa fa-cog" />' + 
-                                         '<span>Local Settings</span>' + 
-                                      '</a>' + 
-                                   '</li>' + 
-                                '</ul>' + 
-                            '</div>' +
-                        '</div>');
-                $('.user_cp').append(tabs);
-                tabs = tabs.find('.tab-collection');
-            }
-        }
-        var tab = null;
-        for (var i = 0, len = tabs.length; i < len; i++) {
-            var item = $(tabs[i]);
-            if (item.find('h1 span').text() == category) {
-                tab = item;
-                break;
-            }
-        }
-        if (!tab) {
-            tab = $('<div class="tab-collection"><h1><i class="fa fa-fw fa-' + categoryIcon + '" /> <span>' + category + '</span></h1><ul /></div>');
-            tabs.last().css('margin-bottom', '20px').after(tab);
-        }
-        if (tab) {
-            for (var i = 0, len = registered.length; i < len; i++) {
-                if (!$('li[pageName="' + registered[i][0] + '"]').length) {
-                    tab.find('ul').append('<li class="tab" pageName=' + registered[i][0] + '><a href="' + (isIndexPage ? "/index.php?view=" : "/manage_user/") + registered[i][0] + '"><i class="' + registered[i][1] + '"></i><span>' + registered[i][2] + '</span></a></li>');
-                }
-            }
-            if ((isIndexPage ? indexPage[1].split('&')[0] : page).split('#')[0] == name) {
-                logger.Log('settingsTab.init: start');
-                init($('.user-cp-content').first());
-            }
-        }
-    }
-    function addPresetStyle() {
-        makeStyle("\
-a.premade_settings {\
-    display: inline-block;\
-    width: 100px;\
-    height: 100px;\
-    border: 1px solid rgba(0, 0, 0, 0.5);\
-    margin-right: 10px;\
-    cursor: pointer;\
-    transition: box-shadow 0.25s ease 0s;\
-    vertical-align: middle;\
-    text-decoration: none;}\
-a.premade_settings_selected {\
-    box-shadow: 0px 0px 10px #302FFF;}\
-a.premade_settings:hover {\
-    box-shadow: 0px 0px 10px rgb(196, 111, 111);}\
-a.premade_settings div.toolbar {\
-    height: 24px;\
-    border-bottom: 1px solid rgba(0, 0, 0, 0.5);\
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}\
-a.premade_settings span {\
-    display: block;\
-    font-weight: bold;\
-    font-size: 0.8em;\
-    color: rgb(51, 51, 51);\
-    padding: 8px;}", "settingsTab_presetStyle");
-    }
-    function addPickerStyle() {
-        makeStyle("\
-div.colour_pick_selected {\
-    outline: 2px solid rgb(221, 85, 0);\
-    position: relative;\
-    z-index: 1;}\
-div.colour_picker_box {\
-    display: inline-block;\
-    vertical-align: middle;\
-    background-color: rgb(248, 248, 248);\
-    border: 1px solid rgb(187, 187, 187);\
-    margin-left: 10px;\
-    line-height: 0px;\
-    padding-bottom: 1px;}\
-div.colour_pick {\
-    display: inline-block;\
-    width: 16px;\
-    height: 16px;\
-    margin: 1px 0px 0px 1px;\
-    border: 1px solid rgba(0, 0, 0, 0.2);\
-    vertical-align: middle;\
-    cursor: pointer;\
-    box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;}", "settingsTab_colorPickerStyle");
-    }
-    function addGenericInput(me, id, name, type, clas) {
-        return me.AddOption(id, name, '<div><input' + (clas != null ? ' class="' + clas + '"' : '') + ' inputID="' + id + '" type="' + type + '" /></div>').find('input');
-    }
-
-    this.HasInit = function() {return has_init;}
-    this.ShowError = function() {error.style.display = "block";}
-    this.HideError = function() {error.style.display = "none";}
-    this.StartEndSection = function(title) {if (has_init) tabl.append('<tr><td class="section_header" colspan="2"><b>' + title + '</b></td></tr>');}
-    this.getValue = function(id) {
-        var fields = tabl.getElementsByTagName("input");
-        var len = fields.length;
-        for (var i = 0; i < len; i++) {
-            if (fields[i].getAttribute("inputID") == id) {
-                var field = fields[i];
-                return field.getAttribute("type") == "checkbox" ? field.checked : field.value;
-            }
-        }
-    }
-    this.AddColorPick = function(id, name, selected, func) {
-        if (!$('#settingsTab_colorPickerStyle').length) addPickerStyle();
-
-        var div = $('<div />');
-        var input = $('<input style="width:100px;" data-type="colour" type="text" />');
-        div.append(input);
-        input.val(selected);
-        input.on('change', function(e) {
-            var childs = picker.children();
-            var i = childs.length;
-            while (i--) {
-                var c = $(childs[i]).attr("data-colour");
-                if (c != null) {
-                    if (c == this.value) {
-                        $(childs[i]).addClass('colour_pick_selected');
-                    } else {
-                        $(childs[i]).removeClass('colour_pick_selected');
-                    }
-                }
-            }
-            func(this, e);
-        });
-
-        var colors = ["#d3926b","#d3b76b","#d3cf6b","#b4d36b","#88d36b","#6bd38d","#6bd3bc","#6bafd3","#6b81d3","#8b6bd3","#bc6bd3","#d36bab","#d36b77"];
-        var grayScale = ["#000","#111","#333","#555","#777","#999","#aaa","#ccc","#ddd","#eee"];
-
-        for (var i = 0; i < colors.length; i++) {
-            colors[i] = '<div class="colour_pick' + (colors[i] == selected ? ' colour_pick_selected' : '') + '" data-colour="' + colors[i] + '" style="background-color:' + colors[i] + ';" />';
-        }
-        for (var i = 0; i < grayScale.length; i++) {
-            grayScale[i] = '<div class="colour_pick' + (grayScale[i] == selected ? ' colour_pick_selected' : '') + '" data-colour="' + grayScale[i] + '" style="background-color:' + grayScale[i] + ';" />';
-        }
-        var picker = $('<div class="colour_picker_box">' + colors.join('') + '<br />' + grayScale.join('') + '</div>');
-        div.append(picker);
-        picker.find('.colour_pick').on('click', function() {
-            var i = $(this);
-            input.val(i.attr("data-colour"));
-            input.change();
-        });
-        this.AddOption(id, name, div);
-        return input;
-    }
-    this.AddLabelCheckBox = function(id, name, label) {
-        return this.AddOption(id, name, '<label><input inputID="' + id + '" type="checkbox" />' + label + '</label>').find('input');
-    }
-    this.AddCheckBox = function(id, name, value) {
-        var check = addGenericInput(this, id, name, "checkbox");
-        check.attr('id', 'checkBox_' + id);
-        var label = $('<label class="toggleable-switch"><a /></label>');
-        check.before(label);
-        label.prepend(check);
-        check[0].checked = !!value;
-        return check;
-    }
-    this.AddSlider = function(id, name, val, min, max) {
-        var sl = addGenericInput(this, id, name, "range");
-        sl.attr({'min': min, 'max': max});
-        sl.css('max-width', '50%');
-        sl.val(val);
-        return sl;
-    }
-    this.AddRaw = function(field) {if (has_init) tabl.append(field);}
-    this.AddEmailBox = function(id, name) {return addGenericInput(this, id, name, "text", "email");}
-    this.AddNameBox = function(id, name) {return addGenericInput(this, id, name, "text", "name");}
-    this.AddTextBox = function(id, name) {return addGenericInput(this, id, name, "text");}
-    this.AddPassword = function(id, name) {return addGenericInput(this, id, name, "password", "password");}
-    this.AddDropDown = function(id, name, items, value) {
-        var input = '<select inputID="' + id + '">';
-        for (var i = 0, len = items.length; i < len; i++) {
-            if (items[i] != null) input += '<option value="' + i + '">' + items[i] + '</option>';
-        }
-        input = $(input);
-        if (typeof value !== 'undefined') input.val(value);
-        return this.AddOption(id, name, input);
-    }
-    this.AddPresetSelect = function(id, name, count, revert, defaultIndex) {
-        if ($('#settingsTab_presetStyle').length == 0) addPresetStyle();
-        var div = $('<div />');
-        for (var i = 0; i < count; i++) {
-            div.append('<a class="premade_settings" style="margin-bottom:10px"><div class="toolbar"></div><span>item ' + i + '</span></a>');
-        }
-        if (revert == true) {
-            this.AppendResetButton(div.children()[0], defaultIndex).on('click', function() {
-                div.children()[defaultIndex].click();
-            });
-        }
-        return this.AddOption(id, name, div).children();
-    }
-    this.AddTextArea = function(id, name, defaul) {
-        var div = $('<div />');
-        var input = $('<textarea inputID="' + id + '"></textarea>');
-        div.append(input);
-        if (typeof defaul !== 'undefined') input.val(defaul);
-        this.AddOption(id, name, div);
-        return input;
-    }
-    this.AddOption = function(id, name, field) {
-        var row = $('<tr><td id="' + id + '" class="label">' + name + '</td></tr>');
-        var data = $('<td />');
-        field = $(field);
-        data.append(field);
-        row.append(data);
-        tabl.append(row);
-        return field;
-    }
-    this.AddToolbar = function(id, buttonCount, span) {
-        var row = $('<tr><td colspan="' + span + '" id="' + id + '" style="padding: 0px;" ><div class="notifications"><div class="type_selector" /></div></td></tr>');
-        tabl.append(row);
-        row = row.find('.type_selector');
-        if (buttonCount) {
-            var but = '<a class="styled_button styled_button_grey" href="javascript:void();" />';
-            for (var i = 0; i < buttonCount; i++) {
-                row.append(but);
-            }
-        }
-        return row;
-    }
-    this.AppendResetButton = function(control, defaultIndex) {
-        $(control).parent().append("</br></br>");
-        var rev = this.AppendButton(control, '<i class="fa fa-undo" />Revert to default');
-        if (defaultIndex != null) rev.attr("data-revert-index", defaultIndex);
-        return rev;
-    }
-    this.AppendButton = function(control, label) {
-        var rev = $('<a class="styled_button styled_button_blue">' + label + '</a>');
-        $(control).parent().append(rev);
-        return rev;
-    }
-    this.AddButton = function(id, name, label) {
-        return this.AddOption(id, name, '<a inputID="' + id + '" class="styled_button styled_button_blue">"' + label + '</a>');
-    }
-    this.AddFinishButton = function(name, func) {
-        var me = this;
-        var field = $('<div />');
-        var link = $('<a class="styled_button form_cubmitter" href="javascript:void(0);"><img src="' + staticFimFicDomain() + '/images/icons/white/save.png"></img>Save</a>');
-        field.append(link);
-        var img = $('<img class="submitting_spinner" style="vertical-align:middle;display:none;" src="' + staticFimFicDomain() + '/themes/poni2.0/images/loader_light_toolbar.gif"></img>');
-        field.append(img);
-        link.on('click', function() {
-            img.css('display', 'block');
-            var fails = func();
-            if (fails.length) {
-                me.showError(fails);
-            }
-            img.css('display', 'none');
-        });
-        return this.AddOption('captch', name, field);
-    }
-    this.setEnabled = function(el, enable) {
-        el = $(el);
-        el.parent().each(function() {
-            $(this).find('input,select,button').attr('disabled', !enable);
-        });
-        el.parent().find('.premade_settings,label,select').each(function() {
-            $(this).css(enable ? {'opacity':'', 'pointer-events': ''} : {'opacity':'0.5','pointer-events': 'none'});
-        });
-    }
-}
-
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -4016,8 +3686,6 @@ function setupSweetie() {
                         $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />');
                     }
                     spawnCookie(true, lastX, lastY);
-                //} else if (extra_key == 86 && $('#game_background').length) {
-                    
                 } else if (extra_key == 72) {
                     toggleHearts();
                 } else if (!no) {
