@@ -8,8 +8,8 @@
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/SpecialTitles.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
@@ -308,6 +308,10 @@ function registerEvents() {
             FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', loopUnspoiler);
             loopUnspoiler();
         }
+        FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment afterpreviewcomment', function() {
+            SpecialTitles.setUpSpecialTitles();
+        });
+        SpecialTitles.setUpSpecialTitles();
     }
     
     FimFicEvents.on('afterinfocard', function() {
@@ -589,29 +593,29 @@ function buildSettingsTab(tab) {
     $(cban).click(function() {
         var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
         pop.SetWidth(700);
-        pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Invalid Color</div>');
-
+        pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
+        
         var footer = $('<div class="drop-down-pop-up-footer" />');
         pop.content.append(footer);
-
+        
         var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
         footer.append(done);
-
+        
         var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
         footer.append(preview);
-
+        
         var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
         footer.append(reset);
-
+        
         var row = $('<tr><td class="label">Image Url\n(1300x175px)</td><td><div /></td></tr>');
         pop.content.find('tbody').append(row);
-
+        
         var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
         row.find('div').append(input);
-
+        
         row = $('<tr><td class="label">Image Position</td><td><div /></td></tr>');
         pop.content.find('tbody').append(row);
-
+        
         row = row.find('div');
         var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
         row.append(alignVert);
@@ -621,27 +625,44 @@ function buildSettingsTab(tab) {
         row.append(alignHor);
         var posX = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
         row.append(posX);
-
-        row = $('<tr><td class="label">Banner Colour</td><td><div /></td></tr>');
+        
+        row = $('<tr><td class="label">Banner Colour</td><td><div class="color-selector" /></td></tr>');
         pop.content.find('tbody').append(row);
-
+        
         row = row.find('div');
-        var RInput = $('<input type="text" placeholder="Red" />');
-        row.append(RInput);
-        addTooltip("Red<br>Range: 0-255", RInput);
-
-        var GInput = $('<input type="text" placeholder="Green" />');
-        row.append(GInput);
-        addTooltip("Green<br>Range: 0-255", GInput);
-
-        var BInput = $('<input type="text" placeholder="Blue" />');
-        row.append(BInput);
-        addTooltip("Blue<br>Range: 0-255", BInput);
-
-        var AInput = $('<input type="text" placeholder="Opacity" />');
-        row.append(AInput);
-        addTooltip("Opacity<br>Range: 0.0-1.0", AInput);
-
+        var colourHolder = $('<div class="red" />');
+        row.append(colourHolder);
+        var RInput = $('<input type="text" placeholder="Red" /><input value="128" type="range" max="255" />');
+        colourHolder.append(RInput);
+        
+        colourHolder = $('<div class="green" />');
+        row.append(colourHolder);
+        var GInput = $('<input type="text" placeholder="Green" /><input value="128" type="range" max="255" />');
+        colourHolder.append(GInput);
+        
+        colourHolder = $('<div class="blue" />');
+        row.append(colourHolder);
+        var BInput = $('<input type="text" placeholder="Blue" /><input value="128" type="range" max="255" />');
+        colourHolder.append(BInput);
+        
+        colourHolder = $('<div class="alpha" />');
+        row.append(colourHolder);
+        var AInput = $('<input type="text" placeholder="Opacity" /><input value="0.5" type="range" max="1" step="0.01" />');
+        colourHolder.append(AInput);
+        
+        row.find('input').on('keydown mousedown', function() {
+            $(this).attr('data-changed', '1');
+        });
+        row.find('input').on('change mousemove keyup', function() {
+            var me = $(this);
+            if (me.attr('data-changed') == '1') {
+                me.parent().find('input').val(this.value);
+            }
+            if (me.attr('type') == 'text' && me.val() == '') {
+                me.parent().find('input').attr('data-changed', '0');
+            }
+        });
+        
         var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
         row.append(GuessInput);
         GuessInput.click(function() {
@@ -654,50 +675,26 @@ function buildSettingsTab(tab) {
             BInput.val(color[2]);
             AInput.val(color.length == 4 ? color[3] : 1);
         });
-
-        var ch = function(me) {
-            me = $(me);
-            if ($.isNumeric(me.val())) {
-                var val = parseInt(me.val());
-                if (val < 0) {
-                    me.val(0);
-                } else if (val > 255) {
-                    me.val(255);
-                }
-                return true;
+        
+        var getColor = function() {
+            var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
+            var a = val(AInput);
+            if (a != '1' && a != '') {
+                return 'rgba(' + color + ',' + a;
             }
-            return false;
+            return 'rgb(' + color + ')';
         }
-        var a_ch = function(me) {
-            me = $(me);
-            if ($.isNumeric(me.val())) {
-                var val = parseFloat(me.val());
-                if (val < 0) {
-                    me.val(0);
-                } else if (val > 1) {
-                    me.val(1);
-                }
-                return true;
-            }
-            return false;
-        }
+        var val = function(me) {return me.eq(1).val();}
+        var ch = function(me) {return $.isNumeric($(me[0]).val());}
         
         var updateView = function(save) {
-            if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
+            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
                 var url = input.val();
-                var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
-
+                var color = getColor();
                 var vert = alignVert.val();
                 var hor = alignHor.val();
                 var x = tryParseInt(posX.val(), 0);
                 var y = tryParseInt(posY.val(), 0);
-                
-                if (AInput.val() != '1' && AInput.val() != '') {
-                    color = 'rgba(' + color + ',' + AInput.val();
-                } else {
-                    color = 'rgb(' + color;
-                }
-                color += ')';
                 
                 if (save) {
                     setCustomBanner(url, color, [hor, x, vert, y]);
@@ -729,23 +726,15 @@ function buildSettingsTab(tab) {
         var hasPre = false;
         preview.click(function() {
             hasPre = true;
-            if (ch(RInput) && ch(GInput) && ch(BInput) && a_ch(AInput)) {
+            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
                 var url = input.val();
-                var color = RInput.val() + ',' + GInput.val() + ',' + BInput.val();
-
+                var color = getColor();
                 var vert = alignVert.val();
                 var hor = alignHor.val();
                 var x = tryParseInt(posX.val(), 0);
                 var y = tryParseInt(posY.val(), 0);
-                
                 var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
-
-                if (AInput.val() != '1' && AInput.val() != '') {
-                    color = 'rgba(' + color + ',' + AInput.val();
-                } else {
-                    color = 'rgb(' + color;
-                }
-                color += ')';
+                
                 changeBanner(null, url, color, pos);
                 $('#add_banner_error').addClass('hidden');
             } else {
@@ -761,7 +750,6 @@ function buildSettingsTab(tab) {
                 }
                 customBannerindex = -1;
             }
-            
             cban[0].children[0].innerHTML = '';
             $(cban[0].children[0]).css("background-color", "#fff");
             $(cban[0]).css("background-image", 'none');
@@ -786,7 +774,6 @@ function buildSettingsTab(tab) {
             GInput.val(color[1]);
             BInput.val(color[2]);
             AInput.val(color.length == 4 ? color[3] : 1);
-
             var poss = customBanner[2];
             var i = 0;
             alignHor.val(poss[i++]);
@@ -1523,7 +1510,6 @@ function loopUnspoiler() {
             logger.Log('applyDirectImages: start');
             comments = comments.find('.user_image_link');
             if (comments.length) unspoilerSiblings(comments);
-            SpecialTitles.setUpSpecialTitles();
         }
     }
 }
@@ -2455,6 +2441,26 @@ header.header .theme_selector a {\
 .comment img.user_image {\
     max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
     makeStyle("\
+/*Banner Editor*/\
+.color-selector div {\
+  position: relative;\
+  width: 100%;}\
+.color-selector input[type='text'] {\
+  padding-bottom: 20px;\
+  display: table-cell;}\
+.color-selector input[type='range'] {\
+  position: absolute;\
+  display: block;\
+  bottom: 0px;\
+  right: 0px;}\
+.color-selector .tooltip_popup_tooltip {\
+  width: 90px;}\
+.color-selector .red input[type='text'] {\
+  background-color: #fdd !important;}\
+.color-selector .green input[type='text'] {\
+  background-color: #dfd !important;}\
+.color-selector .blue input[type='text'] {\
+  background-color: #ddf !important;}\
 /*Bookmarks*/\
 .bookmark_marker {\
     background-color: #B93838;\
