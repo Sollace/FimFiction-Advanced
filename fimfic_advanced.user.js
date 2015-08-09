@@ -86,7 +86,7 @@ var logos = [
     LOGO("Starlight Glimmer")
 ];
 var theme = 0;
-var customBanner = getCustomBanner(), customBannerindex = -1;
+var customBanner, customBannerindex = -1;
 var banners = [
     Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
     Ban("aeron_fluttershy", "//aeronjvl.deviantart.com/art/Nature-326303180", "#A47A3C"),
@@ -347,9 +347,9 @@ function insertBookmarksButton() {
         var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
         button.prepend(bkm);
         var latst = getLatestBookmark();
-        bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void()') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
+        bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void(0)') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
         button.find('ul').append(bkm);
-        bkm = $('<li><a class="bkm_removeAll" href="javascript:void();"><i class="fa fa-trash-o" />Remove All</a></li>');
+        bkm = $('<li><a class="bkm_removeAll" href="javascript:void(0);"><i class="fa fa-trash-o" />Remove All</a></li>');
         button.find('ul').append(bkm);
         bkm.click(function() {
             removeAllBookmarks();
@@ -522,6 +522,12 @@ function buildSettingsTab(tab) {
     var backgroundImg = null;
     makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
     var colorPick = tab.AddColorPick("bg", "Background Colour", bgcolor == 'transparent' ? '' : bgcolor, function(me) {
+        me.value = me.value.trim();
+        if (me.value.length) {
+            if (me.value.indexOf('#') !== 0) {
+                me.value = rgbToHex(extractColor(me.value));
+            }
+        }
         applyBackground(setBGColor(me.value));
         var i = backgroundImg.length - 1;
         while (i--) {
@@ -598,74 +604,31 @@ function buildSettingsTab(tab) {
         var footer = $('<div class="drop-down-pop-up-footer" />');
         pop.content.append(footer);
         
-        var done = $('<button class="styled_button"><i class="fa fa-save" />Save</button>');
-        footer.append(done);
+        var builder = new FimFicSettings.OptionsBuilder(pop.content.find('tbody'));
         
-        var preview = $('<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
-        footer.append(preview);
+        var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save" />Save</button>');
+        var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
+        var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
+        var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
         
-        var reset = $('<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
-        footer.append(reset);
+        var row = builder.AddOption('', 'Image Position', '<div />');
         
-        var row = $('<tr><td class="label">Image Url\n(1300x175px)</td><td><div /></td></tr>');
-        pop.content.find('tbody').append(row);
+        var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
+        var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
+        var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
+        var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
         
-        var input = $('<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
-        row.find('div').append(input);
+        row = builder.AddColorSliders('bc', 'Banner Colour', true);
         
-        row = $('<tr><td class="label">Image Position</td><td><div /></td></tr>');
-        pop.content.find('tbody').append(row);
+        var RInput = row.red;
+        var GInput = row.green;
+        var BInput = row.blue;
+        var AInput = row.alpha;
         
-        row = row.find('div');
-        var alignVert = $('<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
-        row.append(alignVert);
-        var posY = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        row.append(posY);
-        var alignHor = $('<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
-        row.append(alignHor);
-        var posX = $('<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        row.append(posX);
-        
-        row = $('<tr><td class="label">Banner Colour</td><td><div class="color-selector" /></td></tr>');
-        pop.content.find('tbody').append(row);
-        
-        row = row.find('div');
-        var colourHolder = $('<div class="red" />');
-        row.append(colourHolder);
-        var RInput = $('<input type="text" placeholder="Red" /><input value="128" type="range" max="255" />');
-        colourHolder.append(RInput);
-        
-        colourHolder = $('<div class="green" />');
-        row.append(colourHolder);
-        var GInput = $('<input type="text" placeholder="Green" /><input value="128" type="range" max="255" />');
-        colourHolder.append(GInput);
-        
-        colourHolder = $('<div class="blue" />');
-        row.append(colourHolder);
-        var BInput = $('<input type="text" placeholder="Blue" /><input value="128" type="range" max="255" />');
-        colourHolder.append(BInput);
-        
-        colourHolder = $('<div class="alpha" />');
-        row.append(colourHolder);
-        var AInput = $('<input type="text" placeholder="Opacity" /><input value="0.5" type="range" max="1" step="0.01" />');
-        colourHolder.append(AInput);
-        
-        row.find('input').on('keydown mousedown', function() {
-            $(this).attr('data-changed', '1');
-        });
-        row.find('input').on('change mousemove keyup', function() {
-            var me = $(this);
-            if (me.attr('data-changed') == '1') {
-                me.parent().find('input').val(this.value);
-            }
-            if (me.attr('type') == 'text' && me.val() == '') {
-                me.parent().find('input').attr('data-changed', '0');
-            }
-        });
-        
-        var GuessInput = $('<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>');
-        row.append(GuessInput);
-        GuessInput.click(function() {
+        builder.AppendControl(
+            pop.content.find('.color-selector'),
+            '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>')
+        .click(function() {
             var color = $('.user_toolbar > ul').css('background-color');
             if (color == '') color = 'rgb(146,27,87)';
             color = color.split('(')[1].split(')')[0];
@@ -733,9 +696,7 @@ function buildSettingsTab(tab) {
                 var hor = alignHor.val();
                 var x = tryParseInt(posX.val(), 0);
                 var y = tryParseInt(posY.val(), 0);
-                var pos = vert + (vert != 'center' ? ' ' + y + 'px' : '') + ' ' + hor + (hor != 'center' ? ' ' + x + 'px' : '');
-                
-                changeBanner(null, url, color, pos);
+                changeBanner(null, url, color, Pos([hor, x, vert, y]));
                 $('#add_banner_error').addClass('hidden');
             } else {
                 $('#add_banner_error').removeClass('hidden');
@@ -1099,29 +1060,28 @@ function bannersScrollOff() {$(window).off('scroll.banners');}
 function updateBannerScroll(position) {
     var home_link = $('.home_link');
     var top = home_link.offset().top;
-    var offset = position | banners[theme].position;
-    var select = position ? '.home_link' : '.home_link, #fade_banner_image';
+    var offset = (position && position.class === 'Pos') ? position : banners[theme].position;
     if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
-        var top = window.scrollY - top;
+        top = window.scrollY - top;
         var fX = offset ? offset['position-x'] : 'center';
-        var X = fX != 'center' ? ' ' + offset.x + 'px' : '';
+        var X = fX != 'center' ? ' ' + offset.x + 'px ' : '';
         var fY = offset ? offset['position-y'] : '';
         var Y = '';
         if (offset) {
-            if (offset['position-y'] == 'center') {
+            if (fY == 'center') {
                 Y = 'calc(50% + ' + (top - top * 0.7) + 'px)';
                 fY = 'top';
-            } else if (offset['position-y'] == 'bottom') {
-                Y = (offset.y - (top - top * 0.7)) + 'px';
+            } else if (fY == 'bottom') {
+                Y = (offset.y - (top - (top * 0.7))) + 'px';
             } else {
-                Y = (offset.y + (top - top * 0.7)) + 'px';
+                Y = (offset.y + (top - (top * 0.7))) + 'px';
             }
         } else {
             Y = (top - top * 0.7) + 'px';
         }
-        $(select).css('background-position', fX + ' ' + X + ' ' + fY + ' ' + Y);
+        $('.home_link').css('background-position', fX + ' ' + X + fY + ' ' + Y);
     } else {
-        $(select).css('background-position', offset ? offset : '');
+        $('.home_link').css('background-position', offset ? offset : '');
     }
 }
 
@@ -1290,7 +1250,7 @@ function makeList(element, ordered) {
 }
 
 function addStoryList() {
-    var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void();"><i class="fa fa-bars" />List</a>');
+    var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void(0);"><i class="fa fa-bars" />List</a>');
     $('#browse_form .button-group .styled_button').first().after(a);
     a.click(listNames);
     makeStyle("\
@@ -1900,7 +1860,7 @@ function betterColors(button, target) {
                     if (recent.length > 0) {
                         var recentSec = addColorSection(list.content, recent, 'Recent');
                         recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
-                        var reset = $('<a href="javascript:void();" style="float:right;" >Clear</a>');
+                        var reset = $('<a href="javascript:void(0);" style="float:right;" >Clear</a>');
                         recentSec.find('.colour-section-header').append(reset);
                         reset.click(function (){
                             clearRecentColours();
@@ -2137,7 +2097,7 @@ function registerBanners(extended) {
 }
 
 function registerBanner(name, img, source, color, pos) {
-    banners.push(Banner(name,img,source,color,pos));
+    banners.push(Banner(name, img, source, color, pos));
 }
 
 function buildBanner() {
@@ -2157,17 +2117,19 @@ function buildBanner() {
        <div><img src="' + getLogoUrl(getLogo()) + '" style="opacity: ' + (getLogoOpacity()/100) + ';"></div>\
     </a>\
     <a href="/" class="home_link_link" />\
-    <div class="theme_selector theme_selector_left"><a href="javascript:void();" /></div>\
-    <div class="theme_selector theme_selector_right"><a href="javascript:void();" /></div>\
+    <div class="theme_selector theme_selector_left"><a /></div>\
+    <div class="theme_selector theme_selector_right"><a /></div>\
 </div>');
         
         if ($('.theme_selector').length) {
-            $('.theme_selector_left a')[0].onclick = function() {
+            $('.theme_selector_left a').on('.click', function(e) {
                 slider.select(theme == 0 ? banners.length - 1 : theme - 1);
-            };
-            $('.theme_selector_right > a')[0].onclick = function() {
+                e.preventDefault();
+            });
+            $('.theme_selector_right > a').on('click', function(e) {
                 slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
-            };
+                e.preventDefault();
+            });
         }
     }
 
@@ -2202,8 +2164,8 @@ function registerCustomBanner(items) {
     logger.Log('loading custom banner...',10);
     customBanner = getCustomBanner();
     if (customBanner != null) {
+        customBannerindex = banners.length;
         registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
-        customBannerindex = banners.length - 1;
     }
 }
 
@@ -2441,26 +2403,6 @@ header.header .theme_selector a {\
 .comment img.user_image {\
     max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
     makeStyle("\
-/*Banner Editor*/\
-.color-selector div {\
-  position: relative;\
-  width: 100%;}\
-.color-selector input[type='text'] {\
-  padding-bottom: 20px;\
-  display: table-cell;}\
-.color-selector input[type='range'] {\
-  position: absolute;\
-  display: block;\
-  bottom: 0px;\
-  right: 0px;}\
-.color-selector .tooltip_popup_tooltip {\
-  width: 90px;}\
-.color-selector .red input[type='text'] {\
-  background-color: #fdd !important;}\
-.color-selector .green input[type='text'] {\
-  background-color: #dfd !important;}\
-.color-selector .blue input[type='text'] {\
-  background-color: #ddf !important;}\
 /*Bookmarks*/\
 .bookmark_marker {\
     background-color: #B93838;\
@@ -3233,15 +3175,8 @@ function getCustomBanner() {
         if (color == null || color == undefined) color = '';
         if (pos == null || pos == undefined) pos = '';
         pos = pos.split(' ');
-        if (pos.length < 4 || pos[0] == 'top' || pos[0] == 'bottom'){
-            var newPos = ['center', '0', 'center', '0'];
-            var i = 0;
-            newPos[2] = pos[i];
-            if (pos[i] != 'center') newPos[3] = pos[++i];
-            newPos[0] = poss[++i];
-            if (pos[i] != 'center') newPos[1] = pos[++i];
-            pos = newPos;
-        }
+        pos[1] = tryParseInt(pos[1],0);
+        pos[3] = tryParseInt(pos[3],0);
         return [url,color,pos];
     }
     return null;
@@ -3359,6 +3294,7 @@ function Banner(name,img,source,color, pos) {return {'id':name, 'url':img, 'sour
 
 function Pos(poss) {
     var result = {
+        'class': 'Pos',
         'position-x': '',
         'x': 0,
         'position-y': '',
@@ -3506,15 +3442,13 @@ function InvalidHexColor(color) {
 }
 
 function rgbToHex(r,g,b) {
-  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-}
-function hexToRgb(hex) {
-    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-        return r + r + g + g + b + b;
-    });
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
+    if (Object.prototype.toString.apply(r) === '[object Array]') {
+        return rgbToHex.apply(this, r);
+    }
+    if (typeof r !== 'number') r = tryParseInt(r, 0);
+    if (typeof g !== 'number') g = tryParseInt(g, 0);
+    if (typeof b !== 'number') b = tryParseInt(b, 0);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -4013,18 +3947,19 @@ img[held="true"] {\
     
     function spawnCursor() {
         cursorUpgradeCost += baseCursorUpgradeCost;
-        var cursor = $('<div class="gameObj cursor_container"><div data-level="1" class="cursor click"><img class="nopickup" src="data:image/png;base64,' + curs[0] + '" /></div><div class="label" ><div>level <span class="level">1</span></div><div><a href="javascript:void();">Sell for <span class="value">' + baseCursorCost + '</span></a></div></div></div>');
+        var cursor = $('<div class="gameObj cursor_container"><div data-level="1" class="cursor click"><img class="nopickup" src="data:image/png;base64,' + curs[0] + '" /></div><div class="label" ><div>level <span class="level">1</span></div><div><a>Sell for <span class="value">' + baseCursorCost + '</span></a></div></div></div>');
         
         $('body').append(cursor);
         
         cursor.one('remove', function() {
             cursor.attr('deleted', '1');
         });
-        cursor.find('a').on('click', function() {
+        cursor.find('a').on('click', function(e) {
             var value = parseInt(cursor.find('.cursor').attr('data-level')) * baseCursorCost;
             bank += value;
             plusOne(cursor.offset().left, cursor.offset().top, value);
             cursor.trigger('remove').remove();
+            e.preventDefault();
         });
         $(document).on('mousemove.cursor', function(event) {
             cursor.css('top', event.pageY + 'px');
