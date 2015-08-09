@@ -43,30 +43,30 @@ var settingsMan = {
 //-------------------------------------------DATA---------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 var backgroundImages = [
-    new BG("Light","url(//fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png)"),
-    new BG("Dark","url(//fc04.deviantart.net/fs71/f/2013/342/5/3/cloth_dark_by_comeha-d6x61vl.png)"),
-    new BG("Rain","url(//fc04.deviantart.net/fs70/f/2013/342/1/7/rain_by_comeha-d6x61uv.png)"),
-    new BG("Wave","url(//fc04.deviantart.net/fs70/f/2013/342/f/e/wave_by_comeha-d6x61um.png)"),
-    new BG("Zecora","url(//fc03.deviantart.net/fs70/f/2013/342/6/7/zecora_by_comeha-d6x61ta.png)"),
-    new BG("Sunny Skies","url(//fc05.deviantart.net/fs70/f/2013/342/8/b/sunny_days_by_comeha-d6x61up.png)"),
-    new BG("Pinkie Pie","url(//fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png) fixed right,url(//fc08.deviantart.net/fs71/f/2013/342/0/6/pinkie_0_by_comeha-d6x61v3.png), url(//fc09.deviantart.net/fs71/f/2013/342/a/2/pinkie_1_by_comeha-d6x61v0.png)"),
-    new BG("Diary","url(//fc03.deviantart.net/fs71/f/2013/342/d/1/book_0_by_comeha-d6x61t4.png) fixed bottom -150px right -50px no-repeat, url(//fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png)"),
-    new BG("School House", "url(//fc09.deviantart.net/fs70/f/2013/342/4/a/house_0_by_comeha-d6x61vh.png) bottom 100px left no-repeat, url(//fc09.deviantart.net/fs71/f/2014/118/c/3/whispy2_by_comeha-d7gc40o.png) top 30px center"),
-    new BG("Sky", "url(//fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(//fc08.deviantart.net/fs71/f/2013/342/e/0/star_by_comeha-d6x61us.png) fixed"),
-    new BG("Twilight Sparkle", "url(//fc06.deviantart.net/fs70/f/2013/344/b/c/twilight_1_by_comeha-d6xf5mk.png) fixed right,url(//fc02.deviantart.net/fs71/f/2013/344/3/8/twilight_sparkle_by_comeha-d6xf54o.png),url(//fc05.deviantart.net/fs71/f/2013/345/d/a/twilight_2_by_comeha-d6xja6o.png) fixed right"),
-    new BG("Rarity", "url('//fc03.deviantart.net/fs70/f/2013/351/4/c/rarity_1_by_comeha-d6yd7e2.png'),url('//fc02.deviantart.net/fs71/f/2013/342/4/3/cloth_by_comeha-d6x61vr.png'),url('//fc03.deviantart.net/fs71/f/2013/351/7/c/rarity_0_by_comeha-d6yd7dj.png')"),
-    new BG("Cobble", "url('//fc08.deviantart.net/fs70/f/2013/354/6/9/cobble_by_comeha-d6ymd5d.png')"),
-    new BG("Glass", "url('//fc01.deviantart.net/fs71/f/2013/354/1/6/glass_by_comeha-d6ymd58.png') top center"),
-    new BG("Sonic Rainboom", "url('//fc00.deviantart.net/fs70/f/2012/132/1/d/sonic_rainboom_by_knight33-d4zgfjy.jpg') fixed 100% center", "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
+    new BG("Light","url(" + GITHUB + "/backgrounds/cloth.png)"),
+    new BG("Dark","url(" + GITHUB + "/backgrounds/cloth_dark.png)"),
+    new BG("Rain","url(" + GITHUB + "/backgrounds/rain.png)"),
+    new BG("Wave","url(" + GITHUB + "/backgrounds/wave.png)"),
+    new BG("Zecora","url(" + GITHUB + "/backgrounds/zecora.png)"),
+    new BG("Sunny Skies","url(" + GITHUB + "/backgrounds/sunny_days.png)"),
+    new BG("Pinkie Pie","url(" + GITHUB + "/backgrounds/pinkie_0.png) fixed right,url(" + GITHUB + "/backgrounds/pinkie_0.png), url(" + GITHUB + "/backgrounds/pinkie_1.png)"),
+    new BG("Diary","url(" + GITHUB + "/backgrounds/book_0.png) fixed bottom -150px right -50px no-repeat, url(" + GITHUB + "/backgrounds/star.png)"),
+    new BG("School House", "url(" + GITHUB + "/backgrounds/house_0.png) bottom 100px left no-repeat, url(" + GITHUB + "/backgrounds/whispy2.png) top 30px center"),
+    new BG("Sky", "url(" + GITHUB + "/backgrounds/whispy.png) top 30px center, url(" + GITHUB + "/backgrounds/star.png) fixed"),
+    new BG("Twilight Sparkle", "url(" + GITHUB + "/backgrounds/twilight_1.png) fixed right,url(" + GITHUB + "/backgrounds/twilight_sparkle.png),url(" + GITHUB + "/backgrounds/twilight_2.png) fixed right"),
+    new BG("Rarity", "url(" + GITHUB + "/backgrounds/rarity_1.png),url(" + GITHUB + "/backgrounds/cloth.png),url(" + GITHUB + "/backgrounds/rarity_0.png)"),
+    new BG("Cobble", "url(" + GITHUB + "/backgrounds/cobble.png)"),
+    new BG("Glass", "url(" + GITHUB + "/backgrounds/glass.png) top center"),
+    new BG("Sonic Rainboom", "url(//fc00.deviantart.net/fs70/f/2012/132/1/d/sonic_rainboom_by_knight33-d4zgfjy.jpg) fixed 100% center", "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
     CBG('kp', '60% 60%', new BG("Rainbow Dash", "url('//fc01.deviantart.net/fs71/i/2013/269/9/8/rainbow_dash_by_up1ter-d6nz0tp.png') top left -500px no-repeat, url('//fc09.deviantart.net/fs70/i/2012/067/2/0/rainbow_dash_by_up1ter-d4s3nbk.png') bottom -30px right -500px no-repeat, url('//fc02.deviantart.net/fs70/i/2012/032/d/8/rainbow_dash_by_up1ter-d4obti3.png') bottom 270px left -60px no-repeat", "//up1ter.deviantart.com/")),
-    CBG('d', new BG("PinkieScape", "url(//fc03.deviantart.net/fs71/f/2014/114/2/f/land_by_comeha-d733yee.png) no-repeat fixed top 200px center / 100% auto, url(//fc03.deviantart.net/fs71/f/2014/021/d/4/sky_by_comeha-d733ydu.png) local top left -300px / 100% auto")),
-    new BG("Wool", "url(//fc09.deviantart.net/fs71/f/2014/075/2/7/wool_by_comeha-d7aflw9.png)"),
-    new BG("Lunar Nights", "url(//fc02.deviantart.net/fs70/f/2014/075/f/8/lunar_nights_by_comeha-d7aflyd.png)"),
-    new BG("Plain Denim", "url(//fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(//fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
-    new BG("Buy Some Apples", "url(//fc02.deviantart.net/fs71/f/2014/093/c/b/feather_by_comeha-d7cvbmf.png),url(//fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(//fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)", "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
-    CBG('c', new BG("Classic", "url(//fc04.deviantart.net/fs71/f/2014/113/5/c/classic_by_comeha-d7fn62a.png) bottom 270px center repeat-x, url(//fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)")),
-    new BG("Whispy", "url(//fc06.deviantart.net/fs71/f/2014/118/c/3/whispy_by_comeha-d7gc2cj.png) top 30px center, url(//fc03.deviantart.net/fs71/f/2014/093/5/f/noise_by_comeha-d7cvbn9.png)"),
-    new BG("Poni 2.0", "url(//fc02.deviantart.net/fs71/f/2014/124/f/1/poni_2_by_comeha-d7h2gd0.png)")
+    CBG('d', new BG("PinkieScape", "url(" + GITHUB + "/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(" + GITHUB + "/backgrounds/sky.png) local top left -300px / 100% auto")),
+    new BG("Wool", "url(" + GITHUB + "/backgrounds/wool.png)"),
+    new BG("Lunar Nights", "url(" + GITHUB + "/backgrounds/lunar_nights.png)"),
+    new BG("Plain Denim", "url(" + GITHUB + "/backgrounds/feather.png),url(" + GITHUB + "/backgrounds/noise.png)"),
+    new BG("Buy Some Apples", "url(" + GITHUB + "/backgrounds/feather.png),url(//fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(" + GITHUB + "/backgrounds/noise.png)", "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
+    CBG('c', new BG("Classic", "url(" + GITHUB + "/backgrounds/classic.png) bottom 270px center repeat-x, url(" + GITHUB + "/backgrounds/noise.png)")),
+    new BG("Whispy", "url(" + GITHUB + "/backgrounds/whispy.png) top 30px center, url(" + GITHUB + "/backgrounds/noise.png)"),
+    new BG("Poni 2.0", "url(" + GITHUB + "/backgrounds/poni_2.png)")
 ];
 var logos = [
     new BG("Default", staticFimFicDomain() + "/images/custom_banners/logo.png"),
@@ -2911,33 +2911,26 @@ header.header .home_link {\
         overflow: hidden;\
         background-color: #282828;}\
     .focus-tile {\
-        margin-top: 1px;\
-        margin-left: 1px;\
         position: absolute;\
-        vertical-align: top;\
-        padding-right: 20px;\
-        width: 0px;\
-        top: -45px;\
-        left: 13px;\
         z-index: 13 !important;}\
     .focus-tile img {\
+        display: block;\
+        box-sizing: content-box;\
+        padding: 4px;\
+        background: #FFF padding-box;\
+        border-width: 1px;\
+        border-style: solid;\
+        border-image: none;}\
+    .focus-tile.image-container img {\
+        max-height: 160px;\
+        max-width: 220px;\
+        border-radius: 8px;\
+        border-color: rgba(0, 0, 0, 0.2);}\
+    .focus-tile.avatar-container img {\
         max-height: 160px;\
         max-width: 160px;\
-        padding: 4px;\
         border-radius: 5px;\
-        background: #FFF;\
-        box-sizing: content-box;\
-        background-clip: padding-box;\
-        border-color: rgba(0, 0, 0, 0.2);\
-        display: block;}\
-    .focus-tile.image-container {\
-        top: -45px;\
-        left: 33px;\
-        opacity: 1;}\
-    .focus-tile.image-container img {\
-        border-radius: 8px;\
-        max-height: 160px;\
-        max-width: 220px;}\
+        border-color: #D6D2CB #BEBAB5 #BEBAB5 #D6D2CB;}\
     body.expand-tile .story-page-header + .focus-tile,\
     .story-page-header:hover + .focus-tile,\
     body.expand-tile .user-page-header + .focus-tile,\
@@ -3510,6 +3503,18 @@ function InvalidHexColor(color) {
     if (color.indexOf('#') == 0) color = color.substring(1, color.length);
     if (color.length != 3 && color.length != 6) return true;
     return !color.test(/^[0-9a-f]+$/ig);
+}
+
+function rgbToHex(r,g,b) {
+  return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+function hexToRgb(hex) {
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)] : null;
 }
 
 //--------------------------------------------------------------------------------------------------
