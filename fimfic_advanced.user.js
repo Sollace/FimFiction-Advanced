@@ -2869,8 +2869,8 @@ header.header .home_link {\
         border-radius: 8px;\
         border-color: rgba(0, 0, 0, 0.2);}\
     .focus-tile.avatar-container img {\
-        max-height: 160px;\
-        max-width: 160px;\
+        height: 160px;\
+        width: 160px;\
         border-radius: 5px;\
         border-color: #D6D2CB #BEBAB5 #BEBAB5 #D6D2CB;}\
     body.expand-tile .story-page-header + .focus-tile,\
