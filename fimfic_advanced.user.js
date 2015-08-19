@@ -1227,7 +1227,7 @@ function makeList(element, ordered) {
                 toggle = false;
             }
         } else {
-            if (selected[i].test(/\t\[b\]([0-9])*.\[\/b\] /)) {
+            if (/\t\[b\]([0-9])*.\[\/b\] /.test(selected[i])) {
                 selected[i] = selected[i].replace(/\t\[b\]([0-9])*.\[\/b\] /g, '\t[b]·[/b] ');
                 toggle = false;
             } else if (selected[i].indexOf('\t[b]·[/b] ') != 0) {
