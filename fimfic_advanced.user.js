@@ -2122,11 +2122,11 @@ function buildBanner() {
 </div>');
         
         if ($('.theme_selector').length) {
-            $('.theme_selector_left a').on('.click', function(e) {
+            $('.theme_selector_left a').on('click', function(e) {
                 slider.select(theme == 0 ? banners.length - 1 : theme - 1);
                 e.preventDefault();
             });
-            $('.theme_selector_right > a').on('click', function(e) {
+            $('.theme_selector_right a').on('click', function(e) {
                 slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
                 e.preventDefault();
             });
