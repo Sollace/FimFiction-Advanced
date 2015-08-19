@@ -1,23 +1,23 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.10.5
+// @version     3.11
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/SpecialTitles.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Logger.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
-var VERSION = '3.10.5',
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
+var VERSION = '3.11',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
