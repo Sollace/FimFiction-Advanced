@@ -69,7 +69,7 @@ var backgroundImages = [
     new BG("Poni 2.0", "url(" + GITHUB + "/backgrounds/poni_2.png)")
 ];
 var logos = [
-    new BG("Default", staticFimFicDomain() + "/images/custom_banners/logo.png"),
+    LOGO("Default"),
     LOGO("Rainbow Dash"),
     LOGO("Twilight Sparkle"),
     LOGO("Pinkie Pie"),
