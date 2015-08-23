@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.1
+// @version     3.11.2
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.1',
+var VERSION = '3.11.2',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -597,153 +597,154 @@ function buildSettingsTab(tab) {
         $(cban[0]).css("background-image", 'url("' + customBanner[0] + '")');
     }
     $(cban).click(function() {
-        var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
-        pop.SetWidth(700);
-        pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
-        
-        var footer = $('<div class="drop-down-pop-up-footer" />');
-        pop.content.append(footer);
-        
-        var builder = new FimFicSettings.OptionsBuilder(pop.content.find('tbody'));
-        
-        var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save" />Save</button>');
-        var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
-        var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
-        var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
-        
-        var row = builder.AddOption('', 'Image Position', '<div />');
-        
-        var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
-        var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
-        var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-        
-        row = builder.AddColorSliders('bc', 'Banner Colour', true);
-        
-        var RInput = row.red;
-        var GInput = row.green;
-        var BInput = row.blue;
-        var AInput = row.alpha;
-        
-        builder.AppendControl(
-            pop.content.find('.color-selector'),
-            '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>')
-        .click(function() {
-            var color = $('.user_toolbar > ul').css('background-color');
-            if (color == '') color = 'rgb(146,27,87)';
-            color = color.split('(')[1].split(')')[0];
-            color = color.replace(/ /g, '').split(',');
-            RInput.val(color[0]);
-            GInput.val(color[1]);
-            BInput.val(color[2]);
-            AInput.val(color.length == 4 ? color[3] : 1);
-        });
-        
-        var getColor = function() {
-            var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
-            var a = val(AInput);
-            if (a != '1' && a != '') {
-                return 'rgba(' + color + ',' + a;
+        try {
+            var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
+            pop.SetWidth(700);
+            pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
+
+            var footer = $('<div class="drop-down-pop-up-footer" />');
+            pop.content.append(footer);
+
+            var builder = new FimFicSettings.OptionsBuilder(pop.content.find('tbody'));
+
+            var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save" />Save</button>');
+            var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
+            var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
+            var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
+
+            var row = builder.AddOption('', 'Image Position', '<div />');
+
+            var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
+            var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
+            var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
+            var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
+
+            row = builder.AddColorSliders('bc', 'Banner Colour', true);
+
+            var RInput = row.red;
+            var GInput = row.green;
+            var BInput = row.blue;
+            var AInput = row.alpha;
+
+            builder.AppendControl(pop.content.find('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').click(function() {
+                var color = $('.user_toolbar > ul').css('background-color');
+                if (color == '') color = 'rgb(146,27,87)';
+                color = color.split('(')[1].split(')')[0];
+                color = color.replace(/ /g, '').split(',');
+                RInput.val(color[0]);
+                GInput.val(color[1]);
+                BInput.val(color[2]);
+                AInput.val(color.length == 4 ? color[3] : 1);
+            });
+
+            var getColor = function() {
+                var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
+                var a = val(AInput);
+                if (a != '1' && a != '') {
+                    return 'rgba(' + color + ',' + a;
+                }
+                return 'rgb(' + color + ')';
             }
-            return 'rgb(' + color + ')';
-        }
-        var val = function(me) {return me.eq(1).val();}
-        var ch = function(me) {return $.isNumeric($(me[0]).val());}
-        
-        var updateView = function(save) {
-            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                var url = input.val();
-                var color = getColor();
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = tryParseInt(posX.val(), 0);
-                var y = tryParseInt(posY.val(), 0);
-                
-                if (save) {
-                    setCustomBanner(url, color, [hor, x, vert, y]);
-                    if (customBannerindex > -1) {
-                        banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
-                    } else {
-                        banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
-                        customBannerindex = banners.length - 1;
+            var val = function(me) {return me.eq(1).val();}
+            var ch = function(me) {return $.isNumeric($(me[0]).val());}
+
+            var updateView = function(save) {
+                if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
+                    var url = input.val();
+                    var color = getColor();
+                    var vert = alignVert.val();
+                    var hor = alignHor.val();
+                    var x = tryParseInt(posX.val(), 0);
+                    var y = tryParseInt(posY.val(), 0);
+
+                    if (save) {
+                        setCustomBanner(url, color, [hor, x, vert, y]);
+                        if (customBannerindex > -1) {
+                            banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
+                        } else {
+                            banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
+                            customBannerindex = banners.length - 1;
+                        }
                     }
-                }
 
-                cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
-                $(cban[0].children[0]).css("background-color", banners[customBannerindex].colour);
-                $(cban[0]).css("background-image", 'url("' + banners[customBannerindex].url + '")');
-                $(cban[0]).css("background-position", banners[customBannerindex].position);
+                    cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
+                    $(cban[0].children[0]).css("background-color", banners[customBannerindex].colour);
+                    $(cban[0]).css("background-image", 'url("' + banners[customBannerindex].url + '")');
+                    $(cban[0]).css("background-position", banners[customBannerindex].position);
 
-                if (save) {
-                    chooseTheme(customBannerindex, save);
-                } else {
-                    finaliseThemes();
+                    if (save) {
+                        chooseTheme(customBannerindex, save);
+                    } else {
+                        finaliseThemes();
+                    }
+                    $('#add_banner_error').addClass('hidden');
+                    return true;
                 }
-                $('#add_banner_error').addClass('hidden');
-                return true;
-            }
-            $('#add_banner_error').removeClass('hidden');
-            return false;
-        };
-        
-        var hasPre = false;
-        preview.click(function() {
-            hasPre = true;
-            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                var url = input.val();
-                var color = getColor();
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = tryParseInt(posX.val(), 0);
-                var y = tryParseInt(posY.val(), 0);
-                changeBanner(null, url, color, Pos([hor, x, vert, y]));
-                $('#add_banner_error').addClass('hidden');
-            } else {
                 $('#add_banner_error').removeClass('hidden');
-            }
-        });
-        reset.click(function() {
-            unsetCustomBanner();
-            if (customBannerindex > -1) {
-                banners.splice(customBannerindex, 1);
-                if (getCookie('selected_theme') == 'Custom') {
-                    chooseTheme(-1, true);
+                return false;
+            };
+
+            var hasPre = false;
+            preview.click(function() {
+                hasPre = true;
+                if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
+                    var url = input.val();
+                    var color = getColor();
+                    var vert = alignVert.val();
+                    var hor = alignHor.val();
+                    var x = tryParseInt(posX.val(), 0);
+                    var y = tryParseInt(posY.val(), 0);
+                    changeBanner(null, url, color, Pos([hor, x, vert, y]));
+                    $('#add_banner_error').addClass('hidden');
+                } else {
+                    $('#add_banner_error').removeClass('hidden');
                 }
-                customBannerindex = -1;
-            }
-            cban[0].children[0].innerHTML = '';
-            $(cban[0].children[0]).css("background-color", "#fff");
-            $(cban[0]).css("background-image", 'none');
-            finaliseThemes();
-            pop.Close();
-        });
-        done.click(function() {
-            hasPre = false;
-            if (updateView(true)) {
+            });
+            reset.click(function() {
+                unsetCustomBanner();
+                if (customBannerindex > -1) {
+                    banners.splice(customBannerindex, 1);
+                    if (getCookie('selected_theme') == 'Custom') {
+                        chooseTheme(-1, true);
+                    }
+                    customBannerindex = -1;
+                }
+                cban[0].children[0].innerHTML = '';
+                $(cban[0].children[0]).css("background-color", "#fff");
+                $(cban[0]).css("background-image", 'none');
+                finaliseThemes();
                 pop.Close();
+            });
+            done.click(function() {
+                hasPre = false;
+                if (updateView(true)) {
+                    pop.Close();
+                }
+            });
+            pop.element.find(".close_button").mousedown(function() {
+                if (hasPre) finaliseThemes();
+            });
+
+            customBanner = getCustomBanner();
+            if (customBanner != null) {
+                input.attr("value", customBanner[0]);
+                var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
+                RInput.val(color[0]);
+                GInput.val(color[1]);
+                BInput.val(color[2]);
+                AInput.val(color.length == 4 ? color[3] : 1);
+                var poss = customBanner[2];
+                var i = 0;
+                alignHor.val(poss[i++]);
+                if (poss[i] != 'center') posX.val(poss[i]);
+                i++;
+                alignVert.val(poss[i++]);
+                if (poss[i] != 'center') posY.val(poss[i]);
             }
-        });
-        pop.element.find(".close_button").mousedown(function() {
-            if (hasPre) finaliseThemes();
-        });
-        
-        customBanner = getCustomBanner();
-        if (customBanner != null) {
-            input.attr("value", customBanner[0]);
-            var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
-            RInput.val(color[0]);
-            GInput.val(color[1]);
-            BInput.val(color[2]);
-            AInput.val(color.length == 4 ? color[3] : 1);
-            var poss = customBanner[2];
-            var i = 0;
-            alignHor.val(poss[i++]);
-            if (poss[i] != 'center') posX.val(poss[i]);
-            i++;
-            alignVert.val(poss[i++]);
-            if (poss[i] != 'center') posY.val(poss[i]);
+            pop.Show();
+        } catch (e) {
+            logger.SevereException('An error has occured whist constructing custom banner GUI: {0}', e);
         }
-        pop.Show();
     });
 
     updateBannersOptions();
