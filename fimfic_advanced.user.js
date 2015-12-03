@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.2
+// @version     3.11.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.2',
+var VERSION = '3.11.3',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -2083,8 +2083,9 @@ function censorStory(element) {
 }
 
 function setVideoSizes() {
+    var ratio = 560 / 315;
     $('.youtube_container > iframe').each(function() {
-        $(this).css('height', (($(this).width()/560) * 315 ) + 'px');
+        $(this).css('height', ($(this).width() / ratio) + 'px');
     });
 }
 
@@ -2314,6 +2315,11 @@ function addFooterData(data) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
+\
+/*Footer overflow fix*/\
+div.footer {\
+    height: auto !important;}\
+\
 /*Tables border fix*/\
 table.properties > tbody > tr.bookmark_entry:last-child td {\
     border-bottom: 1px solid #DDD !important;}\
