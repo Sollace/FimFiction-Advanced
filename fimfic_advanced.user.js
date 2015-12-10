@@ -1357,14 +1357,13 @@ function applyChapterfix() {
         d = null,
         e = null;
     window.UpdateColours = function() {
-        var clazz = "content_format_" + LocalStorageGet("format_colours");
-        $('.' + clazz).removeClass(clazz);
-        $('.content_plus_format').removeClass('content_plus_format');
-        clazz = $('#format_colours option:selected').val();
-        $('.chapter, #chapter_title, #chapter_format, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + clazz);
-        $('.chapter_footer, .chapter .rating_container .button_container a,  #chapter_title').addClass('content_plus_format');
-        $('.content_plus_format, #chapter_title').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color'));
+        var clazz = "content_format_" + LocalStorageGet("format_colours"); /**/
+        $('.' + clazz).removeClass(clazz); /*$("#chapter_format").attr( "class", "" );*/
+        $('.content_plus_format').removeClass('content_plus_format'); /**/
+        clazz = $('#format_colours').val();
         LocalStorageSet('format_colours', clazz);
+        $('#chapter_format, .chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a' /**/).addClass('content_format_' + clazz);
+        $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color')); /**/
         ComputeBackgroundColor();
     }
     window.ComputeBackgroundColor = function() {
