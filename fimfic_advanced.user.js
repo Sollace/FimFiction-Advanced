@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.3
+// @version     3.11.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -154,7 +154,8 @@ var externalUrls = [
     [/\/user\/([^\/]*)/,1],
     [/\/(www\.|)github\.com\/([^\/]*)/,2],
     [/\/equestriart.net\/([^\/]*)/,1],
-    [/.*twitch.*\/([^\/]*)\/profile/,1]
+    [/.*twitch.*\/([^\/]*)\/profile/,1],
+    [/\/disqus\.com\/by\/([^\/]*)/,1]
 ];
 var fonts = (function(f) {
     function a(arr, un) {
@@ -293,7 +294,6 @@ function initFimFictionAdvanced() {
 
 function registerEvents() {
     logger.Log('Registering events...',10);
-    
     FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', function() {
         initCommentArea(false);
     });
@@ -1060,29 +1060,31 @@ function bannerScrollOn() {$(window).on('scroll.banners', updateBannerScroll);}
 function bannersScrollOff() {$(window).off('scroll.banners');}
 function updateBannerScroll(position) {
     var home_link = $('.home_link');
-    var top = home_link.offset().top;
-    var offset = (position && position.class === 'Pos') ? position : banners[theme].position;
-    if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
-        top = window.scrollY - top;
-        var fX = offset ? offset['position-x'] : 'center';
-        var X = fX != 'center' ? ' ' + offset.x + 'px ' : '';
-        var fY = offset ? offset['position-y'] : '';
-        var Y = '';
-        if (offset) {
-            if (fY == 'center') {
-                Y = 'calc(50% + ' + (top - top * 0.7) + 'px)';
-                fY = 'top';
-            } else if (fY == 'bottom') {
-                Y = (offset.y - (top - (top * 0.7))) + 'px';
+    if (home_link.length) {
+        var top = home_link.offset().top;
+        var offset = (position && position.class === 'Pos') ? position : banners[theme].position;
+        if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
+            top = (window.scrollY - top) * 0.3;
+            var fX = offset ? offset['position-x'] : 'center';
+            var X = fX != 'center' ? ' ' + offset.x + 'px ' : '';
+            var fY = offset ? offset['position-y'] : '';
+            var Y = '';
+            if (offset) {
+                if (fY == 'center') {
+                    Y = 'calc(50% + ' + top + 'px)';
+                    fY = 'top';
+                } else if (fY == 'bottom') {
+                    Y = (offset.y - top) + 'px';
+                } else {
+                    Y = (offset.y + top) + 'px';
+                }
             } else {
-                Y = (offset.y + (top - (top * 0.7))) + 'px';
+                Y = (top*0.3) + 'px';
             }
+            $('.home_link').css('background-position', fX + ' ' + X + fY + ' ' + Y);
         } else {
-            Y = (top - top * 0.7) + 'px';
+            $('.home_link').css('background-position', offset ? offset : '');
         }
-        $('.home_link').css('background-position', fX + ' ' + X + fY + ' ' + Y);
-    } else {
-        $('.home_link').css('background-position', offset ? offset : '');
     }
 }
 
