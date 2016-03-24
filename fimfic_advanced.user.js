@@ -16,8 +16,8 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.3',
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
+var VERSION = '3.11.4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -83,7 +83,8 @@ var logos = [
     LOGO("Celestia"),
     LOGO("Luna"),
     LOGO("Sunset Shimmer"),
-    LOGO("Starlight Glimmer")
+    LOGO("Starlight Glimmer"),
+    LOGO("Coloratura")
 ];
 var theme = 0;
 var customBanner, customBannerindex = -1;
