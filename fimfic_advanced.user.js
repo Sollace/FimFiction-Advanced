@@ -16,7 +16,7 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
 var VERSION = '3.11.4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
