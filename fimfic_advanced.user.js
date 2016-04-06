@@ -16,21 +16,25 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
 var VERSION = '3.11.4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
-var settingsMan = {
+var settingsMan = win().settingsMan = {
+    __get: function(key) {return localStorage[key];},
     keys: function() {return Object.keys(localStorage);},
     has: function(key) {return localStorage[key] !== undefined;},
-    get: function(key, def) {return this.has(key) ? localStorage[key] : def;},
-    getB: function(key, def) {return this.has(key) ? (localStorage[key] == 'true' || localStorage[key] == '1' || !!localStorage[key]) : def;},
-    int: function(key, def) {return this.has(key) ? parseInt(localStorage[key]) : def;},
-    float: function(key, def) {return this.has(key) ? parseFloat(localStorage[key]) : def;},
-    set: function(key, val) {localStorage[key] = val;},
-    setB: function(key, bool) {this.set(key, bool ? '1' : '');},
+    get: function(key, def) {return this.has(key) ? this.__get(key) : def;},
+    getB: function(key, def) {return this.has(key) ? ((key = this.__get(key)) == 'true' || key == '1' || !!key) : def;},
+    int: function(key, def) {return this.has(key) ? parseInt(this.__get(key)) : def;},
+    float: function(key, def) {return this.has(key) ? parseFloat(this.__get(key)) : def;},
+    set: function(key, val, def) {
+        if (def == undefined) def = '';
+        if (val == def) return this.remove(key);
+        localStorage[key] = val;},
+    setB: function(key, bool, def) {this.set(key, bool ? '1' : '', def);},
     remove: function(key) {localStorage.removeItem(key);},
     updateFlagField: function(key, value) {
         var current = $('html').attr('fimfic_adv');
@@ -42,6 +46,7 @@ var settingsMan = {
 //--------------------------------------------------------------------------------------------------
 //-------------------------------------------DATA---------------------------------------------------
 //--------------------------------------------------------------------------------------------------
+var defaultSig = "%message%\n\n--[i]%name%[/i]";
 var backgroundImages = [
     new BG("Light","url(" + GITHUB + "/backgrounds/cloth.png)"),
     new BG("Dark","url(" + GITHUB + "/backgrounds/cloth_dark.png)"),
@@ -285,6 +290,8 @@ function initFimFictionAdvanced() {
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
     if (isMyBlogPage()) initBlogPage();
     if (getSweetieEnabled()) setupSweetie();
+    var popularStories = $('div.front_page .popular-stories-container .story-card-list');
+    if (popularStories.length) fixGradient(popularStories);
     logger.Log('starting customizations setup',10);
     if (getSlide() > 0) {
         logger.Log('starting slideshow',9);
@@ -451,7 +458,7 @@ function buildSettingsTab(tab) {
 
     tab.AddCheckBox("eb", "Enable Banners", getBannersEnabled()).change(function() {
         setBannersEnabled(this.checked);
-        bannerScrollOff()
+        bannerScrollOff();
         if (this.checked && getFancyBanners()) {
             bannerScrollOn();
         }
@@ -770,7 +777,7 @@ function buildSettingsTab(tab) {
         setSig(this.value);
     });
     tab.AppendResetButton(sigText[0]).on('click', function() {
-        sigText.val(defSig());
+        sigText.val(defaultSig);
         setSig(sigText.val());
     });
     
@@ -1058,7 +1065,7 @@ function buildBookmarksGui(tab) {
 }
 
 function bannerScrollOn() {$(window).on('scroll.banners', updateBannerScroll);}
-function bannersScrollOff() {$(window).off('scroll.banners');}
+function bannerScrollOff() {$(window).off('scroll.banners');}
 function updateBannerScroll(position) {
     var home_link = $('.home_link');
     if (home_link.length) {
@@ -1251,6 +1258,29 @@ function makeList(element, ordered) {
     element.selectionEnd = start + selected.length;
     element.scrollTop = top;
     $(element).focus();
+}
+
+function fixGradient(el) {
+    if (!window.SVGForeignObjectElement) return; // Don't do anything if it's not supported.
+    var width = el.width() - 10;
+    var height = 800;
+    var container = $('\
+<svg style="margin-top:5px" width="' + width + 'px" height="' + height + 'px">\
+   <defs>\
+    <linearGradient y2="100%" y1="0%" x1="100%" x2="100%" id="Gradient">\
+      <stop offset="0" stop-color="white" stop-opacity="1"></stop>\
+      <stop offset="0.75" stop-color="white" stop-opacity="1"></stop>\
+      <stop offset="1" stop-color="white" stop-opacity="0"></stop>\
+    </linearGradient>\
+    <mask id="Mask">\
+      <rect width="100%" height="100%" x="0" y="0" fill="url(#Gradient)"></rect>\
+    </mask>\
+  </defs>\
+  <foreignObject width="' + width + 'px" height="' + height + 'px" + mask="url(#Mask)" />\
+</svg>');
+    el.before('<style type="text/css">div.front_page .popular-stories-container::after {display:none !important;}</style>');
+    el.before(container);
+    container.find('foreignObject').append(el);
 }
 
 function addStoryList() {
@@ -2360,6 +2390,26 @@ header.header .theme_selector a {\
 .dimmer {\
     background-color: rgba(0,0,0,0.3) !important;}\
 \
+/*Background-gradient fix*/\
+[fimfic_adv*=background] .topbar-shadow div.light-gradient {\
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(80px, rgba(255,255,255,0.5))) !important;\
+    background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;\
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;}\
+[fimfic_adv*=background] .topbar-shadow div.light-gradient::before {\
+    background: rgba(255,255,255,0.5) !important;\
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0.5)), color-stop(80px, rgba(255,255,255,0))) !important;\
+    background: -webkit-linear-gradient(left, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;\
+    background: linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;}\
+[fimfic_adv*=background] .sidebar-shadow div.light-gradient {\
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(80px, rgba(255,255,255,0.5))) !important;\
+    background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;\
+    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;}\
+[fimfic_adv*=background] .sidebar-shadow div.light-gradient::before {\
+    background: rgba(255,255,255,0.5) !important;\
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0.5)), color-stop(80px, rgba(255,255,255,0))) !important;\
+    background: -webkit-linear-gradient(top, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;\
+    background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;}\
+\
 /*Bookshelf icon colour fix*/\
 .story-toolbar .bookshelves li span {\
     color: #777;\
@@ -3003,36 +3053,42 @@ function addMinorBannerCss() {
 //--------------------------------------------------------------------------------------------------
 
 function getPinUserbar() {return settingsMan.getB('pin_userbar', false);}
-function setPinUserbar(v) {settingsMan.setB('pin_userbar', v);}
+function setPinUserbar(v) {settingsMan.setB('pin_userbar', v, false);}
 
 function getResizeVideos() {return settingsMan.getB('resize_vids', true);}
-function setResizeVideos(v) {settingsMan.setB('resize_vids', v);}
+function setResizeVideos(v) {settingsMan.setB('resize_vids', v, true);}
 
-function getAlwaysShowImages() {return settingsMan.get('unspoiler_images', '1') == '1';}
-function setAlwaysShowImages(val) {settingsMan.set('unspoiler_images', val ? '1' : '0');}
+function getAlwaysShowImages() {return settingsMan.getB('unspoiler_images', true);}
+function setAlwaysShowImages(val) {settingsMan.setB('unspoiler_images', val, true);}
 
 function getSweetieEnabled() {return settingsMan.getB("sweetie_staff_enabled", false);}
-function setSweetieEnabled(val) {settingsMan.setB("sweetie_staff_enabled", val);}
+function setSweetieEnabled(val) {
+    settingsMan.setB("sweetie_staff_enabled", val, false);
+    if (val == false) {
+        settingsMan.remove("sweetie_posX");
+        settingsMan.remove("sweetie_posY");
+        settingsMan.remove("sweetie_img_index");
+    }
+}
 
 function getSlide() {return settingsMan.int("slideShow", 0);}
-function setSlide(v) {settingsMan.set("slideShow", v);}
+function setSlide(v) {settingsMan.set("slideShow", v, 0);}
 
-function getSig() {return settingsMan.get("user_sig", defSig());}
-function setSig(v) {settingsMan.set("user_sig", v);}
-function defSig() {return "%message%\n\n--[i]%name%[/i]";}
+function getSig() {return settingsMan.get("user_sig", defaultSig);}
+function setSig(v) {settingsMan.set("user_sig", v, defaultSig);}
 
 function getWideNotes() {return settingsMan.getB("wideAuthorNotes", true);}
-function setWideNotes(v) {settingsMan.setB("wideAuthorNotes", v);}
+function setWideNotes(v) {settingsMan.setB("wideAuthorNotes", v, true);}
 
 function getSaveFocus() {return settingsMan.getB('ultra_snow_save_focus', true);}
-function setSaveFocus(v) {settingsMan.setB('ultra_snow_save_focus', v);if (snower) snower.SetSaveFocus(v);}
+function setSaveFocus(v) {settingsMan.setB('ultra_snow_save_focus', v, true);if (snower) snower.SetSaveFocus(v);}
 
 function getShuffle() {return settingsMan.getB("shuffle_slideShow", true);}
-function setShuffle(v) {settingsMan.setB("shuffle_slideShow", v);}
+function setShuffle(v) {settingsMan.setB("shuffle_slideShow", v, true);}
 
 function getFancyBanners() {return settingsMan.getB('fancy_banners', false);}
 function setFancyBanners(v) {
-    settingsMan.setB('fancy_banners', v);
+    settingsMan.setB('fancy_banners', v, false);
     if (v) {
         bannerScrollOn();
         updateBannerScroll();
@@ -3045,7 +3101,7 @@ function setFancyBanners(v) {
 function getCustomFont() {return settingsMan.get('custom_font', 'Default');}
 function setCustomFont(v) {
     applyCustomFont(v);
-    settingsMan.set('custom_font', v);
+    settingsMan.set('custom_font', v, 'Default');
 }
 function applyCustomFont(val) {
     if (val == 'Classic') val = 'Arial';
@@ -3151,10 +3207,10 @@ function getTotalBookmarks() {
 }
 
 function getEnableBookmarksMenu() {return settingsMan.getB("bookmarks_menu", true);}
-function setEnableBookmarksMenu(v) {settingsMan.setB("bookmarks_menu", v);}
+function setEnableBookmarksMenu(v) {settingsMan.setB("bookmarks_menu", v, true);}
 
 function getTabsLeft() {return settingsMan.getB("tabs_side", false);}
-function setTabsLeft(v) {settingsMan.setB("tabs_side", v);}
+function setTabsLeft(v) {settingsMan.setB("tabs_side", v, false);}
 function updateTabsBarSide(v) {
     if (v) {
         $('.tabs').parent().prepend($('.tabs'));
@@ -3172,7 +3228,7 @@ function getStoryWidth() {
     }
     return '46em';
 }
-function setStoryWidth(v) {settingsMan.set("storyWidth", v);}
+function setStoryWidth(v) {settingsMan.set("storyWidth", v, '46em');}
 
 function getCustomBanner() {
     if (settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition")) {
@@ -3190,7 +3246,11 @@ function getCustomBanner() {
     }
     return null;
 }
-function unsetCustomBanner() {setCustomBanner('-none-', '-none-', '-none-');}
+function unsetCustomBanner() {
+    settingsMan.remove("customBannerUrl");
+    settingsMan.remove("customBannerColor");
+    settingsMan.remove("customBannerPosition");
+}
 function setCustomBanner(url, color, pos) {
     if (typeof pos !== 'string') pos = pos.join(' ');
     settingsMan.set("customBannerUrl", url);
@@ -3200,24 +3260,24 @@ function setCustomBanner(url, color, pos) {
 
 function getLogoOpacity() {return settingsMan.int('logo_opacity', 100);}
 function setLogoOpacity(v) {
-    settingsMan.set('logo_opacity', v);
+    settingsMan.set('logo_opacity', v, 100);
     if ($('#title').length) $('#title .home_link img').css('opacity', v / 100);
 }
 
 function getLogo() {return settingsMan.int("oldLogo", 0);}
 function setLogo(v) {
-    settingsMan.set("oldLogo", v);
+    settingsMan.set("oldLogo", v, 0);
     if ($('#title').length) $('#title .home_link img').attr("src", getLogoUrl(v));
 }
 
 function getSnowing() {return settingsMan.int("snow_bg", 1);}
 function setSnowing(v) {
-    settingsMan.set("snow_bg", v);
+    settingsMan.set("snow_bg", v, 1);
     applySnowing(getBGSnow(), v);
 }
 function getBGSnow() {return settingsMan.getB("snow_mode", false);}
 function setBGSnow(v) {
-    settingsMan.setB("snow_mode", v);
+    settingsMan.setB("snow_mode", v, false);
     if (snower) {
         snower.dispose();
         snower = null;
@@ -3244,7 +3304,7 @@ function applySnowing(g, v) {
 
 function getBannersEnabled() {return settingsMan.getB("banners", true);}
 function setBannersEnabled(v) {
-    settingsMan.setB("banners", v);
+    settingsMan.setB("banners", v, true);
     settingsMan.updateFlagField('banners',v);
     if (v) {
         buildBanner(banners);
@@ -3257,7 +3317,7 @@ function setBannersEnabled(v) {
 
 function getTitleHidden() {return settingsMan.getB("titleHidden", false);}
 function setTitleHidden(v) {
-    settingsMan.setB("titleHidden", v);
+    settingsMan.setB("titleHidden", v, false);
     if (v) {
         $('body').addClass("titleHidden");
     } else {
@@ -3268,7 +3328,7 @@ function setTitleHidden(v) {
 function getBGColor() {return settingsMan.get("bgColor", "");}
 function setBGColor(c) {settingsMan.set("bgColor", c);return c;}
 function getBGIndex() {return settingsMan.int("bgImg", -1);}
-function setBackgroundImg(v) {settingsMan.set("bgImg", v);}
+function setBackgroundImg(v) {settingsMan.set("bgImg", v, -1);}
 
 function getBG() {
     var index = getBGIndex();
@@ -3282,6 +3342,7 @@ function getBG() {
 
 function applyBackground(c) {
     var img = getBG();
+    settingsMan.updateFlagField('background', !((c == '' || c == 'transparent') && img === 'none'));
     if (img == 'none') img = $('body').css('background-image');
     if (c == '' || c == 'transparent') c = $('body').css('background-color');
     $('.body_container').css("background", (typeof img === 'string' ? img : img.Css) + " " + c);
@@ -3872,7 +3933,7 @@ img[held="true"] {\
             }
             setupImg(index);
             updateSelection(index);
-            settingsMan.set('sweetie_img_index', index);
+            settingsMan.set('sweetie_img_index', index, 0);
         }
     }
 
@@ -3883,14 +3944,13 @@ img[held="true"] {\
         belle.style.left = "-1000px";
         var img = $(document.elementFromPoint(lastClientX , lastClientY));
         belle.style.left = oldX;
-        if (img != null && img[0].tagName == "IMG" && !img.hasClass('nopickup')) {
+        if (img.length && img[0].tagName == "IMG" && !img.hasClass('nopickup')) {
             if (img.attr("dragged") != "true") {
                 var result = img.clone().attr('class', 'grabbedImage').removeAttr('id').attr('dragged', 'true').attr('held','true');
                 result.appendTo('body');
                 result.css({
-                    'width': img.width() + 'px', 'height': img.height() + 'px'
-                });
-                result.css({
+                    'width': img.width() + 'px',
+                    'height': img.height() + 'px',
                     'top' : (lastClientY - result.height()/2) + 'px',
                     'left' : (lastClientX - result.width()/2) + 'px'});
                 result.on("click", function(e) {
@@ -4203,7 +4263,7 @@ function playerEnded(s) {\
         $('#belle_type').click(function() {
             var index = (parseInt($(belle).attr('selected_image_index')) + 1) % imgs.length;
             setupImg(index);
-            settingsMan.set('sweetie_img_index', index);
+            settingsMan.set('sweetie_img_index', index, 0);
             updateSelection(index);
         });
     }
