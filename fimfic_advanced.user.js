@@ -16,14 +16,16 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
+var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
 var VERSION = '3.11.4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
-var settingsMan = win().settingsMan = {
+var settingsMan = {
+    __values: {},
     __get: function(key) {return localStorage[key];},
+    __mod: false,
     keys: function() {return Object.keys(localStorage);},
     has: function(key) {return localStorage[key] !== undefined;},
     get: function(key, def) {return this.has(key) ? this.__get(key) : def;},
@@ -33,16 +35,64 @@ var settingsMan = win().settingsMan = {
     set: function(key, val, def) {
         if (def == undefined) def = '';
         if (val == def) return this.remove(key);
+        this.__mod = true;
+        this.__values[key] = val;
         localStorage[key] = val;},
     setB: function(key, bool, def) {this.set(key, bool ? '1' : '', def);},
-    remove: function(key) {localStorage.removeItem(key);},
+    remove: function(key) {
+        this.__mod = true;
+        this.__values[key] = '{removed}';
+        localStorage.removeItem(key);
+    },
     updateFlagField: function(key, value) {
         var current = $('html').attr('fimfic_adv');
         if (current == undefined || current == null) current = '';
         current = $.grep(current.split(','), function(i) {return (value || i != key) && i != '';}).join(',');
         if (value && current.indexOf(key) == -1) current += (current == '' ? '' : ',') + key;
-        $('html').first().attr('fimfic_adv', current);}
+        $('html').first().attr('fimfic_adv', current);},
+    save: function(callback) {
+        if (!this.__mod) {
+            if (callback) callback();
+            return;
+        }
+        document.cookie = 'pendingLoad=;';
+        if (document.location.protocol == 'https:') {
+            document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
+                'q': 1, 'p': document.location.protocol, 'd': this.__values
+            }));
+            document.location.protocol = 'http';
+            return;
+        }
+        document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
+            'p': document.location.protocol, 'd': this.__values
+        }));
+        var iframe = $('<iframe />');
+        iframe.on('load', function() {
+            iframe.remove();
+            if (callback) callback();
+        });
+        iframe.attr('src', (document.location.protocol == 'https:' ? 'http' : 'https') + '://www.fimfiction.net/settings?save');
+        $('body').append(iframe);
+    }
 };
+(function() {
+    var imported = document.cookie.replace(/(?:(?:^|.*;\s*)pendingLoad\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+    if (imported) {
+        imported = JSON.parse(decodeURIComponent(imported));
+        if (imported.p != document.location.protocol) {
+            document.cookie = 'pendingLoad=;';
+            for (var i in imported.d) {
+                if (imported.d[i] == '{removed}') {
+                    localStorage.removeItem(i);
+                } else {
+                    localStorage[i] = imported.d[i];
+                }
+            }
+            if (imported.q) document.location.protocol = imported.p.split(':')[0];
+        }
+    }
+})();
+
 //--------------------------------------------------------------------------------------------------
 //-------------------------------------------DATA---------------------------------------------------
 //--------------------------------------------------------------------------------------------------
@@ -799,6 +849,10 @@ function buildSettingsTab(tab) {
             this.innerHTML = 'Edit';
             $(this).attr('class', 'styled_button styled_button_green previewButton');
         }
+    });
+    
+    tab.AddFinishButton('Save', function(complete) {
+        settingsMan.save(complete);
     });
 }
 
@@ -3061,7 +3115,7 @@ function setResizeVideos(v) {settingsMan.setB('resize_vids', v, true);}
 function getAlwaysShowImages() {return settingsMan.getB('unspoiler_images', true);}
 function setAlwaysShowImages(val) {settingsMan.setB('unspoiler_images', val, true);}
 
-function getSweetieEnabled() {return settingsMan.getB("sweetie_staff_enabled", false);}
+function getSweetieEnabled() {return settingsMan.getB('sweetie_staff_enabled', false);}
 function setSweetieEnabled(val) {
     settingsMan.setB("sweetie_staff_enabled", val, false);
     if (val == false) {
