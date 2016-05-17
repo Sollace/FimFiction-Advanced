@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.5
+// @version     3.11.6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.5',
+var VERSION = '3.11.6',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -328,15 +328,15 @@ function initFimFictionAdvanced() {
     applyCustomFont(getCustomFont());
     applyChapterButtons();
     applyBookmarks();
-    if (getPinUserbar()) $(window).on('scroll.userbar', updateUserbarScroll);
+    if (getPinUserbar()) barScrollOn();
     if (getFancyBanners() && getBannersEnabled()) bannerScrollOn();
     if (CURRENT_LOCATION.indexOf('feed') == 0) {
         applyFeedFix();
-        $(window).on('scroll.feed', updateFeedScroll);
+        Animator().on('feed', updateFeedScroll);
     }
     if (getResizeVideos()) setVideoSizes();
     if (CURRENT_LOCATION.indexOf('manage_user/account') == 0) updateAccountControls();
-    if ($('#chapter_container').length) applyChapterfix();
+    applyCodePatches();
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
     if (isMyBlogPage()) initBlogPage();
     if (getSweetieEnabled()) setupSweetie();
@@ -428,11 +428,9 @@ function buildSettingsTab(tab) {
         if (getPinUserbar() != this.checked) {
             setPinUserbar(this.checked);
             if (this.checked) {
-                $(window).on('scroll.userbar', updateUserbarScroll);
-                updateUserbarScroll();
+                barScrollOn();
             } else {
-                $(window).off('scroll.userbar');
-                $('.fix_userbar').removeClass('fix_userbar');
+                barScrollOff();
             }
         }
     });
@@ -1118,18 +1116,117 @@ function buildBookmarksGui(tab) {
     }
 }
 
-function bannerScrollOn() {$(window).on('scroll.banners', updateBannerScroll);}
-function bannerScrollOff() {$(window).off('scroll.banners');}
+
+var animationUpdator;
+function Animator() {
+    return animationUpdator || (animationUpdator = (function() {
+        var currentScroll, lastScroll;
+        var isRunning = false;
+        var dirty = true;
+        var buss = {
+            callbacks: {},
+            conditions: {},
+            bake: function() {
+                this.dispatch = function() {};
+                this.condition = function() {};
+                for (var i in this.callbacks) {
+                    if (this.callbacks.hasOwnProperty(i) && this.callbacks[i]) {
+                        this.dispatch = compose(this.callbacks[i], this.dispatch);
+                    }
+                }
+                for (var i in this.conditions) {
+                    if (this.conditions.hasOwnProperty(i) && this.conditions[i]) {
+                        this.condition = condition(this.conditions[i].test, this.conditions[i].call, this.condition);
+                    }
+                }
+                dirty = false;
+            }
+        }
+        var listenerCount = 0;
+        function animate() {
+            if (isRunning) {
+                if (dirty) buss.bake();
+                if (currentScroll != lastScroll) {
+                    lastScroll = currentScroll;
+                    buss.dispatch();
+                }
+                buss.condition();
+                window.requestAnimationFrame(animate);
+            }
+        }
+        function compose(one, two) {
+            return function() {one(); two();};
+        }
+        function condition(test, call, two) {
+            return function() {
+                if (test()) call();
+                two();
+            };
+        }
+        
+        return {
+            on: function(type, callback) {
+                if (!isRunning) {
+                    isRunning = true;
+                    animate();
+                    $(window).on('scroll.animator', function() {
+                        currentScroll = window.scrollY;
+                    });
+                }
+                if (!buss.callbacks[type]) {
+                    listenerCount++;
+                }
+                buss.callbacks[type] = callback;
+                dirty = true;
+            },
+            if: function(type, callback, condition) {
+                if (!isRunning) {
+                    isRunning = true;
+                    animate();
+                    $(window).on('scroll.animator', function() {
+                        currentScroll = window.scrollY;
+                    });
+                }
+                if (!buss.conditions[type]) {
+                    listenerCount++;
+                }
+                buss.conditions[type] = {test: condition, call: callback};
+                dirty = true;
+            },
+            off: function(type) {
+                if (buss.callbacks[type]) {
+                    listenerCount--;
+                    buss.callbacks[type] = undefined;
+                    if (listenerCount <= 0) {
+                        listenerCount = 0;
+                        $(window).off('scroll.animator');
+                        isRunning = false;
+                        buss.dispatch = function() {};
+                        buss.condition = function() {};
+                        buss.callbacks = {};
+                        buss.conditions = {};
+                    }
+                    dirty = true;
+                }
+            }
+        }
+    })());
+}
+
+var bannerScroller = null;
+var lastScrollPosition = 0;
+function bannerScrollOn() {Animator().on('banners', updateBannerScroll);}
+function bannerScrollOff() {Animator().off('banners');}
 function updateBannerScroll(position) {
     var home_link = $('.home_link');
     if (home_link.length) {
         var top = home_link.offset().top;
         var offset = (position && position.class === 'Pos') ? position : banners[theme].position;
         if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
-            top = (window.scrollY - top) * 0.3;
-            var fX = offset ? offset['position-x'] : 'center';
-            var X = fX != 'center' ? ' ' + offset.x + 'px ' : '';
-            var fY = offset ? offset['position-y'] : '';
+            top = (window.scrollY - top) * 0.6;
+            var fX = offset ? offset['position-x'] : window.innerWidth < 1000 ? 'left' : 'center';
+            var X = fX != 'center' ? (offset ? offset.x : '-150') + 'px ' : '';
+            var fY = offset ? offset['position-y'] : 'top';
             var Y = '';
             if (offset) {
                 if (fY == 'center') {
@@ -1141,7 +1238,7 @@ function updateBannerScroll(position) {
                     Y = (offset.y + top) + 'px';
                 }
             } else {
-                Y = (top*0.3) + 'px';
+                Y = (top*0.6) + 'px';
             }
             $('.home_link').css('background-position', fX + ' ' + X + fY + ' ' + Y);
         } else {
@@ -1150,6 +1247,13 @@ function updateBannerScroll(position) {
     }
 }
 
+function barScrollOn() {
+    Animator().on('userbar', updateUserbarScroll);
+}
+function barScrollOff() {
+    Animator().off('userbar');
+    $('.fix_userbar').removeClass('fix_userbar');
+}
 function updateUserbarScroll() {updatePinned('.user_toolbar', 'userbar');}
 function updateFeedScroll() {updatePinned('.feed-toolbar', 'feed');}
 function updatePinned(target, pinClass) {
@@ -1437,53 +1541,71 @@ function applyBookmarks() {
     }
 }
 
-function applyChapterfix() {
-    logger.Log('applyChapterfix');
-    var b = null,
-        c = null,
-        d = null,
-        e = null;
-    window.UpdateColours = function() {
-        var clazz = "content_format_" + LocalStorageGet("format_colours"); /**/
-        $('.' + clazz).removeClass(clazz); /*$("#chapter_format").attr( "class", "" );*/
-        $('.content_plus_format').removeClass('content_plus_format'); /**/
-        clazz = $('#format_colours').val();
-        LocalStorageSet('format_colours', clazz);
-        $('#chapter_format, .chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a' /**/).addClass('content_format_' + clazz);
-        $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color')); /**/
-        ComputeBackgroundColor();
-    }
-    window.ComputeBackgroundColor = function() {
-        $('.body_container'/*document.body*/).css('background-color', '');
-        c = extractColor($(document.body).attr('data-base-color')/*$(document.body).css('background-color')*/);
-        d = extractColor($('#chapter_format').css('background-color'));
-        var f = 127 > 0.39 * d[0] + 0.5 * d[1] + 0.11 * d[2];
-        e = colorMult(d, f ? 0.85 : 0.95);
-        f = rgbToCSS(colorMult(d, f ? 1.4 : 0.82));
-        $('.chapter_content_box').css({
-            'border-left-color': f,
-            'border-right-color': f
-            ,'border-bottom-color': f/**/
+function applyCodePatches() {
+    logger.Log('applyCodePatches');
+    if ($('#chapter_container').length) {
+        var b = null,
+            c = null,
+            d = null,
+            e = null;
+        window.UpdateColours = function() {
+            //Extend theming to more elements
+            var clazz = "content_format_" + LocalStorageGet("format_colours"); /**/
+            $('.' + clazz).removeClass(clazz); /*$("#chapter_format").attr( "class", "" );*/
+            $('.content_plus_format').removeClass('content_plus_format'); /**/
+            clazz = $('#format_colours').val();
+            LocalStorageSet('format_colours', clazz);
+            //Extend theming to more elements
+            $('#chapter_format, .chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a' /**/).addClass('content_format_' + clazz);
+            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color')); /**/
+            ComputeBackgroundColor();
+        }
+        window.ComputeBackgroundColor = function() {
+            $('.body_container'/*document.body*/).css('background-color', '');
+            //Use stored base colour value
+            c = extractColor($(document.body).attr('data-base-color')/*$(document.body).css('background-color')*/);
+            d = extractColor($('#chapter_format').css('background-color'));
+            var f = 127 > 0.39 * d[0] + 0.5 * d[1] + 0.11 * d[2];
+            e = colorMult(d, f ? 0.85 : 0.95);
+            f = rgbToCSS(colorMult(d, f ? 1.4 : 0.82));
+            $('.chapter_content_box').css({
+                'border-left-color': f,
+                'border-right-color': f
+                //+Colour chapter bottom border
+                ,'border-bottom-color': f/**/
+            });
+            b = null;
+            UpdatePageBackgroundColor/*a*/();
+        }
+        //Change styling target to the body container
+        window.UpdatePageBackgroundColor = function() {
+            var a = $('#chapter_toolbar_container'),d = a.parents('.chapter');
+            a.data('start_y') || a.data('start_y', a.offset().top + 50);
+            a = (Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (d.offset().top + d.height()))) / 200;
+            a = 1 < a ? 1 : 0 > a ? 0 : a;
+            a != b && $('.body_container'/*document.body*/).css('background-color', rgbToCSS(colorBlend(c, e, a)))
+        }
+        //Force update chapter themes
+        try {
+            $(document.body).attr('data-base-color', $('.body_container').css('background-color'));
+            window.UpdateColours();
+        } catch (e) {
+            logger.Error(e);
+        }
+        //Force update chapter width values
+        $('.button-sidebar-toggle').on('click', function() {
+            $("#chapter_toolbar_container").css("width", '');
         });
-        b = null;
-        UpdatePageBackgroundColor/*a*/();
     }
-    window.UpdatePageBackgroundColor = function() {
-        var a = $('#chapter_toolbar_container'),d = a.parents('.chapter');
-        a.data('start_y') || a.data('start_y', a.offset().top + 50);
-        a = (Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (d.offset().top + d.height()))) / 200;
-        a = 1 < a ? 1 : 0 > a ? 0 : a;
-        a != b && $('.body_container'/*document.body*/).css('background-color', rgbToCSS(colorBlend(c, e, a)))
-    }
-    try {
-        $(document.body).attr('data-base-color', $('.body_container').css('background-color'));
-        window.UpdateColours();
-    } catch (e) {
-        logger.Error(e);
-    }
-    $('.button-sidebar-toggle').on('click', function() {
-        $("#chapter_toolbar_container").css("width", '');
-    });
+    //Fix error window popping up whenever an operation times out/is cancelled
+    window.ShowErrorWindow = (function(old) {
+        var mess = 'Request Failed (0)';
+        function result() {
+            if (arguments[0] !== mess) return old.apply(this, arguments);
+        }
+        result.original = old;
+        return result;
+    })(window.ShowErrorWindow);
 }
 
 function initCommentArea(hold) {
@@ -1528,9 +1650,9 @@ function initBlogPage() {
     if (!$('.content_box.blog_post_content_box').length) {
         logger.Log('creating notice..',8);
         var nopost = $("<div />");
-        var page = $("div.page_list")[0];
+        var page = $("div.page_list").first().parent();
         if (page != null) {
-            $(page).before(nopost);
+            page.prev().append(nopost);
             nopost.attr("class", "content_box blog_post_content_box");
             nopost.css("margin-top", "0px");
             nopost.append('\
@@ -2197,7 +2319,7 @@ function buildBanner() {
 <div id="title" class="title">\
     <div class="banner-buttons">\
        <a id="source_link">Source</a>\
-       <a id="reset_banner" href="javascript:void(0);">Reset Selection</a>\
+       <a id="reset_banner">Reset Selection</a>\
        <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
     </div>\
     <a href="/" class="home_link">\
@@ -2208,43 +2330,43 @@ function buildBanner() {
     <div class="theme_selector theme_selector_left"><a /></div>\
     <div class="theme_selector theme_selector_right"><a /></div>\
 </div>');
-        
-        if ($('.theme_selector').length) {
-            $('.theme_selector_left a').on('click', function(e) {
-                slider.select(theme == 0 ? banners.length - 1 : theme - 1);
-                e.preventDefault();
-            });
-            $('.theme_selector_right a').on('click', function(e) {
-                slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
-                e.preventDefault();
-            });
-        }
+        $('#reset_banner').on('click', function() {
+            setCookie('selected_theme', '');
+            slider.goto(-1);
+        });
+        $('.theme_selector_left a').on('click', function(e) {
+            slider.select(theme == 0 ? banners.length - 1 : theme - 1);
+            e.preventDefault();
+        });
+        $('.theme_selector_right a').on('click', function(e) {
+            slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
+            e.preventDefault();
+        });
     }
-
+    
+    var focusTile;
     if ($('.user-page-header .avatar-container, .story-page-header .image-container').length) {
         var tile = $('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container');
-        var focusTile = tile.clone().addClass('focus-tile');
+        focusTile = tile.clone().addClass('focus-tile');
         focusTile.on('mouseenter', function() {
             $('body').addClass('expand-tile');
         }).on('mouseleave', function() {
             $('body').removeClass('expand-tile');
         });
-        focusTile.css({'top': tile.offset().top,
-                       'left': tile.offset().left});
         $('header.header').before(focusTile);
         $(window).on('resize', function() {
-            $('.focus-tile').css({
-                'top': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().top,
-                'left': $('.user-page-header .avatar-container, .story-page-header .image-container').offset().left
+            focusTile.css({
+                'top': tile.offset().top,
+                'left': tile.offset().left
             });
         });
     }
-    
     slider.ready();
     registerCustomBanner();
     finaliseThemes();
     setTimeout(function() {
         $('.user_toolbar').addClass('transitionable');
+        if (focusTile) focusTile.css({'top': tile.offset().top, 'left': tile.offset().left});
     }, 1);
 }
 
@@ -2286,7 +2408,7 @@ function addBannerCredits(items) {
         }
     });
     
-    $(window).on('scroll', function() {
+    Animator().on('switcher', function() {
         updatePinnedWithMax('#banner_switcher','switcher', $('.banner_credits').parent());
     });
     
@@ -2331,14 +2453,14 @@ function chooseTheme(id, save) {
     if (save) {
         setCookie("selected_theme", id < 0 || id > banners.length ? '' : banners[id].id, 365);
     }
-    
     if (id < 0 || id > banners.length) {
         id = Math.floor(Math.random() * banners.length);
     }
-    
     theme = id;
     changeBanner(banners[id].source, banners[id].url, banners[id].colour, banners[id].position);
-    catchBanners(id);
+    if (!$('#imagePreload').length) $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
+    catchBanner(banners[id == 0 ? banners.length - 1 : id - 1]);
+    catchBanner(banners[(id + 1) % banners.length]);
 }
 
 function changeBanner(source, img, color, pos) {
@@ -2367,12 +2489,6 @@ function changeBanner(source, img, color, pos) {
     if (color && color.length) {
         $('.user_toolbar > ul').css('background', color);
     }
-}
-
-function catchBanners(id) {
-    if (!$('#imagePreload').length) $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
-    catchBanner(banners[id == 0 ? banners.length - 1 : id - 1]);
-    catchBanner(banners[(id + 1) % banners.length]);
 }
 
 function catchBanner(banner) {
@@ -3173,13 +3289,13 @@ function applyCustomFont(val) {
 
 function getRecentColours(num) {
     var recent = settingsMan.get('colour_use_history', '');
-    return recent.length > 0 ? ('#' + recent.replace(/;/g,';#')).split(';').reverse().splice(0, num) : [];
+    return recent.length ? ('#' + recent.replace(/;/g,';#')).split(';').reverse().splice(0, num) : [];
 }
 function clearRecentColours() {settingsMan.remove('colour_use_history');}
 function addRecent(color) {
     var recent = settingsMan.get('colour_use_history', '');
-    recent = recent.length > 0 ? ('#' + recent.replace(/;/g,';#')).split(';') : [];
-    for (var i = recent.length - 1; i >= 0; i--) {
+    recent = recent.length ? ('#' + recent.replace(/;/g,';#')).split(';') : [];
+    for (var i = recent.length - 1; i; i--) {
         if (recent[i] == color) recent.splice(i, 1);
     }
     recent.push(color);
@@ -3412,9 +3528,11 @@ function applyBackground(c) {
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-function Ban(name, source, color, pos) {return Banner(name, GITHUB + '/banners/' + name + '.jpg', source, color, pos);}
-function Ban2(name, source, color, pos) {return Banner(name, GITHUB + '/banners2/' + name + '.jpg', source, color, pos);}
-function Banner(name,img,source,color, pos) {return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null)};}
+function Ban(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners/' + name + '.jpg', source, color, bg, pos);}
+function Ban2(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners2/' + name + '.jpg', source, color, bg, pos);}
+function Banner(name,img,source,color, bg, pos) {
+    if (typeof bg === 'object') pos = bg, bg = null;
+    return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null), 'background': bg};}
 
 function Pos(poss) {
     var result = {
@@ -3599,13 +3717,16 @@ function Slider() {
             }
         },
         select: function(index) {
+            this.goto(index, true);
+        },
+        goto: function(index, save) {
             fade.css({"transition": "none", "opacity": "1"});
             fade.css({
                 "background-image": tit.css("background-image"),
                 "background-position": tit.css("background-position"),
                 "background-size": tit.css("background-size")
             });
-            chooseTheme(index, true);
+            chooseTheme(index, save);
             fade.css({"transition": "opacity 0.25s linear", "opacity": "0"});
         }
     }
@@ -4434,7 +4555,7 @@ function playerEnded(s) {\
 }
 
 function snowBG(env, cont, fix) {
-    Particle3D = function (material) {
+    var Particle3D = function (material) {
         THREE.Particle.call(this, material);
         this.velocity = new THREE.Vector3(0,-8,0);
         this.velocity.rotateX(randomRange(-45,45));
@@ -4545,7 +4666,6 @@ function snowBG(env, cont, fix) {
                 $(renderer.domElement).remove();
                 $(window).off('mousemove.snow');
             }
-        }
-        
+        };
     })();
 }
