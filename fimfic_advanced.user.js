@@ -1,14 +1,13 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.6
+// @version     3.11.7
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
@@ -17,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.6',
+var VERSION = '3.11.7',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -366,10 +365,6 @@ function registerEvents() {
             FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', loopUnspoiler);
             loopUnspoiler();
         }
-        FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment afterpreviewcomment', function() {
-            SpecialTitles.setUpSpecialTitles();
-        });
-        SpecialTitles.setUpSpecialTitles();
     }
     
     FimFicEvents.on('afterinfocard', function() {
