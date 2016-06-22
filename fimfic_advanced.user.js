@@ -1,14 +1,13 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.6
+// @version     3.11.6_5
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/SpecialTitles.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
@@ -366,10 +365,6 @@ function registerEvents() {
             FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', loopUnspoiler);
             loopUnspoiler();
         }
-        FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment afterpreviewcomment', function() {
-            SpecialTitles.setUpSpecialTitles();
-        });
-        SpecialTitles.setUpSpecialTitles();
     }
     
     FimFicEvents.on('afterinfocard', function() {
