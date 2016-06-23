@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.6_5
+// @version     3.11.7
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.6',
+var VERSION = '3.11.7',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -290,13 +290,12 @@ function chainFunctionOnto(target, name, handler) {
 //--------------------------------------------------------------------------------------------------
 
 function load() {
-    addVersionInfo(VERSION);
+    addFooterData('Page running <a>FimFiction Advanced ' + VERSION + '</a>');
     var start = (new Date()).getTime();
     try {
         $('html').attr('FimFic_Adv','');
         logger.Log('initializing...',10);
         try {
-            registerBanners(extraBanners);
             initFimFictionAdvanced();
         } catch (e) {
             logger.SevereException('Unhandled Exception in Init: {0}', e);
@@ -322,6 +321,7 @@ function load() {
 //--------------------------------------------------------------------------------------------------
 
 function initFimFictionAdvanced() {
+    registerBanners(extraBanners);
     initCommentArea(true);
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
@@ -1673,7 +1673,7 @@ function loopUnspoiler() {
         if (comments.length) {
             logger.Log('applyDirectImages: start');
             comments = comments.find('.user_image_link');
-            if (comments.length) unspoilerSiblings(comments);
+            if (comments.length) comments.each(unspoilerSiblings);
         }
     }
 }
@@ -1685,19 +1685,18 @@ function initImageUnspoiler() {
     });
 }
 
-function unspoilerSiblings(imgs) {
-    imgs.each(function() {
-        var url = $(this).attr('href').replace(/$(https:|http:)/g,'');
-        if (mustUnspoiler(url)) {
-            $(this).parent().after('<img class="user_image" src="' + url + '" />').remove();
-            logger.Log("unspoilerSiblings: " + url);
-        } else {
-            var next = $(this).parent().next();
-            if (next != null && !next.is('br')) {
-                $(this).parent().after('<br />');
-            }
+function unspoilerSiblings() {
+    var me = $(this).parent();
+    var url = $(this).attr('href').replace(/$(https:|http:)/g,'');
+    if (mustUnspoiler(url)) {
+        me.after('<img class="user_image" src="' + url + '" />').remove();
+        logger.Log("unspoilerSiblings: " + url);
+    } else {
+        var next = me.next();
+        if (next.length && !next.is('br')) {
+            me.after('<br />');
         }
-    });
+    }
 }
 
 function mustUnspoiler(url) {
@@ -1745,138 +1744,138 @@ function setUpMainButton(toolbar, target, hold) {
         f = f.replace(start, end);
         g ? e.value = f : InsertTextAt(target, f);
     }
-}
-
-function makeInsertIconPopup(target) {
-    var pop = makePopup('Insert Icon', 'fa fa-anchor');
-    var icons = ["adjust","adn","align-center","align-justify","align-left","align-right","ambulance","anchor","android","angellist","angle-double-down","angle-double-left","angle-double-right","angle-double-up","angle-down","angle-left","angle-right","angle-up","apple","archive","area-chart","arrow-circle-down","arrow-circle-left","arrow-circle-o-down","arrow-circle-o-left","arrow-circle-o-right","arrow-circle-o-up","arrow-circle-right","arrow-circle-up","arrow-down","arrow-left","arrow-right","arrow-up","arrows","arrows-alt","arrows-h","arrows-v","asterisk","at","automobile","backward","ban","bank","bar-chart","bar-chart-o","barcode","bars","beer","behance","behance-square","bell","bell-o","bell-slash","bell-slash-o","bicycle","binoculars","birthday-cake","bitbucket","bitbucket-square","bitcoin","bold","bolt","bomb","book","bookmark","bookmark-o","briefcase","btc","bug","building","building-o","bullhorn","bullseye","bus","cab","calculator","calendar","calendar-o","camera","camera-retro","car","caret-down","caret-left","caret-right","caret-square-o-down","caret-square-o-left","caret-square-o-right","caret-square-o-up","caret-up","cc","cc-amex","cc-discover","cc-mastercard","cc-paypal","cc-stripe","cc-visa","certificate","chain","chain-broken","check","check-circle","check-circle-o","check-square","check-square-o","chevron-circle-down","chevron-circle-left","chevron-circle-right","chevron-circle-up","chevron-down","chevron-left","chevron-right","chevron-up","child","circle","circle-o","circle-o-notch","circle-thin","clipboard","clock-o","close","cloud","cloud-download","cloud-upload","cny","code","code-fork","codepen","coffee","cog","cogs","columns","comment","comment-o","comments","comments-o","compass","compress","copy","copyright","credit-card","crop","crosshairs","css3","cube","cubes","cut","cutlery","dashboard","database","dedent","delicious","desktop","deviantart","digg","dollar","dot-circle-o","download","dribbble","dropbox","drupal","edit","eject","ellipsis-h","ellipsis-v","empire","envelope","envelope-o","envelope-square","eraser","eur","euro","exchange","exclamation","exclamation-circle","exclamation-triangle","expand","external-link","external-link-square","eye","eye-slash","eyedropper","facebook","facebook-square","fast-backward","fast-forward","fax","female","fighter-jet","file","file-archive-o","file-audio-o","file-code-o","file-excel-o","file-image-o","file-movie-o","file-o","file-pdf-o","file-photo-o","file-picture-o","file-powerpoint-o","file-sound-o","file-text","file-text-o","file-video-o","file-word-o","file-zip-o","files-o","film","filter","fire","fire-extinguisher","flag","flag-checkered","flag-o","flash","flask","flickr","floppy-o","folder","folder-o","folder-open","folder-open-o","font","forward","foursquare","frown-o","futbol-o","gamepad","gavel","gbp","ge","gear","gears","gift","git","git-square","github","github-alt","github-square","gittip","glass","globe","google","google-plus","google-plus-square","google-wallet","graduation-cap","group","h-square","hacker-news","hand-o-down","hand-o-left","hand-o-right","hand-o-up","hdd-o","header","headphones","heart","heart-o","history","home","hospital-o","html5","ils","image","inbox","indent","info","info-circle","inr","instagram","institution","ioxhost","italic","joomla","jpy","jsfiddle","key","keyboard-o","krw","language","laptop","lastfm","lastfm-square","leaf","legal","lemon-o","level-down","level-up","life-bouy","life-buoy","life-ring","life-saver","lightbulb-o","line-chart","link","linkedin","linkedin-square","linux","list","list-alt","list-ol","list-ul","location-arrow","lock","long-arrow-down","long-arrow-left","long-arrow-right","long-arrow-up","magic","magnet","mail-forward","mail-reply","mail-reply-all","male","map-marker","maxcdn","meanpath","medkit","meh-o","microphone","microphone-slash","minus","minus-circle","minus-square","minus-square-o","mobile","mobile-phone","money","moon-o","mortar-board","music","navicon","newspaper-o","openid","outdent","pagelines","paint-brush","paper-plane","paper-plane-o","paperclip","paragraph","paste","pause","paw","paypal","pencil","pencil-square","pencil-square-o","phone","phone-square","photo","picture-o","pie-chart","pied-piper","pied-piper-alt","pinterest","pinterest-square","plane","play","play-circle","play-circle-o","plug","plus","plus-circle","plus-square","plus-square-o","power-off","print","puzzle-piece","qq","qrcode","question","question-circle","quote-left","quote-right","ra","random","rebel","recycle","reddit","reddit-square","refresh","remove","renren","reorder","repeat","reply","reply-all","retweet","rmb","road","rocket","rotate-left","rotate-right","rouble","rss","rss-square","rub","ruble","rupee","save","scissors","search","search-minus","search-plus","send","send-o","share","share-alt","share-alt-square","share-square","share-square-o","shekel","sheqel","shield","shopping-cart","sign-in","sign-out","signal","sitemap","skype","slack","sliders","slideshare","smile-o","soccer-ball-o","sort","sort-alpha-asc","sort-alpha-desc","sort-amount-asc","sort-amount-desc","sort-asc","sort-desc","sort-down","sort-numeric-asc","sort-numeric-desc","sort-up","soundcloud","space-shuttle","spinner","spoon","spotify","square","square-o","stack-exchange","stack-overflow","star","star-half","star-half-empty","star-half-full","star-half-o","star-o","steam","steam-square","step-backward","step-forward","stethoscope","stop","strikethrough","stumbleupon","stumbleupon-circle","subscript","suitcase","sun-o","superscript","support","table","tablet","tachometer","tag","tags","tasks","taxi","tencent-weibo","terminal","text-height","text-width","th","th-large","th-list","thumb-tack","thumbs-down","thumbs-o-down","thumbs-o-up","thumbs-up","ticket","times","times-circle","times-circle-o","tint","toggle-down","toggle-left","toggle-off","toggle-on","toggle-right","toggle-up","trash","trash-o","tree","trello","trophy","truck","try","tty","tumblr","tumblr-square","turkish-lira","twitch","twitter","twitter-square","umbrella","underline","undo","university","unlink","unlock","unlock-alt","unsorted","upload","usd","user","user-md","users","video-camera","vimeo-square","vine","vk","volume-down","volume-off","volume-up","warning","wechat","weibo","weixin","wheelchair","wifi","windows","won","wordpress","wrench","xing","xing-square","yahoo","yelp","yen","youtube","youtube-play","youtube-square"];
-    pop.SetWidth(400);
-    pop.SetContent('<div class="bookshelf-edit-popup"><div class="bookshelf-icons" /></div>');
-    var i = icons.length;
-    while (i--) {
-        var icon = $('<label class="bbcodeIcons" title="' + normalise(icons[i]) + '"><div><span class="bookshelf-icon-element fa fa-' + icons[i] + '" data-icon-type="font-awesome" /></div><input type="radio" value="' + icons[i] + '" style="visibility:hidden;display:none;" name="icon" /></label>');
-        pop.content.find('.bookshelf-icons').prepend(icon);
+    
+    function makeInsertIconPopup(target) {
+        var pop = makePopup('Insert Icon', 'fa fa-anchor');
+        var icons = ["adjust","adn","align-center","align-justify","align-left","align-right","ambulance","anchor","android","angellist","angle-double-down","angle-double-left","angle-double-right","angle-double-up","angle-down","angle-left","angle-right","angle-up","apple","archive","area-chart","arrow-circle-down","arrow-circle-left","arrow-circle-o-down","arrow-circle-o-left","arrow-circle-o-right","arrow-circle-o-up","arrow-circle-right","arrow-circle-up","arrow-down","arrow-left","arrow-right","arrow-up","arrows","arrows-alt","arrows-h","arrows-v","asterisk","at","automobile","backward","ban","bank","bar-chart","bar-chart-o","barcode","bars","beer","behance","behance-square","bell","bell-o","bell-slash","bell-slash-o","bicycle","binoculars","birthday-cake","bitbucket","bitbucket-square","bitcoin","bold","bolt","bomb","book","bookmark","bookmark-o","briefcase","btc","bug","building","building-o","bullhorn","bullseye","bus","cab","calculator","calendar","calendar-o","camera","camera-retro","car","caret-down","caret-left","caret-right","caret-square-o-down","caret-square-o-left","caret-square-o-right","caret-square-o-up","caret-up","cc","cc-amex","cc-discover","cc-mastercard","cc-paypal","cc-stripe","cc-visa","certificate","chain","chain-broken","check","check-circle","check-circle-o","check-square","check-square-o","chevron-circle-down","chevron-circle-left","chevron-circle-right","chevron-circle-up","chevron-down","chevron-left","chevron-right","chevron-up","child","circle","circle-o","circle-o-notch","circle-thin","clipboard","clock-o","close","cloud","cloud-download","cloud-upload","cny","code","code-fork","codepen","coffee","cog","cogs","columns","comment","comment-o","comments","comments-o","compass","compress","copy","copyright","credit-card","crop","crosshairs","css3","cube","cubes","cut","cutlery","dashboard","database","dedent","delicious","desktop","deviantart","digg","dollar","dot-circle-o","download","dribbble","dropbox","drupal","edit","eject","ellipsis-h","ellipsis-v","empire","envelope","envelope-o","envelope-square","eraser","eur","euro","exchange","exclamation","exclamation-circle","exclamation-triangle","expand","external-link","external-link-square","eye","eye-slash","eyedropper","facebook","facebook-square","fast-backward","fast-forward","fax","female","fighter-jet","file","file-archive-o","file-audio-o","file-code-o","file-excel-o","file-image-o","file-movie-o","file-o","file-pdf-o","file-photo-o","file-picture-o","file-powerpoint-o","file-sound-o","file-text","file-text-o","file-video-o","file-word-o","file-zip-o","files-o","film","filter","fire","fire-extinguisher","flag","flag-checkered","flag-o","flash","flask","flickr","floppy-o","folder","folder-o","folder-open","folder-open-o","font","forward","foursquare","frown-o","futbol-o","gamepad","gavel","gbp","ge","gear","gears","gift","git","git-square","github","github-alt","github-square","gittip","glass","globe","google","google-plus","google-plus-square","google-wallet","graduation-cap","group","h-square","hacker-news","hand-o-down","hand-o-left","hand-o-right","hand-o-up","hdd-o","header","headphones","heart","heart-o","history","home","hospital-o","html5","ils","image","inbox","indent","info","info-circle","inr","instagram","institution","ioxhost","italic","joomla","jpy","jsfiddle","key","keyboard-o","krw","language","laptop","lastfm","lastfm-square","leaf","legal","lemon-o","level-down","level-up","life-bouy","life-buoy","life-ring","life-saver","lightbulb-o","line-chart","link","linkedin","linkedin-square","linux","list","list-alt","list-ol","list-ul","location-arrow","lock","long-arrow-down","long-arrow-left","long-arrow-right","long-arrow-up","magic","magnet","mail-forward","mail-reply","mail-reply-all","male","map-marker","maxcdn","meanpath","medkit","meh-o","microphone","microphone-slash","minus","minus-circle","minus-square","minus-square-o","mobile","mobile-phone","money","moon-o","mortar-board","music","navicon","newspaper-o","openid","outdent","pagelines","paint-brush","paper-plane","paper-plane-o","paperclip","paragraph","paste","pause","paw","paypal","pencil","pencil-square","pencil-square-o","phone","phone-square","photo","picture-o","pie-chart","pied-piper","pied-piper-alt","pinterest","pinterest-square","plane","play","play-circle","play-circle-o","plug","plus","plus-circle","plus-square","plus-square-o","power-off","print","puzzle-piece","qq","qrcode","question","question-circle","quote-left","quote-right","ra","random","rebel","recycle","reddit","reddit-square","refresh","remove","renren","reorder","repeat","reply","reply-all","retweet","rmb","road","rocket","rotate-left","rotate-right","rouble","rss","rss-square","rub","ruble","rupee","save","scissors","search","search-minus","search-plus","send","send-o","share","share-alt","share-alt-square","share-square","share-square-o","shekel","sheqel","shield","shopping-cart","sign-in","sign-out","signal","sitemap","skype","slack","sliders","slideshare","smile-o","soccer-ball-o","sort","sort-alpha-asc","sort-alpha-desc","sort-amount-asc","sort-amount-desc","sort-asc","sort-desc","sort-down","sort-numeric-asc","sort-numeric-desc","sort-up","soundcloud","space-shuttle","spinner","spoon","spotify","square","square-o","stack-exchange","stack-overflow","star","star-half","star-half-empty","star-half-full","star-half-o","star-o","steam","steam-square","step-backward","step-forward","stethoscope","stop","strikethrough","stumbleupon","stumbleupon-circle","subscript","suitcase","sun-o","superscript","support","table","tablet","tachometer","tag","tags","tasks","taxi","tencent-weibo","terminal","text-height","text-width","th","th-large","th-list","thumb-tack","thumbs-down","thumbs-o-down","thumbs-o-up","thumbs-up","ticket","times","times-circle","times-circle-o","tint","toggle-down","toggle-left","toggle-off","toggle-on","toggle-right","toggle-up","trash","trash-o","tree","trello","trophy","truck","try","tty","tumblr","tumblr-square","turkish-lira","twitch","twitter","twitter-square","umbrella","underline","undo","university","unlink","unlock","unlock-alt","unsorted","upload","usd","user","user-md","users","video-camera","vimeo-square","vine","vk","volume-down","volume-off","volume-up","warning","wechat","weibo","weixin","wheelchair","wifi","windows","won","wordpress","wrench","xing","xing-square","yahoo","yelp","yen","youtube","youtube-play","youtube-square"];
+        pop.SetWidth(400);
+        pop.SetContent('<div class="bookshelf-edit-popup"><div class="bookshelf-icons" /></div>');
+        var i = icons.length;
+        while (i--) {
+            var icon = $('<label class="bbcodeIcons" title="' + normalise(icons[i]) + '"><div><span class="bookshelf-icon-element fa fa-' + icons[i] + '" data-icon-type="font-awesome" /></div><input type="radio" value="' + icons[i] + '" style="visibility:hidden;display:none;" name="icon" /></label>');
+            pop.content.find('.bookshelf-icons').prepend(icon);
+        }
+        $('.bbcodeIcons input').change(function() {
+            var f = BBCodeGetSelection(target);
+            InsertTextAt(target, '[icon]' + $(this).val() + '[/icon]' + f);
+            pop.Close();
+        });
+        pop.Show();
     }
-    $('.bbcodeIcons input').change(function() {
-        var f = BBCodeGetSelection(target);
-        InsertTextAt(target, '[icon]' + $(this).val() + '[/icon]' + f);
-        pop.Close();
-    });
-    pop.Show();
-}
-
-function makeReplacePopup(target) {
-    var pop = makePopup('Find and Replace', 'fa fa-magic', false);
-    pop.SetWidth(350);
-    pop.SetContent('<div style="padding:10px;"><input id="find" type="text" required="required" placeholder="Find" name="find" /><input id="replace" type="text" required="required" placeholder="Replace" name="replace" />');
-    pop.SetFooter('<button id="find_button" type="button" nextStart="0" class="styled_button">Find</button><button id="replace_button" type="button" class="styled_button">Replace</button><button id="replace_2_button" type="button" class="styled_button">Replace All</button>');
-    $('#find').change(function() {
-        $('#find_button').attr('nextStart', 0);
-    });
-    $('#find_button').click(function() {
-        var find = $('#find').val();
-        var nextStart = parseInt($(this).attr('nextStart'));
-        var text = target.value.substring(nextStart, target.value.length);
-        if (find != '') {
-            var start = text.indexOf(find);
-            var end = 0;
-            if (start == -1) {
-                start = target.value.indexOf(find);
-                nextStart = 0;
-            }
-            if (start != -1) {
-                start += nextStart;
-                end = start + find.length;
-            }
-            $(this).attr('nextStart', end);
-            target.selectionStart = start;
-            target.selectionEnd = end;
-            $(target).focus();
-        }
-    });
-    $('#replace_button').click(function() {
-        var find = $('#find').val();
-        if (find != '') {
-            var start = target.selectionStart;
-            var end = target.selectionEnd;
-            if (start != end) {
-                if (start > end) {
-                    var t = start;
-                    start = end;
-                    start = t;
+    
+    function makeReplacePopup(target) {
+        var pop = makePopup('Find and Replace', 'fa fa-magic', false);
+        pop.SetWidth(350);
+        pop.SetContent('<div style="padding:10px;"><input id="find" type="text" required="required" placeholder="Find" name="find" /><input id="replace" type="text" required="required" placeholder="Replace" name="replace" />');
+        pop.SetFooter('<button id="find_button" type="button" nextStart="0" class="styled_button">Find</button><button id="replace_button" type="button" class="styled_button">Replace</button><button id="replace_2_button" type="button" class="styled_button">Replace All</button>');
+        $('#find').change(function() {
+            $('#find_button').attr('nextStart', 0);
+        });
+        $('#find_button').click(function() {
+            var find = $('#find').val();
+            var nextStart = parseInt($(this).attr('nextStart'));
+            var text = target.value.substring(nextStart, target.value.length);
+            if (find != '') {
+                var start = text.indexOf(find);
+                var end = 0;
+                if (start == -1) {
+                    start = target.value.indexOf(find);
+                    nextStart = 0;
                 }
-                var sel = target.value.substring(start, end);
-                var replace = $('#replace').val();
-
-                if (sel == find) {
-                    target.value = target.value.substring(0, start) + replace + target.value.substring(start + sel.length, target.value.length);
-                    target.selectionStart = start + replace.length;
-                    target.selectionEnd = target.selectionStart;
+                if (start != -1) {
+                    start += nextStart;
+                    end = start + find.length;
                 }
-            } else {
-                finB.click();
-                if (target.selectionStart != target.selectionEnd) {
-                    replB.click();
-                }
+                $(this).attr('nextStart', end);
+                target.selectionStart = start;
+                target.selectionEnd = end;
+                $(target).focus();
             }
-            $(target).focus();
-        }
-    });
-    $('#replace_2_button').click(function() {
-        var find = $('#find').val();
-        if (find != '') {
-            $(target).val(replaceAll(find, $('#replace').val(), $(target).val()));
-        }
-    });
-    pop.Show();
-}
+        });
+        $('#replace_button').click(function() {
+            var find = $('#find').val();
+            if (find != '') {
+                var start = target.selectionStart;
+                var end = target.selectionEnd;
+                if (start != end) {
+                    if (start > end) {
+                        var t = start;
+                        start = end;
+                        start = t;
+                    }
+                    var sel = target.value.substring(start, end);
+                    var replace = $('#replace').val();
 
-function makeImagePopup(target) {
-    var message = makePopup("Add Direct Image", "fa fa-picture-o");
-    message.SetWidth(350);
-    message.SetContent('<div style="padding:10px;"><div class="pattern-checkerboard" style="border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;"><img id="bbcode_image_preview" style="display:block; margin:auto; max-height:100%; max-width:100%;" /></div><form id="add_image"></div>');
-    message.SetFooter('Please remember all images must be safe for work!<br />Try to avoid including enormous images (bigger than 1mb)');
-
-    var valid = $('<input type="hidden" value="0" name="valid"></input>');
-    message.content.find('form').append(valid);
-
-    $("#bbcode_image_preview").on("load", function() {
-        valid.attr("value", "1");
-        $("#add_image_error").css("display", "none");
-    });
-    $("#bbcode_image_preview").on("error", function() {
-        valid.attr("value", "0");
-    });
-
-    var input = $('<input id="bbcode_image" type="url" required="required" placeholder="Image URL" name="url" />');
-    message.content.find('form').append(input);
-
-    var check = function() {
-        $("#bbcode_image_preview").attr("src", this.value);
+                    if (sel == find) {
+                        target.value = target.value.substring(0, start) + replace + target.value.substring(start + sel.length, target.value.length);
+                        target.selectionStart = start + replace.length;
+                        target.selectionEnd = target.selectionStart;
+                    }
+                } else {
+                    finB.click();
+                    if (target.selectionStart != target.selectionEnd) {
+                        replB.click();
+                    }
+                }
+                $(target).focus();
+            }
+        });
+        $('#replace_2_button').click(function() {
+            var find = $('#find').val();
+            if (find != '') {
+                $(target).val(replaceAll(find, $('#replace').val(), $(target).val()));
+            }
+        });
+        pop.Show();
     }
+    
+    function makeImagePopup(target) {
+        var message = makePopup("Add Direct Image", "fa fa-picture-o");
+        message.SetWidth(350);
+        message.SetContent('<div style="padding:10px;"><div class="pattern-checkerboard" style="border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;"><img id="bbcode_image_preview" style="display:block; margin:auto; max-height:100%; max-width:100%;" /></div><form id="add_image"></div>');
+        message.SetFooter('Please remember all images must be safe for work!<br />Try to avoid including enormous images (bigger than 1mb)');
 
-    input.on("input", check);
-    input.change(check);
+        var valid = $('<input type="hidden" value="0" name="valid"></input>');
+        message.content.find('form').append(valid);
 
-    var button = $('<button type="button" class="styled_button">Add Image</button>');
-    button.click(function(e) {
-        var url = input.attr("value");
-        if (url != null && url != undefined && url != "" && valid.attr("value") == "1") {
-            var s = url.split("?");
-            if (s != null && s.length > 1) {
-                s = url + "&isEmote=true";
-            } else {
-                s = url + "?isEmote=true";
-            }
-            InsertBBCodeTags(target, "[img]" + s, "[/img]");
-            $("#message_close_button").click();
-        } else {
-            $("#add_image_error").removeClass("hidden");
+        $("#bbcode_image_preview").on("load", function() {
+            valid.attr("value", "1");
+            $("#add_image_error").css("display", "none");
+        });
+        $("#bbcode_image_preview").on("error", function() {
+            valid.attr("value", "0");
+        });
+
+        var input = $('<input id="bbcode_image" type="url" required="required" placeholder="Image URL" name="url" />');
+        message.content.find('form').append(input);
+
+        var check = function() {
+            $("#bbcode_image_preview").attr("src", this.value);
         }
-    });
-    message.content.find('form').append(button);
-    message.content.find('form').append('<div id="add_image_error" class="error-message hidden">Invalid Image</div>');
-    message.Show();
+
+        input.on("input", check);
+        input.change(check);
+
+        var button = $('<button type="button" class="styled_button">Add Image</button>');
+        button.click(function(e) {
+            var url = input.attr("value");
+            if (url != null && url != undefined && url != "" && valid.attr("value") == "1") {
+                var s = url.split("?");
+                if (s != null && s.length > 1) {
+                    s = url + "&isEmote=true";
+                } else {
+                    s = url + "?isEmote=true";
+                }
+                InsertBBCodeTags(target, "[img]" + s, "[/img]");
+                $("#message_close_button").click();
+            } else {
+                $("#add_image_error").removeClass("hidden");
+            }
+        });
+        message.content.find('form').append(button);
+        message.content.find('form').append('<div id="add_image_error" class="error-message hidden">Invalid Image</div>');
+        message.Show();
+    }
 }
 
 function insertColor(target) {
@@ -1989,12 +1988,13 @@ function hasSigned(value, format) {
 }
 
 function betterSizes(button, target) {
-    button.attr('data-function', '');
-    button.attr('data-init','true');
-    button.click(function() {
-        if (!$(this).parent().find('.drop-down').length) {
-            $(this).parent().append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
-            var holder = $(this).parent().find('ul');
+    var me = button.parent();
+    button.attr({
+     'data-function': '', 'data-init': 'true' 
+    }).click(function() {
+        if (!me.find('.drop-down').length) {
+            me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
+            var holder = me.find('ul');
             for (var i = 10; i < 20; i += 2) {
                 for (var k = 0; k < 50; k += 10) {
                     var size = $('<li><a>' + (i + k) + '</a></li>');
@@ -2006,8 +2006,9 @@ function betterSizes(button, target) {
                     size.hover(function () {
                         var sz = $(this).find('a').text();
                         var pop = makeToolTip(this);
-                        pop.parent().css('margin', '15px 0px 0px 0px');
-                        pop.parent().css('padding', '0px 0px 0px 0px');
+                        pop.parent().css({
+                            'margin': '15px 0 0 0', 'padding': '0'
+                        });
                         pop.append('<div style="font-size: ' + sz + 'px; line-height: 1; height: ' + sz + 'px;">Ab</div>');
                     }, function () {
                         $(this.children[1]).remove();
@@ -2019,12 +2020,13 @@ function betterSizes(button, target) {
 }
 
 function betterColors(button, target) {
-    button.attr('data-function', '');
-    button.attr('data-init','true');
-    button.click(function() {
-        if (!$(this).parent().find('.drop-down').length) {
-            $(this).parent().append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
-            var holder = $(this).parent().find('.colour-holder');
+    var me = button.parent();
+    button.attr({
+     'data-function': '', 'data-init': 'true' 
+    }).click(function() {
+        if (!me.find('.drop-down').length) {
+            me.append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
+            var holder = me.find('.colour-holder');
             addColorTiles(target, holder, colours.Sets['FimFiction'][1]);
             holder.append('<li class="divider" />');
             addColorTiles(target, holder, colours.Sets['Mane Six'][1]);
@@ -2286,9 +2288,8 @@ function censorStory(element) {
 }
 
 function setVideoSizes() {
-    var ratio = 560 / 315;
     $('.youtube_container > iframe').each(function() {
-        $(this).css('height', ($(this).width() / ratio) + 'px');
+        $(this).css('height', ($(this).width() / (560 / 315)) + 'px');
     });
 }
 
@@ -2357,21 +2358,17 @@ function buildBanner() {
         });
     }
     slider.ready();
-    registerCustomBanner();
-    finaliseThemes();
-    setTimeout(function() {
-        $('.user_toolbar').addClass('transitionable');
-        if (focusTile) focusTile.css({'top': tile.offset().top, 'left': tile.offset().left});
-    }, 1);
-}
-
-function registerCustomBanner(items) {
     logger.Log('loading custom banner...',10);
     customBanner = getCustomBanner();
     if (customBanner != null) {
         customBannerindex = banners.length;
         registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
     }
+    finaliseThemes();
+    setTimeout(function() {
+        $('.user_toolbar').addClass('transitionable');
+        if (focusTile) focusTile.css({'top': tile.offset().top, 'left': tile.offset().left});
+    }, 1);
 }
 
 function addBannerCredits(items) {
@@ -2409,8 +2406,8 @@ function addBannerCredits(items) {
     
     var holder = $('<div class="banner_credits" data-group="advanced" />');
     $('.banner_credits').last().after(holder);
-    var len = items.length;
-    for (var i = 0; i < len; i++) {
+    
+    for (var i = 0, len = items.length; i < len; i++) {
         var item = $('<div class="theme" />');
         holder.append(item);
         var banner = $('<div class="banner" title="Click to select this banner" style="background-image:url(' + items[i].url + ')" />');
@@ -2500,10 +2497,6 @@ function catchBanner(banner) {
     }
 }
 
-function addVersionInfo(version) {
-    addFooterData('Page running <a>FimFiction Advanced ' + version + '</a>');
-}
-
 function addFooterData(data) {
     var footer = $('.footer');
     if (footer.length) footer.first().find('.block')[0].innerHTML += '<br>' + data;
@@ -2548,7 +2541,7 @@ header.header .theme_selector a {\
     height: 50px;}\
 \
 /*Textarea fix*/\
-    textarea[required] {\
+textarea[required] {\
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}\
 \
 /*Dimmer colour fix*/\
@@ -2601,6 +2594,18 @@ header.header .theme_selector a {\
 #pm_content {\
     resize: none;\
     height: 200px;}\
+#chapter_edit_form textarea {\
+    width: 100% !important;\
+    resize: y;}\
+\
+/*Image sizing fix for comments and PMs*/\
+.comment_data div {\
+    max-width: 100% !important;}\
+.previous_message img.user_image,\
+.comment img.user_image {\
+    max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
+    makeStyle("\
+/*Bookmarks*/\
 .bookmark_item {\
     border-bottom: solid 1px grey;\
     padding-top: 5px;}\
@@ -2616,56 +2621,6 @@ header.header .theme_selector a {\
     line-height: 1em;}\
 .bookmark_item .subText, .bookmark_item .subText a {\
     color: #888;}\
-#chapter_edit_form textarea {\
-    width: 100% !important;\
-    resize: y;}\
-\
-/*Image sizing fix for comments and PMs*/\
-.comment_data div {\
-    max-width: 100% !important;}\
-.previous_message img.user_image,\
-.comment img.user_image {\
-    max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
-    makeStyle("\
-/*Bookmarks*/\
-.bookmark_marker {\
-    background-color: #B93838;\
-    left: -10px;\
-    top: 4px;\
-    line-height: 2.5em;\
-    color: #FFF;\
-    margin-right: -8px;\
-    float: left;\
-    font-size: 0.85em;\
-    font-weight: bold;\
-    border: 1px solid rgba(0, 0, 0, 0.15);\
-    box-shadow: -1px 2px 1px rgba(0, 0, 0, 0.2), 0px 0px 8px rgba(0, 0, 0, 0.2) inset;\
-    position: relative;\
-    text-shadow: -1px -1px rgba(0, 0, 0, 0.1);\
-    font-family: Constantia,Serif;\
-    width: 150px;\
-    height: 32px;\
-    cursor: pointer;\
-    display: none;\
-    margin-top: -16px;\
-    margin-right: -100%;}\
-.bookmark_marker:before {\
-    content: ' ';\
-    display: block;\
-    width: 0px;\
-    height: 0px;\
-    border-right: 9px solid #7D1F1F;\
-    border-bottom: 9px solid transparent;\
-    position: absolute;\
-    bottom: -10px;\
-    left: -1px;}\
-.bookmark_marker:after {\
-    content: '';\
-    font-family: 'FontAwesome';\
-    transform: rotate(45deg);\
-    float: right;\
-    margin-right: 10px;\
-    line-height: 30px;}\
 \
 /*Better Feed End Marker*/\
 #feed_end_marker img {\
