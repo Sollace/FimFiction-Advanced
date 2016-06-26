@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.7
+// @version     3.11.8
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -2020,93 +2020,89 @@ function betterSizes(button, target) {
 }
 
 function betterColors(button, target) {
-    var me = button.parent();
     button.attr({
      'data-function': '', 'data-init': 'true' 
-    }).click(function() {
-        if (!me.find('.drop-down').length) {
-            me.append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
-            var holder = me.find('.colour-holder');
-            addColorTiles(target, holder, colours.Sets['FimFiction'][1]);
-            holder.append('<li class="divider" />');
-            addColorTiles(target, holder, colours.Sets['Mane Six'][1]);
-            var recent = getRecentColours(6);
-            holder.append('<li class="recent-part divider"><span>Recent</span></li>');
-            var recentHolder = $('<span class="recent-part recent-colours" data-count="6" />');
-            holder.append(recentHolder);
-            if (recent.length > 0) {
-                addColorTiles(target, recentHolder, recent);
-            } else {
-                $('.recent-part').css('display','none');
-            }
-            holder.append('<li class="divider" />');
-            holder = $(this).parent().find('.button-holder');
-            var b = $('<li><a>More Colours</a></li>');
-            holder.append(b);
-            var me = this;
-            b.find('a').click(function() {
-                $('.active_text_area').removeClass('active_text_area');
-                $(target).addClass('active_text_area');
-                if (!$('#colour_manager').length) {
-                    var posOverride = [];
-                    if ($('.color_picker').length != 0) {
-                        posOverride.x = $('.color_picker').parent().parent().css('left');
-                        posOverride.y = $('.color_picker').parent().parent().css('top');
-                        $('.color_picker').parent().parent().remove();
-                    }
-                    var text = me.getAttribute('textTarget');
-                    var list = makePopup('All Colours', 'fa fa-tint', false, false);
-                    list.element.attr('id','colour_manager');
-                    list.SetWidth(560);
-                    for (var i in colours.Sets) {
-                        addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
-                    }
-
-                    var recent = getRecentColours(15);
-                    if (recent.length > 0) {
-                        var recentSec = addColorSection(list.content, recent, 'Recent');
-                        recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
-                        var reset = $('<a href="javascript:void(0);" style="float:right;" >Clear</a>');
-                        recentSec.find('.colour-section-header').append(reset);
-                        reset.click(function (){
-                            clearRecentColours();
-                            $(recentSec).find('ul').css('opacity', 0.3);
-                            $(recentSec).find('ul').css('pointer-events', 'none');
-                        });
-                    }
-                    list.content.addClass("color_picker");
-                    list.Show();
-                    if (posOverride.x != null) {
-                        list.SetPosition(posOverride.x, posOverride.y);
-                    }
-                } else {
-                    $('#colour_manager').removeClass('hidden');
-                }
-            });
-
-            b = $('<li><a>Custom Colour</a></li>');
-            holder.append(b);
-            b.find('a').click(function() {
-                insertColor(target);
-            });
-        }
+    }).one('click', function() {
+        initColourPopup(target, button.parent(), this);
+    }).on('click', function() {
         $('.recent-colours').each(function() {
-            var recent = getRecentColours(parseInt($(this).attr('data-count')));
+            var me = $(this);
+            var recent = getRecentColours(parseInt(me.attr('data-count')));
             if (recent.length > 0) {
-                $(this).empty();
-                addColorTiles(target, $(this), recent);
-                $(this).css({
-                    'opacity': '',
-                    'pointer-events': ''
-                });
+                me.empty();
+                addColorTiles(target, me, recent);
+                me.css({'opacity': '', 'pointer-events': ''});
                 $('.recent-part').css('display','');
             } else {
-                $(this).css({
-                    'opacity': '0.3',
-                    'pointer-events': 'none'
-                });
+                me.css({'opacity': '0.3', 'pointer-events': 'none'});
             }
         });
+    });
+}
+
+function initColourPopup(target, me, self) {
+    me.append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
+    var holder = me.find('.colour-holder');
+    addColorTiles(target, holder, colours.Sets['FimFiction'][1]);
+    holder.append('<li class="divider" />');
+    addColorTiles(target, holder, colours.Sets['Mane Six'][1]);
+    var recent = getRecentColours(6);
+    holder.append('<li class="recent-part divider"><span>Recent</span></li>');
+    var recentHolder = $('<span class="recent-part recent-colours" data-count="6" />');
+    holder.append(recentHolder);
+    if (recent.length > 0) {
+        addColorTiles(target, recentHolder, recent);
+    } else {
+        $('.recent-part').css('display','none');
+    }
+    holder.append('<li class="divider" />');
+    holder = $(this).parent().find('.button-holder');
+    var b = $('<li><a>More Colours</a></li>');
+    holder.append(b);
+    b.find('a').click(function() {
+        $('.active_text_area').removeClass('active_text_area');
+        $(target).addClass('active_text_area');
+        if (!$('#colour_manager').length) {
+            var posOverride = [];
+            if ($('.color_picker').length != 0) {
+                posOverride.x = $('.color_picker').parent().parent().css('left');
+                posOverride.y = $('.color_picker').parent().parent().css('top');
+                $('.color_picker').parent().parent().remove();
+            }
+            var text = self.getAttribute('textTarget');
+            var list = makePopup('All Colours', 'fa fa-tint', false, false);
+            list.element.attr('id','colour_manager');
+            list.SetWidth(560);
+            for (var i in colours.Sets) {
+                addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
+            }
+
+            var recent = getRecentColours(15);
+            if (recent.length > 0) {
+                var recentSec = addColorSection(list.content, recent, 'Recent');
+                recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
+                var reset = $('<a href="javascript:void(0);" style="float:right;" >Clear</a>');
+                recentSec.find('.colour-section-header').append(reset);
+                reset.click(function (){
+                    clearRecentColours();
+                    $(recentSec).find('ul').css('opacity', 0.3);
+                    $(recentSec).find('ul').css('pointer-events', 'none');
+                });
+            }
+            list.content.addClass("color_picker");
+            list.Show();
+            if (posOverride.x != null) {
+                list.SetPosition(posOverride.x, posOverride.y);
+            }
+        } else {
+            $('#colour_manager').removeClass('hidden');
+        }
+    });
+
+    b = $('<li><a>Custom Colour</a></li>');
+    holder.append(b);
+    b.find('a').click(function() {
+        insertColor(target);
     });
 }
 
