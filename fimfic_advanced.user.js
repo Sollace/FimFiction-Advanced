@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.8
+// @version     3.11.9
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.7',
+var VERSION = '3.11.9',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -2577,10 +2577,6 @@ textarea[required] {\
 .user_toolbar > ul > li > ul ul {\
     border-bottom-left-radius: 4px;\
     border-bottom-right-radius: 4px;}\
-\
-/*Story Chapter Width Fix*/\
-.story_container {\
-    max-width: 1300px !important;}\
 \
 /*Comment insert_left/right fix*/\
 .comment_data, .blog_post_content, .message_content, .chapter_content {\
