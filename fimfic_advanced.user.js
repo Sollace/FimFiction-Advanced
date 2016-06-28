@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.9
+// @version     3.11.10
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.9',
+var VERSION = '3.11.10',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -3237,7 +3237,7 @@ function clearRecentColours() {settingsMan.remove('colour_use_history');}
 function addRecent(color) {
     var recent = settingsMan.get('colour_use_history', '');
     recent = recent.length ? ('#' + recent.replace(/;/g,';#')).split(';') : [];
-    for (var i = recent.length - 1; i; i--) {
+    for (var i = recent.length; i--;) {
         if (recent[i] == color) recent.splice(i, 1);
     }
     recent.push(color);
