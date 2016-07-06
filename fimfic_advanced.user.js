@@ -7,7 +7,7 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
-// @require     http://code.jquery.com/jquery-1.8.3.min.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/jquery-1.8.3.min.wrap.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
