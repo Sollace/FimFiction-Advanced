@@ -1084,7 +1084,7 @@ function buildBookmarksGui(tab) {
                     renderPage();
                 }
             }, 360);
-            markBookmarkDeleted($(this).attr('cookieName'));
+            removeBookmark($(this).attr('cookieName'));
         });
         $(row.children()[2]).append(delBut);
         row.css('opacity', 1);
@@ -1097,14 +1097,12 @@ function buildBookmarksGui(tab) {
         while (i--) {
             if (keys[i].indexOf('bookmark_position') != -1) {
                 var item = keys[i].replace('_bookmark_position', '');
-                if (settingsMan.int(keys[i]) >= 0) {
-                    if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
-                        removeBookmark(item);
-                    } else {
-                        var entry = getShallowBookmark(item);
-                        entry.raw = keys[i];
-                        result.unshift(entry);
-                    }
+                if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
+                    removeBookmark(item);
+                } else {
+                    var entry = getShallowBookmark(item);
+                    entry.raw = keys[i];
+                    result.unshift(entry);
                 }
             }
         }
@@ -1516,18 +1514,7 @@ function applyBookmarks() {
             updatePlaceBookmark();
             restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
         });
-        $(document).ready(function() {
-            setTimeout(function() {
-                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
-                var bookmark = getBookmarkPosition(storyNumber);
-                if (bookmark < 0) {
-                    $('#remove_bookmark').click();
-                    $(document).scrollTop(0);
-                    removeBookmark(storyNumber);
-                }
-            },501);
-        });
-
+        
         function updatePlaceBookmark() {
             if (marker.hasClass('placed')) {
                 removeBookmark(storyNumber);
@@ -3265,6 +3252,7 @@ function setBookmark(num) {
         $('.story-page-header .image-container img').attr('src').split('/').reverse()[0].split(num.split(/:|_/)[0])[0]
     ];
     settingsMan.set(num + '_bookmark_d', data.join('\n'));
+    settingsMan.set(num + '_bookmark_id', findChapterId());
     settingsMan.set('latest_bookmark', num);
 }
 function getShallowBookmark(num) {
@@ -3303,8 +3291,6 @@ function getBookmarkData(entry) {
         (entry.published ? '/' + entry.url.title + '/' + entry.url.chapTitle : '');
     return entry;
 }
-function setBookmarkData(name, me) {settingsMan.set(name + '_bookmark_d', me.title + '\n' + me.chapTitle);}
-function markBookmarkDeleted(num) {settingsMan.set(num + '_bookmark_position', -1);}
 function removeAllBookmarks() {
     var keys = settingsMan.keys();
     for (var i = 0; i < keys.length; i++) {
@@ -3313,17 +3299,39 @@ function removeAllBookmarks() {
         }
     }
 }
+function findChapterId() {
+  var link = $('.chapter_download_links a[title="Download"]');
+  if (link.length) {
+    link = (link.attr('data-txt') || "").split('?chapter=');
+    if (link.length > 1) return link[1].split('&')[0];
+  }
+  return null;
+}
 function removeBookmark(num) {
     settingsMan.set(num + '_bookmark_position', -1);
     settingsMan.remove(num + '_bookmark_position');
     settingsMan.remove(num + '_bookmark_d');
     if (getLatestBookmark() == num) settingsMan.remove('latest_bookmark');
+    chapter_id = settingsMan.get(num + '_bookmark_id');
+    if (chapter_id) {
+        if (win().is_logged_in) {
+            new AjaxRequest({
+                'url': '/ajax/chapters/' + chapter_id + '/bookmark',
+                'method': 'DELETE',
+                'signed': true
+            });
+        } else {
+            LocalStorageRemove('bookmark' + chapter_id);
+        }
+    }
 }
 function getTotalBookmarks() {
     var result = 0;
     var keys = settingsMan.keys();
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('bookmark_position') != -1) result++;
+        if (keys[i].indexOf('bookmark_position') != -1) {
+            result++;
+        }
     }
     return result;
 }
