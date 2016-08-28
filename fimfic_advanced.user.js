@@ -1315,10 +1315,10 @@ function addChapterButtonsExtras() {
     if (compact || loggedIn) {
         var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
         me.prepend(extra);
+        var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
         if (loggedIn) {
             extra.append('<div class="mark_all_holder read"><i class="chapter-read-all" /><span class="date">mark all Read</a></div>');
             extra.append('<div class="mark_all_holder unread"><i class="chapter-unread-all" /><span class="date">mark all Unread</a></div>');
-            var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
             if (unreadChaps.length) {
                 unreadChaps = unreadChaps.first().parent();
                 unreadChaps.css('transition', 'background 0.5s ease 1s');
@@ -1336,7 +1336,8 @@ function addChapterButtonsExtras() {
             }
         }
         if (compact) {
-            extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
+            if (unreadChaps.length) extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
+            extra.append('<a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
             extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
             extra.after('<div class="all_chapters_hidden"><li>' + chapters + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
         }
@@ -1996,27 +1997,35 @@ function betterSizes(button, target) {
         if (!me.find('.drop-down').length) {
             me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
             var holder = me.find('ul');
+            addSize(holder, target, 0.5, 'em');
+            addSize(holder, target, 0.75, 'em');
+            addSize(holder, target, 1.5, 'em');
+            addSize(holder, target, '2.0', 'em');
             for (var i = 10; i < 20; i += 2) {
                 for (var k = 0; k < 50; k += 10) {
-                    var size = $('<li><a>' + (i + k) + '</a></li>');
-                    holder.append(size);
-                    size.find('a').click(function() {
-                        InsertBBCodeTags(target, '[size=' + $(this).text() + ']', '[/size]');
-                        $(document).trigger("close-dropdowns");
-                    });
-                    size.hover(function () {
-                        var sz = $(this).find('a').text();
-                        var pop = makeToolTip(this);
-                        pop.parent().css({
-                            'margin': '15px 0 0 0', 'padding': '0'
-                        });
-                        pop.append('<div style="font-size: ' + sz + 'px; line-height: 1; height: ' + sz + 'px;">Ab</div>');
-                    }, function () {
-                        $(this.children[1]).remove();
-                    });
+                    addSize(holder, target, (i + k), 'px');
                 }
             }
         }
+    });
+}
+
+function addSize(holder, target, amount, unit) {
+    var size = $('<li><a>' + amount + '</a></li>');
+    holder.append(size);
+    size.find('a').click(function() {
+        InsertBBCodeTags(target, '[size=' + amount + (unit == 'px' ? '' : 'em') + ']', '[/size]');
+        $(document).trigger("close-dropdowns");
+    });
+    size.hover(function () {
+        var sz = $(this).find('a').text();
+        var pop = makeToolTip(this);
+        pop.parent().css({
+            'margin': '15px 0 0 0', 'padding': '0'
+        });
+        pop.append('<div style="font-size: ' + sz + unit + '; line-height: 1; height: ' + sz + unit + ';">Ab</div>');
+    }, function () {
+        $(this.children[1]).remove();
     });
 }
 
