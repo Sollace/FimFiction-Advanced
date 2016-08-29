@@ -1,12 +1,13 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.10
+// @version     3.11.11
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     http://www.fimfiction.net/*
 // @include     https://www.fimfiction.net/*
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/jquery-1.8.3.min.wrap.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Logger.js
@@ -16,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.10',
+var VERSION = '3.11.11',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
 //==================================================================================================
@@ -1083,7 +1084,7 @@ function buildBookmarksGui(tab) {
                     renderPage();
                 }
             }, 360);
-            markBookmarkDeleted($(this).attr('cookieName'));
+            removeBookmark($(this).attr('cookieName'));
         });
         $(row.children()[2]).append(delBut);
         row.css('opacity', 1);
@@ -1096,14 +1097,12 @@ function buildBookmarksGui(tab) {
         while (i--) {
             if (keys[i].indexOf('bookmark_position') != -1) {
                 var item = keys[i].replace('_bookmark_position', '');
-                if (settingsMan.int(keys[i]) >= 0) {
-                    if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
-                        removeBookmark(item);
-                    } else {
-                        var entry = getShallowBookmark(item);
-                        entry.raw = keys[i];
-                        result.unshift(entry);
-                    }
+                if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
+                    removeBookmark(item);
+                } else {
+                    var entry = getShallowBookmark(item);
+                    entry.raw = keys[i];
+                    result.unshift(entry);
                 }
             }
         }
@@ -1314,10 +1313,10 @@ function addChapterButtonsExtras() {
     if (compact || loggedIn) {
         var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
         me.prepend(extra);
+        var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
         if (loggedIn) {
             extra.append('<div class="mark_all_holder read"><i class="chapter-read-all" /><span class="date">mark all Read</a></div>');
             extra.append('<div class="mark_all_holder unread"><i class="chapter-unread-all" /><span class="date">mark all Unread</a></div>');
-            var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
             if (unreadChaps.length) {
                 unreadChaps = unreadChaps.first().parent();
                 unreadChaps.css('transition', 'background 0.5s ease 1s');
@@ -1335,7 +1334,8 @@ function addChapterButtonsExtras() {
             }
         }
         if (compact) {
-            extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
+            if (unreadChaps.length) extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
+            extra.append('<a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
             extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
             extra.after('<div class="all_chapters_hidden"><li>' + chapters + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
         }
@@ -1477,20 +1477,9 @@ function applyBookmarks() {
     var pbkmark = $('#place_bookmark');
     if (pbkmark.length) {
         var storyNumber = getStoryNumber();
-        var bookmark = getBookmarkPosition(storyNumber);
         var marker = $('#chapter_bookmark');
-
-        if (bookmark > 0) {
-            $(document).scrollTop(bookmark);
-            bookmark = bookmark - $('.chapter_content').offset().top;
-            marker.addClass("placed");
-            marker.css('top', bookmark + 'px');
-            marker.one('click',function() {
-                removeBookmark(storyNumber);
-            });
-        }
-        var restorePos = $('<li><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
-        $(restorePos.children()[0]).click(function() {
+        var restorePos = $('<li style="display:none;"><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
+        restorePos.find('a').click(function() {
             logger.Log('Set scroll Position');
             if ($('#chapter_bookmark').hasClass('placed')) {
                 $('html, body').animate({
@@ -1498,39 +1487,33 @@ function applyBookmarks() {
                 }, 500);
             }
         });
-        $(pbkmark.parent()).after(restorePos);
+        pbkmark.parent().after(restorePos);
         $('#place_bookmark').on('mouseup', function() {
             restorePos.css('display', 'none');
         });
         $(document).on('mouseup', '#chapter_format p', function() {
             if (marker.hasClass('placing')) {
                 updatePlaceBookmark();
-                restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
             } else {
                 restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
             }
         });
         $('#chapter_bookmark').on('mouseup', function() {
             updatePlaceBookmark();
-            restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
         });
         $(document).ready(function() {
             setTimeout(function() {
                 restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
-                var bookmark = getBookmarkPosition(storyNumber);
-                if (bookmark < 0) {
-                    $('#remove_bookmark').click();
-                    $(document).scrollTop(0);
-                    removeBookmark(storyNumber);
-                }
-            },501);
+            },550);
         });
-
+        
         function updatePlaceBookmark() {
             if (marker.hasClass('placed')) {
                 removeBookmark(storyNumber);
+                restorePos.css('display', 'none');
             } else {
                 setBookmark(storyNumber);
+                restorePos.css('display', '');
             }
         }
     }
@@ -1995,27 +1978,35 @@ function betterSizes(button, target) {
         if (!me.find('.drop-down').length) {
             me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
             var holder = me.find('ul');
+            addSize(holder, target, 0.5, 'em');
+            addSize(holder, target, 0.75, 'em');
+            addSize(holder, target, 1.5, 'em');
+            addSize(holder, target, '2.0', 'em');
             for (var i = 10; i < 20; i += 2) {
                 for (var k = 0; k < 50; k += 10) {
-                    var size = $('<li><a>' + (i + k) + '</a></li>');
-                    holder.append(size);
-                    size.find('a').click(function() {
-                        InsertBBCodeTags(target, '[size=' + $(this).text() + ']', '[/size]');
-                        $(document).trigger("close-dropdowns");
-                    });
-                    size.hover(function () {
-                        var sz = $(this).find('a').text();
-                        var pop = makeToolTip(this);
-                        pop.parent().css({
-                            'margin': '15px 0 0 0', 'padding': '0'
-                        });
-                        pop.append('<div style="font-size: ' + sz + 'px; line-height: 1; height: ' + sz + 'px;">Ab</div>');
-                    }, function () {
-                        $(this.children[1]).remove();
-                    });
+                    addSize(holder, target, (i + k), 'px');
                 }
             }
         }
+    });
+}
+
+function addSize(holder, target, amount, unit) {
+    var size = $('<li><a>' + amount + '</a></li>');
+    holder.append(size);
+    size.find('a').click(function() {
+        InsertBBCodeTags(target, '[size=' + amount + (unit == 'px' ? '' : 'em') + ']', '[/size]');
+        $(document).trigger("close-dropdowns");
+    });
+    size.hover(function () {
+        var sz = $(this).find('a').text();
+        var pop = makeToolTip(this);
+        pop.parent().css({
+            'margin': '15px 0 0 0', 'padding': '0'
+        });
+        pop.append('<div style="font-size: ' + sz + unit + '; line-height: 1; height: ' + sz + unit + ';">Ab</div>');
+    }, function () {
+        $(this.children[1]).remove();
     });
 }
 
@@ -3246,7 +3237,6 @@ function addRecent(color) {
 }
 
 function getLatestBookmark() {return settingsMan.get('latest_bookmark');}
-function getBookmarkPosition(num) {return settingsMan.int(num + '_bookmark_position', 0);}
 function setBookmark(num) {
     settingsMan.set(num + '_bookmark_position', '0');
     var data = [
@@ -3255,6 +3245,7 @@ function setBookmark(num) {
         $('.story-page-header .image-container img').attr('src').split('/').reverse()[0].split(num.split(/:|_/)[0])[0]
     ];
     settingsMan.set(num + '_bookmark_d', data.join('\n'));
+    settingsMan.set(num + '_bookmark_id', findChapterId());
     settingsMan.set('latest_bookmark', num);
 }
 function getShallowBookmark(num) {
@@ -3293,8 +3284,6 @@ function getBookmarkData(entry) {
         (entry.published ? '/' + entry.url.title + '/' + entry.url.chapTitle : '');
     return entry;
 }
-function setBookmarkData(name, me) {settingsMan.set(name + '_bookmark_d', me.title + '\n' + me.chapTitle);}
-function markBookmarkDeleted(num) {settingsMan.set(num + '_bookmark_position', -1);}
 function removeAllBookmarks() {
     var keys = settingsMan.keys();
     for (var i = 0; i < keys.length; i++) {
@@ -3303,17 +3292,39 @@ function removeAllBookmarks() {
         }
     }
 }
+function findChapterId() {
+  var link = $('.chapter_download_links a[title="Download"]');
+  if (link.length) {
+    link = (link.attr('data-txt') || "").split('?chapter=');
+    if (link.length > 1) return link[1].split('&')[0];
+  }
+  return null;
+}
 function removeBookmark(num) {
     settingsMan.set(num + '_bookmark_position', -1);
     settingsMan.remove(num + '_bookmark_position');
     settingsMan.remove(num + '_bookmark_d');
     if (getLatestBookmark() == num) settingsMan.remove('latest_bookmark');
+    chapter_id = settingsMan.get(num + '_bookmark_id');
+    if (chapter_id) {
+        if (win().is_logged_in) {
+            new AjaxRequest({
+                'url': '/ajax/chapters/' + chapter_id + '/bookmark',
+                'method': 'DELETE',
+                'signed': true
+            });
+        } else {
+            LocalStorageRemove('bookmark' + chapter_id);
+        }
+    }
 }
 function getTotalBookmarks() {
     var result = 0;
     var keys = settingsMan.keys();
     for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('bookmark_position') != -1) result++;
+        if (keys[i].indexOf('bookmark_position') != -1) {
+            result++;
+        }
     }
     return result;
 }
