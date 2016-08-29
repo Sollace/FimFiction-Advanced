@@ -1477,20 +1477,9 @@ function applyBookmarks() {
     var pbkmark = $('#place_bookmark');
     if (pbkmark.length) {
         var storyNumber = getStoryNumber();
-        var bookmark = getBookmarkPosition(storyNumber);
         var marker = $('#chapter_bookmark');
-
-        if (bookmark > 0) {
-            $(document).scrollTop(bookmark);
-            bookmark = bookmark - $('.chapter_content').offset().top;
-            marker.addClass("placed");
-            marker.css('top', bookmark + 'px');
-            marker.one('click',function() {
-                removeBookmark(storyNumber);
-            });
-        }
-        var restorePos = $('<li><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
-        $(restorePos.children()[0]).click(function() {
+        var restorePos = $('<li style="display:none;"><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
+        restorePos.find('a').click(function() {
             logger.Log('Set scroll Position');
             if ($('#chapter_bookmark').hasClass('placed')) {
                 $('html, body').animate({
@@ -1498,28 +1487,33 @@ function applyBookmarks() {
                 }, 500);
             }
         });
-        $(pbkmark.parent()).after(restorePos);
+        pbkmark.parent().after(restorePos);
         $('#place_bookmark').on('mouseup', function() {
             restorePos.css('display', 'none');
         });
         $(document).on('mouseup', '#chapter_format p', function() {
             if (marker.hasClass('placing')) {
                 updatePlaceBookmark();
-                restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
             } else {
                 restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
             }
         });
         $('#chapter_bookmark').on('mouseup', function() {
             updatePlaceBookmark();
-            restorePos.css('display', marker.hasClass('placed') ? 'none' : '');
+        });
+        $(document).ready(function() {
+            setTimeout(function() {
+                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
+            },550);
         });
         
         function updatePlaceBookmark() {
             if (marker.hasClass('placed')) {
                 removeBookmark(storyNumber);
+                restorePos.css('display', 'none');
             } else {
                 setBookmark(storyNumber);
+                restorePos.css('display', '');
             }
         }
     }
@@ -3243,7 +3237,6 @@ function addRecent(color) {
 }
 
 function getLatestBookmark() {return settingsMan.get('latest_bookmark');}
-function getBookmarkPosition(num) {return settingsMan.int(num + '_bookmark_position', 0);}
 function setBookmark(num) {
     settingsMan.set(num + '_bookmark_position', '0');
     var data = [
