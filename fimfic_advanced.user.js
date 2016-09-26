@@ -2609,8 +2609,9 @@ textarea[required] {\
 #feed_end_marker img {\
     display: none;}\
 #feed_end_marker {\
-    animation: 1.5s linear infinite spin;}\
-#feed_end_marker:before {\
+    -webkit-animation: fa-spin 2s infinite linear;\
+    animation: fa-spin 2s infinite linear;}\
+#feed_end_marker::before {\
     content: '';\
     font-family: FontAwesome;\
     font-size: 66px;\
