@@ -2994,7 +2994,7 @@ form > .content_box {\
     top: 85px;}\
 .fix_userbar.fix_switcher #banner_switcher,\
 .fix_userbar.fix_feed .feed-toolbar {\
-    top: 40px;}", "FimFiction_Advanced_Styleshet");
+    top: 40px;}", "FimFiction_Advanced_Stylesheet");
 }
 
 function addBannerCss() {
