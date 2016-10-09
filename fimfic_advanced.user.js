@@ -1064,7 +1064,7 @@ function buildBookmarksGui(tab) {
             $(this).after('<i class="fa fa-book bookmark-img" />').remove();
         });
         $(row.children()[0]).append(image);
-        image.attr('src', item.data.cover);
+        image.attr('src', 'https:' + item.data.cover);
         $(row.children()[1]).append('<div><span class="chapter">' + (i + 1) + '. </span><a class="chapter" href="' + item.url.chapter + '">' + item.data.chapTitle + '</a></div>');
         $(row.children()[1]).append('<span class="subText"> in <a class="story_name" href="' + item.url.story + '">' + item.data.title + '</a></span>');
         
@@ -1627,23 +1627,38 @@ function initBlogPage() {
     logger.Log('is_users_blog=true',10);
     if (!$('.content_box.blog_post_content_box').length) {
         logger.Log('creating notice..',8);
-        var nopost = $("<div />");
+        var name = getUserName();
         var page = $("div.page_list").first().parent();
         if (page != null) {
-            page.prev().append(nopost);
-            nopost.attr("class", "content_box blog_post_content_box");
-            nopost.css("margin-top", "0px");
-            nopost.append('\
-<div class="content_box_header">\
-<h2><span class="resize_text" data-multiline="true" data-minimum-size="0.6" data-start-size="1.2" data-max-height="80" style="font-size: 1.2em;">\
-<a href="//www.fimfiction.net/manage_user/edit_blog_post">Start a blog</a>\
-<span/></h2>\
-</div>');
-            var message = $('<div class="main" />');
-            nopost.append(message);
-            var messageInner = $('<div class="blog_post_content" />');
-            message.append(messageInner);
-            messageInner.append('<p>You have no blog posts. </p><a href="//www.fimfiction.net/manage_user/edit_blog_post">Click here to make your first blog post</a>');
+            page.prev().append('<div class="content_box blog_post_content_box " style="margin-top:0px; ">\
+			<div class="calendar" style="margin-top:0px;" title="">\
+				<div class="month">Jan</div>\
+				<div class="day">1<span style="font-size:0.6em;">st</span>\
+					<div class="year">1992</div>\
+				</div>\
+			</div>\
+		<div class="arrow">\
+		</div>	\
+		<div class="blog-title show-buttons">\
+			<div class="right_box"><div class="button-group"><a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a><a href="javascript:void(0);" class="styled_button button-icon-only styled_button_white"><i class="fa fa-trash-o"></i></a></div></div>\
+			<h2>\
+				<span class="resize_text" data-max-height="80" data-start-size="1.7" data-minimum-size="1.3" style="font-size: 1.7em;">\
+                    <a href="/manage_user/edit_blog_post">You have no blog posts</a>\
+				</span>\
+			</h2>\
+		</div>\
+		<div class="main">\
+			<div class="blog_post_content" style="text-align:center">\
+                <p>Go to <b><i class="fa fa-user"></i> ' + name + '</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>\
+                <br><br>Or click \
+                <div class="button-group"><a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a></div>\
+               to create one now and start talking!</div>\
+			<div class="information_box">\
+				<a href="/user/' + urlSafe(name) + '"><b>' + name + '</b></a> <b class="dot">·</b> 0 views\
+				<b>·</b>\
+			</div>\
+		</div>\
+	</div>');
         }
         logger.Log('Notice added',8);
     }
@@ -2609,8 +2624,9 @@ textarea[required] {\
 #feed_end_marker img {\
     display: none;}\
 #feed_end_marker {\
-    animation: 1.5s linear infinite spin;}\
-#feed_end_marker:before {\
+    -webkit-animation: fa-spin 2s infinite linear;\
+    animation: fa-spin 2s infinite linear;}\
+#feed_end_marker::before {\
     content: '';\
     font-family: FontAwesome;\
     font-size: 66px;\
@@ -2978,7 +2994,7 @@ form > .content_box {\
     top: 85px;}\
 .fix_userbar.fix_switcher #banner_switcher,\
 .fix_userbar.fix_feed .feed-toolbar {\
-    top: 40px;}", "FimFiction_Advanced_Styleshet");
+    top: 40px;}", "FimFiction_Advanced_Stylesheet");
 }
 
 function addBannerCss() {
