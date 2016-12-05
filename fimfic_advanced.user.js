@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.11
+// @version     3.11.13
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -1289,13 +1289,8 @@ function applyChapterButtons() {
         $(this).closest('.chapters').removeClass('chapters_expanded');
     }).on('click', 'a.comact.min', function() {
         var me = $(this).closest('.chapters');
-        if (me.hasClass('chapters_compact')) {
-            me.removeClass('chapters_compact');
-            this.innerHTML = 'Minimize';
-        } else {
-            me.addClass('chapters_compact');
-            this.innerHTML = 'Maximize';
-        }
+        me.toggleClass('chapters_compact')
+        this.innerHTML = me.hasClass('chapters_compact') ? 'Maximize' : 'Minimize';
     }).on('click', 'a.comact.max', function() {
         var me = $(this).closest('.chapters');
         if (me.hasClass('chapters_compact')) {
@@ -1584,6 +1579,12 @@ function applyCodePatches() {
         result.original = old;
         return result;
     })(window.ShowErrorWindow);
+    if (!window.__window_focused_fix) {
+        window.__window_focused_fix = true;
+        $(document).on('focus', function() {
+            window.window_focused = true;
+        });
+    }
 }
 
 function initCommentArea(hold) {
@@ -3427,10 +3428,10 @@ function setBGSnow(v) {
 function applySnowing(g, v) {
     if (v < 2 && (v == 0 || DECEMBER)) {
         if (!snower) {
-            if (g && $('#title .home_link').length) {
-                snower = snowBG($(window), $('#title .home_link'), false);
+            if (g) {
+                if ($('#title .home_link').length) snower = snowBG($(window), $('#title .home_link'), true, false);
             } else {
-               snower = snowBG($(window), $('body'), true);
+               snower = snowBG($(window), $('body'), false, true);
             }
             logger.Log('setup Ultra Snow',9);
         } else {
@@ -4523,7 +4524,7 @@ function playerEnded(s) {\
     }
 }
 
-function snowBG(env, cont, fix) {
+function snowBG(env, cont, reverse, fix) {
     var Particle3D = function (material) {
         THREE.Particle.call(this, material);
         this.velocity = new THREE.Vector3(0,-8,0);
@@ -4594,7 +4595,11 @@ function snowBG(env, cont, fix) {
             scene.add(particle);
             particles.push(particle);
         }
-        $(container).prepend(renderer.domElement);
+        if (reverse) {
+            $(container).append(renderer.domElement);
+        } else {
+            $(container).prepend(renderer.domElement);
+        }
         $(renderer.domElement).css({ 'pointer-events': 'none' });
         if (fix) $(renderer.domElement).css({ 'position': 'fixed', 'top': '0px', 'left': '0px' });
         var ticker = window.setInterval(loop, 1000 / 60);
