@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.13
+// @version     3.11.14
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,9 +17,10 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.13',
+var VERSION = '3.11.14',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
+if (CURRENT_LOCATION.indexOf('login_frame') != 0);
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 var settingsMan = {
@@ -60,12 +61,13 @@ var settingsMan = {
             document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
                 'q': 1, 'p': document.location.protocol, 'd': this.__values
             }));
-            document.location.protocol = 'http';
+            if (!getAlwaysHttps()) document.location.protocol = 'http';
             return;
         }
         document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
             'p': document.location.protocol, 'd': this.__values
         }));
+        if (getAlwaysHttps()) document.location.protocol = 'https';
         var iframe = $('<iframe />');
         iframe.on('load', function() {
             iframe.remove();
@@ -88,7 +90,12 @@ var settingsMan = {
                     localStorage[i] = imported.d[i];
                 }
             }
+            if (getAlwaysHttps() && document.location.protocol == 'https:') return;
             if (imported.q) document.location.protocol = imported.p.split(':')[0];
+        }
+    } else {
+        if (getAlwaysHttps() && (document.location.protocol != 'https:')) {
+            document.location.protocol = 'https';
         }
     }
 })();
@@ -451,6 +458,14 @@ function buildSettingsTab(tab) {
             setupSweetie();
         }
     });
+    
+    var https = tab.AddCheckBox("hts", "Always Https", getAlwaysHttps());
+    https.change(function() {
+        var val = this.checked;
+        setAlwaysHttps(val);
+        settingsMan.save(function() {});
+    });
+    addTooltip('If enabled the site will always redirect to the https version.', https);
     
     tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
         setTabsLeft($(this).val() == '1');
@@ -2586,7 +2601,7 @@ textarea[required] {\
     border-bottom-right-radius: 4px;}\
 \
 /*Comment insert_left/right fix*/\
-.comment_data, .blog_post_content, .message_content, .chapter_content {\
+.comment_data, .blog_post_content, .message_content, .chapter_content, blockquote {\
     overflow: hidden;}\
 \
 /*Editor fixes*/\
@@ -2632,6 +2647,12 @@ textarea[required] {\
     font-family: FontAwesome;\
     font-size: 66px;\
     color: rgba(0,0,0,0.6);}\
+\
+/*For snow in the background*/\
+body > canvas ~ .body_container .nav_bar,\
+body > canvas ~ .footer {\
+  z-index: 200000;\
+  position: relative;}\
 \
 /*Chapter Enhancements*/\
 .mark_all_holder {\
@@ -3190,6 +3211,9 @@ function setSweetieEnabled(val) {
         settingsMan.remove("sweetie_img_index");
     }
 }
+
+function getAlwaysHttps() {return settingsMan.getB('always_https', false);}
+function setAlwaysHttps(val) {settingsMan.setB('always_https', val, false);}
 
 function getSlide() {return settingsMan.int("slideShow", 0);}
 function setSlide(v) {settingsMan.set("slideShow", v, 0);}
