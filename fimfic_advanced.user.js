@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.13
+// @version     3.11.14
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,9 +17,10 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.13',
+var VERSION = '3.11.14',
     DECEMBER = (new Date()).getMonth() == 11,
-    CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim();
+    CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
+if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 var settingsMan = {
@@ -60,12 +61,13 @@ var settingsMan = {
             document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
                 'q': 1, 'p': document.location.protocol, 'd': this.__values
             }));
-            document.location.protocol = 'http';
+            if (!getAlwaysHttps()) document.location.protocol = 'http';
             return;
         }
         document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
             'p': document.location.protocol, 'd': this.__values
         }));
+        if (getAlwaysHttps()) document.location.protocol = 'https';
         var iframe = $('<iframe />');
         iframe.on('load', function() {
             iframe.remove();
@@ -88,7 +90,12 @@ var settingsMan = {
                     localStorage[i] = imported.d[i];
                 }
             }
+            if (getAlwaysHttps() && document.location.protocol == 'https:') return;
             if (imported.q) document.location.protocol = imported.p.split(':')[0];
+        }
+    } else {
+        if (getAlwaysHttps() && (document.location.protocol != 'https:')) {
+            document.location.protocol = 'https';
         }
     }
 })();
@@ -118,7 +125,7 @@ var backgroundImages = [
     new BG("Wool", "url(" + GITHUB + "/backgrounds/wool.png)"),
     new BG("Lunar Nights", "url(" + GITHUB + "/backgrounds/lunar_nights.png)"),
     new BG("Plain Denim", "url(" + GITHUB + "/backgrounds/feather.png),url(" + GITHUB + "/backgrounds/noise.png)"),
-    new BG("Buy Some Apples", "url(" + GITHUB + "/backgrounds/feather.png),url(//fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed right / 100% auto,url(" + GITHUB + "/backgrounds/noise.png)", "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
+    new BG("Buy Some Apples", "url(" + GITHUB + "/backgrounds/feather.png),url(//fc03.deviantart.net/fs71/i/2014/039/9/3/applejack_noms_an_apple_by_dasprid-d75nj5r.png) no-repeat fixed bottom right / 100% auto,url(" + GITHUB + "/backgrounds/noise.png)", "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231"),
     CBG('c', new BG("Classic", "url(" + GITHUB + "/backgrounds/classic.png) bottom 270px center repeat-x, url(" + GITHUB + "/backgrounds/noise.png)")),
     new BG("Whispy", "url(" + GITHUB + "/backgrounds/whispy.png) top 30px center, url(" + GITHUB + "/backgrounds/noise.png)"),
     new BG("Poni 2.0", "url(" + GITHUB + "/backgrounds/poni_2.png)")
@@ -451,6 +458,14 @@ function buildSettingsTab(tab) {
             setupSweetie();
         }
     });
+    
+    var https = tab.AddCheckBox("hts", "Always Https", getAlwaysHttps());
+    https.change(function() {
+        var val = this.checked;
+        setAlwaysHttps(val);
+        settingsMan.save(function() {});
+    });
+    addTooltip('If enabled the site will always redirect to the https version.', https);
     
     tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
         setTabsLeft($(this).val() == '1');
@@ -2297,12 +2312,28 @@ function setVideoSizes() {
 }
 
 function registerBanners(extended) {
+    if (isBannerCreditsPage()) {
+        if ($('.banner_credits').length) {
+            addBannerCredits(extended);
+        } else {
+            addBannerCreditsFromScratch([
+                { name: "Default", items: banners },
+                { name: "Advanced", items: extended }
+            ]);
+        }
+    }
+    if (!$('.footer .block a[href="/?view=page&page=banner_credits"]').length) {
+        $('.footer .block a[href="/staff"]').before('<a href="/?view=page&page=banner_credits">» Banner Credits</a><br>');
+    }
     banners.push.apply(banners, extended);
     if (getBannersEnabled()) {
         settingsMan.updateFlagField('banners',true);
         buildBanner();
     }
-    if ($('.banner_credits').length) addBannerCredits(extended);
+}
+
+function isBannerCreditsPage() {
+    return CURRENT_LOCATION == '?view=page&page=banner_credits';
 }
 
 function registerBanner(name, img, source, color, pos) {
@@ -2319,7 +2350,7 @@ function buildBanner() {
     <div class="banner-buttons">\
        <a id="source_link">Source</a>\
        <a id="reset_banner">Reset Selection</a>\
-       <a id="set_banner" href="/?view=page&amp;page=banner_credits">Banner Selector</a>\
+       <a id="set_banner" href="/?view=page&page=banner_credits">Banner Selector</a>\
     </div>\
     <a href="/" class="home_link">\
        <div id="fade_banner_image" />\
@@ -2374,9 +2405,94 @@ function buildBanner() {
     }, 1);
 }
 
+function addBannerCreditsFromScratch(sets) {
+    var swich = $('#banner_switcher .toggleable-radio');
+    if (!$('.banner_credits').length) {
+        $('.inner .content_box').remove();
+        $('.inner').append('\
+            <div class="content_box">\
+                <div class="content_box_header">\
+                    <h2>Banner Archive</h2>\
+                </div>\
+                <div class="main" style="padding:15px; line-height:1.8em;">\
+                    The My Little Pony: Friendship is Magic community has churned out some incredible artwork from enormously talented artists. The banner selection on Fimfiction is just a small selection of what I consider to be some of the defining examples of artistic quality its members can produce. If you\'d like to suggest a piece of artwork for a banner, send <a href="/user/sollace">me a pm</a> and if I think it\'s high enough quality I might use it, but I\'m pretty picky and need artwork that works on the site so please don\'t be offended if I\'m not interested in what you send!\
+                    <br><br>\
+                    If you see a banner you\'d like you use permanently on the site, just click it below!\
+                </div>\
+            </div>\
+            <div id="banner_switcher" style="display:block;text-align:center"><div class="inner" >\
+                <div class="toggleable-radio toggleable-radio-2" ><a /></div>\
+                <button class="styled_button styled_button_grey" id="save_banners" type="button"><i class="fa fa-save" /> Save</button></div></div>\
+            <form id="banner_selector" method="post" action=""></form>\
+            <style>\
+div.banner_credits div.banner {\
+    border: 1px solid rgba(0,0,0,0.4);\
+    background-position: center -1px;\
+    height: 173px;\
+    cursor: pointer;\
+    border-bottom: none;\
+}\
+            </style>\
+            <div class="content_box">\
+                <div class="content_box_header">\
+                    <h2>Other Credits</h2>\
+                </div>\
+                <div class="main" style="padding:15px; line-height:1.8em;">\
+                    Rarity Background: <a href="http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751">Silent Matten</a>\
+                </div>\
+            </div>');
+        swich = $('#banner_switcher .toggleable-radio');
+        $('#save_banners').on('click', function() {
+            if ($('form#banner_selector input:checked').length) {
+                setCookie('selected_theme', $('.banner_credits input:checked').val());
+                finaliseThemes();
+            }
+        });
+        $(document).on("click", ".banner_credits .banner", function() {
+            var checkbox = $(this).parents(".theme").find("input");
+            checkbox.prop("checked", !checkbox.prop("checked"));
+        });
+        Animator().on('switcher', function() {
+            updatePinnedWithMax('#banner_switcher', 'switcher', $('.banner_credits').parent());
+        });
+    }
+    for (var j = sets.length; j--;) {
+        var holder = $('<div class="banner_credits" data-group="' + sets[j].name + '" />');
+        var switcher = $('<input name="banner-group" id="' + sets[j].name + '" type="radio" value="' + sets[j].name + '"' + (j == 0? ' checked="checked"' : '') + ' /><label for="' + sets[j].name + '">' + sets[j].name + '</label>');
+        swich.prepend(switcher);
+        switcher.on('change', function() {
+            var val = $(this).val();
+            var offset = 0;
+            var banners = $('.banner_credits');
+            var len = banners.length;
+            for (; offset < len; offset++) {
+                if ($(banners[offset]).attr('data-group') == val) break;
+            }
+            banners.first().parent().css('height', ($(banners[offset]).height() + 50) + 'px');
+            banners.css('transform', 'translate(-' + (offset * 100) + '%,0)');
+        });
+        $('form#banner_selector').prepend(holder);
+        var items = sets[j].items;
+        for (var i = 0, len = items.length; i < len; i++) {
+            holder.append('\
+                <div class="theme">\
+                    <div class="banner" title="Click to select this banner" style="background-image:url(' + items[i].url + ')' + (items[i]['position'] ? ';background-position:' + items[i].position + ';' : '') + '" />\
+                    <div class="source" style="background-color:' + items[i].colour + '"><input type="radio" value="' + items[i].id + '" name="banners[]" />\
+                        ' + (items[i]['source'] ? ' Source: <a href="' + items[i].source + '">' + items[i].source + '</a>' : '') + '\
+                    </div>\
+                </div>');
+        }
+    }
+    
+    var themeId = getCookie('selected_theme');
+    $('.banner_credits .source input').each(function() {
+        $(this).prop('checked', $(this).val() == themeId);
+    });
+}
+
 function addBannerCredits(items) {
     $('.theme input').prop('type','radio');
-    $('form input[type="submit"]').remove();
+    $('form input[type="submit"]').remove();   
     
     var swich = $('<div id="banner_switcher" style="display:block;text-align:center"><div class="inner" ><div class="toggleable-radio toggleable-radio-2" ><a /></div><button class="styled_button styled_button_grey" id="save_banners" type="button"><i class="fa fa-save" /> Save</button></div></div>');
     $('.banner_credits').parent().before(swich);
@@ -2509,6 +2625,10 @@ function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
 \
+/*Bleeding corners fix*/\
+.module_container .content_box {\
+    overflow-x: hidden;}\
+\
 /*Footer overflow fix*/\
 div.footer {\
     height: auto !important;}\
@@ -2586,7 +2706,7 @@ textarea[required] {\
     border-bottom-right-radius: 4px;}\
 \
 /*Comment insert_left/right fix*/\
-.comment_data, .blog_post_content, .message_content, .chapter_content {\
+.comment_data, .blog_post_content, .message_content, .chapter_content, blockquote {\
     overflow: hidden;}\
 \
 /*Editor fixes*/\
@@ -2632,6 +2752,12 @@ textarea[required] {\
     font-family: FontAwesome;\
     font-size: 66px;\
     color: rgba(0,0,0,0.6);}\
+\
+/*For snow in the background*/\
+body > canvas ~ .body_container .nav_bar,\
+body > canvas ~ .footer {\
+  z-index: 200000;\
+  position: relative;}\
 \
 /*Chapter Enhancements*/\
 .mark_all_holder {\
@@ -2928,14 +3054,9 @@ font-family: FontAwesome;}\
     margin-top: 55px;}\
 .pin_nav_bar.fix_feed .feed-toolbar {\
     top: 45px;}" + 
-    (endsWith(document.location.href.split('#')[0], '?view=page&page=banner_credits') ? "\
-noscript + .content_box, form + .content_box, form > .content_box iframe {\
+    (isBannerCreditsPage() ? "\
+form > .content_box {\
     display: none;}\
-    form > .content_box {\
-    background: none !important;\
-    border: none !important;}\
-form > .content_box .main {\
-    padding: 0px !important;}\
 .banner_credits {\
     vertical-align: top;\
     display: inline-block;\
@@ -3190,6 +3311,9 @@ function setSweetieEnabled(val) {
         settingsMan.remove("sweetie_img_index");
     }
 }
+
+function getAlwaysHttps() {return settingsMan.getB('always_https', false);}
+function setAlwaysHttps(val) {settingsMan.setB('always_https', val, false);}
 
 function getSlide() {return settingsMan.int("slideShow", 0);}
 function setSlide(v) {settingsMan.set("slideShow", v, 0);}
