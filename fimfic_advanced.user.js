@@ -20,7 +20,7 @@ var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
 var VERSION = '3.11.14',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
-if (CURRENT_LOCATION.indexOf('login_frame') != 0);
+if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 var settingsMan = {
