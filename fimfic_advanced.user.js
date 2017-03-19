@@ -1903,13 +1903,10 @@ function insertColor(target) {
 
     var color = $('<input type="text" placeholder="Text Colour" />');
     cont.append(color);
-
-    var ch = function() {
+    
+    color.on("keyup change", function() {
         checkColor(this, $("#color_preview"), valid);
-    }
-
-    color.on("input", ch);
-    color.change(ch);
+    });
 
     cont.append('<button id="use_colour" type="button" class="styled_button">Use Colour</button>');
     $('#use_colour').click(function(e) {
@@ -2078,7 +2075,7 @@ function initColourPopup(target, me, self) {
         $('.recent-part').css('display','none');
     }
     holder.append('<li class="divider" />');
-    holder = $(this).parent().find('.button-holder');
+    holder = me.parent().find('.button-holder');
     var b = $('<li><a>More Colours</a></li>');
     holder.append(b);
     b.find('a').click(function() {
@@ -2217,10 +2214,14 @@ function getLogoUrl(val) {
 function checkColor(me, preview, valid) {
     var c = me.value;
     var va = InvalidHexColor(c);
-    if (valid) $(valid).val(va == true ? 0 : 1); 
-    if (typeof va == 'boolean') {
-        if (!c || c == "") {
-            c = "#000";
+    if (valid) $(valid).val(va == true ? 0 : 1);
+    if (va == true) {
+        if (preview) $(preview).css("color", '');
+        return
+    }
+    if (!va) {
+        if (!c) {
+            c = "";
         } else if (c.indexOf('#') != 0) {
             c = "#" + c;
         }
@@ -3266,7 +3267,7 @@ function addMinorBannerCss() {
   margin-top: 10px;\
   bottom: initial !important;}\
 .story-page-header > .inner hr, .user-page-header > .inner hr {\
-  border-color: rgba(0, 0, 0, 0.3) -moz-use-text-color rgba(255, 255, 255, 0.1) !important;}\
+  border-color: rgba(28,28,28,0.9) rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.1) !important;}\
 .user-page-header ol, .story-page-header ol {\
   direction: rtl;\
   top: 0px;\
@@ -3774,9 +3775,10 @@ function InvalidHexColor(color) {
     }
     if (color.indexOf('#') == 0) color = color.substring(1, color.length);
     if (color.length != 3 && color.length != 6) return true;
-    return !color.test(/^[0-9a-f]+$/ig);
+    return !/^[0-9a-f]+$/ig.test(color);
 }
 
+//==API FUNCTION==//
 function rgbToHex(r,g,b) {
     if (Object.prototype.toString.apply(r) === '[object Array]') {
         return rgbToHex.apply(this, r);
