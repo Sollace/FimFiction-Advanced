@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.15
+// @version     3.11.16
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.15',
+var VERSION = '3.11.16',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
@@ -331,6 +331,7 @@ function load() {
 function initFimFictionAdvanced() {
     registerBanners(extraBanners);
     initCommentArea(true);
+    initThreadPreviews();
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
     applyChapterButtons();
@@ -363,7 +364,8 @@ function registerEvents() {
         initCommentArea(false);
     });
     
-    FimFicEvents.on('aftereditmodule', setVideoSizes);
+    FimFicEvents.on('aftersavemodule', setVideoSizes);
+    FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
     
     if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
         if (getAlwaysShowImages()) {
@@ -1602,6 +1604,11 @@ function applyCodePatches() {
     }
 }
 
+function initThreadPreviews() {
+    $('.form-send-pm .add_comment_toolbar, .form-add-thread .add_comment_toolbar').append('<button type="button" class="styled_button styled_button_blue" type="button" id="preview_comment"><i class="fa fa-eye"></i> Preview</button>');
+    $('.private_messages, #new_thread').after('<div id="comment_preview" class="hidden" style="position: relative; top: 0px;"></div>');
+}
+
 function initCommentArea(hold) {
     logger.Log('initCommentArea: start');
     var buttons = $("button[title='Text Colour']");
@@ -2310,6 +2317,17 @@ function setVideoSizes() {
     $('.youtube_container > iframe').each(function() {
         $(this).css('height', ($(this).width() / (560 / 315)) + 'px');
     });
+}
+
+function addExtraToolbarLinks(e, ev) {
+    if (ev.type == 'stories') {
+        var ref = $('#user_toolbar_story_list a[href^="/index.php"]').parent();
+        var link = ref.clone();
+        ref.after(link);
+        link = link.find('a');
+        link.attr('href', link.attr('href') + '&bookshelf=1');
+        link.html('<i class="fa fa-star-o"></i>View My Featured Stories');
+    }
 }
 
 function registerBanners(extended) {
