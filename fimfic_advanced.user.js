@@ -1598,7 +1598,7 @@ function applyCodePatches() {
     })(window.ShowErrorWindow);
     if (!window.__window_focused_fix) {
         window.__window_focused_fix = true;
-        $(document).on('focus', function() {
+        $(window).on('focus', function() {
             window.window_focused = true;
         });
     }
