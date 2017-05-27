@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.16
+// @version     3.11.17
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.16',
+var VERSION = '3.11.17',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
@@ -2317,6 +2317,15 @@ function setVideoSizes() {
     $('.youtube_container > iframe').each(function() {
         $(this).css('height', ($(this).width() / (560 / 315)) + 'px');
     });
+    
+}
+
+function fixStoryLikes() {
+    $('.story_gallery .info:not(.fixed)').each(function() {
+        var me = $(this);
+        me.addClass('fixed');
+        me.children('b').eq(1).before('<br />').remove();
+    });
 }
 
 function addExtraToolbarLinks(e, ev) {
@@ -3284,6 +3293,8 @@ function addMinorBannerCss() {
 .user-page-header .tabs {\
   margin-top: 10px;\
   bottom: initial !important;}\
+.user-page-header .inner ol li {\
+  white-space: nowrap; /*Chrome Fix*/}\
 .story-page-header > .inner hr, .user-page-header > .inner hr {\
   border-color: rgba(28,28,28,0.9) rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.1) !important;}\
 .user-page-header ol, .story-page-header ol {\
