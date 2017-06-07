@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     3.11.17
+// @version     4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '3.11.17',
+var VERSION = '4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
@@ -50,55 +50,8 @@ var settingsMan = {
         if (current == undefined || current == null) current = '';
         current = $.grep(current.split(','), function(i) {return (value || i != key) && i != '';}).join(',');
         if (value && current.indexOf(key) == -1) current += (current == '' ? '' : ',') + key;
-        $('html').first().attr('fimfic_adv', current);},
-    save: function(callback) {
-        if (!this.__mod) {
-            if (callback) callback();
-            return;
-        }
-        document.cookie = 'pendingLoad=;';
-        if (document.location.protocol == 'https:') {
-            document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
-                'q': 1, 'p': document.location.protocol, 'd': this.__values
-            }));
-            if (!getAlwaysHttps()) document.location.protocol = 'http';
-            return;
-        }
-        document.cookie = 'pendingLoad=' + encodeURIComponent(JSON.stringify({
-            'p': document.location.protocol, 'd': this.__values
-        }));
-        if (getAlwaysHttps()) document.location.protocol = 'https';
-        var iframe = $('<iframe />');
-        iframe.on('load', function() {
-            iframe.remove();
-            if (callback) callback();
-        });
-        iframe.attr('src', (document.location.protocol == 'https:' ? 'http' : 'https') + '://www.fimfiction.net/settings?save');
-        $('body').append(iframe);
-    }
+        $('html').first().attr('fimfic_adv', current);}
 };
-(function() {
-    var imported = document.cookie.replace(/(?:(?:^|.*;\s*)pendingLoad\s*\=\s*([^;]*).*$)|^.*$/, "$1");
-    if (imported) {
-        imported = JSON.parse(decodeURIComponent(imported));
-        if (imported.p != document.location.protocol) {
-            document.cookie = 'pendingLoad=;';
-            for (var i in imported.d) {
-                if (imported.d[i] == '{removed}') {
-                    localStorage.removeItem(i);
-                } else {
-                    localStorage[i] = imported.d[i];
-                }
-            }
-            if (getAlwaysHttps() && document.location.protocol == 'https:') return;
-            if (imported.q) document.location.protocol = imported.p.split(':')[0];
-        }
-    } else {
-        if (getAlwaysHttps() && (document.location.protocol != 'https:')) {
-            document.location.protocol = 'https';
-        }
-    }
-})();
 
 //--------------------------------------------------------------------------------------------------
 //-------------------------------------------DATA---------------------------------------------------
@@ -193,7 +146,7 @@ var banners = [
 var extraBanners = [
     Ban2("sleeping_bath_bloom", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "#921B57"),
     Ban2("flutterby_dash", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "#D771A4"),
-    Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "#EFED96"),
+    Ban2("mommy_derp", "//junglepony.deviantart.com/art/Derpy-Mom-326785301", "rgb(189,198,205)"),
     Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "#6E1414"),
     Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "#704582"),
     Ban2("antipodes", "//www.fimfiction.net/user/ToixStory", "#ECBC6A"),
@@ -268,6 +221,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
         load();
     }
 });
+override(document, 'addEventListener', function(ev, f) {
+    if (!this.eventListeners) this.eventListeners = {};
+    if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
+    this.eventListeners[ev].push(f);
+    return document.addEventListener.super.apply(this, arguments);
+});
+document.getEventListeners = function(event) {
+    return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
+};
+override(window.Function.prototype, 'bind', function(context) {
+    var result = this.bind.super.apply(this, arguments);
+    result.unbound = this;
+    result.context = context;
+    return result;
+});
+
 chainFunctionOnto(document, 'onready', function() {
     logger.Log('event: onready', 2);
     if (~loaded & 3) {
@@ -283,15 +252,6 @@ chainFunctionOnto(document, 'onready', function() {
         }
     }
 });
-
-//==API FUNCTION==//
-function chainFunctionOnto(target, name, handler) {
-    var _old = target[name];
-    target[name] = function() {
-        handler.apply(this, arguments);
-        if (typeof _old === 'function') _old.apply(this, arguments);
-    }
-}
 
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------SCRIPT BODY------------------------------------------------
@@ -331,18 +291,17 @@ function load() {
 function initFimFictionAdvanced() {
     registerBanners(extraBanners);
     initCommentArea(true);
-    initThreadPreviews();
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
     applyChapterButtons();
     applyBookmarks();
+    if (getBlockLightbox()) lightboxblocker();
     if (getPinUserbar()) barScrollOn();
     if (getFancyBanners() && getBannersEnabled()) bannerScrollOn();
     if (CURRENT_LOCATION.indexOf('feed') == 0) {
         applyFeedFix();
         Animator().on('feed', updateFeedScroll);
     }
-    if (getResizeVideos()) setVideoSizes();
     if (CURRENT_LOCATION.indexOf('manage_user/account') == 0) updateAccountControls();
     applyCodePatches();
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
@@ -364,7 +323,6 @@ function registerEvents() {
         initCommentArea(false);
     });
     
-    FimFicEvents.on('aftersavemodule', setVideoSizes);
     FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
     
     if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
@@ -400,7 +358,7 @@ function initSettingsTabs() {
             buildBookmarksGui(tab);
         }
     }
-    tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'Account', 'cog');
+    tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'My Account', 'cog');
     if (tab.HasInit()) buildSettingsTab(tab);
 }
 
@@ -440,16 +398,16 @@ function buildSettingsTab(tab) {
         }
     });
     
-    tab.AddCheckBox("vid", "Resize Youtube Videos", getResizeVideos()).change(function() {
-        setResizeVideos(this.checked);
-    });
-    
     tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).change(function() {
         setWideNotes(this.checked);
     });
     
     tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).change(function() {
         setAlwaysShowImages(this.checked);
+    });
+    
+    tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).change(function() {
+        setBlockLightbox(this.checked);
     });
     
     tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).change(function() {
@@ -460,14 +418,6 @@ function buildSettingsTab(tab) {
             setupSweetie();
         }
     });
-    
-    var https = tab.AddCheckBox("hts", "Always Https", getAlwaysHttps());
-    https.change(function() {
-        var val = this.checked;
-        setAlwaysHttps(val);
-        settingsMan.save(function() {});
-    });
-    addTooltip('If enabled the site will always redirect to the https version.', https);
     
     tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
         setTabsLeft($(this).val() == '1');
@@ -544,10 +494,10 @@ function buildSettingsTab(tab) {
         tab.setEnabled('#pus' + (getBannersEnabled() ? ',#uss' : ''), enableUSnow[0].selectedIndex < 2);
     }
     
-    tab.AddCheckBox("hb", "Hide Banner", getTitleHidden()).change(function() {
+    tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).change(function() {
         setTitleHidden(this.checked);
     });
-
+    
     var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"], getSlide()).change(function() {
         setSlide(this.selectedIndex);
         slider.updateSlide();
@@ -576,7 +526,7 @@ function buildSettingsTab(tab) {
     updateSnowOptions();
     
     tab.StartEndSection("Colours and Customization");
-
+    /*
     var oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
     oldLogo.prepend('<option value="-1">Random</option>');
     oldLogo.change(function() {
@@ -586,7 +536,7 @@ function buildSettingsTab(tab) {
     tab.AddSlider("ho", "Logo Opacity", getLogoOpacity(), 10, 100).change(function() {
         setLogoOpacity(this.value);
     });
-    
+    */
     var bgcolor = getBGColor();
     var backgroundImg = null;
     makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
@@ -604,7 +554,7 @@ function buildSettingsTab(tab) {
         }
     });
     tab.AppendButton(colorPick[0], '<i class="fa fa-camera" />From Toolbar').on('click', function() {
-        colorPick.val(rgb2hex($('.user_toolbar > ul').css('background-color')));
+        colorPick.val(rgb2hex($('.user_toolbar').attr('data-background-color')));
         colorPick.change();
     }).css('margin-left','10px');
     
@@ -654,6 +604,7 @@ function buildSettingsTab(tab) {
     }
     
     var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
+    
     cban[0].children[1].innerHTML = '<i class="fa fa-pencil fa-5x" />';
     $(cban[0]).css("width", "700px");
     $(cban[0]).css("text-align", "center");
@@ -672,9 +623,9 @@ function buildSettingsTab(tab) {
             pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
 
             var footer = $('<div class="drop-down-pop-up-footer" />');
-            pop.content.append(footer);
+            pop.content.append(footer[0]);
 
-            var builder = new FimFicSettings.OptionsBuilder(pop.content.find('tbody'));
+            var builder = new FimFicSettings.OptionsBuilder($(pop.content).find('tbody'));
 
             var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save" />Save</button>');
             var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
@@ -695,8 +646,8 @@ function buildSettingsTab(tab) {
             var BInput = row.blue;
             var AInput = row.alpha;
 
-            builder.AppendControl(pop.content.find('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').click(function() {
-                var color = $('.user_toolbar > ul').css('background-color');
+            builder.AppendControl($(pop.content).find('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').click(function() {
+                var color = $('.user_toolbar').attr('data-background-color');
                 if (color == '') color = 'rgb(146,27,87)';
                 color = color.split('(')[1].split(')')[0];
                 color = color.replace(/ /g, '').split(',');
@@ -710,7 +661,7 @@ function buildSettingsTab(tab) {
                 var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
                 var a = val(AInput);
                 if (a != '1' && a != '') {
-                    return 'rgba(' + color + ',' + a;
+                    return 'rgba(' + color + ',' + a + ')';
                 }
                 return 'rgb(' + color + ')';
             }
@@ -790,7 +741,7 @@ function buildSettingsTab(tab) {
                     pop.Close();
                 }
             });
-            pop.element.find(".close_button").mousedown(function() {
+            $(pop.element).find(".close_button").mousedown(function() {
                 if (hasPre) finaliseThemes();
             });
 
@@ -860,10 +811,6 @@ function buildSettingsTab(tab) {
             this.innerHTML = 'Edit';
             $(this).attr('class', 'styled_button styled_button_green previewButton');
         }
-    });
-    
-    tab.AddFinishButton('Save', function(complete) {
-        settingsMan.save(complete);
     });
 }
 
@@ -941,7 +888,7 @@ function updateAccountControls() {
             }
             value.val(url);
         });
-        $(document).one('mousemove', function() {
+        $('body').one('mousemove', function() {
             $('.external_account').each(function() {
                 applyControlData($(this).find('.external_account_value'), $(this).find('.external_account_name'));
             });
@@ -1159,7 +1106,9 @@ function Animator() {
                 if (dirty) buss.bake();
                 if (currentScroll != lastScroll) {
                     lastScroll = currentScroll;
-                    buss.dispatch();
+                    try {
+                        buss.dispatch();
+                    } catch (e) {logger.Severe(e);}
                 }
                 buss.condition();
                 window.requestAnimationFrame(animate);
@@ -1298,21 +1247,17 @@ function updatePinnedWithMax(target, pinClass, bounder) {
 
 function applyChapterButtons() {
     $('ul.chapters').each(addChapterButtonsExtras);
-    $(document).on('click', '.mark_all_holder.unread', function() {
-        $(this).closest('.chapters').find('i.chapter-read-icon.chapter-read').click();
-    }).on('click', '.mark_all_holder.read', function() {
-        $(this).closest('.chapters').find('i.chapter-read-icon:not(.chapter-read)').click();
-    }).on('click', 'a.compact_chapters', function() {
-        $(this).closest('.chapters').removeClass('chapters_expanded');
-    }).on('click', 'a.comact.min', function() {
-        var me = $(this).closest('.chapters');
-        me.toggleClass('chapters_compact')
+    $(document).on('click', 'a.compact_chapters', function() {
+        $(this).parent().parent().removeClass('all-shown');
+    }).on('click', 'a.compact.min', function() {
+        var me = $(this).parent().parent();
+        me.toggleClass('chapters_compact');
         this.innerHTML = me.hasClass('chapters_compact') ? 'Maximize' : 'Minimize';
-    }).on('click', 'a.comact.max', function() {
-        var me = $(this).closest('.chapters');
-        if (me.hasClass('chapters_compact')) {
+    }).on('click', 'a.compact.max', function() {
+        var me = $(this).parents('.chapters_compact');
+        if (me.length) {
             me.removeClass('chapters_compact');
-            $('a.comact.min').html('Minimize');
+            me.find('a.compact.min').html('Minimize');
         }
     });
 }
@@ -1320,36 +1265,39 @@ function applyChapterButtons() {
 function addChapterButtonsExtras() {
     var me = $(this);
     var loggedIn = getIsLoggedIn();
-    var chapters = me.find('li a.chapter_link').length;
+    var chapters = me.find('li .chapter-read-icon').length;
     var compact = chapters > 1;
+    me.find('.chapter_expander').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        me.parent().toggleClass('all-shown');
+    }).parent().addClass('chapter-expander-toggle');
     if (compact || loggedIn) {
-        var extra = $('<li class="bottom" style="overflow:hidden;padding-right:10px;" />');
-        me.prepend(extra);
-        var unreadChaps = me.find('i.chapter-read-icon:not(.chapter-read)');
-        if (loggedIn) {
-            extra.append('<div class="mark_all_holder read"><i class="chapter-read-all" /><span class="date">mark all Read</a></div>');
-            extra.append('<div class="mark_all_holder unread"><i class="chapter-unread-all" /><span class="date">mark all Unread</a></div>');
-            if (unreadChaps.length) {
-                unreadChaps = unreadChaps.first().parent();
-                unreadChaps.css('transition', 'background 0.5s ease 1s');
-                var unreadTit = unreadChaps.find('.chapter_link');
-                var unreadDat = unreadChaps.find('.date').clone().children().remove().end().text();
-                var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
-                var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
-                extra.append(gotoUnread);
-                gotoUnread.hover(function() {
-                    unreadChaps.addClass('chapter_highlighted');
-                }, function() {
-                    unreadChaps.removeClass('chapter_highlighted');
-                });
-                
-            }
+        var unreadChaps = me.find('.chapter-read-icon:not(.chapter-read)');
+        if (!compact && !unreadChaps.length) return;
+        
+        var extra = $('<div class="chapters-header" style="overflow:hidden;padding-right:10px;" />');
+        me.before(extra);
+        if (loggedIn && unreadChaps.length) {
+            unreadChaps = unreadChaps.first().parent();
+            unreadChaps.css('transition', 'background 0.5s ease 1s');
+            var unreadTit = unreadChaps.find('.chapter-read-icon + a');
+            var unreadDat = unreadChaps.find('.date').clone().children().remove().end().text();
+            var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
+            var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
+            extra.append(gotoUnread);
+            gotoUnread.hover(function() {
+                unreadChaps.addClass('chapter_highlighted');
+            }, function() {
+                unreadChaps.removeClass('chapter_highlighted');
+            });
+
         }
         if (compact) {
             if (unreadChaps.length) extra.append('<b class="date" style="float:right;margin-left:5px;margin-right:5px;">·</b>');
-            extra.append('<a class="comact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
+            extra.append('<a class="compact min" style="float:right;" href="javascript:void(0);" >Minimize</a>');
             extra.append('<b class="compact_chapters date" style="float:right;margin-left:5px;margin-right:5px;">·</b><a class="compact_chapters" style="float:right;" href="javascript:void(0);" >Hide Chapters</a>');
-            extra.after('<div class="all_chapters_hidden"><li>' + chapters + ' chapters hidden. <a class="comact max" style="display:inline;" href="javascript:void(0);" >Show</a></li></div>');
+            extra.after('<div class="all-chapters-hidden">' + chapters + ' chapters hidden. <a class="compact max" style="display:inline;" href="javascript:void(0);" >Show</a></div>');
         }
     }
 }
@@ -1533,59 +1481,85 @@ function applyBookmarks() {
 
 function applyCodePatches() {
     logger.Log('applyCodePatches');
-    if ($('#chapter_container').length) {
-        var b = null,
-            c = null,
-            d = null,
-            e = null;
-        window.UpdateColours = function() {
-            //Extend theming to more elements
-            var clazz = "content_format_" + LocalStorageGet("format_colours"); /**/
-            $('.' + clazz).removeClass(clazz); /*$("#chapter_format").attr( "class", "" );*/
+    if ($('.chapter-container').length) {
+        ChapterFormatController.prototype.apply = function () {
+            this.chapter.style.fontSize = this.text_size + 'rem';
+            this.chapter.style.fontFamily = this.font;
+            /****/
+            if (this.previous_colour_scheme) $('.content_format_' + this.previous_colour_scheme).removeClass('.content_format_' + this.previous_colour_scheme); /**/
+            /****/
+            this.chapterFormat.className = 'content_format_' + this.colour_scheme;
+            /****/
+            $('.chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + this.colour_scheme);
+            
             $('.content_plus_format').removeClass('content_plus_format'); /**/
-            clazz = $('#format_colours').val();
-            LocalStorageSet('format_colours', clazz);
-            //Extend theming to more elements
-            $('#chapter_format, .chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a' /**/).addClass('content_format_' + clazz);
-            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color')); /**/
-            ComputeBackgroundColor();
+            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + this.colour_scheme + ' .inner_margin').css('color')); /**/
+            /****/
+            
+            this.chapterBody.style.lineHeight = this.line_spacing + 'em';
+            this.chapterBody.style.textAlign = 'none' != this.justify ? 'justify' : 'left';
+            var c = 'hyphens' == this.justify ? 'auto' : 'none';
+            this.chapterBody.style.webkitHyphens = c;
+            this.chapterBody.style.mozHyphens = c;
+            this.chapterBody.style.msHyphens = c;
+            this.chapterBody.style.hyphens = c;
+            this.storyContainer.style.maxWidth = 50 * this.text_size * this.line_width + 'em';
+            this.chapterBody.classList.toggle('double-spaced', 'double' == this.paragraph_style || 'both' == this.paragraph_style);
+            this.chapterBody.classList.toggle('indented', 'indented' == this.paragraph_style || 'both' == this.paragraph_style);
+            if (this.onChangeListener) this.onChangeListener(this);
+        };
+        override(ChapterFormatController.prototype, 'setColourScheme', function (c) {
+            this.previous_colour_scheme = this.colour_scheme;
+            return this.setColourScheme.super.apply(this, arguments);
+        });
+        ChapterController.prototype.computeBackgroundColor = function() {
+            ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
         }
-        window.ComputeBackgroundColor = function() {
-            $('.body_container'/*document.body*/).css('background-color', '');
-            //Use stored base colour value
-            c = extractColor($(document.body).attr('data-base-color')/*$(document.body).css('background-color')*/);
-            d = extractColor($('#chapter_format').css('background-color'));
-            var f = 127 > 0.39 * d[0] + 0.5 * d[1] + 0.11 * d[2];
-            e = colorMult(d, f ? 0.85 : 0.95);
-            f = rgbToCSS(colorMult(d, f ? 1.4 : 0.82));
-            $('.chapter_content_box').css({
-                'border-left-color': f,
-                'border-right-color': f
-                //+Colour chapter bottom border
-                ,'border-bottom-color': f/**/
-            });
-            b = null;
-            UpdatePageBackgroundColor/*a*/();
-        }
+        ChapterController.prototype.computeBackgroundColor.patched = function (c) {
+            document.querySelector('.body_container')/*.body*/.style.backgroundColor = '';
+            this.backgroundColor = extractColor(document.body.dataset.baseColor/*window.getComputedStyle(document.body).backgroundColor*/);
+            var c = extractColor(window.getComputedStyle(this.chapterFormat.querySelector('.chapter')).backgroundColor);
+            if ('undefined' != typeof this.backgroundColor) {
+                var d = 127 > 0.39 * c[0] + 0.5 * c[1] + 0.11 * c[2];
+                this.fadedBackgroundColor = colorMult(c, d ? 0.85 : 0.95);
+                255 == c[0] && 255 == c[1] && 255 == c[2] && (this.fadedBackgroundColor = null);
+                this.border_color = colorMult(c, d ? 1.4 : 0.82);
+                this.updatePageBackgroundColor.patched.call(this, c);
+            }
+        };
         //Change styling target to the body container
-        window.UpdatePageBackgroundColor = function() {
-            var a = $('#chapter_toolbar_container'),d = a.parents('.chapter');
-            a.data('start_y') || a.data('start_y', a.offset().top + 50);
-            a = (Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (d.offset().top + d.height()))) / 200;
-            a = 1 < a ? 1 : 0 > a ? 0 : a;
-            a != b && $('.body_container'/*document.body*/).css('background-color', rgbToCSS(colorBlend(c, e, a)))
-        }
+        override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
+            if (!this.patched) {
+                var scroll_events = document.getEventListeners('scroll');
+                for (var i = 0; i < scroll_events.length; i++) {
+                    if (scroll_events[i].context == this && !scroll_events[i].patched) {
+                        document.removeEventListener('scroll', scroll_events[i]);
+                    }
+                }
+                var ev = ChapterController.prototype.computeBackgroundColor.patched.bind(this);
+                ev.patched = true;
+                window.addEventListener('scroll', ev);
+            }
+            this.computeBackgroundColor.patched.call(this, c);
+        });
+        ChapterController.prototype.updatePageBackgroundColor.patched = function (c) {
+            c = void 0 === c ? !1 : c;
+            var d = this.elements.chapterContentBox.getBoundingClientRect(),
+                d = 1 - saturate(5 * Math.min(2 - d.top / window.innerHeight, d.bottom / window.innerHeight) - 4);
+            if (d != this.lastBackgroundBlendFactor || c) document.querySelector('.body_container')/*.body*/.style.backgroundColor = null != this.fadedBackgroundColor ? rgbToCSS(colorBlend(this.backgroundColor, this.fadedBackgroundColor, d))  : null,
+                this.elements.chapterContentBox.style.borderLeftColor = rgbToCSS(this.border_color),
+                this.elements.chapterContentBox.style.borderRightColor = rgbToCSS(this.border_color),
+                this.elements.chapterContentBox.style.borderBottomColor = rgbToCSS(this.border_color)/**/
+                this.lastBackgroundBlendFactor = d
+        };
         //Force update chapter themes
         try {
-            $(document.body).attr('data-base-color', $('.body_container').css('background-color'));
-            window.UpdateColours();
+            document.body.style.backgroundColor = '';
+            document.body.dataset.baseColor = $('.body-container').css('background-color') || window.getComputedStyle(document.body).backgroundColor;
+            App.DispatchEvent(document, 'chapterColourSchemeChanged');
         } catch (e) {
             logger.Error(e);
         }
-        //Force update chapter width values
-        $('.button-sidebar-toggle').on('click', function() {
-            $("#chapter_toolbar_container").css("width", '');
-        });
     }
     //Fix error window popping up whenever an operation times out/is cancelled
     window.ShowErrorWindow = (function(old) {
@@ -1600,48 +1574,57 @@ function applyCodePatches() {
         window.__window_focused_fix = true;
         $(window).on('focus', function() {
             window.window_focused = true;
+        }).on('blur', function() {
+            window.window_focused = false;
         });
     }
 }
 
-function initThreadPreviews() {
-    $('.form-send-pm .add_comment_toolbar, .form-add-thread .add_comment_toolbar').append('<button type="button" class="styled_button styled_button_blue" type="button" id="preview_comment"><i class="fa fa-eye"></i> Preview</button>');
-    $('.private_messages, #new_thread').after('<div id="comment_preview" class="hidden" style="position: relative; top: 0px;"></div>');
-}
-
 function initCommentArea(hold) {
     logger.Log('initCommentArea: start');
-    var buttons = $("button[title='Text Colour']");
-    for (var i = 0, len = buttons.length; i < len; i++) {
-        var me = $(buttons[i]);
-        if (me.attr("fimfic_adv") != "1") {
-            me.attr("fimfic_adv", "1");
-            if (me.children()[0].tagName == 'IMG') {
-                logger.Log('setup: changing color button icon (' + i + ')');
-                me.parent().css('line-height', '');
-                me.html('<i class="fa fa-tint" />');
-            }
-            var target = me.parents('.bbcode-editor').find('textarea')[0];
-            logger.Log('betterColors: start (' + i + ')');
-            betterColors(me, target);
-            logger.Log('setUpMainButton: start (' + i + ')');
-            setUpMainButton(me.parent().parent()[0], target, hold);
+    $('.bbcode-editor:not([fimfic_adv])').each(function() {
+        var me = $(this);
+        me.attr('fimfic_adv', '1');
+        var controller = App.GetControllerFromElement(this);
+        var colour_button = me.find("button[title='Text Colour']");
+        if (colour_button.children()[0].tagName == 'IMG') {
+            logger.Log('setup: changing color button icon');
+            colour_button.html('<i class="fa fa-tint" />');
         }
-    }
-    var fontSizes = $("button[title='Font Size']");
-    for (var i = 0, len = fontSizes.length; i < len; i++) {
-        var me = $(fontSizes[i]);
-        if (me.attr('fimfic_adv') != '1') {
-            me.attr({'fimfic_adv': '1', 'data-function': ''});
-            logger.Log('betterSizes: start (' + i + ')');
-            betterSizes(me, me.parents('.bbcode-editor').find('textarea')[0]);
+        logger.Log('setUpMainButton: start');
+        var main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
+        main_button[0].parentNode.dataset.priority = -1;
+        main_button[0].dataset.click = 'showFimficAdv';
+        if (controller.toolbarItems) {
+            controller.toolbarItems.push({
+                node: main_button[0].parentNode,
+                order: controller.toolbarItems.length,
+                priority: -1,
+                width: 35
+            });
         }
-    }
-    var insertImg = $("button[title='Insert Image']");
-    for (var i = 0, len = insertImg.length; i < len; i++) {
-        if (insertImg[i].children[0].tagName == 'IMG') {
-            logger.Log('Changing Insert Image Logo (' + i + ')');
-            $(insertImg[i]).html('<i class="fa fa-picture-o" />');
+        var insertImg = me.find("button[title='Insert Image']");
+        if (insertImg.children()[0].tagName == 'IMG') {
+            logger.Log('Changing Insert Image Logo');
+            insertImg.html('<i class="fa fa-picture-o" />');
+        }
+    });
+    
+    BBCodeEditorController.prototype.showColourPicker = function(sender, event) {
+        logger.Log('betterColours: start');
+        event.preventDefault();
+        betterColours($(sender), this);
+    };
+    BBCodeEditorController.prototype.showSizePicker = function(sender, event) {
+        logger.Log('betterSizes: start');
+        event.preventDefault();
+        betterSizes($(sender), this);
+    };
+    BBCodeEditorController.prototype.showFimficAdv = function(sender, event) {
+        logger.Log('setUpMainButton: start');
+        sender = $(sender);
+        if (!sender.parent().find('.drop-down').length) {
+            buildAdvancedButton(sender, this);
         }
     }
 }
@@ -1702,8 +1685,18 @@ function loopUnspoiler() {
 function initImageUnspoiler() {
     $('.comment_data .user_image_link').each(function() {
         var me = $(this);
-        me.parent().after('<img class="user_image" src="' + me.attr('href') + '" />').remove();
+        me.parent().after('<img class="user_image" data-lightbox="" src="' + me.attr('href') + '" />').remove();
     });
+}
+
+function lightboxblocker() {
+    $('body').on('mouseover', '[data-lightbox]', function(e) {
+        var me = $(this);
+        if (me.hasClass('user_image')) {
+            me.removeAttr('data-lightbox').removeAttr('title').attr('data-resizable', 'false');
+            me.removeClass('user_image').addClass('user_image_no_lightbox');
+        }
+    }).addClass('no-lightbox');
 }
 
 function unspoilerSiblings() {
@@ -1725,48 +1718,38 @@ function mustUnspoiler(url) {
     return q != -1 && url.substring(q + 1, url.length).indexOf('isEmote=true') != -1;
 }
 
-function setUpMainButton(toolbar, target, hold) {
-    var hasAdv = toolbar.parentNode.children.length > 6;
-    makeButton(toolbar, "More Options", "fa fa-flag").on("click", function () {
-        if (!$(this).parent().find('.drop-down').length) {
-            $(this).after('<div class="drop-down"><div class="arrow" /><ul /></div>');
-            var items = $(this).parent().find('ul');
-            addDropList(items, "BBCode Tags", function () {
-                addOption(this, "Right Align").click(function() {
-                    InsertBBCodeTag(target, 'right');
-                });
-                if (!hasAdv) {
-                    addOption(this, "Center Align").click(function() {InsertBBCodeTag(target, 'center');});
-                    addOption(this, "Horizontal Rule").click(function() {InsertBBCodeTag(target, 'hr');});
-                    addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
-                    addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
-                }
-                addOption(this, "Left Insert").click(function() {InsertBBCodeTag(target, 'left_insert');});
-                addOption(this, "Right Insert").click(function() {InsertBBCodeTag(target, 'right_insert');});
-                addOption(this, "Ordered List").click(function () {makeList(target, true);});
-                addOption(this, "Unordered List").click(function () {makeList(target, false);});
-                addOption(this, "Green Text").click(function () {makeGreen(target);});
-                addOption(this, "Icon").click(function() {makeInsertIconPopup(target);});
-            });
-
-            addOption(items, "Sign").click(function() {sign(target);});
-            addOption(items, "Insert Direct Image").click(function() {makeImagePopup(target);});
-            addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(target);});
-            addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
-            setListItemWidth(items);
-            inbounds($(items).parent().parent());
-        }
+function buildAdvancedButton(button, controller) {
+    button.after('<div class="drop-down"><div class="arrow" /><ul /></div>');
+    var items = button.parent().find('ul');
+    addDropList(items, "BBCode Tags", function () {
+        addOption(this, "Right Align").click(function() {
+            controller.insertTag('right');
+        });
+        addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
+        addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
+        addOption(this, "Left Insert").click(function() {controller.insertTag('left_insert');});
+        addOption(this, "Right Insert").click(function() {controller.insertTag('right_insert');});
+        addOption(this, "Ordered List").click(function () {makeList(controller, true);});
+        addOption(this, "Unordered List").click(function () {makeList(controller, false);});
+        addOption(this, "Green Text").click(function () {makeGreen(controller.textarea);});
+        addOption(this, "Icon").click(function() {makeInsertIconPopup(controller);});
     });
     
+    addOption(items, "Sign").click(function() {sign(controller.textarea);});
+    addOption(items, "Insert Direct Image").click(function() {makeImagePopup(controller.textarea);});
+    addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(controller.textarea);});
+    addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
+    inbounds(button);
+
     function handleIndent(e, start, end) {
-        var f = BBCodeGetSelection(target);
+        var f = controller.getSelection();;
         var g = !1;
-        "" == f && (f = target.value, g = !0);
+        "" == f && (f = controller.textArea.value, g = !0);
         f = f.replace(start, end);
-        g ? e.value = f : InsertTextAt(target, f);
+        g ? e.value = f : controller.insertText(f);
     }
-    
-    function makeInsertIconPopup(target) {
+
+    function makeInsertIconPopup(controller) {
         var pop = makePopup('Insert Icon', 'fa fa-anchor');
         var icons = ["adjust","adn","align-center","align-justify","align-left","align-right","ambulance","anchor","android","angellist","angle-double-down","angle-double-left","angle-double-right","angle-double-up","angle-down","angle-left","angle-right","angle-up","apple","archive","area-chart","arrow-circle-down","arrow-circle-left","arrow-circle-o-down","arrow-circle-o-left","arrow-circle-o-right","arrow-circle-o-up","arrow-circle-right","arrow-circle-up","arrow-down","arrow-left","arrow-right","arrow-up","arrows","arrows-alt","arrows-h","arrows-v","asterisk","at","automobile","backward","ban","bank","bar-chart","bar-chart-o","barcode","bars","beer","behance","behance-square","bell","bell-o","bell-slash","bell-slash-o","bicycle","binoculars","birthday-cake","bitbucket","bitbucket-square","bitcoin","bold","bolt","bomb","book","bookmark","bookmark-o","briefcase","btc","bug","building","building-o","bullhorn","bullseye","bus","cab","calculator","calendar","calendar-o","camera","camera-retro","car","caret-down","caret-left","caret-right","caret-square-o-down","caret-square-o-left","caret-square-o-right","caret-square-o-up","caret-up","cc","cc-amex","cc-discover","cc-mastercard","cc-paypal","cc-stripe","cc-visa","certificate","chain","chain-broken","check","check-circle","check-circle-o","check-square","check-square-o","chevron-circle-down","chevron-circle-left","chevron-circle-right","chevron-circle-up","chevron-down","chevron-left","chevron-right","chevron-up","child","circle","circle-o","circle-o-notch","circle-thin","clipboard","clock-o","close","cloud","cloud-download","cloud-upload","cny","code","code-fork","codepen","coffee","cog","cogs","columns","comment","comment-o","comments","comments-o","compass","compress","copy","copyright","credit-card","crop","crosshairs","css3","cube","cubes","cut","cutlery","dashboard","database","dedent","delicious","desktop","deviantart","digg","dollar","dot-circle-o","download","dribbble","dropbox","drupal","edit","eject","ellipsis-h","ellipsis-v","empire","envelope","envelope-o","envelope-square","eraser","eur","euro","exchange","exclamation","exclamation-circle","exclamation-triangle","expand","external-link","external-link-square","eye","eye-slash","eyedropper","facebook","facebook-square","fast-backward","fast-forward","fax","female","fighter-jet","file","file-archive-o","file-audio-o","file-code-o","file-excel-o","file-image-o","file-movie-o","file-o","file-pdf-o","file-photo-o","file-picture-o","file-powerpoint-o","file-sound-o","file-text","file-text-o","file-video-o","file-word-o","file-zip-o","files-o","film","filter","fire","fire-extinguisher","flag","flag-checkered","flag-o","flash","flask","flickr","floppy-o","folder","folder-o","folder-open","folder-open-o","font","forward","foursquare","frown-o","futbol-o","gamepad","gavel","gbp","ge","gear","gears","gift","git","git-square","github","github-alt","github-square","gittip","glass","globe","google","google-plus","google-plus-square","google-wallet","graduation-cap","group","h-square","hacker-news","hand-o-down","hand-o-left","hand-o-right","hand-o-up","hdd-o","header","headphones","heart","heart-o","history","home","hospital-o","html5","ils","image","inbox","indent","info","info-circle","inr","instagram","institution","ioxhost","italic","joomla","jpy","jsfiddle","key","keyboard-o","krw","language","laptop","lastfm","lastfm-square","leaf","legal","lemon-o","level-down","level-up","life-bouy","life-buoy","life-ring","life-saver","lightbulb-o","line-chart","link","linkedin","linkedin-square","linux","list","list-alt","list-ol","list-ul","location-arrow","lock","long-arrow-down","long-arrow-left","long-arrow-right","long-arrow-up","magic","magnet","mail-forward","mail-reply","mail-reply-all","male","map-marker","maxcdn","meanpath","medkit","meh-o","microphone","microphone-slash","minus","minus-circle","minus-square","minus-square-o","mobile","mobile-phone","money","moon-o","mortar-board","music","navicon","newspaper-o","openid","outdent","pagelines","paint-brush","paper-plane","paper-plane-o","paperclip","paragraph","paste","pause","paw","paypal","pencil","pencil-square","pencil-square-o","phone","phone-square","photo","picture-o","pie-chart","pied-piper","pied-piper-alt","pinterest","pinterest-square","plane","play","play-circle","play-circle-o","plug","plus","plus-circle","plus-square","plus-square-o","power-off","print","puzzle-piece","qq","qrcode","question","question-circle","quote-left","quote-right","ra","random","rebel","recycle","reddit","reddit-square","refresh","remove","renren","reorder","repeat","reply","reply-all","retweet","rmb","road","rocket","rotate-left","rotate-right","rouble","rss","rss-square","rub","ruble","rupee","save","scissors","search","search-minus","search-plus","send","send-o","share","share-alt","share-alt-square","share-square","share-square-o","shekel","sheqel","shield","shopping-cart","sign-in","sign-out","signal","sitemap","skype","slack","sliders","slideshare","smile-o","soccer-ball-o","sort","sort-alpha-asc","sort-alpha-desc","sort-amount-asc","sort-amount-desc","sort-asc","sort-desc","sort-down","sort-numeric-asc","sort-numeric-desc","sort-up","soundcloud","space-shuttle","spinner","spoon","spotify","square","square-o","stack-exchange","stack-overflow","star","star-half","star-half-empty","star-half-full","star-half-o","star-o","steam","steam-square","step-backward","step-forward","stethoscope","stop","strikethrough","stumbleupon","stumbleupon-circle","subscript","suitcase","sun-o","superscript","support","table","tablet","tachometer","tag","tags","tasks","taxi","tencent-weibo","terminal","text-height","text-width","th","th-large","th-list","thumb-tack","thumbs-down","thumbs-o-down","thumbs-o-up","thumbs-up","ticket","times","times-circle","times-circle-o","tint","toggle-down","toggle-left","toggle-off","toggle-on","toggle-right","toggle-up","trash","trash-o","tree","trello","trophy","truck","try","tty","tumblr","tumblr-square","turkish-lira","twitch","twitter","twitter-square","umbrella","underline","undo","university","unlink","unlock","unlock-alt","unsorted","upload","usd","user","user-md","users","video-camera","vimeo-square","vine","vk","volume-down","volume-off","volume-up","warning","wechat","weibo","weixin","wheelchair","wifi","windows","won","wordpress","wrench","xing","xing-square","yahoo","yelp","yen","youtube","youtube-play","youtube-square"];
         pop.SetWidth(400);
@@ -1774,16 +1757,16 @@ function setUpMainButton(toolbar, target, hold) {
         var i = icons.length;
         while (i--) {
             var icon = $('<label class="bbcodeIcons" title="' + normalise(icons[i]) + '"><div><span class="bookshelf-icon-element fa fa-' + icons[i] + '" data-icon-type="font-awesome" /></div><input type="radio" value="' + icons[i] + '" style="visibility:hidden;display:none;" name="icon" /></label>');
-            pop.content.find('.bookshelf-icons').prepend(icon);
+            $(pop.content).find('.bookshelf-icons').prepend(icon);
         }
-        $('.bbcodeIcons input').change(function() {
-            var f = BBCodeGetSelection(target);
-            InsertTextAt(target, '[icon]' + $(this).val() + '[/icon]' + f);
+        $(pop.content).find('input').on('click', function() {
+            var f = controller.getSelection();
+            controller.insertText('[icon]' + $(this).val() + '[/icon]' + f);
             pop.Close();
         });
         pop.Show();
     }
-    
+
     function makeReplacePopup(target) {
         var pop = makePopup('Find and Replace', 'fa fa-magic', false);
         pop.SetWidth(350);
@@ -1795,12 +1778,12 @@ function setUpMainButton(toolbar, target, hold) {
         $('#find_button').click(function() {
             var find = $('#find').val();
             var nextStart = parseInt($(this).attr('nextStart'));
-            var text = target.value.substring(nextStart, target.value.length);
+            var text = controller.textarea.value.substring(nextStart, controller.textarea.value.length);
             if (find != '') {
                 var start = text.indexOf(find);
                 var end = 0;
                 if (start == -1) {
-                    start = target.value.indexOf(find);
+                    start = controller.textarea.value.indexOf(find);
                     nextStart = 0;
                 }
                 if (start != -1) {
@@ -1808,48 +1791,48 @@ function setUpMainButton(toolbar, target, hold) {
                     end = start + find.length;
                 }
                 $(this).attr('nextStart', end);
-                target.selectionStart = start;
-                target.selectionEnd = end;
-                $(target).focus();
+                controller.textarea.selectionStart = start;
+                controller.textarea.selectionEnd = end;
+                $(controller.textarea).focus();
             }
         });
         $('#replace_button').click(function() {
             var find = $('#find').val();
             if (find != '') {
-                var start = target.selectionStart;
-                var end = target.selectionEnd;
+                var start = controller.textarea.selectionStart;
+                var end = controller.textarea.selectionEnd;
                 if (start != end) {
                     if (start > end) {
                         var t = start;
                         start = end;
                         start = t;
                     }
-                    var sel = target.value.substring(start, end);
+                    var sel = controller.getText().substring(start, end);
                     var replace = $('#replace').val();
 
                     if (sel == find) {
-                        target.value = target.value.substring(0, start) + replace + target.value.substring(start + sel.length, target.value.length);
-                        target.selectionStart = start + replace.length;
-                        target.selectionEnd = target.selectionStart;
+                        controller.setText(controller.textarea.value.substring(0, start) + replace + controller.getText().substring(start + sel.length, controller.getText().length));
+                        controller.textarea.selectionStart = start + replace.length;
+                        controller.textarea.selectionEnd = controller.textarea.selectionStart;
                     }
                 } else {
                     finB.click();
-                    if (target.selectionStart != target.selectionEnd) {
+                    if (controller.textarea.selectionStart != controller.textarea.selectionEnd) {
                         replB.click();
                     }
                 }
-                $(target).focus();
+                $(controller.textarea).focus();
             }
         });
         $('#replace_2_button').click(function() {
             var find = $('#find').val();
             if (find != '') {
-                $(target).val(replaceAll(find, $('#replace').val(), $(target).val()));
+                controller.setText(replaceAll(find, $('#replace').val(), controller.getText()));
             }
         });
         pop.Show();
     }
-    
+
     function makeImagePopup(target) {
         var message = makePopup("Add Direct Image", "fa fa-picture-o");
         message.SetWidth(350);
@@ -1887,7 +1870,7 @@ function setUpMainButton(toolbar, target, hold) {
                 } else {
                     s = url + "?isEmote=true";
                 }
-                InsertBBCodeTags(target, "[img]" + s, "[/img]");
+                controller.insertText("[img]" + s + "[/img]");
                 $("#message_close_button").click();
             } else {
                 $("#add_image_error").removeClass("hidden");
@@ -1899,11 +1882,11 @@ function setUpMainButton(toolbar, target, hold) {
     }
 }
 
-function insertColor(target) {
+function insertColor(controller) {
     var pop = makePopup("Custom Colour", 'fa fa-tint');
     pop.SetWidth(350);
     var cont = $('<div style="padding:10px;"><div id="color_preview" style="overflow: hidden; padding: 15px; border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;" ><b><span style="font-size:30px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:20px;">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:10px">The quick brown fox jumped over the lazy rabbit.</span><span style="font-size:5px">The quick brown fox jumped over the lazy rabbit.</span></b></div></div>');
-    pop.SetContent(cont)
+    $(pop.content).append(cont)
 
     var valid = $('<input type="hidden" value="0" name="valid"></input>');
     cont.append(valid);
@@ -1914,9 +1897,9 @@ function insertColor(target) {
     color.on("keyup change", function() {
         checkColor(this, $("#color_preview"), valid);
     });
-
-    cont.append('<button id="use_colour" type="button" class="styled_button">Use Colour</button>');
-    $('#use_colour').click(function(e) {
+    
+    var use_colour = $('<button id="use_colour" type="button" class="styled_button">Use Colour</button>');
+    use_colour.click(function(e) {
         var c = color.attr("value");
         if (c != null && c != undefined && c != "" && valid.val() == "1") {
             var i = colours.Names.length;
@@ -1928,13 +1911,13 @@ function insertColor(target) {
             }
             if (c.indexOf('#') == -1) c = '#' + c;
             addRecent(c);
-            InsertBBCodeTags(target, "[color=" + c + "]", "[/color]");
+            controller.insertTags("[color=" + c + "]", "[/color]");
             pop.Close();
         } else {
             $("#color_error").removeClass("hidden");
         }
     });
-
+    cont.append(use_colour);
     cont.append('<div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>');
     pop.SetFooter('Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using \'[spoiler]text[/spoiler]\'');
     pop.Show();
@@ -2005,79 +1988,94 @@ function hasSigned(value, format) {
     return (new RegExp(encodeURI(format.replace(/%message%/g, ".*")))).test(encodeURI(value));
 }
 
-function betterSizes(button, target) {
+function betterSizes(button, controller) {
     var me = button.parent();
-    button.attr({
-     'data-function': '', 'data-init': 'true' 
-    }).click(function() {
-        if (!me.find('.drop-down').length) {
-            me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
-            var holder = me.find('ul');
-            addSize(holder, target, 0.5, 'em');
-            addSize(holder, target, 0.75, 'em');
-            addSize(holder, target, 1.5, 'em');
-            addSize(holder, target, '2.0', 'em');
-            for (var i = 10; i < 20; i += 2) {
-                for (var k = 0; k < 50; k += 10) {
-                    addSize(holder, target, (i + k), 'px');
-                }
-            }
+    if (!me.find('.drop-down').length) {
+        me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
+        var holder = me.find('ul');
+        var sizes = [
+            [0.5,0.5],
+            [0.75,0.75],
+            [1.5,1.5],
+            ['2.0',2],
+            [10,0.714],
+            [20,1.429],
+            [30,2.143],
+            [40,2.857],
+            [50,3.571],
+            [12,0.857],
+            [22,1.571],
+            [32,2.286],
+            [42,3],
+            [52,3.714],
+            [14,1],
+            [24,1.714],
+            [34,2.429],
+            [44,3.143],
+            [54,3.857],
+            [16,1.143],
+            [26,1.857],
+            [36,2.571],
+            [46,3.286],
+            [56,4.643],
+            [18,1.286],
+            [28,2],
+            [38,2.714],
+            [48,3.429],
+            [58,4.143],
+        ]
+        for (var i = 0; i < sizes.length; i++) {
+            addSize(holder, controller, sizes[i]);
         }
-    });
+    }
 }
 
-function addSize(holder, target, amount, unit) {
-    var size = $('<li><a>' + amount + '</a></li>');
+function addSize(holder, controller, amount) {
+    var size = $('<li><a>' + amount[0] + '</a></li>');
     holder.append(size);
     size.find('a').click(function() {
-        InsertBBCodeTags(target, '[size=' + amount + (unit == 'px' ? '' : 'em') + ']', '[/size]');
-        $(document).trigger("close-dropdowns");
+        controller.insertTags('[size=' + amount[1] + 'em]', '[/size]');
     });
     size.hover(function () {
-        var sz = $(this).find('a').text();
         var pop = makeToolTip(this);
         pop.parent().css({
             'margin': '15px 0 0 0', 'padding': '0'
         });
-        pop.append('<div style="font-size: ' + sz + unit + '; line-height: 1; height: ' + sz + unit + ';">Ab</div>');
+        pop.append('<div style="font-size: ' + amount[1] + 'em !important; line-height:1;min-height:10px;height: ' + (amount[0] < 10 ? amount[0] < 1 ? 5 : 20 : amount[0]) + 'px;">Ab</div>');
     }, function () {
         $(this.children[1]).remove();
     });
 }
 
-function betterColors(button, target) {
-    button.attr({
-     'data-function': '', 'data-init': 'true' 
-    }).one('click', function() {
-        initColourPopup(target, button.parent(), this);
-    }).on('click', function() {
-        $('.recent-colours').each(function() {
-            var me = $(this);
-            var recent = getRecentColours(parseInt(me.attr('data-count')));
-            if (recent.length > 0) {
-                me.empty();
-                addColorTiles(target, me, recent);
-                me.css({'opacity': '', 'pointer-events': ''});
-                $('.recent-part').css('display','');
-            } else {
-                me.css({'opacity': '0.3', 'pointer-events': 'none'});
-            }
-        });
+function betterColours(button, controller) {
+    var me = button.parent();
+    if (!me.find('.drop-down').length) initColourPopup(controller, me, button);
+    $('.recent-colours').each(function() {
+        var me = $(this);
+        var recent = getRecentColours(parseInt(me.attr('data-count')));
+        if (recent.length > 0) {
+            me.empty();
+            addColorTiles(controller, me, recent);
+            me.css({'opacity': '', 'pointer-events': ''});
+            $('.recent-part').css('display','');
+        } else {
+            me.css({'opacity': '0.3', 'pointer-events': 'none'});
+        }
     });
 }
 
-function initColourPopup(target, me, self) {
+function initColourPopup(controller, me, self) {
     me.append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
     var holder = me.find('.colour-holder');
-    addColorTiles(target, holder, colours.Sets['FimFiction'][1]);
+    addColorTiles(controller, holder, colours.Sets['FimFiction'][1]);
     holder.append('<li class="divider" />');
-    addColorTiles(target, holder, colours.Sets['Mane Six'][1]);
+    addColorTiles(controller, holder, colours.Sets['Mane Six'][1]);
     var recent = getRecentColours(6);
     holder.append('<li class="recent-part divider"><span>Recent</span></li>');
     var recentHolder = $('<span class="recent-part recent-colours" data-count="6" />');
     holder.append(recentHolder);
     if (recent.length > 0) {
-        addColorTiles(target, recentHolder, recent);
+        addColorTiles(controller, recentHolder, recent);
     } else {
         $('.recent-part').css('display','none');
     }
@@ -2087,7 +2085,7 @@ function initColourPopup(target, me, self) {
     holder.append(b);
     b.find('a').click(function() {
         $('.active_text_area').removeClass('active_text_area');
-        $(target).addClass('active_text_area');
+        $(controller.textarea).addClass('active_text_area');
         if (!$('#colour_manager').length) {
             var posOverride = [];
             if ($('.color_picker').length != 0) {
@@ -2097,15 +2095,15 @@ function initColourPopup(target, me, self) {
             }
             var text = self.getAttribute('textTarget');
             var list = makePopup('All Colours', 'fa fa-tint', false, false);
-            list.element.attr('id','colour_manager');
+            $(list.element).attr('id','colour_manager');
             list.SetWidth(560);
             for (var i in colours.Sets) {
-                addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
+                addCollapseColorSection($(list.content), colours.Sets[i][1], i, colours.Sets[i][0]);
             }
 
             var recent = getRecentColours(15);
             if (recent.length > 0) {
-                var recentSec = addColorSection(list.content, recent, 'Recent');
+                var recentSec = addColorSection($(list.content), recent, 'Recent');
                 recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
                 var reset = $('<a href="javascript:void(0);" style="float:right;" >Clear</a>');
                 recentSec.find('.colour-section-header').append(reset);
@@ -2115,7 +2113,7 @@ function initColourPopup(target, me, self) {
                     $(recentSec).find('ul').css('pointer-events', 'none');
                 });
             }
-            list.content.addClass("color_picker");
+            $(list.content).addClass("color_picker");
             list.Show();
             if (posOverride.x != null) {
                 list.SetPosition(posOverride.x, posOverride.y);
@@ -2128,7 +2126,7 @@ function initColourPopup(target, me, self) {
     b = $('<li><a>Custom Colour</a></li>');
     holder.append(b);
     b.find('a').click(function() {
-        insertColor(target);
+        insertColor(controller);
     });
 }
 
@@ -2155,7 +2153,7 @@ function addColorSection(panel, colors, title) {
     return result;
 }
 
-function addColorTiles(target, panel, colors) {
+function addColorTiles(controller, panel, colors) {
     var len = colors.length;
     for (var i = 0; i < len; i++) {
         var code,name;
@@ -2180,15 +2178,15 @@ function addColorTiles(target, panel, colors) {
         if (code != '') {
             a.attr('data-colour', code);
             a.attr('title', name);
-            a.click(target == null ? function() {
-                var t = $('.active_text_area').first();
+            a.click(controller == null ? function() {
+                var t = App.GetControllerFromElement($('.active_text_area').parents('.bbcode-editor')[0]);
                 var c = $(this).attr('data-colour');
-                InsertBBCodeTags(t[0], '[color=' + c + ']', '[/color]');
+                t.insertTags('[color=' + c + ']', '[/color]');
                 addRecent(c);
                 t.focus();
             } : function() {
                 var c = $(this).attr('data-colour');
-                InsertBBCodeTags(target, '[color=' + c + ']', '[/color]');
+                controller.insertTags('[color=' + c + ']', '[/color]');
                 addRecent(c);
                 $(target).focus();
             });
@@ -2313,42 +2311,23 @@ function censorStory(element) {
     return false;
 }
 
-function setVideoSizes() {
-    $('.youtube_container > iframe').each(function() {
-        $(this).css('height', ($(this).width() / (560 / 315)) + 'px');
-    });
-    
-}
-
-function fixStoryLikes() {
-    $('.story_gallery .info:not(.fixed)').each(function() {
-        var me = $(this);
-        me.addClass('fixed');
-        me.children('b').eq(1).before('<br />').remove();
-    });
-}
-
-function addExtraToolbarLinks(e, ev) {
-    if (ev.type == 'stories') {
-        var ref = $('#user_toolbar_story_list a[href^="/index.php"]').parent();
+function addExtraToolbarLinks(e) {
+    if (e.event.type == 'stories') {
+        var ref = $('#user_toolbar_story_list a[href^="/user/"]').first().parent();
         var link = ref.clone();
         ref.after(link);
         link = link.find('a');
-        link.attr('href', link.attr('href') + '&bookshelf=1');
+        link.attr('href', 'https://www.fimfiction.net/bookshelf/1/featured?q=' + getUserName());
         link.html('<i class="fa fa-star-o"></i>View My Featured Stories');
     }
 }
 
 function registerBanners(extended) {
     if (isBannerCreditsPage()) {
-        if ($('.banner_credits').length) {
-            addBannerCredits(extended);
-        } else {
-            addBannerCreditsFromScratch([
-                { name: "Default", items: banners },
-                { name: "Advanced", items: extended }
-            ]);
-        }
+        addBannerCreditsFromScratch([
+            { name: "Default", items: banners },
+            { name: "Advanced", items: extended }
+        ]);
     }
     if (!$('.footer .block a[href="/?view=page&page=banner_credits"]').length) {
         $('.footer .block a[href="/staff"]').before('<a href="/?view=page&page=banner_credits">» Banner Credits</a><br>');
@@ -2373,21 +2352,23 @@ function buildBanner() {
     addMinorBannerCss();
     if (getTitleHidden()) $('body').addClass("titleHidden");
     if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
-        $('header.header').before($('.user-page-header, .story-page-header')).prepend('\
-<div id="title" class="title">\
-    <div class="banner-buttons">\
-       <a id="source_link">Source</a>\
-       <a id="reset_banner">Reset Selection</a>\
-       <a id="set_banner" href="/?view=page&page=banner_credits">Banner Selector</a>\
+        $('.user_toolbar').before($('.user-page-header, .story-page-header')).before('\
+<header class="header">\
+    <div id="title" class="title">\
+        <div class="banner-buttons">\
+           <a target="_blank" id="source_link">Source</a>\
+           <a id="reset_banner">Reset Selection</a>\
+           <a id="set_banner" href="/?view=page&page=banner_credits">Banner Selector</a>\
+        </div>\
+        <a href="/" class="home_link">\
+           <div id="fade_banner_image" />\
+           <div class="hidden"><img src="' + getLogoUrl(getLogo()) + '" style="opacity: ' + (getLogoOpacity()/100) + ';"></div>\
+        </a>\
+        <a href="/" class="home_link_link" />\
+        <div class="theme_selector theme_selector_left"><a /></div>\
+        <div class="theme_selector theme_selector_right"><a /></div>\
     </div>\
-    <a href="/" class="home_link">\
-       <div id="fade_banner_image" />\
-       <div><img src="' + getLogoUrl(getLogo()) + '" style="opacity: ' + (getLogoOpacity()/100) + ';"></div>\
-    </a>\
-    <a href="/" class="home_link_link" />\
-    <div class="theme_selector theme_selector_left"><a /></div>\
-    <div class="theme_selector theme_selector_right"><a /></div>\
-</div>');
+</header>');
         $('#reset_banner').on('click', function() {
             setCookie('selected_theme', '');
             slider.goto(-1);
@@ -2404,6 +2385,7 @@ function buildBanner() {
     
     var focusTile;
     if ($('.user-page-header .avatar-container, .story-page-header .image-container').length) {
+        $('.nav_bar .logo').addClass('tiny-logo');
         var tile = $('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container');
         focusTile = tile.clone().addClass('focus-tile');
         focusTile.on('mouseenter', function() {
@@ -2436,8 +2418,8 @@ function buildBanner() {
 function addBannerCreditsFromScratch(sets) {
     var swich = $('#banner_switcher .toggleable-radio');
     if (!$('.banner_credits').length) {
-        $('.inner .content_box').remove();
-        $('.inner').append('\
+        $('.front_page').after('\
+          <div class="content mobile-no-margin">\
             <div class="content_box">\
                 <div class="content_box_header">\
                     <h2>Banner Archive</h2>\
@@ -2468,7 +2450,8 @@ div.banner_credits div.banner {\
                 <div class="main" style="padding:15px; line-height:1.8em;">\
                     Rarity Background: <a href="http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751">Silent Matten</a>\
                 </div>\
-            </div>');
+            </div>\
+          </div>').remove();
         swich = $('#banner_switcher .toggleable-radio');
         $('#save_banners').on('click', function() {
             if ($('form#banner_selector input:checked').length) {
@@ -2512,62 +2495,6 @@ div.banner_credits div.banner {\
         }
     }
     
-    var themeId = getCookie('selected_theme');
-    $('.banner_credits .source input').each(function() {
-        $(this).prop('checked', $(this).val() == themeId);
-    });
-}
-
-function addBannerCredits(items) {
-    $('.theme input').prop('type','radio');
-    $('form input[type="submit"]').remove();   
-    
-    var swich = $('<div id="banner_switcher" style="display:block;text-align:center"><div class="inner" ><div class="toggleable-radio toggleable-radio-2" ><a /></div><button class="styled_button styled_button_grey" id="save_banners" type="button"><i class="fa fa-save" /> Save</button></div></div>');
-    $('.banner_credits').parent().before(swich);
-    $('.banner_credits').attr('data-group','default');
-    swich = swich.find('.toggleable-radio');
-    swich.prepend('<input name="banner-group" id="advanced" type="radio" value="advanced" /><label for="advanced">Advanced</label>');
-    swich.prepend('<input name="banner-group" id="default" type="radio" value="default" checked="checked" /><label for="default">Default</label>');
-    swich.find('input').on('change',function() {
-        var val = $(this).val();
-        var offset = 0;
-        var banners = $('.banner_credits');
-        var len = banners.length;
-        for (; offset < len; offset++) {
-            if ($(banners[offset]).attr('data-group') == val) break;
-        }
-        banners.first().parent().css('height', ($(banners[offset]).height() + 100) + 'px');
-        banners.css('transform', 'translate(-' + (offset * 100) + '%,0)');
-    });
-    
-    $('#save_banners').on('click', function() {
-        if ($('form input:checked').length) {
-            setCookie('selected_theme', $('.banner_credits input:checked').val());
-            finaliseThemes();
-        }
-    });
-    
-    Animator().on('switcher', function() {
-        updatePinnedWithMax('#banner_switcher','switcher', $('.banner_credits').parent());
-    });
-    
-    var holder = $('<div class="banner_credits" data-group="advanced" />');
-    $('.banner_credits').last().after(holder);
-    
-    for (var i = 0, len = items.length; i < len; i++) {
-        var item = $('<div class="theme" />');
-        holder.append(item);
-        var banner = $('<div class="banner" title="Click to select this banner" style="background-image:url(' + items[i].url + ')" />');
-        item.append(banner);
-        var source = $('<div class="source" style="background-color:' + items[i].colour + '"><input type="radio" value="' + items[i].id + '" name="banners[]" /></div>');
-        item.append(source);
-        if (items[i]['source']) {
-            source.append(' Source: <a href="' + items[i].source + '">' + items[i].source + '</a>');
-        }
-        if (items[i]['position']) {
-            banner.css('background-position', items[i].position);
-        }
-    }
     var themeId = getCookie('selected_theme');
     $('.banner_credits .source input').each(function() {
         $(this).prop('checked', $(this).val() == themeId);
@@ -2626,8 +2553,27 @@ function changeBanner(source, img, color, pos) {
     }
 
     if (color && color.length) {
-        $('.user_toolbar > ul').css('background', color);
+        $('.user_toolbar').attr('data-background-color', color).css('background', 'linear-gradient(to bottom, ' + toZeroAlpha(color) + ' 0%, ' + color + ' 85%)');
     }
+}
+
+function toZeroAlpha(color) {
+    if (color.indexOf('rgb(') == 0) {
+        return color.replace('(','a(').replace(')', ',0)');
+    }
+    if (color.indexOf('rgba(') == 0) {
+        color = color.split(',');
+        color[color.length - 1] = '0)';
+        return color.join(',');
+    }
+    color = color.replace('#','');
+    if (color.length % 3 == 0) return '#' + color + (color.length == 3 ? '0' : '00');
+    if (color.length == 4) {
+        color[3] = '0';
+        return '#' + color;
+    }
+    color[6] = color[7] = '0';
+    return '#' + color;
 }
 
 function catchBanner(banner) {
@@ -2652,11 +2598,6 @@ function addFooterData(data) {
 function addCss() {
     logger.Log('adding stylesheet',10);
     makeStyle("\
-\
-/*Bleeding corners fix*/\
-.module_container .content_box {\
-    overflow-x: hidden;}\
-\
 /*Footer overflow fix*/\
 div.footer {\
     height: auto !important;}\
@@ -2668,6 +2609,10 @@ table.properties > tbody > tr.bookmark_entry:last-child td {\
 /*fix for dotted lines around Banner selectors*/\
 header.header .theme_selector a {\
   outline: 0 !important;}\
+\
+/*Fix bleeding corners on dropdown menus*/\
+.user_toolbar > ul > li ul li:last-child a i {\
+  border-bottom-left-radius: 2px;}\
 \
 /*Blog preview fix*/\
 #blog_preview {\
@@ -2726,13 +2671,6 @@ textarea[required] {\
 .user_toolbar > ul > li ul li:hover > a .bookshelf-icon-element span {\
     color: #FFF !important;}\
 \
-/*Dropdown radius fix*/\
-.user_toolbar > ul > li ul li:last-child a > i {\
-    border-bottom-left-radius: 4px;}\
-.user_toolbar > ul > li > ul ul {\
-    border-bottom-left-radius: 4px;\
-    border-bottom-right-radius: 4px;}\
-\
 /*Comment insert_left/right fix*/\
 .comment_data, .blog_post_content, .message_content, .chapter_content, blockquote {\
     overflow: hidden;}\
@@ -2752,6 +2690,30 @@ textarea[required] {\
 .comment img.user_image {\
     max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
     makeStyle("\
+/*Modernised source links*/\
+.story_container .story_container__story_image {\
+  overflow: hidden;}\
+.story_container .story_container__story_image .source {\
+  display: block !important;\
+  background: #fff !important;\
+  color: #333 !important;\
+  border: none !important;\
+  border-radius: 5px 0 3px 0 !important;\
+  text-shadow: none !important;\
+  font-weight: 400 !important;\
+  opacity: 0;\
+  transition: bottom 0.5s ease, right 0.5s ease, opacity 0.01s ease 0.5s !important;\
+  bottom: -30px !important;\
+  right: -30px !important;}\
+.story_container .story_container__story_image:hover .source {\
+  bottom: 1px !important;\
+  right: 1px !important;\
+  opacity: 1 !important;\
+  transition: bottom 0.5s ease, right 0.5s ease !important;}\
+\
+.story-page-header > .inner h1 a, .user-page-header > .inner h1 a:hover {\
+    text-decoration: none;}\
+\
 /*Bookmarks*/\
 .bookmark_item {\
     border-bottom: solid 1px grey;\
@@ -2772,14 +2734,14 @@ textarea[required] {\
 /*Better Feed End Marker*/\
 #feed_end_marker img {\
     display: none;}\
-#feed_end_marker {\
-    -webkit-animation: fa-spin 2s infinite linear;\
-    animation: fa-spin 2s infinite linear;}\
 #feed_end_marker::before {\
+    display: inline-block;\
     content: '';\
     font-family: FontAwesome;\
     font-size: 66px;\
-    color: rgba(0,0,0,0.6);}\
+    color: rgba(0,0,0,0.6);\
+    -webkit-animation: fa-spin 2s infinite linear;\
+    animation: fa-spin 2s infinite linear;}\
 \
 /*For snow in the background*/\
 body > canvas ~ .body_container .nav_bar,\
@@ -2787,18 +2749,74 @@ body > canvas ~ .footer {\
   z-index: 200000;\
   position: relative;}\
 \
+/*clean up embeds*/\
+.embed-container .placeholder::before {\
+  opacity: 0.8;\
+  transition: opacity 0.25s ease;}\
+.embed-container .placeholder .overlay::before {\
+  background: #eee;\
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);}\
+.embed-container .placeholder .overlay::after {\
+  color: #000;\
+  text-shadow: none;}\
+.embed-container:hover .overlay::after, .embed-container:hover .overlay::before {\
+  transform: scale(1.125) !important;}\
+.embed-container .placeholder,\
+.embed-container iframe {\
+  padding: 0 !important;}\
+\
+/*Fixed, well, not fixed, but removed, hideous yellow*/\
+.user_cp .tabs ul li.tab_selected {\
+    background: rgba(120,120,120,0.1) !important;}\
+\
+/*I'll have non'a that shit*/\
+.bbcode hr::after, .article hr::after {\
+    display: none !important;}\
+\
+/*Now with 20% less cancer*/\
+.no-lightbox [data-lightbox] {\
+    cursor: default !important;}\
+.user_image_no_lightbox {\
+    max-width: 100%;\
+    max-height: 600px;\
+    border: 0;}\
+\
+/*Clean up the featured box*/\
+.front_page .featured_box .left ul li.selected {\
+  background: #ccc !important;}\
+.front_page .featured_box .left ul li.selected::before,\
+.front_page .featured_box .left ul li.selected::after {\
+  position: absolute;\
+  content: '';\
+  display: block;\
+  width: 0;\
+  height: 0;\
+  right: 0;\
+  border: solid 14px transparent;}\
+.front_page .featured_box .left ul li.selected::after {\
+  top: 0;\
+  border-right-color: #fff;}\
+.front_page .featured_box .left ul li.selected::before {\
+  top: -1px;\
+  border-width: 15px;\
+  border-right-color: rgba(0,0,0,0.3);}\
+\
 /*Chapter Enhancements*/\
-.mark_all_holder {\
-    display:inline;\
-    cursor:pointer;\
-    margin-right:5px;}\
-.mark_all_holder:hover i {\
-    color: rgb(82, 149, 29);}\
-.all_chapters_hidden {\
+.all-chapters-hidden {\
     display: none;\
     text-align: center;}\
-.chapters_compact .all_chapters_hidden {\
+.chapters_compact .all-chapters-hidden {\
     display: block;}\
+.all-chapters-hidden {\
+    position: relative;\
+    padding: 10px;\
+    padding-left: 16px;\
+    padding-right: 100px;\
+    color: #888;\
+    border-bottom: 1px solid rgba(0,0,0,0.15);\
+    border-top: 1px solid #ddd;\
+    font-size: .9375rem;\
+background-color: #f6f6f6;}\
 .chapter_highlighted {\
     background: rgb(48, 250, 255);\
     transition: background 0.5s ease !important;}\
@@ -2826,17 +2844,35 @@ a:hover .bg_source_link {\
     font-family: 'Segoe UI';\
     text-shadow: 1px 1px rgba(0, 0, 0, 0.3);}\
 .titleHidden #title {\
-    height: 50px !important;}\
+    height: 80px !important;}\
 .titleHidden #title, .titleHidden .user-page-header, .titleHidden .story-page-header {\
     overflow: hidden;}\
-.titleHidden #title:hover {\
-    height: 175px !important;}\
-.drop-size-pick ul li {\
-    display: inline-block !important;}\
+.titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
+    padding-left: 11.5rem;}\
+.titleHidden header.header .theme_selector a, .titleHidden header.header .theme_selector a {\
+    line-height: 75px !important;}\
 .drop-size-pick {\
-    width: 177px !important;\
     margin-left: -90px !important;\
     margin-right: auto !important;}\
+.drop-size-pick, .drop-size-pick ul {\
+  width: 178px !important;\
+  height: 205px !important;\
+  max-height: initial !important;}\
+.drop-size-pick a {\
+  padding: 5px 5px !important;}\
+.drop-size-pick ul {\
+  padding: 0 !important;\
+  max-height: initial;\
+  border-radius: 5px;\
+  overflow: hidden;}\
+.drop-size-pick ul li {\
+  display: inline-block !important;\
+  width: 24.7%;\
+  height: 13px;\
+  text-align: center;\
+  border-radius: none;}\
+.drop-size-pick ul li:nth-child(4) ~ li {\
+  width: 19.8%;}\
 .colour-holder .colour-tile {\
     display: inline-block !important;}\
 .colour-holder .colour-tile a {\
@@ -2910,32 +2946,27 @@ a:hover .bg_source_link {\
 .button-group .drop-down ul ul li:first-child ~ li > a, .button-group-vertical .drop-down ul li:first-child ~ li > a, * + .button-holder > li:first-child > a {\
     border-top-left-radius: 0px !important;\
     border-top-right-radius: 0px !important;}\
-.drop-size-pick li:nth-child(5n) a {\
-    padding-right: 11px !important;\
-    margin-right: -1px !important;}\
-.drop-size-pick li:nth-child(5) a {\
-    border-radius: 0 5px 0 0 !important;}\
-.drop-size-pick li:first-child a {\
-    border-radius: 5px 0 0 0 !important;}\
-.drop-size-pick li:last-child a {\
-    border-radius: 0 0 5px 0 !important;}\
-.drop-size-pick li:nth-last-child(5) a {\
-    border-radius: 0 0 0 5px !important;}\
-.chapter-read-all, .chapter-unread-all {\
-    margin-right: 8px;\
-    font-size: 14px;\
-    font-family: 'FontAwesome';\
-    font-style: normal;\
-    color: rgb(80, 126, 44);}\
 .compact_chapters {\
     display: none;}\
-.chapters_expanded .compact_chapters {\
-    display: inline !important;}\
-.chapter-read-all:before {\
-    content: '';}\
-.chapter-unread-all:before {\
-    content: '';}\
-ul.chapters_compact .chapter_container {\
+.all-shown .chapters li.hidden {\
+  display: block;}\
+.all-shown .chapter-expander-toggle {\
+  display: none;}\
+.all-shown .compact_chapters {\
+    display: block !important;}\
+.story_container .chapters-header {\
+    margin-top: 1.0rem;\
+    background-color: #efefef;\
+    color: #555;\
+    position: relative;\
+    padding: 10px;\
+    padding-left: 16px;\
+    padding-right: 100px;\
+    border-top: 1px solid rgba(0,0,0,0.15);\
+    font-size: 0.9em;}\
+.story_container .chapters-header ~ .chapters {\
+    margin-top: 0;}\
+.chapters_compact .chapters {\
     display: none !important;}\
 .sigPreview {\
     padding: 8px;\
@@ -2997,6 +3028,18 @@ text-shadow: none !important;}\
 .user-card .external-accounts li img {\
     max-height: 16px;\
     max-width: 16px;}\
+.user-card .top-info .button-group .button-group {\
+  margin-right: 20px !important;\
+  margin-top: 30px !important;}\
+.user-card .top-info .button:first-child {\
+  border-top-left-radius: 5px;}\
+.user-card .top-info .drop-down-expander.button {\
+  border-radius: 0 5px 5px 0 !important;}\
+.user-card .top-info .button::after {\
+  background: rgba(0,0,0,0) !important;\
+  background: -webkit-gradient(linear, left top, left bottom, rgba(0,0,0,0), #2f538c, rgba(0,0,0,0)) !important;\
+  background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%) !important;\
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%) !important;}\
 #imgPreview {\
     border-radius: 5px;\
     max-width:100%;\
@@ -3060,11 +3103,13 @@ font-family: FontAwesome;}\
 \
 @media all and (min-width: 700px) {\
     .fix_userbar .user_toolbar {\
-        position: fixed;\
-        top: 0px;\
-        left: 0px;\
-        right: 0px;\
-        z-index: 1300;}\
+       position: fixed;\
+       top: 0px;\
+       left: 0px;\
+       right: 0px;\
+       z-index: 1300;\
+       margin-top: -210px;\
+       padding-top: 200px;}\
     .fix_userbar header.header {\
        margin-bottom: 40px;}\
     .pin_nav_bar.fix_userbar .user_toolbar {\
@@ -3150,6 +3195,56 @@ form > .content_box {\
 function addBannerCss() {
     if ($('Fimfiction_Advanced_Banner_Stylesheet').length) return;
     makeStyle('\
+/*Banners*/\
+.nav_bar .logo {\
+  z-index: 125;\
+  position: relative;}\
+.nav_bar .logo.tiny-logo {\
+  max-height: 32px;\
+  vertical-align: -10px;}\
+header.header { margin-left: auto; margin-right: auto; border-top: medium none; box-sizing: border-box; position: relative; }\
+header.header .title { height: 175px; background-position: center top; background-repeat: no-repeat; position: relative; display: none ! important; }\
+header.header .home_link { display: block; position: absolute; border-width: medium 1px; border-style: none solid; border-color: -moz-use-text-color rgba(0, 0, 0, 0.2); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; right: 0px; left: 0px; top: 0px; bottom: 0px; background-position: center top; overflow: hidden; transition: background-image 0.15s ease 0s; }\
+@media all and (max-width: 1000px) {\
+  header.header .home_link { background-position: -150px top; }\
+}\
+header.header .home_link div { position: absolute; left: 50%; }\
+@media all and (max-width: 1000px) {\
+  header.header .home_link div { left: 500px; }\
+}\
+header.header .home_link div img { margin-left: -500px; }\
+header.header .home_link_link { display: block; position: absolute; z-index: 10; right: 0px; left: 0px; top: 0px; bottom: 0px; }\
+header.header .banner-buttons { position: absolute; z-index: 30; visibility: hidden; opacity: 0; transition: opacity 0.2s ease 0s, visibility 0.2s ease 0s; right: 64px; bottom: 10px; }\
+header.header .banner-buttons a {\
+  color: #d0e9f7;\
+  font-size: 0.7rem;\
+  padding: 5px 10px;\
+  text-decoration: none;\
+  border-radius: 3px;\
+  font-family: "Open Sans",Arial,sans-serif;\
+  font-weight: 600;\
+  font-style: normal;\
+  text-transform: uppercase;}\
+header.header .banner-buttons a:hover {background-color: rgba(0, 0, 0, 0.1);}\
+header.header:hover .banner-buttons { visibility: visible; opacity: 1; }\
+@media all and (max-width: 950px) {\
+  header.header .banner-buttons {\
+    bottom: 30px;}}\
+header.header:hover .theme_selector a { opacity: 1; }\
+header.header .theme_selector { width: 120px; height: 100%; position: absolute; z-index: 11; transition: background 0.3s ease 0s; background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%; }\
+header.header .theme_selector a { color: rgb(255, 255, 255); position: absolute; height: 100%; width: 60px; opacity: 0; text-align: center; line-height: 175px; text-decoration: none; text-shadow: 0px 2px rgba(0, 0, 0, 0.5), 0px 0px 50px rgb(0, 0, 0); font-size: 32px; transition: opacity 0.3s ease 0s; }\
+header.header .theme_selector_left { left: 0px; }\
+header.header .theme_selector_left:hover { background: transparent linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, transparent 100%) repeat scroll 0% 0%; }\
+header.header .theme_selector_left a::before { font-family: "FontAwesome"; content: ""; }\
+header.header .theme_selector_right { right: 0px; }\
+header.header .theme_selector_right:hover { background: transparent linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 100%) repeat scroll 0% 0%; }\
+header.header .theme_selector_right a { right: 0px; }\
+header.header .theme_selector_right a::before { font-family: "FontAwesome"; content: ""; }\
+@media all and (max-width: 700px) {\
+    header.header { width: 100%; }\
+    header.header .title { display: none ! important; }\
+}\
+\
 header.header .home_link {\
     border: none !important;}\
 @media all and (max-width: 700px) {\
@@ -3165,21 +3260,28 @@ header.header .home_link {\
     body.expand-tile header.header .title,\
     .user-page-header:hover ~  header.header .title,\
     .story-page-header:hover ~ header.header .title {\
-        height: 20px;}\
+        height: 40px;}\
         header.header .title {\
         transition: height 0.5s ease;}\
     body.expand-tile header.header .title,\
     .user-page-header:hover ~  header.header .title,\
     .story-page-header:hover ~ header.header .title {\
-        transition: height 0.5s 0.6s ease !important;}\
-\
-    .user_toolbar > ul {\
-        box-shadow: 0px 1px rgba(255, 255, 255, 0.1) inset;\
-        border-top: 1px solid rgba(0, 0, 0, 0.2);\
-        border-bottom: 1px solid rgba(0, 0, 0, 0.2);}\
-        header.header .title {\
+        transition: height 0.2s 0.3s ease !important;}\
+    .user-page-header ~ header.header .home_link img,\
+    .story-page-header ~ header.header .home_link img {\
+      display: none;}\
+    .user_toolbar {\
+      background: linear-gradient(to bottom, #3c6ab300 0%, #3a66ac 85%);\
+      margin-top: -45px;\
+      box-shadow: none;\
+      position: relative;\
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);}\
+    .user_toolbar > ul > li {\
+      margin-top: 10px;\
+      z-index: 10;}\
+     header.header .title {\
         overflow: hidden;\
-        background-color: #282828;}\
+        background-color: #1c1c1ce6;}\
     .focus-tile {\
         position: absolute;\
         z-index: 13 !important;}\
@@ -3199,39 +3301,33 @@ header.header .home_link {\
     .focus-tile.avatar-container img {\
         height: 160px;\
         width: 160px;\
-        border-radius: 5px;\
+        border-radius: 100%;\
         border-color: #D6D2CB #BEBAB5 #BEBAB5 #D6D2CB;}\
-    body.expand-tile .story-page-header + .focus-tile,\
-    .story-page-header:hover + .focus-tile,\
-    body.expand-tile .user-page-header + .focus-tile,\
-    .user-page-header:hover + .focus-tile {\
-        transition: opacity 0.7s ease;\
-        opacity: 0;}\
-    .user_toolbar.transitionable > ul {\
+    .focus-tile.avatar-container {\
+        border-radius: 100%;}\
+    .user_toolbar.transitionable {\
         transition: background-color 0.25s linear;}\
     .user_toolbar > ul > li {\
-        background: rgba(255, 255, 255, 0.1);\
         text-shadow: none;\
-        color: rgba(0, 0, 0, 0.85);\
-        border-right: 1px solid rgba(0, 0, 0, 0.2);\
-        border-top: 1px solid rgba(0, 0, 0, 0.2);\
-        margin: -1px 0px 0px;}\
-    .user_toolbar > ul > li:first-of-type {\
-        border-left: 1px solid rgba(0, 0, 0, 0.2);}\
+        color: rgba(0, 0, 0, 0.85);}\
+    .user_toolbar > ul > li::before {\
+        right: 0;\
+        background: rgba(0,0,0,0);//rgba(47,83,140,0);\
+        background: -webkit-gradient(linear, left top, left bottom, rgba(0,0,0,0), #2f538c, rgba(0,0,0,0));\
+        background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);\
+        background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);}\
+    .user_toolbar > ul > li::after {\
+        right: -1px;\
+        background: rgba(150,150,150,0);//rgba(71,125,210,0);\
+        background: -webkit-gradient(linear, left top, left bottom, rgba(150,150,150,0), rgba(150,150,150,0.3), rgba(150,150,150,0));\
+        background: -webkit-linear-gradient(top, rgba(150,150,150,0) 0%, rgba(150,150,150,0.3) 50%, rgba(150,150,150,0) 100%);\
+        background: linear-gradient(to bottom, rgba(150,150,150,0) 0%, rgba(150,150,150,0.3) 50%, rgba(150,150,150,0) 100%);}\
     .user_toolbar > ul > li:hover {\
         text-shadow: none;\
         background: rgba(0, 0, 0, 0.1);}\
-    .user_toolbar {\
-        position: relative;}\
-    .user_toolbar::before {\
-        content: "";\
-        pointer-events: none;\
-        position: absolute;\
-        top: 0px;\
-        left: 0px;\
-        right: 0px;\
-        height: 38px;\
-        box-shadow: 0px 20px 20px rgba(255,255,255,0.06) inset;}\
+    .user_toolbar > ul > li {\
+      text-shadow: 1px 1px rgba(0,0,0,0.3);\
+      color: #d0e9f7;}\
     header.header .home_link {\
         height: 175px;\
         background-size: cover !important;}\
@@ -3251,7 +3347,12 @@ function addMinorBannerCss() {
 @media all and (max-width: 950px) {\
   .focus-tile.avatar-container img {\
     width: 80px;\
-    height: 80px;}}\
+    height: 80px;}\
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
+    padding-left: 7.5rem;}}\
+@media all and (max-width: 850px) {\
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
+    padding-left: 2rem;}}\
 @media all and (min-width: 700px) {\
   .user-page-header, .story-page-header {\
     height: 70px;\
@@ -3297,13 +3398,14 @@ function addMinorBannerCss() {
   white-space: nowrap; /*Chrome Fix*/}\
 .story-page-header > .inner hr, .user-page-header > .inner hr {\
   border-color: rgba(28,28,28,0.9) rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.1) !important;}\
-.user-page-header ol, .story-page-header ol {\
+.user-page-header .mini-info-box, .story-page-header .mini-info-box {\
   direction: rtl;\
   top: 0px;\
   right: 0px;\
   bottom: auto;\
   left: auto;\
   border: none;\
+  list-style: unset;\
   background: none !important;}\
 .story-page-header > .inner h1, .user-page-header > .inner h1,\
 .user-page-header ol b, .story-page-header ol b {\
@@ -3323,11 +3425,11 @@ function addMinorBannerCss() {
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+function getBlockLightbox() {return settingsMan.getB('block_lightbox', false);}
+function setBlockLightbox(v) {settingsMan.setB('block_lightbox', v, false);}
+
 function getPinUserbar() {return settingsMan.getB('pin_userbar', false);}
 function setPinUserbar(v) {settingsMan.setB('pin_userbar', v, false);}
-
-function getResizeVideos() {return settingsMan.getB('resize_vids', true);}
-function setResizeVideos(v) {settingsMan.setB('resize_vids', v, true);}
 
 function getAlwaysShowImages() {return settingsMan.getB('unspoiler_images', true);}
 function setAlwaysShowImages(val) {settingsMan.setB('unspoiler_images', val, true);}
@@ -3341,9 +3443,6 @@ function setSweetieEnabled(val) {
         settingsMan.remove("sweetie_img_index");
     }
 }
-
-function getAlwaysHttps() {return settingsMan.getB('always_https', false);}
-function setAlwaysHttps(val) {settingsMan.setB('always_https', val, false);}
 
 function getSlide() {return settingsMan.int("slideShow", 0);}
 function setSlide(v) {settingsMan.set("slideShow", v, 0);}
@@ -3604,7 +3703,7 @@ function setBannersEnabled(v) {
         buildBanner(banners);
     } else {
         $('#Fimfiction_Advanced_Banner_Stylesheet, #Fimfiction_Advanced_UserBanner_Stylesheet').remove();
-        $('.user_toolbar > ul').css('background', '');
+        $('.user_toolbar').css('background', '');
         $('.focus-tile, header.header > #title.title').remove();
     }
 }
@@ -3750,6 +3849,22 @@ function BG(name, css, source) {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
+function chainFunctionOnto(target, name, handler) {
+    var _old = target[name];
+    target[name] = function() {
+        handler.apply(this, arguments);
+        if (typeof _old === 'function') _old.apply(this, arguments);
+    }
+}
+
+//==API FUNCTION==//
+function override(obj, member, new_func) {
+    if (obj[member].super) return;
+    new_func.super = obj[member];
+    obj[member] = new_func;
+}
+
+//==API FUNCTION==//
 function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('')  : me;}
 
 //==API FUNCTION==//
@@ -3857,7 +3972,7 @@ function Slider() {
     }
     
     function loadImg() {
-        $('.user_toolbar > ul').css("transition-duration", "3s");
+        $('.user_toolbar').css("transition-duration", "3s");
         chooseTheme(theme, true);
         setTimeout(transitionEnd, 3000);
         fade.css({"transition": "opacity 3s linear", "opacity": "0"});
@@ -3879,7 +3994,7 @@ function Slider() {
         $('<img>').attr('src', banners[theme].url).load(loadImg);
     }
 
-    function transitionEnd() {$('.user_toolbar > ul').css("transition-duration", "");}
+    function transitionEnd() {$('.user_toolbar').css("transition-duration", "");}
     function getTime(v) {return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];}
 
     return me;
@@ -3939,14 +4054,15 @@ function setupSweetie() {
     });
 
     initBelle();
-
+    
+    var bod = $('body');
     $(belle).on('mousedown', function(event) {
         $(belle).attr("dragging", "true");
         $('iframe').css('pointer-events','none');
         var x = event.clientX - parseInt(this.style.left);
         var y = event.clientY - parseInt(this.style.top);
         if (canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] > 0) {
-            $(document).on('mousemove.belle', function(event) {
+            bod.on('mousemove.belle', function(event) {
                 setPrefPos(event.clientX - x, event.clientY - y);
                 if (grabbedImage != null) {
                     $('.grabbedImage').attr('held', 'true');
@@ -3972,15 +4088,13 @@ function setupSweetie() {
         }
     });
 
-    $(document).on('mousemove', $(belle), function(event) {
+    bod.on('mousemove', $(belle), function(event) {
         var x = event.clientX - parseInt(belle.style.left);
         var y = event.clientY - parseInt(belle.style.top);
         $(belle).css('pointer-events', canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] == 0 ? 'none' : '');
-    });
-
-    $(document).on('mouseup blur', function(event) {
+    }).on('mouseup blur', function(event) {
         $(belle).attr("dragging", "false");
-        $(document).off('mousemove.belle');
+        bod.off('mousemove.belle');
         $('iframe').css('pointer-events','');
         lastX = -1;
     });
@@ -3989,7 +4103,7 @@ function setupSweetie() {
     var pass = [71,85,77,66,65,76,76];
     var passLevel = 0;
     var no = false;
-    $(document).on('keydown', function(event) {
+    bod.on('keydown', function(event) {
         if (event.keyCode == 32) {
             if ($(belle).attr("dragging") == "true") {
                 rotateObject(belle, 90);
@@ -4030,9 +4144,7 @@ function setupSweetie() {
             }
         }
         passLevel += event.keyCode == pass[passLevel] ? 1 : -passLevel;
-    });
-
-    $(document).on('keyup', function(event) {
+    }).on('keyup', function(event) {
         if (event.keyCode == 32) {
             rotateObject(belle, 0);
             no = false;
@@ -4048,9 +4160,7 @@ function setupSweetie() {
         if (window_focused) {
             setPos(prefX, prefY);
         }
-    });
-
-    $(window).focus(initBelle);
+    }).focus(initBelle);
 
     setInterval(function() {
         $('.floater').each(floatUp);
@@ -4793,7 +4903,7 @@ function snowBG(env, cont, reverse, fix) {
             dispose: function() {
                 this.stop();
                 $(renderer.domElement).remove();
-                $(window).off('mousemove.snow');
+                $('body').off('mousemove.snow');
             }
         };
     })();
