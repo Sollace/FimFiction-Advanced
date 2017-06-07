@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4
+// @version     4.0.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -275,7 +275,7 @@ function load() {
         }
         if ($('.tabs').length && getTabsLeft()) {
             logger.Log('final-init updating tab-bar position', 10);
-            updateTabsBarSide(true);
+            //updateTabsBarSide(true);
         }
         logger.Log('Setup complete successfully',10);
     } catch (e) {
@@ -419,10 +419,10 @@ function buildSettingsTab(tab) {
         }
     });
     
-    tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
+    /*tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
         setTabsLeft($(this).val() == '1');
         updateTabsBarSide($(this).val() == '1');
-    });
+    });*/
     
     var fontSelect = tab.AddDropDown("ffs", "Site Font", []);
     for (var i in fonts) {
@@ -2566,14 +2566,9 @@ function toZeroAlpha(color) {
         color[color.length - 1] = '0)';
         return color.join(',');
     }
-    color = color.replace('#','');
-    if (color.length % 3 == 0) return '#' + color + (color.length == 3 ? '0' : '00');
-    if (color.length == 4) {
-        color[3] = '0';
-        return '#' + color;
-    }
-    color[6] = color[7] = '0';
-    return '#' + color;
+    color = hexToRgb(color);
+    color[3] = 0;
+    return 'rgba(' + color.join(',') + ')';
 }
 
 function catchBanner(banner) {
@@ -3271,7 +3266,7 @@ header.header .home_link {\
     .story-page-header ~ header.header .home_link img {\
       display: none;}\
     .user_toolbar {\
-      background: linear-gradient(to bottom, #3c6ab300 0%, #3a66ac 85%);\
+      background: linear-gradient(to bottom, rgba(60, 106, 179, 0) 0%, #3a66ac 85%);\
       margin-top: -45px;\
       box-shadow: none;\
       position: relative;\
@@ -3931,6 +3926,16 @@ function rgbToHex(r,g,b) {
     if (typeof g !== 'number') g = tryParseInt(g, 0);
     if (typeof b !== 'number') b = tryParseInt(b, 0);
     return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+
+//==API FUNCTION==//
+function hexToRgb(hex){
+    var c= hex.substring(1).split('');
+    if(c.length== 3){
+        c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+    }
+    c= '0x'+c.join('');
+    return [(c >> 16) & 255, (c >> 8) & 255, c & 255, 1];
 }
 
 //--------------------------------------------------------------------------------------------------
