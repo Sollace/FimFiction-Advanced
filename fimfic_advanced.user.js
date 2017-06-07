@@ -221,6 +221,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
         load();
     }
 });
+override(document, 'addEventListener', function(ev, f) {
+    if (!this.eventListeners) this.eventListeners = {};
+    if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
+    this.eventListeners[ev].push(f);
+    return document.addEventListener.super.apply(this, arguments);
+});
+document.getEventListeners = function(event) {
+    return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
+};
+override(window.Function.prototype, 'bind', function(context) {
+    var result = this.bind.super.apply(this, arguments);
+    result.unbound = this;
+    result.context = context;
+    return result;
+});
+
 chainFunctionOnto(document, 'onready', function() {
     logger.Log('event: onready', 2);
     if (~loaded & 3) {
@@ -236,15 +252,6 @@ chainFunctionOnto(document, 'onready', function() {
         }
     }
 });
-
-//==API FUNCTION==//
-function chainFunctionOnto(target, name, handler) {
-    var _old = target[name];
-    target[name] = function() {
-        handler.apply(this, arguments);
-        if (typeof _old === 'function') _old.apply(this, arguments);
-    }
-}
 
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------SCRIPT BODY------------------------------------------------
@@ -401,10 +408,6 @@ function buildSettingsTab(tab) {
     
     tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).change(function() {
         setBlockLightbox(this.checked);
-    });
-    
-    tab.AddCheckBox("colourful", "Lively Tags", getColourfulTags()).change(function() {
-       setColourfulTags(this.checked);
     });
     
     tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).change(function() {
@@ -1478,59 +1481,85 @@ function applyBookmarks() {
 
 function applyCodePatches() {
     logger.Log('applyCodePatches');
-    if ($('#chapter_container').length) {
-        var b = null,
-            c = null,
-            d = null,
-            e = null;
-        window.UpdateColours = function() {
-            //Extend theming to more elements
-            var clazz = "content_format_" + LocalStorageGet("format_colours"); /**/
-            $('.' + clazz).removeClass(clazz); /*$("#chapter_format").attr( "class", "" );*/
+    if ($('.chapter-container').length) {
+        ChapterFormatController.prototype.apply = function () {
+            this.chapter.style.fontSize = this.text_size + 'rem';
+            this.chapter.style.fontFamily = this.font;
+            /****/
+            if (this.previous_colour_scheme) $('.content_format_' + this.previous_colour_scheme).removeClass('.content_format_' + this.previous_colour_scheme); /**/
+            /****/
+            this.chapterFormat.className = 'content_format_' + this.colour_scheme;
+            /****/
+            $('.chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + this.colour_scheme);
+            
             $('.content_plus_format').removeClass('content_plus_format'); /**/
-            clazz = $('#format_colours').val();
-            LocalStorageSet('format_colours', clazz);
-            //Extend theming to more elements
-            $('#chapter_format, .chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a' /**/).addClass('content_format_' + clazz);
-            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + clazz + ' .inner_margin').css('color')); /**/
-            ComputeBackgroundColor();
+            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + this.colour_scheme + ' .inner_margin').css('color')); /**/
+            /****/
+            
+            this.chapterBody.style.lineHeight = this.line_spacing + 'em';
+            this.chapterBody.style.textAlign = 'none' != this.justify ? 'justify' : 'left';
+            var c = 'hyphens' == this.justify ? 'auto' : 'none';
+            this.chapterBody.style.webkitHyphens = c;
+            this.chapterBody.style.mozHyphens = c;
+            this.chapterBody.style.msHyphens = c;
+            this.chapterBody.style.hyphens = c;
+            this.storyContainer.style.maxWidth = 50 * this.text_size * this.line_width + 'em';
+            this.chapterBody.classList.toggle('double-spaced', 'double' == this.paragraph_style || 'both' == this.paragraph_style);
+            this.chapterBody.classList.toggle('indented', 'indented' == this.paragraph_style || 'both' == this.paragraph_style);
+            if (this.onChangeListener) this.onChangeListener(this);
+        };
+        override(ChapterFormatController.prototype, 'setColourScheme', function (c) {
+            this.previous_colour_scheme = this.colour_scheme;
+            return this.setColourScheme.super.apply(this, arguments);
+        });
+        ChapterController.prototype.computeBackgroundColor = function() {
+            ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
         }
-        window.ComputeBackgroundColor = function() {
-            $('.body_container'/*document.body*/).css('background-color', '');
-            //Use stored base colour value
-            c = extractColor($(document.body).attr('data-base-color')/*$(document.body).css('background-color')*/);
-            d = extractColor($('#chapter_format').css('background-color'));
-            var f = 127 > 0.39 * d[0] + 0.5 * d[1] + 0.11 * d[2];
-            e = colorMult(d, f ? 0.85 : 0.95);
-            f = rgbToCSS(colorMult(d, f ? 1.4 : 0.82));
-            $('.chapter_content_box').css({
-                'border-left-color': f,
-                'border-right-color': f
-                //+Colour chapter bottom border
-                ,'border-bottom-color': f/**/
-            });
-            b = null;
-            UpdatePageBackgroundColor/*a*/();
-        }
+        ChapterController.prototype.computeBackgroundColor.patched = function (c) {
+            document.querySelector('.body_container')/*.body*/.style.backgroundColor = '';
+            this.backgroundColor = extractColor(document.body.dataset.baseColor/*window.getComputedStyle(document.body).backgroundColor*/);
+            var c = extractColor(window.getComputedStyle(this.chapterFormat.querySelector('.chapter')).backgroundColor);
+            if ('undefined' != typeof this.backgroundColor) {
+                var d = 127 > 0.39 * c[0] + 0.5 * c[1] + 0.11 * c[2];
+                this.fadedBackgroundColor = colorMult(c, d ? 0.85 : 0.95);
+                255 == c[0] && 255 == c[1] && 255 == c[2] && (this.fadedBackgroundColor = null);
+                this.border_color = colorMult(c, d ? 1.4 : 0.82);
+                this.updatePageBackgroundColor.patched.call(this, c);
+            }
+        };
         //Change styling target to the body container
-        window.UpdatePageBackgroundColor = function() {
-            var a = $('#chapter_toolbar_container'),d = a.parents('.chapter');
-            a.data('start_y') || a.data('start_y', a.offset().top + 50);
-            a = (Math.max(0, a.data('start_y') - $(window).scrollTop()) + Math.max(0, $(window).scrollTop() + $(window).height() - (d.offset().top + d.height()))) / 200;
-            a = 1 < a ? 1 : 0 > a ? 0 : a;
-            a != b && $('.body_container'/*document.body*/).css('background-color', rgbToCSS(colorBlend(c, e, a)))
-        }
+        override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
+            if (!this.patched) {
+                var scroll_events = document.getEventListeners('scroll');
+                for (var i = 0; i < scroll_events.length; i++) {
+                    if (scroll_events[i].context == this && !scroll_events[i].patched) {
+                        document.removeEventListener('scroll', scroll_events[i]);
+                    }
+                }
+                var ev = ChapterController.prototype.computeBackgroundColor.patched.bind(this);
+                ev.patched = true;
+                window.addEventListener('scroll', ev);
+            }
+            this.computeBackgroundColor.patched.call(this, c);
+        });
+        ChapterController.prototype.updatePageBackgroundColor.patched = function (c) {
+            c = void 0 === c ? !1 : c;
+            var d = this.elements.chapterContentBox.getBoundingClientRect(),
+                d = 1 - saturate(5 * Math.min(2 - d.top / window.innerHeight, d.bottom / window.innerHeight) - 4);
+            if (d != this.lastBackgroundBlendFactor || c) document.querySelector('.body_container')/*.body*/.style.backgroundColor = null != this.fadedBackgroundColor ? rgbToCSS(colorBlend(this.backgroundColor, this.fadedBackgroundColor, d))  : null,
+                this.elements.chapterContentBox.style.borderLeftColor = rgbToCSS(this.border_color),
+                this.elements.chapterContentBox.style.borderRightColor = rgbToCSS(this.border_color),
+                this.elements.chapterContentBox.style.borderBottomColor = rgbToCSS(this.border_color)/**/
+                this.lastBackgroundBlendFactor = d
+        };
         //Force update chapter themes
         try {
-            $(document.body).attr('data-base-color', $('.body_container').css('background-color'));
-            window.UpdateColours();
+            document.body.style.backgroundColor = '';
+            document.body.dataset.baseColor = $('.body-container').css('background-color') || window.getComputedStyle(document.body).backgroundColor;
+            App.DispatchEvent(document, 'chapterColourSchemeChanged');
         } catch (e) {
             logger.Error(e);
         }
-        //Force update chapter width values
-        $('.button-sidebar-toggle').on('click', function() {
-            $("#chapter_toolbar_container").css("width", '');
-        });
     }
     //Fix error window popping up whenever an operation times out/is cancelled
     window.ShowErrorWindow = (function(old) {
@@ -1545,6 +1574,8 @@ function applyCodePatches() {
         window.__window_focused_fix = true;
         $(window).on('focus', function() {
             window.window_focused = true;
+        }).on('blur', function() {
+            window.window_focused = false;
         });
     }
 }
@@ -1558,22 +1589,44 @@ function initCommentArea(hold) {
         var colour_button = me.find("button[title='Text Colour']");
         if (colour_button.children()[0].tagName == 'IMG') {
             logger.Log('setup: changing color button icon');
-            colour_button.parent().css('line-height', '');
             colour_button.html('<i class="fa fa-tint" />');
         }
-        logger.Log('betterColors: start');
-        betterColors(colour_button, controller);
         logger.Log('setUpMainButton: start');
-        setUpMainButton(colour_button.parent().parent()[0], controller, hold);
-        var fontSizes = me.find("button[title='Font Size']");
-        logger.Log('betterSizes: start');
-        betterSizes(fontSizes, controller);
+        var main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
+        main_button[0].parentNode.dataset.priority = -1;
+        main_button[0].dataset.click = 'showFimficAdv';
+        if (controller.toolbarItems) {
+            controller.toolbarItems.push({
+                node: main_button[0].parentNode,
+                order: controller.toolbarItems.length,
+                priority: -1,
+                width: 35
+            });
+        }
         var insertImg = me.find("button[title='Insert Image']");
         if (insertImg.children()[0].tagName == 'IMG') {
             logger.Log('Changing Insert Image Logo');
             insertImg.html('<i class="fa fa-picture-o" />');
         }
     });
+    
+    BBCodeEditorController.prototype.showColourPicker = function(sender, event) {
+        logger.Log('betterColours: start');
+        event.preventDefault();
+        betterColours($(sender), this);
+    };
+    BBCodeEditorController.prototype.showSizePicker = function(sender, event) {
+        logger.Log('betterSizes: start');
+        event.preventDefault();
+        betterSizes($(sender), this);
+    };
+    BBCodeEditorController.prototype.showFimficAdv = function(sender, event) {
+        logger.Log('setUpMainButton: start');
+        sender = $(sender);
+        if (!sender.parent().find('.drop-down').length) {
+            buildAdvancedButton(sender, this);
+        }
+    }
 }
 
 function initBlogPage() {
@@ -1665,45 +1718,29 @@ function mustUnspoiler(url) {
     return q != -1 && url.substring(q + 1, url.length).indexOf('isEmote=true') != -1;
 }
 
-function setUpMainButton(toolbar, controller, hold) {
-    var hasAdv = toolbar.parentNode.children.length > 6;
-    var button = makeButton(toolbar, "More Options", "fa fa-flag");
-    button.attr('data-order', controller.toolbarItems.length);
-    controller.toolbarItems.push({
-        node: button[0].parentNode,
-        order: controller.toolbarItems.length,
-        priority: -1,
-        width: 35
-    });
-    button.on("click", function () {
-        if (!$(this).parent().find('.drop-down').length) {
-            $(this).after('<div class="drop-down"><div class="arrow" /><ul /></div>');
-            var items = $(this).parent().find('ul');
-            addDropList(items, "BBCode Tags", function () {
-                addOption(this, "Right Align").click(function() {
-                    controller.insertTag('right');
-                });
-                if (!hasAdv) {
-                    addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
-                    addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
-                }
-                addOption(this, "Left Insert").click(function() {controller.insertTag('left_insert');});
-                addOption(this, "Right Insert").click(function() {controller.insertTag('right_insert');});
-                addOption(this, "Ordered List").click(function () {makeList(controller, true);});
-                addOption(this, "Unordered List").click(function () {makeList(controller, false);});
-                addOption(this, "Green Text").click(function () {makeGreen(controller.textarea);});
-                addOption(this, "Icon").click(function() {makeInsertIconPopup(controller);});
-            });
-
-            addOption(items, "Sign").click(function() {sign(controller.textarea);});
-            addOption(items, "Insert Direct Image").click(function() {makeImagePopup(controller.textarea);});
-            addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(controller.textarea);});
-            addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
-            setListItemWidth(items);
-            inbounds($(items).parent().parent());
-        }
+function buildAdvancedButton(button, controller) {
+    button.after('<div class="drop-down"><div class="arrow" /><ul /></div>');
+    var items = button.parent().find('ul');
+    addDropList(items, "BBCode Tags", function () {
+        addOption(this, "Right Align").click(function() {
+            controller.insertTag('right');
+        });
+        addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
+        addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
+        addOption(this, "Left Insert").click(function() {controller.insertTag('left_insert');});
+        addOption(this, "Right Insert").click(function() {controller.insertTag('right_insert');});
+        addOption(this, "Ordered List").click(function () {makeList(controller, true);});
+        addOption(this, "Unordered List").click(function () {makeList(controller, false);});
+        addOption(this, "Green Text").click(function () {makeGreen(controller.textarea);});
+        addOption(this, "Icon").click(function() {makeInsertIconPopup(controller);});
     });
     
+    addOption(items, "Sign").click(function() {sign(controller.textarea);});
+    addOption(items, "Insert Direct Image").click(function() {makeImagePopup(controller.textarea);});
+    addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(controller.textarea);});
+    addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
+    inbounds(button);
+
     function handleIndent(e, start, end) {
         var f = controller.getSelection();;
         var g = !1;
@@ -1711,7 +1748,7 @@ function setUpMainButton(toolbar, controller, hold) {
         f = f.replace(start, end);
         g ? e.value = f : controller.insertText(f);
     }
-    
+
     function makeInsertIconPopup(controller) {
         var pop = makePopup('Insert Icon', 'fa fa-anchor');
         var icons = ["adjust","adn","align-center","align-justify","align-left","align-right","ambulance","anchor","android","angellist","angle-double-down","angle-double-left","angle-double-right","angle-double-up","angle-down","angle-left","angle-right","angle-up","apple","archive","area-chart","arrow-circle-down","arrow-circle-left","arrow-circle-o-down","arrow-circle-o-left","arrow-circle-o-right","arrow-circle-o-up","arrow-circle-right","arrow-circle-up","arrow-down","arrow-left","arrow-right","arrow-up","arrows","arrows-alt","arrows-h","arrows-v","asterisk","at","automobile","backward","ban","bank","bar-chart","bar-chart-o","barcode","bars","beer","behance","behance-square","bell","bell-o","bell-slash","bell-slash-o","bicycle","binoculars","birthday-cake","bitbucket","bitbucket-square","bitcoin","bold","bolt","bomb","book","bookmark","bookmark-o","briefcase","btc","bug","building","building-o","bullhorn","bullseye","bus","cab","calculator","calendar","calendar-o","camera","camera-retro","car","caret-down","caret-left","caret-right","caret-square-o-down","caret-square-o-left","caret-square-o-right","caret-square-o-up","caret-up","cc","cc-amex","cc-discover","cc-mastercard","cc-paypal","cc-stripe","cc-visa","certificate","chain","chain-broken","check","check-circle","check-circle-o","check-square","check-square-o","chevron-circle-down","chevron-circle-left","chevron-circle-right","chevron-circle-up","chevron-down","chevron-left","chevron-right","chevron-up","child","circle","circle-o","circle-o-notch","circle-thin","clipboard","clock-o","close","cloud","cloud-download","cloud-upload","cny","code","code-fork","codepen","coffee","cog","cogs","columns","comment","comment-o","comments","comments-o","compass","compress","copy","copyright","credit-card","crop","crosshairs","css3","cube","cubes","cut","cutlery","dashboard","database","dedent","delicious","desktop","deviantart","digg","dollar","dot-circle-o","download","dribbble","dropbox","drupal","edit","eject","ellipsis-h","ellipsis-v","empire","envelope","envelope-o","envelope-square","eraser","eur","euro","exchange","exclamation","exclamation-circle","exclamation-triangle","expand","external-link","external-link-square","eye","eye-slash","eyedropper","facebook","facebook-square","fast-backward","fast-forward","fax","female","fighter-jet","file","file-archive-o","file-audio-o","file-code-o","file-excel-o","file-image-o","file-movie-o","file-o","file-pdf-o","file-photo-o","file-picture-o","file-powerpoint-o","file-sound-o","file-text","file-text-o","file-video-o","file-word-o","file-zip-o","files-o","film","filter","fire","fire-extinguisher","flag","flag-checkered","flag-o","flash","flask","flickr","floppy-o","folder","folder-o","folder-open","folder-open-o","font","forward","foursquare","frown-o","futbol-o","gamepad","gavel","gbp","ge","gear","gears","gift","git","git-square","github","github-alt","github-square","gittip","glass","globe","google","google-plus","google-plus-square","google-wallet","graduation-cap","group","h-square","hacker-news","hand-o-down","hand-o-left","hand-o-right","hand-o-up","hdd-o","header","headphones","heart","heart-o","history","home","hospital-o","html5","ils","image","inbox","indent","info","info-circle","inr","instagram","institution","ioxhost","italic","joomla","jpy","jsfiddle","key","keyboard-o","krw","language","laptop","lastfm","lastfm-square","leaf","legal","lemon-o","level-down","level-up","life-bouy","life-buoy","life-ring","life-saver","lightbulb-o","line-chart","link","linkedin","linkedin-square","linux","list","list-alt","list-ol","list-ul","location-arrow","lock","long-arrow-down","long-arrow-left","long-arrow-right","long-arrow-up","magic","magnet","mail-forward","mail-reply","mail-reply-all","male","map-marker","maxcdn","meanpath","medkit","meh-o","microphone","microphone-slash","minus","minus-circle","minus-square","minus-square-o","mobile","mobile-phone","money","moon-o","mortar-board","music","navicon","newspaper-o","openid","outdent","pagelines","paint-brush","paper-plane","paper-plane-o","paperclip","paragraph","paste","pause","paw","paypal","pencil","pencil-square","pencil-square-o","phone","phone-square","photo","picture-o","pie-chart","pied-piper","pied-piper-alt","pinterest","pinterest-square","plane","play","play-circle","play-circle-o","plug","plus","plus-circle","plus-square","plus-square-o","power-off","print","puzzle-piece","qq","qrcode","question","question-circle","quote-left","quote-right","ra","random","rebel","recycle","reddit","reddit-square","refresh","remove","renren","reorder","repeat","reply","reply-all","retweet","rmb","road","rocket","rotate-left","rotate-right","rouble","rss","rss-square","rub","ruble","rupee","save","scissors","search","search-minus","search-plus","send","send-o","share","share-alt","share-alt-square","share-square","share-square-o","shekel","sheqel","shield","shopping-cart","sign-in","sign-out","signal","sitemap","skype","slack","sliders","slideshare","smile-o","soccer-ball-o","sort","sort-alpha-asc","sort-alpha-desc","sort-amount-asc","sort-amount-desc","sort-asc","sort-desc","sort-down","sort-numeric-asc","sort-numeric-desc","sort-up","soundcloud","space-shuttle","spinner","spoon","spotify","square","square-o","stack-exchange","stack-overflow","star","star-half","star-half-empty","star-half-full","star-half-o","star-o","steam","steam-square","step-backward","step-forward","stethoscope","stop","strikethrough","stumbleupon","stumbleupon-circle","subscript","suitcase","sun-o","superscript","support","table","tablet","tachometer","tag","tags","tasks","taxi","tencent-weibo","terminal","text-height","text-width","th","th-large","th-list","thumb-tack","thumbs-down","thumbs-o-down","thumbs-o-up","thumbs-up","ticket","times","times-circle","times-circle-o","tint","toggle-down","toggle-left","toggle-off","toggle-on","toggle-right","toggle-up","trash","trash-o","tree","trello","trophy","truck","try","tty","tumblr","tumblr-square","turkish-lira","twitch","twitter","twitter-square","umbrella","underline","undo","university","unlink","unlock","unlock-alt","unsorted","upload","usd","user","user-md","users","video-camera","vimeo-square","vine","vk","volume-down","volume-off","volume-up","warning","wechat","weibo","weixin","wheelchair","wifi","windows","won","wordpress","wrench","xing","xing-square","yahoo","yelp","yen","youtube","youtube-play","youtube-square"];
@@ -1729,7 +1766,7 @@ function setUpMainButton(toolbar, controller, hold) {
         });
         pop.Show();
     }
-    
+
     function makeReplacePopup(target) {
         var pop = makePopup('Find and Replace', 'fa fa-magic', false);
         pop.SetWidth(350);
@@ -1795,7 +1832,7 @@ function setUpMainButton(toolbar, controller, hold) {
         });
         pop.Show();
     }
-    
+
     function makeImagePopup(target) {
         var message = makePopup("Add Direct Image", "fa fa-picture-o");
         message.SetWidth(350);
@@ -1953,61 +1990,77 @@ function hasSigned(value, format) {
 
 function betterSizes(button, controller) {
     var me = button.parent();
-    button.attr({
-     'data-function': '', 'data-init': 'true' 
-    }).click(function() {
-        if (!me.find('.drop-down').length) {
-            me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
-            var holder = me.find('ul');
-            addSize(holder, controller, 0.5, 'em');
-            addSize(holder, controller, 0.75, 'em');
-            addSize(holder, controller, 1.5, 'em');
-            addSize(holder, controller, '2.0', 'em');
-            for (var i = 10; i < 20; i += 2) {
-                for (var k = 0; k < 50; k += 10) {
-                    addSize(holder, controller, (i + k), 'px');
-                }
-            }
+    if (!me.find('.drop-down').length) {
+        me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
+        var holder = me.find('ul');
+        var sizes = [
+            [0.5,0.5],
+            [0.75,0.75],
+            [1.5,1.5],
+            ['2.0',2],
+            [10,0.714],
+            [20,1.429],
+            [30,2.143],
+            [40,2.857],
+            [50,3.571],
+            [12,0.857],
+            [22,1.571],
+            [32,2.286],
+            [42,3],
+            [52,3.714],
+            [14,1],
+            [24,1.714],
+            [34,2.429],
+            [44,3.143],
+            [54,3.857],
+            [16,1.143],
+            [26,1.857],
+            [36,2.571],
+            [46,3.286],
+            [56,4.643],
+            [18,1.286],
+            [28,2],
+            [38,2.714],
+            [48,3.429],
+            [58,4.143],
+        ]
+        for (var i = 0; i < sizes.length; i++) {
+            addSize(holder, controller, sizes[i]);
         }
-    });
+    }
 }
 
-function addSize(holder, controller, amount, unit) {
-    var size = $('<li><a>' + amount + '</a></li>');
+function addSize(holder, controller, amount) {
+    var size = $('<li><a>' + amount[0] + '</a></li>');
     holder.append(size);
     size.find('a').click(function() {
-        controller.insertTags('[size=' + amount + (unit == 'px' ? '' : 'em') + ']', '[/size]');
+        controller.insertTags('[size=' + amount[1] + 'em]', '[/size]');
     });
     size.hover(function () {
-        var sz = $(this).find('a').text();
         var pop = makeToolTip(this);
         pop.parent().css({
             'margin': '15px 0 0 0', 'padding': '0'
         });
-        pop.append('<div style="font-size: ' + sz + unit + '; line-height: 1; height: ' + sz + unit + ';">Ab</div>');
+        pop.append('<div style="font-size: ' + amount[1] + 'em !important; line-height:1;min-height:10px;height: ' + (amount[0] < 10 ? amount[0] < 1 ? 5 : 20 : amount[0]) + 'px;">Ab</div>');
     }, function () {
         $(this.children[1]).remove();
     });
 }
 
-function betterColors(button, target) {
-    button.attr({
-     'data-function': '', 'data-init': 'true' 
-    }).one('click', function() {
-        initColourPopup(target, button.parent(), this);
-    }).on('click', function() {
-        $('.recent-colours').each(function() {
-            var me = $(this);
-            var recent = getRecentColours(parseInt(me.attr('data-count')));
-            if (recent.length > 0) {
-                me.empty();
-                addColorTiles(target, me, recent);
-                me.css({'opacity': '', 'pointer-events': ''});
-                $('.recent-part').css('display','');
-            } else {
-                me.css({'opacity': '0.3', 'pointer-events': 'none'});
-            }
-        });
+function betterColours(button, controller) {
+    var me = button.parent();
+    if (!me.find('.drop-down').length) initColourPopup(controller, me, button);
+    $('.recent-colours').each(function() {
+        var me = $(this);
+        var recent = getRecentColours(parseInt(me.attr('data-count')));
+        if (recent.length > 0) {
+            me.empty();
+            addColorTiles(controller, me, recent);
+            me.css({'opacity': '', 'pointer-events': ''});
+            $('.recent-part').css('display','');
+        } else {
+            me.css({'opacity': '0.3', 'pointer-events': 'none'});
+        }
     });
 }
 
@@ -2748,33 +2801,6 @@ body > canvas ~ .footer {\
   border-width: 15px;\
   border-right-color: rgba(0,0,0,0.3);}\
 \
-" + (getColourfulTags() ?
-".story-tags > li a.tag-genre[data-tag=romance] { color: rgb(255, 255, 255) ! important; background-color: rgb(151, 75, 255) ! important; box-shadow: 0px 1px 0px rgb(181, 90, 255) inset; text-shadow: -1px -1px rgb(121, 60, 204); border: 1px solid rgb(128, 64, 217); }\
-.story-tags > li a.tag-genre[data-tag=romance]:hover { background-color: rgb(151, 75, 255) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=dark],\
-.story-tags > li a.tag-genre[data-tag=horror] { color: rgb(255, 255, 255) ! important; background-color: rgb(185, 55, 55) ! important; box-shadow: 0px 1px 0px rgb(222, 66, 66) inset; text-shadow: -1px -1px rgb(148, 44, 44); border: 1px solid rgb(157, 47, 47); }\
-.story-tags > li a.tag-genre[data-tag=dark]:hover,\
-.story-tags > li a.tag-genre[data-tag=horror]:hover { background-color: rgb(185, 55, 55) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=sad],\
-.story-tags > li a.tag-genre[data-tag=drama] { color: rgb(255, 255, 255) ! important; background-color: rgb(189, 66, 167) ! important; box-shadow: 0px 1px 0px rgb(227, 79, 200) inset; text-shadow: -1px -1px rgb(151, 53, 134); border: 1px solid rgb(161, 56, 142); }\
-.story-tags > li a.tag-genre[data-tag=sad]:hover,\
-.story-tags > li a.tag-genre[data-tag=drama]:hover { background-color: rgb(189, 66, 167) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=tragedy] { color: rgb(255, 255, 255) ! important; background-color: rgb(255, 181, 75) ! important; box-shadow: 0px 1px 0px rgb(255, 217, 90) inset; text-shadow: -1px -1px rgb(204, 145, 60); border: 1px solid rgb(217, 154, 64); }\
-.story-tags > li a.tag-genre[data-tag=tragedy]:hover { background-color: rgb(255, 181, 75) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=comedy] { color: rgb(255, 255, 255) ! important; background-color: rgb(245, 156, 0) ! important; box-shadow: 0px 1px 0px rgb(255, 187, 0) inset; text-shadow: -1px -1px rgb(196, 125, 0); border: 1px solid rgb(208, 133, 0); }\
-.story-tags > li a.tag-genre[data-tag=comedy]:hover { background-color: rgb(245, 156, 0) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=slice_of_life] { color: rgb(255, 255, 255) ! important; background-color: rgb(75, 134, 255) ! important; box-shadow: 0px 1px 0px rgb(90, 161, 255) inset; text-shadow: -1px -1px rgb(60, 107, 204); border: 1px solid rgb(64, 114, 217); }\
-.story-tags > li a.tag-genre[data-tag=slice_of_life]:hover { background-color: rgb(75, 134, 255) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=adventure] { color: rgb(255, 255, 255) ! important; background-color: rgb(69, 201, 80) ! important; box-shadow: 0px 1px 0px rgb(83, 241, 96) inset; text-shadow: -1px -1px rgb(55, 161, 64); border: 1px solid rgb(59, 171, 68); }\
-.story-tags > li a.tag-genre[data-tag=adventure]:hover { background-color: rgb(69, 201, 80) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=alternate_universe] { color: rgb(255, 255, 255) ! important; background-color: rgb(136, 136, 136) ! important; box-shadow: 0px 1px 0px rgb(163, 163, 163) inset; text-shadow: -1px -1px rgb(109, 109, 109); border: 1px solid rgb(116, 116, 116); }\
-.story-tags > li a.tag-genre[data-tag=alternate_universe]:hover { background-color: rgb(136, 136, 136) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=crossover] { color: rgb(255, 255, 255) ! important; background-color: rgb(71, 184, 160) ! important; box-shadow: 0px 1px 0px rgb(85, 221, 192) inset; text-shadow: -1px -1px rgb(57, 147, 128); border: 1px solid rgb(60, 156, 136); }\
-.story-tags > li a.tag-genre[data-tag=crossover]:hover { background-color: rgb(71, 184, 160) ! important; color: rgb(255, 255, 255); }\
-.story-tags > li a.tag-genre[data-tag=human],\
-.story-tags > li a.tag-genre[data-tag=anthro] { color: rgb(255, 255, 255) ! important; background-color: rgb(181, 131, 90) ! important; box-shadow: 0px 1px 0px rgb(217, 157, 108) inset; text-shadow: -1px -1px rgb(145, 105, 72); border: 1px solid rgb(154, 111, 77); }\
-.story-tags > li a.tag-genre[data-tag=human]:hover,\
-.story-tags > li a.tag-genre[data-tag=anthro]:hover { background-color: rgb(181, 131, 90) ! important; color: rgb(255, 255, 255); }" : "") + "\
 /*Chapter Enhancements*/\
 .all-chapters-hidden {\
     display: none;\
@@ -3201,6 +3227,9 @@ header.header .banner-buttons a {\
   text-transform: uppercase;}\
 header.header .banner-buttons a:hover {background-color: rgba(0, 0, 0, 0.1);}\
 header.header:hover .banner-buttons { visibility: visible; opacity: 1; }\
+@media all and (max-width: 950px) {\
+  header.header .banner-buttons {\
+    bottom: 30px;}}\
 header.header:hover .theme_selector a { opacity: 1; }\
 header.header .theme_selector { width: 120px; height: 100%; position: absolute; z-index: 11; transition: background 0.3s ease 0s; background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%; }\
 header.header .theme_selector a { color: rgb(255, 255, 255); position: absolute; height: 100%; width: 60px; opacity: 0; text-align: center; line-height: 175px; text-decoration: none; text-shadow: 0px 2px rgba(0, 0, 0, 0.5), 0px 0px 50px rgb(0, 0, 0); font-size: 32px; transition: opacity 0.3s ease 0s; }\
@@ -3252,7 +3281,7 @@ header.header .home_link {\
       z-index: 10;}\
      header.header .title {\
         overflow: hidden;\
-        background-color: #282828;}\
+        background-color: #1c1c1ce6;}\
     .focus-tile {\
         position: absolute;\
         z-index: 13 !important;}\
@@ -3318,7 +3347,12 @@ function addMinorBannerCss() {
 @media all and (max-width: 950px) {\
   .focus-tile.avatar-container img {\
     width: 80px;\
-    height: 80px;}}\
+    height: 80px;}\
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
+    padding-left: 7.5rem;}}\
+@media all and (max-width: 850px) {\
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
+    padding-left: 2rem;}}\
 @media all and (min-width: 700px) {\
   .user-page-header, .story-page-header {\
     height: 70px;\
@@ -3390,9 +3424,6 @@ function addMinorBannerCss() {
 //--------------------------------------------------------------------------------------------------
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
-
-function getColourfulTags() {return settingsMan.getB('colour_tags', true);}
-function setColourfulTags(v) {settingsMan.setB('colour_tags', v, true);}
 
 function getBlockLightbox() {return settingsMan.getB('block_lightbox', false);}
 function setBlockLightbox(v) {settingsMan.setB('block_lightbox', v, false);}
@@ -3816,6 +3847,22 @@ function BG(name, css, source) {
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------API FUNCTIONS-----------------------------------------------
 //--------------------------------------------------------------------------------------------------
+
+//==API FUNCTION==//
+function chainFunctionOnto(target, name, handler) {
+    var _old = target[name];
+    target[name] = function() {
+        handler.apply(this, arguments);
+        if (typeof _old === 'function') _old.apply(this, arguments);
+    }
+}
+
+//==API FUNCTION==//
+function override(obj, member, new_func) {
+    if (obj[member].super) return;
+    new_func.super = obj[member];
+    obj[member] = new_func;
+}
 
 //==API FUNCTION==//
 function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('')  : me;}
