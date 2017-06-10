@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.0.1
+// @version     4.0.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,10 +17,10 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '4.0.1',
+var VERSION = '4.0.3',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
-if (CURRENT_LOCATION.indexOf('login_frame') != -1) return;
+if (CURRENT_LOCATION.indexOf('login-frame') != -1) return;
 //==================================================================================================
 var logger = new Logger('FimFiction Advanced',1);
 var settingsMan = {
@@ -221,15 +221,22 @@ document.addEventListener("DOMContentLoaded", function(event) {
         load();
     }
 });
-override(document, 'addEventListener', function(ev, f) {
-    if (!this.eventListeners) this.eventListeners = {};
-    if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
-    this.eventListeners[ev].push(f);
-    return document.addEventListener.super.apply(this, arguments);
-});
-document.getEventListeners = function(event) {
-    return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
-};
+(function() {
+    override(EventTarget.prototype, 'addEventListener', function(ev, f, c) {
+        if (!this.eventListeners) this.eventListeners = {};
+        if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
+        this.eventListeners[ev].push(f);
+        return EventTarget.prototype.addEventListener.super.apply(this, arguments);
+    });
+    override(EventTarget.prototype, 'removeEventListener', function(ev, f) {
+        var l = this.getEventListeners(ev), i = l.indexOf(f);
+        if (i > -1) l.splice(i, 1);
+        return EventTarget.prototype.removeEventListener.super.apply(this, arguments); 
+    });
+    EventTarget.prototype.getEventListeners = function(event) {
+        return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
+    };
+})();
 override(window.Function.prototype, 'bind', function(context) {
     var result = this.bind.super.apply(this, arguments);
     result.unbound = this;
@@ -307,8 +314,6 @@ function initFimFictionAdvanced() {
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
     if (isMyBlogPage()) initBlogPage();
     if (getSweetieEnabled()) setupSweetie();
-    var popularStories = $('div.front_page .popular-stories-container .story-card-list');
-    if (popularStories.length) fixGradient(popularStories);
     logger.Log('starting customizations setup',10);
     if (getSlide() > 0) {
         logger.Log('starting slideshow',9);
@@ -1373,29 +1378,6 @@ function makeList(element, ordered) {
     $(element).focus();
 }
 
-function fixGradient(el) {
-    if (!window.SVGForeignObjectElement) return; // Don't do anything if it's not supported.
-    var width = el.width() - 10;
-    var height = 800;
-    var container = $('\
-<svg style="margin-top:5px" width="' + width + 'px" height="' + height + 'px">\
-   <defs>\
-    <linearGradient y2="100%" y1="0%" x1="100%" x2="100%" id="Gradient">\
-      <stop offset="0" stop-color="white" stop-opacity="1"></stop>\
-      <stop offset="0.75" stop-color="white" stop-opacity="1"></stop>\
-      <stop offset="1" stop-color="white" stop-opacity="0"></stop>\
-    </linearGradient>\
-    <mask id="Mask">\
-      <rect width="100%" height="100%" x="0" y="0" fill="url(#Gradient)"></rect>\
-    </mask>\
-  </defs>\
-  <foreignObject width="' + width + 'px" height="' + height + 'px" + mask="url(#Mask)" />\
-</svg>');
-    el.before('<style type="text/css">div.front_page .popular-stories-container::after {display:none !important;}</style>');
-    el.before(container);
-    container.find('foreignObject').append(el);
-}
-
 function addStoryList() {
     var a = $('<a type="button" style="margin:0px" class="styled_button styled_button_white" href="javascript:void(0);"><i class="fa fa-bars" />List</a>');
     $('#browse_form .button-group .styled_button').first().after(a);
@@ -1554,22 +1536,15 @@ function applyCodePatches() {
         };
         //Force update chapter themes
         try {
-            document.body.style.backgroundColor = '';
-            document.body.dataset.baseColor = $('.body-container').css('background-color') || window.getComputedStyle(document.body).backgroundColor;
             App.DispatchEvent(document, 'chapterColourSchemeChanged');
         } catch (e) {
             logger.Error(e);
         }
     }
     //Fix error window popping up whenever an operation times out/is cancelled
-    window.ShowErrorWindow = (function(old) {
-        var mess = 'Request Failed (0)';
-        function result() {
-            if (arguments[0] !== mess) return old.apply(this, arguments);
-        }
-        result.original = old;
-        return result;
-    })(window.ShowErrorWindow);
+    override(window, 'ShowErrorWindow', function(c) {
+        if (arguments[0] !== 'Request Failed (0)') return window.ShowErrorWindow.super(c);
+    });
     if (!window.__window_focused_fix) {
         window.__window_focused_fix = true;
         $(window).on('focus', function() {
@@ -3190,6 +3165,20 @@ form > .content_box {\
 function addBannerCss() {
     if ($('Fimfiction_Advanced_Banner_Stylesheet').length) return;
     makeStyle('\
+body.pin_nav_bar div.page-nav-bars {\
+  position: static;\
+  top: 0;\
+  z-index: initial;\
+  box-shadow: none;}\
+body.pin_nav_bar div.page-nav-bars .nav_bar {\
+  position: fixed;\
+  top: 0;\
+  left: 0;\
+  right: 0;\
+  z-index: 10000;\
+  box-shadow: 0px 0px 15px #0000004d;}\
+body.pin_nav_bar div.page-nav-bars {\
+  margin-top: 46px;}\
 /*Banners*/\
 .nav_bar .logo {\
   z-index: 125;\
@@ -3733,7 +3722,21 @@ function applyBackground(c) {
     settingsMan.updateFlagField('background', !((c == '' || c == 'transparent') && img === 'none'));
     if (img == 'none') img = $('body').css('background-image');
     if (c == '' || c == 'transparent') c = $('body').css('background-color');
-    $('.body_container').css("background", (typeof img === 'string' ? img : img.Css) + " " + c);
+    var bg = (typeof img === 'string' ? img : img.Css) + " " + c;
+    makeStyle('\
+.body_container, .story-card .card-flip .tab-cover, .story-card-reverse .card-flip .tab-cover {\
+	background: ' + bg + ';}\
+.story-card .card-flip .tab-cover, .story-card-reverse .card-flip .tab-cover {\
+	border: none;\
+    width: 30px;\
+    height: 30px;\
+    transform: rotate(45deg);\
+    top: -25px;\
+    right: -25px;}\
+.story-card-container:hover .story-card .card-flip .tab-cover, .story-card-container:hover .story-card-reverse .card-flip .tab-cover {\
+    top: -16px;\
+    right: -16px;}', 'FimFiction_Advanced_BG');
+    document.body.dataset.baseColor = c;
     c = $('.body_container').css('background-color').replace(/rgb|a|\(|\)| /g,'').split(',');
     if (brightness(c[0] >> 0,c[1] >> 0,c[2] >> 0) < 100 || (typeof img !== 'string' && img.Type.Key.indexOf('d') != -1)) {
         $('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1').addClass('bright');
