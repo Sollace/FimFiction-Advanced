@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.0.3
+// @version     4.0.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -17,7 +17,7 @@
 // @run-at      document-start
 // ==/UserScript==
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '4.0.3',
+var VERSION = '4.0.4',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) return;
@@ -1281,12 +1281,12 @@ function addChapterButtonsExtras() {
         var unreadChaps = me.find('.chapter-read-icon:not(.chapter-read)');
         if (!compact && !unreadChaps.length) return;
         
-        var extra = $('<div class="chapters-header" style="overflow:hidden;padding-right:10px;" />');
+        var extra = $('<div class="chapter-options-header" style="overflow:hidden;padding-right:10px;" />');
         me.before(extra);
         if (loggedIn && unreadChaps.length) {
             unreadChaps = unreadChaps.first().parent();
             unreadChaps.css('transition', 'background 0.5s ease 1s');
-            var unreadTit = unreadChaps.find('.chapter-read-icon + a');
+            var unreadTit = unreadChaps.find('.chapter-title, .chapter-read-icon + a');
             var unreadDat = unreadChaps.find('.date').clone().children().remove().end().text();
             var unreadCount = unreadChaps.find('.word_count').clone().children().remove().end().text();
             var gotoUnread = $('<a title="' + unreadTit.text() + '\n  ' + unreadDat.trim() + '\n  ' + unreadCount.trim() + ' words" href="' + unreadTit[0].href + '" style="float:right;" >Goto Unread</a>');
@@ -2924,7 +2924,7 @@ a:hover .bg_source_link {\
   display: none;}\
 .all-shown .compact_chapters {\
     display: block !important;}\
-.story_container .chapters-header {\
+.story_container .chapter-options-header {\
     margin-top: 1.0rem;\
     background-color: #efefef;\
     color: #555;\
@@ -2934,7 +2934,7 @@ a:hover .bg_source_link {\
     padding-right: 100px;\
     border-top: 1px solid rgba(0,0,0,0.15);\
     font-size: 0.9em;}\
-.story_container .chapters-header ~ .chapters {\
+.story_container .chapter-options-header ~ .chapters {\
     margin-top: 0;}\
 .chapters_compact .chapters {\
     display: none !important;}\
