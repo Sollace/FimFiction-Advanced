@@ -298,7 +298,14 @@ document.addEventListener("DOMContentLoaded", function(event) {
         load();
     }
 });
-(function() {
+
+RunScript(function() {
+    //==API FUNCTION==//
+    function override(obj, member, new_func) {
+        if (obj[member].super) return;
+        new_func.super = obj[member];
+        obj[member] = new_func;
+    }
     override(EventTarget.prototype, 'addEventListener', function(ev, f, c) {
         if (!this.eventListeners) this.eventListeners = {};
         if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
@@ -313,13 +320,13 @@ document.addEventListener("DOMContentLoaded", function(event) {
     EventTarget.prototype.getEventListeners = function(event) {
         return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
     };
-})();
-override(window.Function.prototype, 'bind', function(context) {
-    var result = this.bind.super.apply(this, arguments);
-    result.unbound = this;
-    result.context = context;
-    return result;
-});
+    override(window.Function.prototype, 'bind', function(context) {
+        var result = this.bind.super.apply(this, arguments);
+        result.unbound = this;
+        result.context = context;
+        return result;
+    });
+}, true);
 
 chainFunctionOnto(document, 'onready', function() {
     logger.Log('event: onready', 2);
