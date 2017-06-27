@@ -1,7 +1,7 @@
 ﻿// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.0.4
+// @version     4.1.0
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,8 +16,79 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
+
+//Utility functions for use around everywhere (will be expanded as needed)
+var jSlim = {
+    delegateEv: function(selector, func) {
+        return function (ev) {
+            for (var target = ev.target; null != target && target != document; ) {
+                if (win().matchesSelector(target, selector)) {
+                    if (('mouseout' == event || 'mouseover' == event) && target.contains(ev.relatedTarget)) break;
+                    func.call(target, ev);
+                }
+                if (node == k) break;
+                target = target.parentNode
+            }
+        }
+    },
+    one: function(node, event, func) {
+        var ev = function(e) {
+            node.removeEventListener(event, ev);
+            return func.call(this, e);
+        };
+        node.addEventListener(event, ev);
+    },
+    on: function addScopedEventListener(node, selector, event, func, capture) {
+        func = jSlim.delegateEv(selector, func);
+        node.addEventListener(event, func, !!capture);
+        return func;
+    },
+    off: function removeScopedEventListener(node, event, func, capture) {
+        node.removeEventListener(event, func, !!capture)
+    },
+    empty: function(el) {
+        while (el.firstChild) el.removeChild(el.firstChild);
+    },
+    newEl: function createElement(tag, attr, inner) {
+        tag = document.createElement(tag);
+        if (attr) this.objEach(attr, function(value, key) {
+            tag.setAttribute(key, value); 
+        });
+        if (inner) tag.innerHTML = inner;
+        return tag;
+    },
+    objEach: function objectEach(obj, f, this_arg) {
+        jSlim.each(Object.keys(obj), function(a, index) {
+            return f.apply(this, [obj[a], a]);
+        }, this_arg);
+        return obj;
+    },
+    each: function(arr, func, this_arg) {
+        return Array.prototype.forEach.call(arr, func, this_arg);
+    },
+    all: function(selector, holder, func) {
+        if (!func) {
+            func = holder;
+            holder = document;
+        }
+        return jSlim.each(holder.querySelectorAll(selector), func);
+    },
+    append: function(holder, tag, inner) {
+        tag = document.createElement(tag);
+        holder.appendChild(tag);
+        if (inner) tag.innerHTML = inner;
+        return tag;
+    },
+    before: function insertBefore(el, newEl) {
+        el.parentNode.insertBefore(newEl, el);
+    },
+    after: function insertAfter(el, newEl) {
+        el.parentNode.insertBefore(newEl, el.nextSibling);
+    }
+};
+
 var GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master';
-var VERSION = '4.0.4',
+var VERSION = '4.1.0',
     DECEMBER = (new Date()).getMonth() == 11,
     CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) return;
@@ -46,11 +117,11 @@ var settingsMan = {
         localStorage.removeItem(key);
     },
     updateFlagField: function(key, value) {
-        var current = $('html').attr('fimfic_adv');
+        var current = document.lastChild.getAttribute('FimFic_Adv');
         if (current == undefined || current == null) current = '';
         current = $.grep(current.split(','), function(i) {return (value || i != key) && i != '';}).join(',');
         if (value && current.indexOf(key) == -1) current += (current == '' ? '' : ',') + key;
-        $('html').first().attr('fimfic_adv', current);}
+        document.lastChild.setAttribute('FimFic_Adv', current);}
 };
 
 //--------------------------------------------------------------------------------------------------
@@ -110,9 +181,14 @@ var banners = [
     Ban("aeron_celestia", "//aeronjvl.deviantart.com/art/Path-to-Canterlot-340639474", "#4C7E6E"),
     Ban("derpy_dash", "//ponykillerx.deviantart.com/art/Full-Armour-D-vs-D-288729315", "#57666F"),
     Ban("ponykiller_trixie", "//ponykillerx.deviantart.com/art/No-Title-Wallpaper-Version-287646346", "#534C79"),
+    Ban("maplesunrise_pinkiedash", "//derpibooru.org/67621", "rgb(151, 113, 83)"),
     Ban("yamio_fluttershy", "//yamio.deviantart.com/art/Fluttershy-285372865", "#8C9753"),
+    Ban("smitty_derpy", "//smittyg.deviantart.com/art/Derpy-for-Kiyoshi-296594056", "rgb(128, 128, 128)"),
+    Ban("smitty_twi", "//smittyg.deviantart.com/", "rgb(79, 101, 156)"),
     Ban("ratofdrawn_1", "//ratofdrawn.deviantart.com/art/Wet-Fun-317158001", "#92A43C"),
     Ban("ratofdrawn_rarijack", "//ratofdrawn.deviantart.com/art/Differences-343226962", "#6485BE"),
+    Ban("jinzhan_applejack", "http://jinzhan.deviantart.com/art/Applejack-325292534", "rgb(164, 68, 60)"),
+    Ban("jinzhan_group", "//jinzhan.deviantart.com/art/There-are-alligators-in-the-lake-271094454", "rgb(105, 126, 133)"),
     Ban("solar_luna", "//soapie-solar.deviantart.com/art/Chibi-Luna-Star-Fishing-340002341", "#483CA4"),
     Ban("solar_group", "//soapie-solar.deviantart.com/art/Forest-Foundation-283012970", "#83A43C"),
     Ban("uc77_1", "//uc77.deviantart.com/art/Ponies-Dig-Giant-Robots-281071953", "#A4873C"),
@@ -121,7 +197,7 @@ var banners = [
     Ban("rainbow_markerpone", "//derpibooru.org/131068", "#456460"),
     Ban("rainbow_roseluck", "//derpibooru.org/50361", "#A43C98"),
     Ban("jj_trixie", "//johnjoseco.deviantart.com/art/Trixie-s-Life-is-so-Hard-340685374", "#3C72A4"),
-    Ban("anima_1", "//spiritto.deviantart.com/art/C-mon-lift-your-Spirit-324914801", "#3C76A4"),
+    Ban("anima_1", "https://derpibooru.org/90167", "#3C76A4"),
     Ban("mew_pinkie", "//mewball.deviantart.com/art/Reflect-338427890", "#3C93A4"),
     Ban("tsitra_dash", "//tsitra360.deviantart.com/art/Morning-Flight-331710988", "#3A59A4"),
     Ban("knifeh_scoots", "//knifeh.deviantart.com/art/Scootaloo-326771443", "#A47F3C"),
@@ -143,6 +219,7 @@ var banners = [
     Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
 ];
+var specialBanner = Ban("christmas", "", "#4c7e6e");
 var extraBanners = [
     Ban2("sleeping_bath_bloom", "//junglepony.deviantart.com/art/Panties-and-Stockings-for-Apple-Bloom-357660193", "#921B57"),
     Ban2("flutterby_dash", "//junglepony.deviantart.com/art/Cute-FlutterDash-355619590", "#D771A4"),
@@ -265,10 +342,11 @@ chainFunctionOnto(document, 'onready', function() {
 //--------------------------------------------------------------------------------------------------
 
 function load() {
+    if (!document.querySelector('.body_container')) return;
     addFooterData('Page running <a>FimFiction Advanced ' + VERSION + '</a>');
     var start = (new Date()).getTime();
     try {
-        $('html').attr('FimFic_Adv','');
+        document.lastChild.setAttribute('FimFic_Adv', '');
         logger.Log('initializing...',10);
         try {
             initFimFictionAdvanced();
@@ -279,10 +357,6 @@ function load() {
             initSettingsTabs();
         } catch (e) {
             logger.SevereException('Unhandled Exception in Settings Tab: {0}', e);
-        }
-        if ($('.tabs').length && getTabsLeft()) {
-            logger.Log('final-init updating tab-bar position', 10);
-            //updateTabsBarSide(true);
         }
         logger.Log('Setup complete successfully',10);
     } catch (e) {
@@ -297,11 +371,12 @@ function load() {
 
 function initFimFictionAdvanced() {
     registerBanners(extraBanners);
-    initCommentArea(true);
+    updateLogo();
+    initBBCodeController();
+    initCommentArea();
     applyBackground(getBGColor());
     applyCustomFont(getCustomFont());
     applyChapterButtons();
-    applyBookmarks();
     if (getBlockLightbox()) lightboxblocker();
     if (getPinUserbar()) barScrollOn();
     if (getFancyBanners() && getBannersEnabled()) bannerScrollOn();
@@ -309,7 +384,7 @@ function initFimFictionAdvanced() {
         applyFeedFix();
         Animator().on('feed', updateFeedScroll);
     }
-    if (CURRENT_LOCATION.indexOf('manage_user/account') == 0) updateAccountControls();
+    if (CURRENT_LOCATION.indexOf('manage/account/settings') == 0) updateAccountControls();
     applyCodePatches();
     if ($('.right-menu-inner, #browse_form').length) addStoryList();
     if (isMyBlogPage()) initBlogPage();
@@ -324,12 +399,8 @@ function initFimFictionAdvanced() {
 
 function registerEvents() {
     logger.Log('Registering events...',10);
-    FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', function() {
-        initCommentArea(false);
-    });
-    
+    FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', initCommentArea);
     FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
-    
     if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
         if (getAlwaysShowImages()) {
             FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', initImageUnspoiler);
@@ -339,60 +410,18 @@ function registerEvents() {
             loopUnspoiler();
         }
     }
-    
-    FimFicEvents.on('afterinfocard', function() {
-        $('.external-accounts:not(.parsed)').addClass('parsed').find('img').each(setAccountLogo);
-        logger.Log('set account logos successfully',10);
-    });
-    FimFicEvents.on('afternote_markread', function() {
-        $('#notifications-drop-down .new').removeClass('new');
-    });
-    FimFicEvents.on('afterpm_markread', function() {
-        $('#private-message-drop-down .new').removeClass('new');
-    });
 }
 
 function initSettingsTabs() {
     logger.Log('starting settings Tab setup');
-    var tab;
-    if (getIsLoggedIn()) {
-        if (getEnableBookmarksMenu()) insertBookmarksButton();
-        tab = new FimFicSettings.SettingsTab('Bookmarks', 'Manage Bookmarks', 'bookmarks', 'fa fa-bookmark', 'My Content', 'book');
-        if (tab.HasInit()) {
-            $('#SettingsPage_Parent').css('min-height', '607px');
-            buildBookmarksGui(tab);
-        }
-    }
-    tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'My Account', 'cog');
-    if (tab.HasInit()) buildSettingsTab(tab);
-}
-
-function insertBookmarksButton() {
-    if (!$('#bkm_button').length) {
-        var bkm = $('<a href="/manage_user/bookmarks" class="bkm_button button"><i class="fa fa-bookmark" /><span>Bookmarks ( ' + getTotalBookmarks() + ' )</span></a>');
-        var button = $('<li><ul style="width:200px; left:50%; margin-left:-100px;"><li><a href="/manage_user/bookmarks"><i class="fa fa-bookmark" />View All Bookmarks</a></li></ul></li>');
-        button.prepend(bkm);
-        var latst = getLatestBookmark();
-        bkm = $('<li><a class="bkm_latest" href="' + (latst ? getFullBookmark(latst).url.chapter : 'javascript:void(0)') + '"><i class="fa fa-clock-o" />Last Bookmark</a></li>');
-        button.find('ul').append(bkm);
-        bkm = $('<li><a class="bkm_removeAll" href="javascript:void(0);"><i class="fa fa-trash-o" />Remove All</a></li>');
-        button.find('ul').append(bkm);
-        bkm.click(function() {
-            removeAllBookmarks();
-            $('.bkm_number').text('Bookmarks ( 0 )');
-        });
-        $('.user_toolbar ul > li ul.bookshelves').first().closest('li').after(button);
-    }
-}
-
-function buildSettingsTab(tab) {
+    var tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'My Account', 'cog');
+    if (!tab.HasInit()) return;
+    
+    var userToolbar = document.querySelector('.user_toolbar');
+    
     tab.StartEndSection("General Settings");
     
-    tab.AddCheckBox("bkm", "Show Bookmarks Menu", getEnableBookmarksMenu()).change(function() {
-        setEnableBookmarksMenu(this.checked);
-    });
-    
-    tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).change(function() {
+    tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', function() {
         if (getPinUserbar() != this.checked) {
             setPinUserbar(this.checked);
             if (this.checked) {
@@ -403,19 +432,19 @@ function buildSettingsTab(tab) {
         }
     });
     
-    tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).change(function() {
+    tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).addEventListener('change', function() {
         setWideNotes(this.checked);
     });
     
-    tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).change(function() {
+    tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', function() {
         setAlwaysShowImages(this.checked);
     });
     
-    tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).change(function() {
+    tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', function() {
         setBlockLightbox(this.checked);
     });
     
-    tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).change(function() {
+    tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).addEventListener('change', function() {
         setSweetieEnabled(this.checked);
         if ($('#belle').length) {
             $('#belle').css('display', this.checked ? "block" : "none");
@@ -424,29 +453,17 @@ function buildSettingsTab(tab) {
         }
     });
     
-    /*tab.AddDropDown('bsd', 'Tab Bar Side', ['Right', 'Left'], getTabsLeft() ? '1' : '0').change(function() {
-        setTabsLeft($(this).val() == '1');
-        updateTabsBarSide($(this).val() == '1');
-    });*/
-    
     var fontSelect = tab.AddDropDown("ffs", "Site Font", []);
-    for (var i in fonts) {
-        var group = $('<optgroup label="' + i + '"/>');
-        var j = fonts[i].length;
-        while (j--) {
-            group.prepend('<option style="font-family:' + fonts[i][j] + '" value="' + fonts[i][j] + '">' + fonts[i][j] + '</option>');
-        }
-        fontSelect.append(group);
-    }
-    fontSelect.val(getCustomFont());
-    fontSelect.change(function() {
-        setCustomFont($(this).val());
+    fontSelect.innerHTML = fontOptGroups();
+    fontSelect.value = getCustomFont();
+    fontSelect.addEventListener('change', function() {
+        setCustomFont(this.value);
     });
-
+    
     var chapWid = tab.AddTextBox("cwt", "Chapter Width");
     addTooltip("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 46em", chapWid);
-    chapWid.val(getStoryWidth());
-    chapWid.change(function() {
+    chapWid.value = getStoryWidth();
+    chapWid.addEventListener('change', function() {
         var val;
         var form = 'em';
         try {
@@ -472,7 +489,7 @@ function buildSettingsTab(tab) {
     
     tab.StartEndSection("Banners");
 
-    tab.AddCheckBox("eb", "Enable Banners", getBannersEnabled()).change(function() {
+    tab.AddCheckBox("eb", "Enable Banners", getBannersEnabled()).addEventListener('change', function() {
         setBannersEnabled(this.checked);
         bannerScrollOff();
         if (this.checked && getFancyBanners()) {
@@ -481,67 +498,53 @@ function buildSettingsTab(tab) {
         updateBannersOptions();
     });
 
-    tab.AddCheckBox("fancyB", "Enable Fancy Banners", getFancyBanners()).change(function() {
+    tab.AddCheckBox("fancyB", "Enable Fancy Banners", getFancyBanners()).addEventListener('change', function() {
         if (getFancyBanners() != this.checked) {
             setFancyBanners(this.checked);
         }
     });
     
-    function updateBannersOptions() {
-        tab.setEnabled('#fancyB,#hb,#sl,#shuf,#bannerCust' + (enableUSnow[0].selectedIndex < 2 ? ',#uss' : ''), getBannersEnabled());
-    }
-    
-    function updateSliderOptions() {
-        tab.setEnabled('#shuf', enableSlide[0].selectedIndex > 0);
-    }
-    
-    function updateSnowOptions() {
-        tab.setEnabled('#pus' + (getBannersEnabled() ? ',#uss' : ''), enableUSnow[0].selectedIndex < 2);
-    }
-    
-    tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).change(function() {
+    tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', function() {
         setTitleHidden(this.checked);
     });
     
-    var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"], getSlide()).change(function() {
+    var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"], getSlide());
+    enableSlide.addEventListener('change', function() {
         setSlide(this.selectedIndex);
         slider.updateSlide();
         updateSliderOptions();
     });
     
-    tab.AddCheckBox("shuf", "Shuffle Slide Show", getShuffle()).change(function() {
+    tab.AddCheckBox("shuf", "Shuffle Slide Show", getShuffle()).addEventListener('change', function() {
         setShuffle(this.checked);
     });
     updateSliderOptions();
     
     tab.StartEndSection("Christmasy Stuff");
     
-    var enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getSnowing()).change(function() {
+    var enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getSnowing());
+    enableUSnow.addEventListener('change', function() {
         setSnowing(this.selectedIndex);
         updateSnowOptions();
     });
     
-    tab.AddCheckBox("uss", "Snow In Banner", getBGSnow()).change(function() {
+    tab.AddCheckBox("uss", "Snow In Banner", getBGSnow()).addEventListener('change', function() {
         setBGSnow(this.checked);
     });
     
-    tab.AddCheckBox('pus', 'Pause Snow when lost focus', getSaveFocus()).change(function() {
+    tab.AddCheckBox('pus', 'Pause Snow when lost focus', getSaveFocus()).addEventListener('change', function() {
         setSaveFocus(this.checked);
     });
     updateSnowOptions();
     
     tab.StartEndSection("Colours and Customization");
-    /*
+    
     var oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
-    oldLogo.prepend('<option value="-1">Random</option>');
-    oldLogo.change(function() {
+    oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
+    oldLogo.addEventListener('change', function() {
         setLogo($(this).val());
     });
     
-    tab.AddSlider("ho", "Logo Opacity", getLogoOpacity(), 10, 100).change(function() {
-        setLogoOpacity(this.value);
-    });
-    */
     var bgcolor = getBGColor();
     var backgroundImg = null;
     makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
@@ -558,10 +561,12 @@ function buildSettingsTab(tab) {
             $(backgroundImg[i].children[0]).css("background-color", me.value);
         }
     });
-    tab.AppendButton(colorPick[0], '<i class="fa fa-camera" />From Toolbar').on('click', function() {
-        colorPick.val(rgb2hex($('.user_toolbar').attr('data-background-color')));
+    var camera = tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar');
+    camera.addEventListener('click', function() {
+        colorPick.value = rgb2hex(userToolbar.dataset.backgroundColor);
         colorPick.change();
-    }).css('margin-left','10px');
+    });
+    camera.style.marginLeft = '10px';
     
     function rgb2hex(rgb) {
         rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
@@ -578,195 +583,51 @@ function buildSettingsTab(tab) {
     }
     
     backgroundImg[0].children[1].innerHTML = 'None';
-    $(backgroundImg[0].children[0]).css("background-color", bgcolor);
-    $(backgroundImg[0].children[0]).css("opacity", "0.8");
-    $(backgroundImg[0]).click(function () {
+    backgroundImg[0].children[0].style.backgroundColor = bgcolor;
+    backgroundImg[0].children[0].style.opacity = 0.8;
+    backgroundImg[0].addEventListener('click', function () {
         setBackgroundImg(-2);
         applyBackground(getBGColor());
     });
     
     backgroundImg[1].children[1].innerHTML = 'Default';
-    $(backgroundImg[1].children[0]).css("background-color", bgcolor);
-    $(backgroundImg[1].children[0]).css("opacity", "0.8");
-    $(backgroundImg[1]).css("background-image", $('body').css('background-image'));
-    $(backgroundImg[1]).click(function () {
+    backgroundImg[1].children[0].style.backgroundColor = bgcolor;
+    backgroundImg[1].children[0].style.opacity = 0.8;
+    backgroundImg[1].style.backgroundImage = window.getComputedStyle(document.body).backgroundImage;
+    backgroundImg[1].addEventListener('click', function () {
         setBackgroundImg(-1);
-        colorPick.val('');
+        colorPick.value = '';
         colorPick.change();
         settingsMan.set("bgColor", 'transparent');
     });
-
-    $(backgroundImg[0]).parent().find('.premade_settings').click(function () {
-        $(this).parent().find('.premade_settings_selected').each(function () {
-            $(this).removeClass('premade_settings_selected');
-        });
-        $(this).addClass('premade_settings_selected');
+    
+    jSlim.on(backgroundImg[0].parentNode, 'click', '.premade_settings', function () {
+        var other = backgroundImg[0].parentNode.querySelector('.premade_settings_selected');
+        if (other) {
+            other.classList.remove('premade_settings_selected');
+        }
+        this.classList.add('premade_settings_selected');
     });
     
     var bgIndex = getBGIndex();
     if (bgIndex > -3 && bgIndex + 2 < backgroundImg.length) {
-        $(backgroundImg[bgIndex + 2]).addClass('premade_settings_selected');
+        backgroundImg[bgIndex + 2].classList.add('premade_settings_selected');
     }
     
     var cban = tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false);
     
     cban[0].children[1].innerHTML = '<i class="fa fa-pencil fa-5x" />';
-    $(cban[0]).css("width", "700px");
-    $(cban[0]).css("text-align", "center");
-    $(cban[0].children[0]).css("color", "black");
-    $(cban[0].children[0]).css('text-shadow', '1px 1px 0px rgba(255, 255, 255, 0.15)');
-    $(cban[0]).css("background-size", "100%");
-    if (customBanner != null) {
-        $(cban[0].children[0]).append(customBanner[0].split('/').reverse()[0].split('.')[0]);
-        $(cban[0].children[0]).css("background-color", customBanner[1]);
-        $(cban[0]).css("background-image", 'url("' + customBanner[0] + '")');
+    cban[0].style.width = '700px';
+    cban[0].style.textAlign = 'center';
+    cban[0].children[0].style.color = 'black';
+    cban[0].children[0].style.textShadow = '1px 1px 0px rgba(255, 255, 255, 0.15)';
+    cban[0].style.backgroundSize = '100%';
+    if (customBanner) {
+        repaintBannerButton(customBanner);
     }
-    $(cban).click(function() {
+    cban[0].addEventListener('click', function() {
         try {
-            var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
-            pop.SetWidth(700);
-            pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
-
-            var footer = $('<div class="drop-down-pop-up-footer" />');
-            pop.content.append(footer[0]);
-
-            var builder = new FimFicSettings.OptionsBuilder($(pop.content).find('tbody'));
-
-            var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save" />Save</button>');
-            var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye" />Preview</button>');
-            var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o" />Reset</button>');
-            var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px" />');
-
-            var row = builder.AddOption('', 'Image Position', '<div />');
-
-            var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
-            var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-            var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
-            var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto" />');
-
-            row = builder.AddColorSliders('bc', 'Banner Colour', true);
-
-            var RInput = row.red;
-            var GInput = row.green;
-            var BInput = row.blue;
-            var AInput = row.alpha;
-
-            builder.AppendControl($(pop.content).find('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').click(function() {
-                var color = $('.user_toolbar').attr('data-background-color');
-                if (color == '') color = 'rgb(146,27,87)';
-                color = color.split('(')[1].split(')')[0];
-                color = color.replace(/ /g, '').split(',');
-                RInput.val(color[0]);
-                GInput.val(color[1]);
-                BInput.val(color[2]);
-                AInput.val(color.length == 4 ? color[3] : 1);
-            });
-
-            var getColor = function() {
-                var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
-                var a = val(AInput);
-                if (a != '1' && a != '') {
-                    return 'rgba(' + color + ',' + a + ')';
-                }
-                return 'rgb(' + color + ')';
-            }
-            var val = function(me) {return me.eq(1).val();}
-            var ch = function(me) {return $.isNumeric($(me[0]).val());}
-
-            var updateView = function(save) {
-                if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                    var url = input.val();
-                    var color = getColor();
-                    var vert = alignVert.val();
-                    var hor = alignHor.val();
-                    var x = tryParseInt(posX.val(), 0);
-                    var y = tryParseInt(posY.val(), 0);
-
-                    if (save) {
-                        setCustomBanner(url, color, [hor, x, vert, y]);
-                        if (customBannerindex > -1) {
-                            banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
-                        } else {
-                            banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
-                            customBannerindex = banners.length - 1;
-                        }
-                    }
-
-                    cban[0].children[0].innerHTML = url.split('/').reverse()[0].split('.')[0];
-                    $(cban[0].children[0]).css("background-color", banners[customBannerindex].colour);
-                    $(cban[0]).css("background-image", 'url("' + banners[customBannerindex].url + '")');
-                    $(cban[0]).css("background-position", banners[customBannerindex].position);
-
-                    if (save) {
-                        chooseTheme(customBannerindex, save);
-                    } else {
-                        finaliseThemes();
-                    }
-                    $('#add_banner_error').addClass('hidden');
-                    return true;
-                }
-                $('#add_banner_error').removeClass('hidden');
-                return false;
-            };
-
-            var hasPre = false;
-            preview.click(function() {
-                hasPre = true;
-                if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                    var url = input.val();
-                    var color = getColor();
-                    var vert = alignVert.val();
-                    var hor = alignHor.val();
-                    var x = tryParseInt(posX.val(), 0);
-                    var y = tryParseInt(posY.val(), 0);
-                    changeBanner(null, url, color, Pos([hor, x, vert, y]));
-                    $('#add_banner_error').addClass('hidden');
-                } else {
-                    $('#add_banner_error').removeClass('hidden');
-                }
-            });
-            reset.click(function() {
-                unsetCustomBanner();
-                if (customBannerindex > -1) {
-                    banners.splice(customBannerindex, 1);
-                    if (getCookie('selected_theme') == 'Custom') {
-                        chooseTheme(-1, true);
-                    }
-                    customBannerindex = -1;
-                }
-                cban[0].children[0].innerHTML = '';
-                $(cban[0].children[0]).css("background-color", "#fff");
-                $(cban[0]).css("background-image", 'none');
-                finaliseThemes();
-                pop.Close();
-            });
-            done.click(function() {
-                hasPre = false;
-                if (updateView(true)) {
-                    pop.Close();
-                }
-            });
-            $(pop.element).find(".close_button").mousedown(function() {
-                if (hasPre) finaliseThemes();
-            });
-
-            customBanner = getCustomBanner();
-            if (customBanner != null) {
-                input.attr("value", customBanner[0]);
-                var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
-                RInput.val(color[0]);
-                GInput.val(color[1]);
-                BInput.val(color[2]);
-                AInput.val(color.length == 4 ? color[3] : 1);
-                var poss = customBanner[2];
-                var i = 0;
-                alignHor.val(poss[i++]);
-                if (poss[i] != 'center') posX.val(poss[i]);
-                i++;
-                alignVert.val(poss[i++]);
-                if (poss[i] != 'center') posY.val(poss[i]);
-            }
-            pop.Show();
+            createCustomBannerPopup(cban);
         } catch (e) {
             logger.SevereException('An error has occured whist constructing custom banner GUI: {0}', e);
         }
@@ -776,7 +637,9 @@ function buildSettingsTab(tab) {
     tab.StartEndSection("Signatures");
     
     var sigText = tab.AddTextArea("sig", '', getSig());
-    sigText.css({"min-height": "150px","min-width": "100%","resize": "vertical"});
+    sigText.style.minHeight = '150px';
+    sigText.style.minWidth = '100%';
+    sigText.style.resize = 'vertical';
     addTooltip("<u>Magic Strings</u><br ><div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>\
         %name% - the name of the current user<br />\
         %message% - posted comment<br />\
@@ -788,297 +651,266 @@ function buildSettingsTab(tab) {
         %hour% - Current hour in 24 hour format<br />\
         %min% - Minute<br />\
         %sec% - Second</div></div>", sigText);
-    var sigPrev = $('<div class="sigPreview" style="min-height:150px;min-width:100%;" />');
-    sigText.after(sigPrev);
-    sigText.change(function() {
+    var sigPrev = jSlim.newEl('DIV', {
+        'class': 'sigPreview',
+        style: 'min-height:150px;min-width:100%;'});
+    sigText.parentNode.insertBefore(sigPrev, sigText.nextSibling);
+    sigText.addEventListener('change', function() {
         setSig(this.value);
     });
-    tab.AppendResetButton(sigText[0]).on('click', function() {
-        sigText.val(defaultSig);
-        setSig(sigText.val());
+    tab.AppendResetButton(sigText).addEventListener('click', function() {
+        sigText.value = defaultSig;
+        setSig(sigText.value);
     });
     
+    var sig = sigText.parentNode.parentNode.parentNode.firstChild;
     var userTile = getUserCommentThumb(128);
-    userTile.attr('style', 'float:right;background:none;border:none;');
-    $('#sig').css({'vertical-align':'top','padding-top':'0px'}).append(userTile);
+    userTile.setAttribute('style', 'float:right;background:none;border:none;');
+    sig.style.verticalAlign = 'top';
+    sig.style.paddingTop = '0px';
+    sig.appendChild(userTile);
     
-    var previewButton = $(tab.AppendButton(sigText, 'Preview'));
-    previewButton.addClass('previewButton');
-    previewButton.click(function() {
-        if (sigText.hasClass('sigPreviewing')) {
-            sigText.removeClass('sigPreviewing');
-            sigPrev.html('');
+    var previewButton = tab.AppendButton(sigText, 'Preview');
+    previewButton.classList.add('previewButton');
+    previewButton.addEventListener('click', function() {
+        if (sigText.classList.contains('sigPreviewing')) {
+            sigText.classList.remove('sigPreviewing');
+            sigPrev.innerHTML = '';
             this.innerHTML = 'Preview';
-            $(this).attr('class', 'styled_button styled_button_blue previewButton');
+            this.setAttribute('class', 'styled_button styled_button_blue previewButton');
         } else {
-            sigPrev.html(previewSig());
-            sigText.addClass('sigPreviewing');
+            sigPrev.innerHTML = previewSig();
+            sigText.classList.add('sigPreviewing');
             this.innerHTML = 'Edit';
-            $(this).attr('class', 'styled_button styled_button_green previewButton');
+            this.setAttribute('class', 'styled_button styled_button_green previewButton');
         }
     });
-}
-
-function setAccountLogo() {
-    var me = $(this);
-    var url = me.parent().attr('href');
-    if (url != null) {
-        var name = null;
-        if (url.indexOf('?') != -1) {
-            var params = url.split('?')[1].split('&');
-            var nparams = [];
-            for (var i = 0; i < params.length; i++) {
-                var p = params[i].split('=');
-                if (p[0] == 'DisplayNameFF') {
-                    name = p[1];
-                    break;
-                } else if (params[i] != '.deviantart.com' && p[0] != 'customAccount') {
-                    nparams.push(params[i]);
-                }
+        
+    function fontOptGroups() {
+        var g = '';
+        for (var i in fonts) {
+            var group = '<optgroup label="' + i + '">';
+            var j = fonts[i].length;
+            while (j--) {
+                group += '<option style="font-family:' + fonts[i][j] + '" value="' + fonts[i][j] + '">' + fonts[i][j] + '</option>';
             }
-            url = url.split('?')[0] + (nparams.length > 0 ? '?' + nparams.join('&') : '');
+            group += '</optgroup>';
+            g += group;
         }
-        me.parent().attr('href', url);
-        if (name == null) {
-            var urlBackup = url;
-            url = url.split('?')[0].toLowerCase();
-            try {
-                if (url.indexOf('mailto:') == 0) {
-                    name = url.replace('mailto:', 'Email ' + $('.bio-content').parent().find('.user-box-level-1 a').text() + '\nat ');
-                    url = '';
-                } else if (/\.(deviantart|tumblr)\./.test(url)) {
-                    url = getDomain(url);
-                    name = url.split('.')[0];
-                    url = url.substring(name.length + 1, url.length);
-                } else {
-                    var len = externalUrls.length;
-                    for (var i = 0; i < len; i++) {
-                        var m = url.match(externalUrls[i][0]);
-                        if (m) {
-                            name = m[externalUrls[i][1]];
-                            break;
-                        }
+        return g;
+    }
+    
+    function updateBannersOptions() {
+        tab.SetEnabled('#fancyB,#hb,#sl,#shuf,#bannerCust' + (enableUSnow.selectedIndex < 2 ? ',#uss' : ''), getBannersEnabled());
+    }
+    
+    function updateSliderOptions() {
+        tab.SetEnabled('#shuf', enableSlide.selectedIndex > 0);
+    }
+    
+    function updateSnowOptions() {
+        tab.SetEnabled('#pus' + (getBannersEnabled() ? ',#uss' : ''), enableUSnow.selectedIndex < 2);
+    }
+    
+    function repaintBannerButton(banner) {
+        cban[0].children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
+        cban[0].children[0].style.backgroundColor = banner.colour;
+        cban[0].style.backgroundImage = 'url("' + banner.url + '")';
+        cban[0].style.backgroundPosition = banner.position;
+    }
+    
+    function createCustomBannerPopup() {
+        var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
+        pop.SetWidth(700);
+        pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
+
+        var addBannerError = pop.content.querySelector('#add_banner_error');
+
+        var footer = jSlim.newEl('DIV', { 'class': 'drop-down-pop-up-footer' });
+        pop.content.appendChild(footer);
+
+        var builder = new FimFicSettings.OptionsBuilder(pop.content.querySelector('tbody'));
+
+        var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save"></i>Save</button>');
+        var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye"></i>Preview</button>');
+        var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o"></i>Reset</button>');
+        var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px"></input>');
+
+        var row = builder.AddOption('', 'Image Position', '<div></div>');
+
+        var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
+        var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
+        var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
+        var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
+
+        row = builder.AddColorSliders('bc', 'Banner Colour', true);
+
+        var RInput = row.red;
+        var GInput = row.green;
+        var BInput = row.blue;
+        var AInput = row.alpha;
+
+        builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').addEventListener('click', function() {
+            var color = userToolbar.dataset.backgroundColor;
+            if (color == '') color = 'rgb(146,27,87)';
+            color = color.split('(')[1].split(')')[0];
+            color = color.replace(/ /g, '').split(',');
+            RInput[0].value = RInput[1].value = color[0];
+            GInput[0].value = GInput[1].value = color[1];
+            BInput[0].value = BInput[1].value = color[2];
+            AInput[0].value = AInput[1].value = color.length == 4 ? color[3] : 1;
+        });
+
+        var getColor = function() {
+            var color = val(RInput) + ',' + val(GInput) + ',' + val(BInput);
+            var a = val(AInput);
+            if (a != '1' && a != '') {
+                return 'rgba(' + color + ',' + a + ')';
+            }
+            return 'rgb(' + color + ')';
+        }
+        var val = function(me) {return me[1].value;}
+        var ch = function(me) {return $.isNumeric(me[0].value);}
+
+        var updateView = function(save) {
+            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
+                var url = input.val();
+                var color = getColor();
+                var vert = alignVert.val();
+                var hor = alignHor.val();
+                var x = tryParseInt(posX.val(), 0);
+                var y = tryParseInt(posY.val(), 0);
+
+                if (save) {
+                    setCustomBanner(url, color, [hor, x, vert, y]);
+                    if (customBannerindex > -1) {
+                        banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
+                    } else {
+                        banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
+                        customBannerindex = banners.length - 1;
                     }
                 }
-            } catch (e) {
-                name = null;
-                url = urlBackup;
+                
+                repaintBannerButton(banners[customBannerindex]);
+                
+                if (save) {
+                    chooseTheme(customBannerindex, save);
+                } else {
+                    finaliseThemes();
+                }
+                addBannerError.classList.add('hidden');
+                return true;
             }
+            addBannerError.classList.remove('hidden');
+            return false;
+        };
+
+        var hasPre = false;
+        preview.addEventListener('click', function() {
+            hasPre = true;
+            if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
+                var url = input.val();
+                var color = getColor();
+                var vert = alignVert.val();
+                var hor = alignHor.val();
+                var x = tryParseInt(posX.val(), 0);
+                var y = tryParseInt(posY.val(), 0);
+                changeBanner(null, url, color, Pos([hor, x, vert, y]));
+                addBannerError.classList.add('hidden');
+            } else {
+                addBannerError.classList.remove('hidden');
+            }
+        });
+        reset.addEventListener('click', function() {
+            unsetCustomBanner();
+            if (customBannerindex > -1) {
+                banners.splice(customBannerindex, 1);
+                if (getCookie('selected_theme') == 'Custom') {
+                    chooseTheme(-1, true);
+                }
+                customBannerindex = -1;
+            }
+            cban[0].children[0].innerHTML = '';
+            cban[0].children[0].style.background = '#fff';
+            finaliseThemes();
+            pop.Close();
+        });
+        done.addEventListener('click', function() {
+            hasPre = false;
+            if (updateView(true)) {
+                pop.Close();
+            }
+        });
+        pop.element.querySelector(".close_button").addEventListener('mousedown', function() {
+            if (hasPre) finaliseThemes();
+        });
+
+        customBanner = getCustomBanner();
+        if (customBanner != null) {
+            input.attr("value", customBanner[0]);
+            var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
+            RInput.val(color[0]);
+            GInput.val(color[1]);
+            BInput.val(color[2]);
+            AInput.val(color.length == 4 ? color[3] : 1);
+            var poss = customBanner[2];
+            var i = 0;
+            alignHor.val(poss[i++]);
+            if (poss[i] != 'center') posX.val(poss[i]);
+            i++;
+            alignVert.val(poss[i++]);
+            if (poss[i] != 'center') posY.val(poss[i]);
         }
-        if (name != null) {
-            name = /^knight(y33|33|y)$/i.test(name) ? name.toLowerCase() : normalise(name);
-            me.parent().attr('title', name + (url.length ? '\non ' + getSiteName(url) : ''));
-        } else {
-            me.parent().attr('title', url);
-        }
-        
-        if (me.attr('src') == staticFimFicDomain() + '/images/external_accounts/other.png') {
-            me.attr('src', getFavicon(getDomain(url)));
-        }
+        pop.Show();
     }
 }
 
 function updateAccountControls() {
-    $('.external_account').each(function() {
-        var value = $(this).find('.external_account_value');
-        applyControlData(value, addDisplayNameField(value.parent()));
+    jSlim.all('.external_account', function(me) {
+        me.value = me.querySelector('.external_account_value');
+        me.name = addDisplayNameField(me.value.parentNode)
+        applyControlData(me);
     });
-    $('#edit_user_form').on('submit', function() {
-        $('.external_account').each(function() {
-            var value = $(this).find('.external_account_value');
-            var name = $(this).find('.external_account_name');
-            var url = value.val();
-            if (name.val() != '') {
-                url += (url.indexOf('?') == -1 ? '?' : '&') + 'DisplayNameFF=' + name.val();
+    document.getElementById('edit_user_form').addEventListener('submit', function() {
+        jSlim.all('.external_account', function(me) {
+            var url = me.value.value;
+            if (me.name.value != '') {
+                url += (url.indexOf('?') == -1 ? '?' : '&') + 'DisplayNameFF=' + me.name.value;
             }
-            value.val(url);
+            me.value.value = url;
         });
-        $('body').one('mousemove', function() {
-            $('.external_account').each(function() {
-                applyControlData($(this).find('.external_account_value'), $(this).find('.external_account_name'));
-            });
+        jSlim.one(document.body, 'mousemove', function() {
+            jSlim.all('.external_account', applyControlData);
         });
     });
 }
 
-function applyControlData(value, name) {
+function applyControlData(me) {
+    var value = me.value;
+    var name = me.name;
     var url = value.val();
     if (url.indexOf('?') != -1) {
         var params = url.split('?')[1].split('&');
         for (var i = 0; i < params.length;) {
             var item = params[i].split('=');
             if (item[0] == 'DisplayNameFF') {
-                name.val(item[1]);
+                name.value = item[1];
                 params.splice(i, 1);
             } else {
                 i++;
             }
         }
-        value.val(url.split('?')[0] + (params.length > 0 ? '?' + params.join('&') : ''));
+        value.value = url.split('?')[0] + (params.length > 0 ? '?' + params.join('&') : '');
         value.keyup();
     }
 }
 
 function addDisplayNameField(target) {
-    var holder = $('<div style="display:inline-block;position:relative" />');
-    target.after(holder);
-    var name = $('<input class="external_account_name" type="text" placeholder="display name" style="width:180px;margin-left:-3px;background-position: top -100px left;border-radius: 0px 3px 3px 0px;" />');
-    name.data('tooltip', 'Optional display name for this account');
-    holder.append(name);
-    return name;
+    var holder = jSlim.newEl('DIV', {style: 'display:inline-block;position:relative'}, '<input class="external_account_name" type="text" placeholder="display name" style="width:180px;margin-left:-3px;background-position: top -100px left;border-radius: 0px 3px 3px 0px;"></input>');
+    jSlim.after(target, holder);
+    holder.firstChild.dataset.tooltip = 'Optional display name for this account';
+    return holder.firstChild;
 }
-
-function buildBookmarksGui(tab) {
-    var itemsArray = getItemsArray()
-    var max = Math.floor((itemsArray.length - 1) / 10);
-    if (max < 0) max = 0;
-
-    var pageNumber = 0;
-    var pending_loads = 0;
-    
-    var pager = tab.AddToolbar('bookmarks_pager', 4, 3);
-    pager.css('text-align', 'center');
-    pager.append('<div style="line-height:40px;"><span id="pageNumber" /> of <span id="pageMax">' + (max + 1) + '</span></div>');
-    
-    var buttons = pager.children();
-    
-    $('.bkm_removeAll').click(function() {
-        itemsArray = [];
-        pageNumber = 0;
-        renderPageWithHashChange();
-    });
-
-    $(window).on('hashchange', function() {
-        updatePageNumber();
-        renderPageWithHashChange();
-    });
-    
-    $(buttons[0]).append('<i class="fa fa-chevron-left"></i>First');
-    $(buttons[0]).css('float', 'left');
-    $(buttons[0]).click(function() {
-        if (pageNumber > 0) {
-            pageNumber = 0;
-            renderPageWithHashChange();
-        }
-    });
-
-    $(buttons[1]).append('<i class="fa fa-chevron-left" />Previous');
-    $(buttons[1]).css('float', 'left');
-    $(buttons[1]).click(function() {
-        if (pageNumber > 0) {
-            pageNumber--;
-            renderPageWithHashChange();
-        }
-    });
-
-    $(buttons[2]).append('Last<i style="margin-left:4px;margin-right:0px;float:right" class="fa fa-chevron-right"></i>');
-    $(buttons[2]).css('float', 'right');
-    $(buttons[2]).click(function() {
-        if (pageNumber != max) {
-            pageNumber = max;
-            renderPageWithHashChange();
-        }
-    });
-
-    $(buttons[3]).append('Next<i style="margin-left:4px;margin-right:0px;float:right" class="fa fa-chevron-right" />');
-    $(buttons[3]).css('float', 'right');
-    $(buttons[3]).click(function() {
-        if (pageNumber < max) {
-            pageNumber++;
-            renderPageWithHashChange();
-        }
-    });
-    
-    $('.content_box > .main').after('<div id="book_loader" style="pointer-events:none;margin-top:-30px;font-size:7em;display:none;width:100%;text-align:center;"><i class="fa fa-spinner fa-spin" /></div>');
-    
-    updatePageNumber();
-    renderPage();
-    
-    function updatePageNumber() {
-        if (document.location.hash != '') {
-            pageNumber = parseInt(document.location.hash.replace('#', '')) - 1;
-            if (pageNumber < 0) {
-                pageNumber = 0;
-            } else if (pageNumber > max) {
-                pageNumber = max;
-            }
-        }
-    }
-    
-    function renderPage() {
-        $('#pageNumber').text(pageNumber + 1);
-        $('.bookmark_entry').remove();
-        var start = pageNumber * 10;
-        var len = itemsArray.length;
-        for (var i = start; i < start + 10 && i < len; i++) {
-            var row = $('<tr class="bookmark_entry" style="transition: opacity 0.25s ease-in-out;opacity:0;"><td class="label" style="width:120px;" /><td class="bookmark_item" /><td /></tr>');
-            $('#book_loader').css('display', 'block');
-            tab.AddRaw(row);
-            if (!itemsArray[i].url) {
-                getBookmarkData(itemsArray[i]);
-            }
-            configureItem(row, itemsArray[i], i);
-        }
-    }
-
-    function renderPageWithHashChange() {
-        document.location.hash = pageNumber + 1;
-        renderPage();
-    }
-    
-    function configureItem(row, item, i) {
-        if (pending_loads > 0) pending_loads--
-        if (pending_loads == 0) $('#book_loader').css('display', 'none');
-        var image = $('<img class="bookmark_img" />').on('error', function() {
-            $(this).after('<i class="fa fa-book bookmark-img" />').remove();
-        });
-        $(row.children()[0]).append(image);
-        image.attr('src', 'https:' + item.data.cover);
-        $(row.children()[1]).append('<div><span class="chapter">' + (i + 1) + '. </span><a class="chapter" href="' + item.url.chapter + '">' + item.data.chapTitle + '</a></div>');
-        $(row.children()[1]).append('<span class="subText"> in <a class="story_name" href="' + item.url.story + '">' + item.data.title + '</a></span>');
-        
-        var delBut = $('<a data-item-index="' + i + '" cookieName="' + item.key + '" style="float:right;text-align:center;" title="Delete" class="styled_button styled_button_red"><i class="fa fa-trash-o" style="margin:0px;" /></a>');
-        delBut.click(function() {
-            var ek = $(this).parent().parent();
-            var index = parseInt($(this).attr('data-item-index'));
-            itemsArray.splice(index, 1);
-            max = Math.floor((itemsArray.length - 1) / 10);
-            if (max < 0) max = 0;
-            $('#pageMax').text(max + 1)
-            ek.css('opacity', 0);
-            setTimeout(function() {
-                ek.remove();
-                if (itemsArray.length > 0) {
-                    if ($('.bookmark_entry').length == 0 && pageNumber > 0) pageNumber--;
-                    renderPage();
-                }
-            }, 360);
-            removeBookmark($(this).attr('cookieName'));
-        });
-        $(row.children()[2]).append(delBut);
-        row.css('opacity', 1);
-    }
-    
-    function getItemsArray() {
-        var result = [];
-        var keys = settingsMan.keys();
-        var i = keys.length;
-        while (i--) {
-            if (keys[i].indexOf('bookmark_position') != -1) {
-                var item = keys[i].replace('_bookmark_position', '');
-                if ((item.indexOf('_') == -1 && item.indexOf(':') == -1)) {
-                    removeBookmark(item);
-                } else {
-                    var entry = getShallowBookmark(item);
-                    entry.raw = keys[i];
-                    result.unshift(entry);
-                }
-            }
-        }
-        return result;
-    }
-}
-
 
 var animationUpdator;
 function Animator() {
@@ -1129,14 +961,16 @@ function Animator() {
             };
         }
         
+        function scrollEv() {
+            currentScroll = window.scrollY;
+        }
+        
         return {
             on: function(type, callback) {
                 if (!isRunning) {
                     isRunning = true;
                     animate();
-                    $(window).on('scroll.animator', function() {
-                        currentScroll = window.scrollY;
-                    });
+                    window.addEventListener('scroll', scrollEv);
                 }
                 if (!buss.callbacks[type]) {
                     listenerCount++;
@@ -1148,14 +982,14 @@ function Animator() {
                 if (!isRunning) {
                     isRunning = true;
                     animate();
-                    $(window).on('scroll.animator', function() {
-                        currentScroll = window.scrollY;
-                    });
+                    window.addEventListener('scroll', scrollEv);
                 }
                 if (!buss.conditions[type]) {
                     listenerCount++;
                 }
-                buss.conditions[type] = {test: condition, call: callback};
+                buss.conditions[type] = {
+                    test: condition, call: callback
+                };
                 dirty = true;
             },
             off: function(type) {
@@ -1164,7 +998,7 @@ function Animator() {
                     buss.callbacks[type] = undefined;
                     if (listenerCount <= 0) {
                         listenerCount = 0;
-                        $(window).off('scroll.animator');
+                        window.removeEventListener('scroll', scrollEv);
                         isRunning = false;
                         buss.dispatch = function() {};
                         buss.condition = function() {};
@@ -1414,53 +1248,6 @@ function applyFeedFix() {
     });
 }
 
-function applyBookmarks() {
-    logger.Log('applyBookmarks');
-    var pbkmark = $('#place_bookmark');
-    if (pbkmark.length) {
-        var storyNumber = getStoryNumber();
-        var marker = $('#chapter_bookmark');
-        var restorePos = $('<li style="display:none;"><a title="Restore Position" href="javascript:void(0);" ><i class="fa fa-bookmark" style="color:blue;" /></a></li>');
-        restorePos.find('a').click(function() {
-            logger.Log('Set scroll Position');
-            if ($('#chapter_bookmark').hasClass('placed')) {
-                $('html, body').animate({
-                    scrollTop: parseInt($('#chapter_bookmark').offset().top) - $(window).height() * 0.2
-                }, 500);
-            }
-        });
-        pbkmark.parent().after(restorePos);
-        $('#place_bookmark').on('mouseup', function() {
-            restorePos.css('display', 'none');
-        });
-        $(document).on('mouseup', '#chapter_format p', function() {
-            if (marker.hasClass('placing')) {
-                updatePlaceBookmark();
-            } else {
-                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
-            }
-        });
-        $('#chapter_bookmark').on('mouseup', function() {
-            updatePlaceBookmark();
-        });
-        $(document).ready(function() {
-            setTimeout(function() {
-                restorePos.css('display', marker.hasClass('placed') ? '' : 'none');
-            },550);
-        });
-        
-        function updatePlaceBookmark() {
-            if (marker.hasClass('placed')) {
-                removeBookmark(storyNumber);
-                restorePos.css('display', 'none');
-            } else {
-                setBookmark(storyNumber);
-                restorePos.css('display', '');
-            }
-        }
-    }
-}
-
 function applyCodePatches() {
     logger.Log('applyCodePatches');
     if ($('.chapter-container').length) {
@@ -1555,53 +1342,53 @@ function applyCodePatches() {
     }
 }
 
-function initCommentArea(hold) {
+function initCommentArea() {
     logger.Log('initCommentArea: start');
-    $('.bbcode-editor:not([fimfic_adv])').each(function() {
-        var me = $(this);
-        me.attr('fimfic_adv', '1');
-        var controller = App.GetControllerFromElement(this);
-        var colour_button = me.find("button[title='Text Colour']");
-        if (colour_button.children()[0].tagName == 'IMG') {
-            logger.Log('setup: changing color button icon');
-            colour_button.html('<i class="fa fa-tint" />');
+    jSlim.all('.bbcode-editor:not([fimfic_adv])', function(me) {
+        me.setAttribute('fimfic_adv', '1');
+        var controller = App.GetControllerFromElement(me);
+        var but = me.querySelector("button[title='Text Colour']");
+        if (but.children[0].tagName == 'IMG') {
+            but.innerHTML = '<i class="fa fa-tint"></i>';
+        }
+        but = me.querySelector("button[title='Insert Image']");
+        if (but.children[0].tagName == 'IMG') {
+            but.innerHTML = '<i class="fa fa-picture-o"></i>';
         }
         logger.Log('setUpMainButton: start');
         var main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
-        main_button[0].parentNode.dataset.priority = -1;
-        main_button[0].dataset.click = 'showFimficAdv';
-        if (controller.toolbarItems) {
-            controller.toolbarItems.push({
-                node: main_button[0].parentNode,
-                order: controller.toolbarItems.length,
-                priority: -1,
-                width: 35
-            });
-        }
-        var insertImg = me.find("button[title='Insert Image']");
-        if (insertImg.children()[0].tagName == 'IMG') {
-            logger.Log('Changing Insert Image Logo');
-            insertImg.html('<i class="fa fa-picture-o" />');
-        }
+        main_button.dataset.click = 'showFimficAdv';
+        registerButton(main_button, controller, -1);
     });
-    
+    logger.Log('initCommentArea: end');
+}
+
+function initBBCodeController() {
+    logger.Log('initBBCodeController: start');
     BBCodeEditorController.prototype.showColourPicker = function(sender, event) {
-        logger.Log('betterColours: start');
         event.preventDefault();
-        betterColours($(sender), this);
+        betterColours(sender.parentNode, this);
     };
     BBCodeEditorController.prototype.showSizePicker = function(sender, event) {
-        logger.Log('betterSizes: start');
         event.preventDefault();
-        betterSizes($(sender), this);
+        if (!sender.parentNode.querySelector('div')) {
+            betterSizes(sender.parentNode, this);
+        }
     };
     BBCodeEditorController.prototype.showFimficAdv = function(sender, event) {
-        logger.Log('setUpMainButton: start');
-        sender = $(sender);
-        if (!sender.parent().find('.drop-down').length) {
+        if (!sender.parentNode.querySelector('div')) {
             buildAdvancedButton(sender, this);
         }
-    }
+    };
+    BBCodeEditorController.prototype.showAllColours = function(sender, event) {
+        event.preventDefault();
+        initColourWindow(this, sender);
+    };
+    BBCodeEditorController.prototype.showColourCreator = function(sender, event) {
+        event.preventDefault();
+        insertColor(this);
+    };
+    logger.Log('initBBCodeController: end');
 }
 
 function initBlogPage() {
@@ -1694,26 +1481,51 @@ function mustUnspoiler(url) {
 }
 
 function buildAdvancedButton(button, controller) {
-    button.after('<div class="drop-down"><div class="arrow" /><ul /></div>');
-    var items = button.parent().find('ul');
+    var items = jSlim.newEl('DIV', { 'class': 'drop-down' }, '<div class="arrow" ></div><ul></ul>');
+    jSlim.before(button, items);
+    items = items.lastChild;
     addDropList(items, "BBCode Tags", function () {
         addOption(this, "Right Align").click(function() {
             controller.insertTag('right');
         });
-        addOption(this, "Indent Paragraphs").click(function(e) {handleIndent(e, /\n/g, "\n\t");});
-        addOption(this, "Outdent Paragraphs").click(function(e) {handleIndent(e, /\n\t/g, "\n");});
-        addOption(this, "Left Insert").click(function() {controller.insertTag('left_insert');});
-        addOption(this, "Right Insert").click(function() {controller.insertTag('right_insert');});
-        addOption(this, "Ordered List").click(function () {makeList(controller, true);});
-        addOption(this, "Unordered List").click(function () {makeList(controller, false);});
-        addOption(this, "Green Text").click(function () {makeGreen(controller.textarea);});
-        addOption(this, "Icon").click(function() {makeInsertIconPopup(controller);});
+        addOption(this, "Indent Paragraphs").addEventListener('click', function(e) {
+            handleIndent(e, /\n/g, "\n\t");
+        });
+        addOption(this, "Outdent Paragraphs").addEventListener('click', function(e) {
+            handleIndent(e, /\n\t/g, "\n");
+        });
+        addOption(this, "Left Insert").addEventListener('click', function() {
+            controller.insertTag('left_insert');
+        });
+        addOption(this, "Right Insert").addEventListener('click', function() {
+            controller.insertTag('right_insert');
+        });
+        addOption(this, "Ordered List").addEventListener('click', function () {
+            makeList(controller, true);
+        });
+        addOption(this, "Unordered List").addEventListener('click', function () {
+            makeList(controller, false);
+        });
+        addOption(this, "Green Text").addEventListener('click', function () {
+            makeGreen(controller.textarea);
+        });
+        addOption(this, "Icon").addEventListener('click', function() {
+            makeInsertIconPopup(controller);
+        });
     });
     
-    addOption(items, "Sign").click(function() {sign(controller.textarea);});
-    addOption(items, "Insert Direct Image").click(function() {makeImagePopup(controller.textarea);});
-    addOption(items, "Find/Replace Text").click(function() {makeReplacePopup(controller.textarea);});
-    addOption(items, "Blotter").click(function(e) {handleIndent(e, /[^\s\\]/g, "█");});
+    addOption(items, "Sign").addEventListener('click', function() {
+        sign(controller.textarea);
+    });
+    addOption(items, "Insert Direct Image").addEventListener('click', function() {
+        makeImagePopup(controller.textarea);
+    });
+    addOption(items, "Find/Replace Text").addEventListener('click', function() {
+        makeReplacePopup(controller.textarea);
+    });
+    addOption(items, "Blotter").addEventListener('click', function(e) {
+        handleIndent(e, /[^\s\\]/g, "█");
+    });
     inbounds(button);
 
     function handleIndent(e, start, end) {
@@ -1734,9 +1546,8 @@ function buildAdvancedButton(button, controller) {
             var icon = $('<label class="bbcodeIcons" title="' + normalise(icons[i]) + '"><div><span class="bookshelf-icon-element fa fa-' + icons[i] + '" data-icon-type="font-awesome" /></div><input type="radio" value="' + icons[i] + '" style="visibility:hidden;display:none;" name="icon" /></label>');
             $(pop.content).find('.bookshelf-icons').prepend(icon);
         }
-        $(pop.content).find('input').on('click', function() {
-            var f = controller.getSelection();
-            controller.insertText('[icon]' + $(this).val() + '[/icon]' + f);
+        pop.content.querySelector('input').addEventListener('click', function() {
+            controller.insertText('[icon]' + this.value + '[/icon]' + controller.getSelection());
             pop.Close();
         });
         pop.Show();
@@ -1807,38 +1618,43 @@ function buildAdvancedButton(button, controller) {
         });
         pop.Show();
     }
-
+    
     function makeImagePopup(target) {
         var message = makePopup("Add Direct Image", "fa fa-picture-o");
         message.SetWidth(350);
         message.SetContent('<div style="padding:10px;"><div class="pattern-checkerboard" style="border:1px solid #ccc; width:100%; height:200px; box-shadow: 0px 0px 20px rgba(0,0,0,0.2) inset;"><img id="bbcode_image_preview" style="display:block; margin:auto; max-height:100%; max-width:100%;" /></div><form id="add_image"></div>');
         message.SetFooter('Please remember all images must be safe for work!<br />Try to avoid including enormous images (bigger than 1mb)');
-
-        var valid = $('<input type="hidden" value="0" name="valid"></input>');
-        message.content.find('form').append(valid);
-
-        $("#bbcode_image_preview").on("load", function() {
-            valid.attr("value", "1");
-            $("#add_image_error").css("display", "none");
+        
+        var form = message.content.querySelector('form');
+        
+        var valid = jSlim.newEl('INPUT', { type: 'hidden', value: '0', name: 'valid'});
+        form.appendChild(valid);
+        
+        var imgPreview = document.getElementById("#bbcode_image_preview");
+        imgPreview.addEventListener("load", function() {
+            valid.setAttribute("value", "1");
+            document.getElementById('#add_image_error').style.display = 'none';
         });
-        $("#bbcode_image_preview").on("error", function() {
-            valid.attr("value", "0");
+        imgPreview.addEventListener("error", function() {
+            valid.setAttribute("value", "0");
         });
-
-        var input = $('<input id="bbcode_image" type="url" required="required" placeholder="Image URL" name="url" />');
-        message.content.find('form').append(input);
-
-        var check = function() {
-            $("#bbcode_image_preview").attr("src", this.value);
+        
+        var input = jSlim.newEl('INPUT', { id: 'bbcode_image', type: 'url', required: 'required', placeholder: 'Image URL', name: 'url'});
+        form.append(input);
+        
+        input.addEventListener('input', check);
+        input.addEventListener('change', check);
+        
+        function check() {
+            imgPreview.src = this.value;
         }
-
-        input.on("input", check);
-        input.change(check);
-
-        var button = $('<button type="button" class="styled_button">Add Image</button>');
-        button.click(function(e) {
-            var url = input.attr("value");
-            if (url != null && url != undefined && url != "" && valid.attr("value") == "1") {
+        
+        var err = jSlim.newEl('DIV', { id: 'add_image_error', class: 'error-message hidden'}, 'Invalid Image');
+        var button = jSlim.newEl('BUTTON', { type: 'button', class: 'styled_button'}, 'Add Image');
+        form.appendChild(button);
+        button.addEventListsner('click', function(e) {
+            var url = input.value;
+            if (url != null && url != undefined && url != "" && valid.value == "1") {
                 var s = url.split("?");
                 if (s != null && s.length > 1) {
                     s = url + "&isEmote=true";
@@ -1846,13 +1662,11 @@ function buildAdvancedButton(button, controller) {
                     s = url + "?isEmote=true";
                 }
                 controller.insertText("[img]" + s + "[/img]");
-                $("#message_close_button").click();
-            } else {
-                $("#add_image_error").removeClass("hidden");
+                return message.Close();
             }
+            err.classList.remove("hidden");
         });
-        message.content.find('form').append(button);
-        message.content.find('form').append('<div id="add_image_error" class="error-message hidden">Invalid Image</div>');
+        form.appendChild(err);
         message.Show();
     }
 }
@@ -1874,7 +1688,7 @@ function insertColor(controller) {
     });
     
     var use_colour = $('<button id="use_colour" type="button" class="styled_button">Use Colour</button>');
-    use_colour.click(function(e) {
+    use_colour.on('click', function(e) {
         var c = color.attr("value");
         if (c != null && c != undefined && c != "" && valid.val() == "1") {
             var i = colours.Names.length;
@@ -1955,7 +1769,7 @@ function sign(target, text) {
         }
     }
     target.value = text;
-    $(target).focus();
+    target.focus();
     return text;
 }
 
@@ -1963,168 +1777,156 @@ function hasSigned(value, format) {
     return (new RegExp(encodeURI(format.replace(/%message%/g, ".*")))).test(encodeURI(value));
 }
 
-function betterSizes(button, controller) {
-    var me = button.parent();
-    if (!me.find('.drop-down').length) {
-        me.append('<div style="width:177px" class="drop-down drop-size-pick"><div class="arrow" /><ul /></div>');
-        var holder = me.find('ul');
-        var sizes = [
-            [0.5,0.5],
-            [0.75,0.75],
-            [1.5,1.5],
-            ['2.0',2],
-            [10,0.714],
-            [20,1.429],
-            [30,2.143],
-            [40,2.857],
-            [50,3.571],
-            [12,0.857],
-            [22,1.571],
-            [32,2.286],
-            [42,3],
-            [52,3.714],
-            [14,1],
-            [24,1.714],
-            [34,2.429],
-            [44,3.143],
-            [54,3.857],
-            [16,1.143],
-            [26,1.857],
-            [36,2.571],
-            [46,3.286],
-            [56,4.643],
-            [18,1.286],
-            [28,2],
-            [38,2.714],
-            [48,3.429],
-            [58,4.143],
-        ]
-        for (var i = 0; i < sizes.length; i++) {
-            addSize(holder, controller, sizes[i]);
-        }
-    }
-}
-
-function addSize(holder, controller, amount) {
-    var size = $('<li><a>' + amount[0] + '</a></li>');
-    holder.append(size);
-    size.find('a').click(function() {
-        controller.insertTags('[size=' + amount[1] + 'em]', '[/size]');
+function betterSizes(me, controller) {
+    me.appendChild(jSlim.newEl('DIV', { style: 'width:177px', 'class': 'drop-down drop-size-pick'}, '<div class="arrow"></div>'));
+    var sizes = [
+        [0.5,0.5],
+        [0.75,0.75],
+        [1.5,1.5],
+        ['2.0',2],
+        [10,0.714],
+        [20,1.429],
+        [30,2.143],
+        [40,2.857],
+        [50,3.571],
+        [12,0.857],
+        [22,1.571],
+        [32,2.286],
+        [42,3],
+        [52,3.714],
+        [14,1],
+        [24,1.714],
+        [34,2.429],
+        [44,3.143],
+        [54,3.857],
+        [16,1.143],
+        [26,1.857],
+        [36,2.571],
+        [46,3.286],
+        [56,4.643],
+        [18,1.286],
+        [28,2],
+        [38,2.714],
+        [48,3.429],
+        [58,4.143],
+    ];
+    var holder = jSlim.append(me.lastChild, 'UL', sizes.map(function(v, i) {
+        return '<li><a data-index="' + i + '">' + v[0] + '</a></li>';
+    }).join(''));
+    jSlim.on(holder, 'a', 'click', function() {
+        controller.insertTags('[size=' + sizes[this.dataset.index][0] + 'em]', '[/size]');
     });
-    size.hover(function () {
+    jSlim.on(holder, 'a', 'mouseenter', function() {
+        var sz = sizes[this.dataset.index];
         var pop = makeToolTip(this);
-        pop.parent().css({
-            'margin': '15px 0 0 0', 'padding': '0'
-        });
-        pop.append('<div style="font-size: ' + amount[1] + 'em !important; line-height:1;min-height:10px;height: ' + (amount[0] < 10 ? amount[0] < 1 ? 5 : 20 : amount[0]) + 'px;">Ab</div>');
-    }, function () {
-        $(this.children[1]).remove();
+        pop[0].parentNode.style.margin = '15px 0 0 0';
+        pop[0].parentNode.style.padding = '0';
+        pop.append('<div style="font-size: ' + sz[1] + 'em !important; line-height:1;min-height:10px;height: ' + (sz[0] < 10 ? sz[0] < 1 ? 5 : 20 : sz[0]) + 'px;">Ab</div>');
+    });
+    jSlim.on(holder, 'a', 'mouseleave', function() {
+        this.removeChild(this.childNodes[1]);
     });
 }
 
-function betterColours(button, controller) {
-    var me = button.parent();
-    if (!me.find('.drop-down').length) initColourPopup(controller, me, button);
-    $('.recent-colours').each(function() {
-        var me = $(this);
-        var recent = getRecentColours(parseInt(me.attr('data-count')));
+function betterColours(me, controller) {
+    if (!me.querySelector('div')) initColourPopup(controller, me);
+    jSlim.all('.recent-colours', function(me) {
+        var recent = getRecentColours(parseInt(me.dataset.count));
         if (recent.length > 0) {
-            me.empty();
-            addColorTiles(controller, me, recent);
-            me.css({'opacity': '', 'pointer-events': ''});
-            $('.recent-part').css('display','');
+            jSlim.empty(this);
+            addColorTiles(controller, this, recent);
+            this.style.opactity = me.style.pointerEvents = '';
+            jSlim.all('.recent-part', function(me) {
+               me.style.display = ''; 
+            });
         } else {
-            me.css({'opacity': '0.3', 'pointer-events': 'none'});
+            me.style.opactity = '0.3';
+            me.style.pointerEvents = 'none';
         }
     });
 }
 
-function initColourPopup(controller, me, self) {
-    me.append('<div style="width:250px" class="drop-down drop-colour-pick"><div class="arrow" /><ul class="colour-holder" /><ul class="button-holder" /></div>');
-    var holder = me.find('.colour-holder');
+function initColourPopup(controller, me) {
+    var holder = jSlim.newEl('DIV', {style: 'width:250px', class: 'drop-down drop-colour-pick'}, '<div class="arrow" ></div><ul class="colour-holder" ></ul><ul class="button-holder" ><li><a data-click="showAllColours">More Colours</a></li><li><a data-click="showColourCreator">Custom Colour</a></li></ul>');
+    me.appendChild(holder);
+    holder = holder.childNodes[1];
     addColorTiles(controller, holder, colours.Sets['FimFiction'][1]);
-    holder.append('<li class="divider" />');
+    jSlim.append(holder, 'LI').classList.add('divider');
     addColorTiles(controller, holder, colours.Sets['Mane Six'][1]);
     var recent = getRecentColours(6);
-    holder.append('<li class="recent-part divider"><span>Recent</span></li>');
-    var recentHolder = $('<span class="recent-part recent-colours" data-count="6" />');
-    holder.append(recentHolder);
+    holder.appendChild(jSlim.newEl('LI', { class: 'recent-part divider' }, '<span>Recent</span>'));
+    var recentHolder = jSlim.newEl(holder, 'SPAN', { class: 'recent-part recent-colours' });
+    holder.appendChild(recentHolder);
+    recentHolder.dataset.count = 6;
     if (recent.length > 0) {
         addColorTiles(controller, recentHolder, recent);
     } else {
-        $('.recent-part').css('display','none');
+        jSlim.all('.recent-part', function(me) {
+            me.style.display = 'none';
+        });
     }
-    holder.append('<li class="divider" />');
-    holder = me.parent().find('.button-holder');
-    var b = $('<li><a>More Colours</a></li>');
-    holder.append(b);
-    b.find('a').click(function() {
-        $('.active_text_area').removeClass('active_text_area');
-        $(controller.textarea).addClass('active_text_area');
-        if (!$('#colour_manager').length) {
-            var posOverride = [];
-            if ($('.color_picker').length != 0) {
-                posOverride.x = $('.color_picker').parent().parent().css('left');
-                posOverride.y = $('.color_picker').parent().parent().css('top');
-                $('.color_picker').parent().parent().remove();
-            }
-            var text = self.getAttribute('textTarget');
-            var list = makePopup('All Colours', 'fa fa-tint', false, false);
-            $(list.element).attr('id','colour_manager');
-            list.SetWidth(560);
-            for (var i in colours.Sets) {
-                addCollapseColorSection($(list.content), colours.Sets[i][1], i, colours.Sets[i][0]);
-            }
+    jSlim.append(holder, 'LI').classList.add('divider');
+}
 
-            var recent = getRecentColours(15);
-            if (recent.length > 0) {
-                var recentSec = addColorSection($(list.content), recent, 'Recent');
-                recentSec.find('ul').addClass('recent-colours').attr('data-count',15);
-                var reset = $('<a href="javascript:void(0);" style="float:right;" >Clear</a>');
-                recentSec.find('.colour-section-header').append(reset);
-                reset.click(function (){
-                    clearRecentColours();
-                    $(recentSec).find('ul').css('opacity', 0.3);
-                    $(recentSec).find('ul').css('pointer-events', 'none');
-                });
-            }
-            $(list.content).addClass("color_picker");
-            list.Show();
-            if (posOverride.x != null) {
-                list.SetPosition(posOverride.x, posOverride.y);
-            }
-        } else {
-            $('#colour_manager').removeClass('hidden');
-        }
+function initColourWindow(controller, self) {
+    jSlim.all('.active_text_area', function(me) {
+        me.classList.remove('active_text_area');
     });
-
-    b = $('<li><a>Custom Colour</a></li>');
-    holder.append(b);
-    b.find('a').click(function() {
-        insertColor(controller);
-    });
+    controller.textarea.classList.add('active_text_area');
+    var colourManager = document.getElementById('colour_manager');
+    if (colourManager) return colourManager.classList.remove('hidden');
+    
+    var posOverride = [];
+    var cp = document.querySelector('.color_picker');
+    if (cp) {
+        cp = ('.color_picker').parentNode.prentNode;
+        posOverride.x = cp.style.left;
+        posOverride.y = cp.style.top;
+        cs.parentNode.removeChild(cp);
+    }
+    var text = self.getAttribute('textTarget');
+    var list = makePopup('All Colours', 'fa fa-tint', false, false);
+    list.element.id = 'colour_manager';
+    list.SetWidth(560);
+    for (var i in colours.Sets) {
+        addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
+    }
+    
+    var recent = getRecentColours(15);
+    if (recent.length > 0) {
+        var recentSec = addColorSection(list.content, recent, 'Recent');
+        recentSec.lastChild.classList.add('recent-colours');
+        recentSec.lastChild.dataset.count = 15;
+        var reset = jSlim.newEl('A', { style: 'float:right' }, 'Clear');
+        recentSec.firstChild.appendChild(reset);
+        var ul = recentSec.querySelector('ul');
+        reset.addEventListener('click', function (){
+            clearRecentColours();
+            ul.style.opacity = 0.3;
+            ul.style.pointerEvents = 'none';
+        });
+    }
+    list.content.classList.add("color_picker");
+    list.Show();
+    if (posOverride.x != null) {
+        list.SetPosition(posOverride.x, posOverride.y);
+    }
 }
 
 function addCollapseColorSection(panel, colors, title, collapse) {
-    var section = addColorSection(panel, colors, title).find('.colour-section-header');
-    section.css('cursor', 'pointer');
-    section.addClass('collapsable');
-    section.click(function() {
-        if (section.hasClass('collapsed')) {
-            section.removeClass('collapsed');
-        } else {
-            section.addClass('collapsed');
-        }
+    var section = addColorSection(panel, colors, title).firstChild;
+    section.style.cursor = 'pointer';
+    section.classList.add('collapsable');
+    if (collapse) section.classList.add('collapsed');
+    section.addEventListener('click', function() {
+        section.classList.toggle('collapsed');
     });
-    if (collapse) section.addClass('collapsed');
 }
 
 function addColorSection(panel, colors, title) {
-    var result = $('<div class="colour-section"><div class="colour-section-header">' + title + '</div></div>');
-    var colorGroup = $('<ul class="colour-holder" />');
-    result.append(colorGroup);
-    panel.append(result);
-    addColorTiles(null, colorGroup, colors);
+    var result = jSlim.newEl('DIV', { class: 'colour-section'}, '<div class="colour-section-header">' + title + '</div><ul class="colour-holder" />');
+    panel.appendChild(result);
+    addColorTiles(null, result.lastChild, colors);
     return result;
 }
 
@@ -2146,24 +1948,18 @@ function addColorTiles(controller, panel, colors) {
                 if (name == '') name = code;
             }
         }
-        var a = $('<a><span data-index="' + colors[i] + '" style="background-color:' + code + ' !important" class="color-tile" /></a>');
-        var item = $('<li class="colour-tile" />');
-        item.append(a);
-        panel.append(item);
+        var item = jSlim.newEl('LI', {class: 'colour-tile'}, '<a><span data-index="' + colors[i] + '" style="background-color:' + code + ' !important" class="color-tile" /></a>');
+        panel.appendChild(item);
         if (code != '') {
-            a.attr('data-colour', code);
-            a.attr('title', name);
-            a.click(controller == null ? function() {
-                var t = App.GetControllerFromElement($('.active_text_area').parents('.bbcode-editor')[0]);
-                var c = $(this).attr('data-colour');
+            item = item.firstChild;
+            item.dataset.colour = code;
+            item.setAttribute('title', name);
+            item.addEventListener('click', function() {
+                var t = controller || App.GetControllerFromElement($('.active_text_area').parents('.bbcode-editor')[0]);
+                var c = this.dataset.colour;
                 t.insertTags('[color=' + c + ']', '[/color]');
                 addRecent(c);
                 t.focus();
-            } : function() {
-                var c = $(this).attr('data-colour');
-                controller.insertTags('[color=' + c + ']', '[/color]');
-                addRecent(c);
-                $(target).focus();
             });
         }
     }
@@ -2304,9 +2100,7 @@ function registerBanners(extended) {
             { name: "Advanced", items: extended }
         ]);
     }
-    if (!$('.footer .block a[href="/?view=page&page=banner_credits"]').length) {
-        $('.footer .block a[href="/staff"]').before('<a href="/?view=page&page=banner_credits">» Banner Credits</a><br>');
-    }
+    document.querySelector('.footer .block a[href="/staff"]').previousSibling.outerHTML += '<a href="/?view=page&page=banner_credits">» Banner Credits</a><br>';
     banners.push.apply(banners, extended);
     if (getBannersEnabled()) {
         settingsMan.updateFlagField('banners',true);
@@ -2323,59 +2117,48 @@ function registerBanner(name, img, source, color, pos) {
 }
 
 function buildBanner() {
-    addBannerCss();
-    addMinorBannerCss();
-    if (getTitleHidden()) $('body').addClass("titleHidden");
-    if (!$('.banner_buttons, .group.content_box .banner, #title.title').length) {
-        $('.user_toolbar').before($('.user-page-header, .story-page-header')).before('\
-<header class="header">\
-    <div id="title" class="title">\
-        <div class="banner-buttons">\
-           <a target="_blank" id="source_link">Source</a>\
-           <a id="reset_banner">Reset Selection</a>\
-           <a id="set_banner" href="/?view=page&page=banner_credits">Banner Selector</a>\
-        </div>\
-        <a href="/" class="home_link">\
-           <div id="fade_banner_image" />\
-           <div class="hidden"><img src="' + getLogoUrl(getLogo()) + '" style="opacity: ' + (getLogoOpacity()/100) + ';"></div>\
-        </a>\
-        <a href="/" class="home_link_link" />\
-        <div class="theme_selector theme_selector_left"><a /></div>\
-        <div class="theme_selector theme_selector_right"><a /></div>\
-    </div>\
-</header>');
-        $('#reset_banner').on('click', function() {
+    var bannerActions = {
+        prev: function() {
+            slider.select(theme == 0 ? banners.length - 1 : theme - 1);
+        },
+        next: function() {
+            slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
+        },
+        reset: function() {
             setCookie('selected_theme', '');
             slider.goto(-1);
-        });
-        $('.theme_selector_left a').on('click', function(e) {
-            slider.select(theme == 0 ? banners.length - 1 : theme - 1);
-            e.preventDefault();
-        });
-        $('.theme_selector_right a').on('click', function(e) {
-            slider.select(theme >= banners.length - 1 ? 0 : theme + 1);
-            e.preventDefault();
-        });
-    }
+        }
+    };
     
-    var focusTile;
-    if ($('.user-page-header .avatar-container, .story-page-header .image-container').length) {
-        $('.nav_bar .logo').addClass('tiny-logo');
-        var tile = $('.user-page-header, .story-page-header').first().find('.avatar-container, .image-container');
-        focusTile = tile.clone().addClass('focus-tile');
-        focusTile.on('mouseenter', function() {
-            $('body').addClass('expand-tile');
-        }).on('mouseleave', function() {
-            $('body').removeClass('expand-tile');
-        });
-        $('header.header').before(focusTile);
-        $(window).on('resize', function() {
-            focusTile.css({
-                'top': tile.offset().top,
-                'left': tile.offset().left
-            });
-        });
+    addBannerCss();
+    addMinorBannerCss();
+    if (getTitleHidden()) document.body.classList.add("titleHidden");
+    var userToolbar = document.querySelector('.user_toolbar');
+    var subHeader = document.querySelector('.user-page-header, .story-page-header');
+    if (subHeader) {
+        jSlim.before(userToolbar, subHeader);
+        document.querySelector('.nav_bar .logo').classList.add('tiny-logo');
     }
+    var header = jSlim.newEl('HEADER', {'class': 'header'}, '\
+<div id="title" class="title">\
+    <div class="banner-buttons">\
+        <a target="_blank" id="source_link">Source</a>\
+        <a data-action="reset">Reset Selection</a>\
+        <a href="/?view=page&page=banner_credits">Banner Selector</a>\
+    </div>\
+    <a href="/" class="home_link">\
+       <div id="fade_banner_image" ></div>\
+    </a>\
+    <a href="/" class="home_link_link"></a>\
+    <div class="theme_selector theme_selector_left"><a href="#" data-action="prev"></a></div>\
+    <div class="theme_selector theme_selector_right"><a href="#" data-action="next"></a></div>\
+</div>');
+    jSlim.before(userToolbar, header);
+    jSlim.on(header, 'a[data-action]', 'click', function(e) {
+        e.preventDefault();
+        bannerActions[this.dataset.action]();
+    });
+    
     slider.ready();
     logger.Log('loading custom banner...',10);
     customBanner = getCustomBanner();
@@ -2385,8 +2168,7 @@ function buildBanner() {
     }
     finaliseThemes();
     setTimeout(function() {
-        $('.user_toolbar').addClass('transitionable');
-        if (focusTile) focusTile.css({'top': tile.offset().top, 'left': tile.offset().left});
+        userToolbar.classList.add('transitionable');
     }, 1);
 }
 
@@ -2408,17 +2190,16 @@ function addBannerCreditsFromScratch(sets) {
             <div id="banner_switcher" style="display:block;text-align:center"><div class="inner" >\
                 <div class="toggleable-radio toggleable-radio-2" ><a /></div>\
                 <button class="styled_button styled_button_grey" id="save_banners" type="button"><i class="fa fa-save" /> Save</button></div></div>\
-            <form id="banner_selector" method="post" action=""></form>\
-            <style>\
+                <form id="banner_selector"></form>\
+                <style>\
 div.banner_credits div.banner {\
     border: 1px solid rgba(0,0,0,0.4);\
     background-position: center -1px;\
     height: 173px;\
     cursor: pointer;\
-    border-bottom: none;\
-}\
-            </style>\
-            <div class="content_box">\
+    border-bottom: none;}\
+               </style>\
+               <div class="content_box">\
                 <div class="content_box_header">\
                     <h2>Other Credits</h2>\
                 </div>\
@@ -2434,9 +2215,9 @@ div.banner_credits div.banner {\
                 finaliseThemes();
             }
         });
-        $(document).on("click", ".banner_credits .banner", function() {
+        jSlim.on(document, "click", ".banner_credits .banner", function() {
             var checkbox = $(this).parents(".theme").find("input");
-            checkbox.prop("checked", !checkbox.prop("checked"));
+            checkbox.checked = !checkbox.checked;
         });
         Animator().on('switcher', function() {
             updatePinnedWithMax('#banner_switcher', 'switcher', $('.banner_credits').parent());
@@ -2471,8 +2252,8 @@ div.banner_credits div.banner {\
     }
     
     var themeId = getCookie('selected_theme');
-    $('.banner_credits .source input').each(function() {
-        $(this).prop('checked', $(this).val() == themeId);
+    jSlim.all('.banner_credits .source input', function(me) {
+        me.checked = me.value == themeId;
     });
 }
 
@@ -2482,8 +2263,7 @@ function finaliseThemes() {
         var len = banners.length;
         for (var i = 0; i < len; i++) {
             if (banners[i].id == themeId) {
-                chooseTheme(i);
-                return;
+                return chooseTheme(i);
             }
         }
     }
@@ -2499,9 +2279,8 @@ function chooseTheme(id, save) {
     }
     theme = id;
     changeBanner(banners[id].source, banners[id].url, banners[id].colour, banners[id].position);
-    if (!$('#imagePreload').length) $('body').append('<div id="imagePreload" style="position:absolute;width:0px;height:0px;top:-200;left:-200" />');
-    catchBanner(banners[id == 0 ? banners.length - 1 : id - 1]);
-    catchBanner(banners[(id + 1) % banners.length]);
+    preloadBanner(banners[id == 0 ? banners.length - 1 : id - 1]);
+    preloadBanner(banners[(id + 1) % banners.length]);
 }
 
 function changeBanner(source, img, color, pos) {
@@ -2546,23 +2325,34 @@ function toZeroAlpha(color) {
     return 'rgba(' + color.join(',') + ')';
 }
 
-function catchBanner(banner) {
-    if (!banner.catched) {
-        banner.catched = true;
-        var img = $('<img style="width:0px;height:0px" src="' + banner.url + '" />');
-        $('#imagePreload').append(img);
-        img.on('load error', function() {
-            if (img != null) {
-                img.remove();
-                img = null;
+var preloadBanner = (function() {
+    var preloader = null;
+    return function(banner) {
+        if (!banner.catched) {
+            if (!preloader) {
+                preloader = jSlim.newEl('DIV', {id: 'imagePreload', style: 'position:absolute;overflow:hidden;width:0px;height:0px;top:-200;left:-200'});
+                document.body.appendChild(preloader);
             }
-        });
+            banner.catched = true;
+            var img = document.createElement('IMG');
+            img.addEventListener('load', done);
+            img.addEventListsner('error', done);
+            img.src = banner.url;
+            preloader.appendChild(img);
+            
+            function done() {
+                if (img != null) {
+                    img.remove();
+                    img = null;
+                }
+            }
+        }
     }
-}
+});
 
 function addFooterData(data) {
-    var footer = $('.footer');
-    if (footer.length) footer.first().find('.block')[0].innerHTML += '<br>' + data;
+    var footer = document.querySelector('.footer .block');
+    if (footer) footer.innerHTML += '<br>' + data;
 }
 
 function addCss() {
@@ -2576,17 +2366,9 @@ div.footer {\
 table.properties > tbody > tr.bookmark_entry:last-child td {\
     border-bottom: 1px solid #DDD !important;}\
 \
-/*fix for dotted lines around Banner selectors*/\
-header.header .theme_selector a {\
-  outline: 0 !important;}\
-\
 /*Fix bleeding corners on dropdown menus*/\
 .user_toolbar > ul > li ul li:last-child a i {\
   border-bottom-left-radius: 2px;}\
-\
-/*Blog preview fix*/\
-#blog_preview {\
-    max-width: 1036px !important;}\
 \
 /*Inconsistent Group lists fix*/\
 #left_column #story-groups-list > li {\
@@ -2610,10 +2392,6 @@ header.header .theme_selector a {\
 textarea[required] {\
     box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}\
 \
-/*Dimmer colour fix*/\
-.dimmer {\
-    background-color: rgba(0,0,0,0.3) !important;}\
-\
 /*Background-gradient fix*/\
 [fimfic_adv*=background] .topbar-shadow div.light-gradient {\
     background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(80px, rgba(255,255,255,0.5))) !important;\
@@ -2634,31 +2412,16 @@ textarea[required] {\
     background: -webkit-linear-gradient(top, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;\
     background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;}\
 \
+/*Remove black line in chapter footers*/\
+.chapter_footer hr {\
+  border: none;}\
+\
 /*Bookshelf icon colour fix*/\
 .story-toolbar .bookshelves li span {\
     color: #777;\
     transition: color 0.2s ease 0s;}\
 .user_toolbar > ul > li ul li:hover > a .bookshelf-icon-element span {\
-    color: #FFF !important;}\
-\
-/*Comment insert_left/right fix*/\
-.comment_data, .blog_post_content, .message_content, .chapter_content, blockquote {\
-    overflow: hidden;}\
-\
-/*Editor fixes*/\
-#pm_content {\
-    resize: none;\
-    height: 200px;}\
-#chapter_edit_form textarea {\
-    width: 100% !important;\
-    resize: y;}\
-\
-/*Image sizing fix for comments and PMs*/\
-.comment_data div {\
-    max-width: 100% !important;}\
-.previous_message img.user_image,\
-.comment img.user_image {\
-    max-width: 500px;}", "Fimfiction_Advanced_Styling_Fixes");
+    color: #FFF !important;}", "Fimfiction_Advanced_Styling_Fixes");
     makeStyle("\
 /*Modernised source links*/\
 .story_container .story_container__story_image {\
@@ -2683,23 +2446,6 @@ textarea[required] {\
 \
 .story-page-header > .inner h1 a, .user-page-header > .inner h1 a:hover {\
     text-decoration: none;}\
-\
-/*Bookmarks*/\
-.bookmark_item {\
-    border-bottom: solid 1px grey;\
-    padding-top: 5px;}\
-.bookmark_img {\
-    max-height: 55px;\
-    max-width: 100px;\
-    margin-right: 10px;\
-    border: solid gray 3px;\
-    border-radius: 3px;}\
-.bookmark_item .chapter {\
-    font-size: 1.8em;\
-    padding: 0px;\
-    line-height: 1em;}\
-.bookmark_item .subText, .bookmark_item .subText a {\
-    color: #888;}\
 \
 /*Better Feed End Marker*/\
 #feed_end_marker img {\
@@ -2911,6 +2657,19 @@ a:hover .bg_source_link {\
     top: 0px;\
     left: -10px;\
     line-height: 3em;}\
+.drop-down li.button-group:hover > .drop-down {\
+  display: none !important;}\
+.drop-down li.button-group.drop-down-show > .drop-down {\
+  display: block !important;}\
+.drop-down li.button-group {\
+  position: relative !important;}\
+.drop-down li.button-group > .drop-down {\
+  margin-top: 100%;\
+  margin-left: -320%;}\
+.button-group > .drop-down ul {\
+  overflow: visible !important;}\
+.drop-down li.button-group:hover > .drop-down::before {\
+  content: '';}\
 .colour-holder li.colour-tile a {\
     border-radius: 0px !important;}\
 .button-group .drop-down ul ul li:first-child ~ li > a, .button-group-vertical .drop-down ul li:first-child ~ li > a, * + .button-holder > li:first-child > a {\
@@ -3200,7 +2959,7 @@ header.header .home_link div img { margin-left: -500px; }\
 header.header .home_link_link { display: block; position: absolute; z-index: 10; right: 0px; left: 0px; top: 0px; bottom: 0px; }\
 header.header .banner-buttons { position: absolute; z-index: 30; visibility: hidden; opacity: 0; transition: opacity 0.2s ease 0s, visibility 0.2s ease 0s; right: 64px; bottom: 10px; }\
 header.header .banner-buttons a {\
-  color: #d0e9f7;\
+  color: #efefef;\
   font-size: 0.7rem;\
   padding: 5px 10px;\
   text-decoration: none;\
@@ -3216,7 +2975,19 @@ header.header:hover .banner-buttons { visibility: visible; opacity: 1; }\
     bottom: 30px;}}\
 header.header:hover .theme_selector a { opacity: 1; }\
 header.header .theme_selector { width: 120px; height: 100%; position: absolute; z-index: 11; transition: background 0.3s ease 0s; background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%; }\
-header.header .theme_selector a { color: rgb(255, 255, 255); position: absolute; height: 100%; width: 60px; opacity: 0; text-align: center; line-height: 175px; text-decoration: none; text-shadow: 0px 2px rgba(0, 0, 0, 0.5), 0px 0px 50px rgb(0, 0, 0); font-size: 32px; transition: opacity 0.3s ease 0s; }\
+header.header .theme_selector a {\
+  color: rgb(255, 255, 255);\
+  position: absolute;\
+  height: 100%;\
+  width: 60px;\
+  opacity: 0;\
+  text-align: center;\
+  line-height: 175px;\
+  text-decoration: none;\
+  text-shadow: 0px 2px rgba(0, 0, 0, 0.5), 0px 0px 50px rgb(0, 0, 0);\
+  font-size: 32px;\
+  transition: opacity 0.3s ease 0s;\
+  outline: 0 !important;}\
 header.header .theme_selector_left { left: 0px; }\
 header.header .theme_selector_left:hover { background: transparent linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, transparent 100%) repeat scroll 0% 0%; }\
 header.header .theme_selector_left a::before { font-family: "FontAwesome"; content: ""; }\
@@ -3229,11 +3000,11 @@ header.header .theme_selector_right a::before { font-family: "FontAwesome"; cont
     header.header .title { display: none ! important; }\
 }\
 \
+#banner_selector .theme .banner {\
+  background-size: auto 100% !important;}\
+\
 header.header .home_link {\
     border: none !important;}\
-@media all and (max-width: 700px) {\
-    .focus-tile {\
-       display: none;}}\
 @media all and (min-width: 701px) {\
   header.header #title {\
         display: block !important;}}\
@@ -3241,13 +3012,11 @@ header.header .home_link {\
     .user-page-header ~ header.header .theme_selector a,\
     .story-page-header ~ header.header .theme_selector a {\
         line-height: 275px;}\
-    body.expand-tile header.header .title,\
     .user-page-header:hover ~  header.header .title,\
     .story-page-header:hover ~ header.header .title {\
         height: 40px;}\
         header.header .title {\
         transition: height 0.5s ease;}\
-    body.expand-tile header.header .title,\
     .user-page-header:hover ~  header.header .title,\
     .story-page-header:hover ~ header.header .title {\
         transition: height 0.2s 0.3s ease !important;}\
@@ -3255,6 +3024,8 @@ header.header .home_link {\
     .story-page-header ~ header.header .home_link img {\
       display: none;}\
     .user_toolbar {\
+      background: -webkit-gradient(linear, left top, left bottom, rgba(60, 106, 179, 0), #3a66ac);\
+      background: -webkit-linear-gradient(top, rgba(60, 106, 179, 0) 0%, #3a66ac 85%);\
       background: linear-gradient(to bottom, rgba(60, 106, 179, 0) 0%, #3a66ac 85%);\
       margin-top: -45px;\
       box-shadow: none;\
@@ -3266,29 +3037,6 @@ header.header .home_link {\
      header.header .title {\
         overflow: hidden;\
         background-color: #1c1c1ce6;}\
-    .focus-tile {\
-        position: absolute;\
-        z-index: 13 !important;}\
-    .focus-tile img {\
-        display: block;\
-        box-sizing: content-box;\
-        padding: 4px;\
-        background: #FFF padding-box;\
-        border-width: 1px;\
-        border-style: solid;\
-        border-image: none;}\
-    .focus-tile.image-container img {\
-        max-height: 160px;\
-        max-width: 220px;\
-        border-radius: 8px;\
-        border-color: rgba(0, 0, 0, 0.2);}\
-    .focus-tile.avatar-container img {\
-        height: 160px;\
-        width: 160px;\
-        border-radius: 100%;\
-        border-color: #D6D2CB #BEBAB5 #BEBAB5 #D6D2CB;}\
-    .focus-tile.avatar-container {\
-        border-radius: 100%;}\
     .user_toolbar.transitionable {\
         transition: background-color 0.25s linear;}\
     .user_toolbar > ul > li {\
@@ -3297,7 +3045,7 @@ header.header .home_link {\
     .user_toolbar > ul > li::before {\
         right: 0;\
         background: rgba(0,0,0,0);//rgba(47,83,140,0);\
-        background: -webkit-gradient(linear, left top, left bottom, rgba(0,0,0,0), #2f538c, rgba(0,0,0,0));\
+        background: -webkit-gradient(linear, left top, left bottom, rgba(0,0,0,0), rgba(0,0,0,0.3), rgba(0,0,0,0));\
         background: -webkit-linear-gradient(top, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);\
         background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0) 100%);}\
     .user_toolbar > ul > li::after {\
@@ -3307,11 +3055,14 @@ header.header .home_link {\
         background: -webkit-linear-gradient(top, rgba(150,150,150,0) 0%, rgba(150,150,150,0.3) 50%, rgba(150,150,150,0) 100%);\
         background: linear-gradient(to bottom, rgba(150,150,150,0) 0%, rgba(150,150,150,0.3) 50%, rgba(150,150,150,0) 100%);}\
     .user_toolbar > ul > li:hover {\
-        text-shadow: none;\
-        background: rgba(0, 0, 0, 0.1);}\
+        background: rgba(0, 0, 0, 0.1);\
+        background: -webkit-gradient(linear, left top, left bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1));\
+        background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 50%);\
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 50%);\
+        color: #fff;}\
     .user_toolbar > ul > li {\
       text-shadow: 1px 1px rgba(0,0,0,0.3);\
-      color: #d0e9f7;}\
+      color: #efefef;}\
     header.header .home_link {\
         height: 175px;\
         background-size: cover !important;}\
@@ -3329,9 +3080,6 @@ function addMinorBannerCss() {
   .user-page-header, .story-page-header {\
     box-shadow: none;}}\
 @media all and (max-width: 950px) {\
-  .focus-tile.avatar-container img {\
-    width: 80px;\
-    height: 80px;}\
   .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {\
     padding-left: 7.5rem;}}\
 @media all and (max-width: 850px) {\
@@ -3343,14 +3091,23 @@ function addMinorBannerCss() {
     transition: height 0.5s ease;\
     border: none;\
     box-shadow: none;}\
+  .user-page-header .info-container, .story-page-header .info-container {\
+    display: inline-block;\
+    overflow: hidden;\
+    height: 70px;\
+    transition: height 0.5s ease;}\
   .story-page-header > .inner, .user-page-header > .inner {\
     padding: 25px 0px 25px 15px;}\
-  body.expand-tile .user-page-header,\
-  body.expand-tile .story-page-header,\
-  .user-page-header:hover,\
-  .story-page-header:hover {\
+  .user-page-header:hover, .story-page-header:hover,\
+  .user-page-header:hover .info-container, .story-page-header:hover .info-container {\
     transition: height 0.5s 0.6s ease;\
     height: 255px;}\
+  .user-page-header .avatar-container,\
+  .story-page-header .image-container {\
+    position: relative !important;\
+    z-index: 13 !important;}\
+  .story-page-header {\
+    overflow: visible !important;}\
   .user-page-header ul li a,\
   .user-page-header ul li a:before,\
   .user-page-header ul li a span {\
@@ -3373,7 +3130,6 @@ function addMinorBannerCss() {
   background-color: rgba(28,28,28,0.9);\
   color: #bbb;\
   text-shadow: none;\
-  overflow: hidden;\
   padding: 0 10px 0 10px;}\
 .user-page-header .tabs {\
   margin-top: 10px;\
@@ -3490,114 +3246,6 @@ function addRecent(color) {
     settingsMan.set('colour_use_history', recent.join(';').replace(/#/g, ''));
 }
 
-function getLatestBookmark() {return settingsMan.get('latest_bookmark');}
-function setBookmark(num) {
-    settingsMan.set(num + '_bookmark_position', '0');
-    var data = [
-        $('.story-page-header h1.resize_text a').first().text(),
-        $('#chapter_title').text(),
-        $('.story-page-header .image-container img').attr('src').split('/').reverse()[0].split(num.split(/:|_/)[0])[0]
-    ];
-    settingsMan.set(num + '_bookmark_d', data.join('\n'));
-    settingsMan.set(num + '_bookmark_id', findChapterId());
-    settingsMan.set('latest_bookmark', num);
-}
-function getShallowBookmark(num) {
-    var entry = {}
-    entry.key = num;
-    entry.published = num.indexOf(':') != -1;
-    if (num.indexOf(':') != -1) {
-        entry.bookmark = num.split(':');
-    } else {
-        entry.bookmark = num.split('_');
-    }
-    return entry;
-}
-
-function getFullBookmark(num) {
-    return getBookmarkData(getShallowBookmark(num));
-}
-function getBookmarkData(entry) {
-    entry.data = {
-        'title': 'Unknown Story',
-        'chapTitle': 'Unknown Chapter',
-        'cover': ''
-    };
-    if (settingsMan.has(entry.key + '_bookmark_d')) {
-        var data = settingsMan.get(entry.key + '_bookmark_d').split('\n');
-        entry.data.title = data[0];
-        entry.data.chapTitle = data[1];
-        entry.data.cover = data.length > 2 ? '//cdn-img.fimfiction.net/story/' + data[2] + entry.key.split(/_|:/)[0] + '-medium' : '';
-    }
-    entry.url = {
-        'title': urlSafe(entry.data.title),
-        'chapTitle': urlSafe(entry.data.chapTitle)
-    };
-    entry.url.story = '//www.fimfiction.net/story/' + entry.bookmark[0] + '/' + entry.url.title;
-    entry.url.chapter = '//www.fimfiction.net/' + (entry.published ? 'story/' + entry.bookmark[0] + '/' : 'chapter/') + entry.bookmark[1] +
-        (entry.published ? '/' + entry.url.title + '/' + entry.url.chapTitle : '');
-    return entry;
-}
-function removeAllBookmarks() {
-    var keys = settingsMan.keys();
-    for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('bookmark_position') != -1) {
-            removeBookmark(keys[i].replace('_bookmark_position', ''));
-        }
-    }
-}
-function findChapterId() {
-  var link = $('.chapter_download_links a[title="Download"]');
-  if (link.length) {
-    link = (link.attr('data-txt') || "").split('?chapter=');
-    if (link.length > 1) return link[1].split('&')[0];
-  }
-  return null;
-}
-function removeBookmark(num) {
-    settingsMan.set(num + '_bookmark_position', -1);
-    settingsMan.remove(num + '_bookmark_position');
-    settingsMan.remove(num + '_bookmark_d');
-    if (getLatestBookmark() == num) settingsMan.remove('latest_bookmark');
-    chapter_id = settingsMan.get(num + '_bookmark_id');
-    if (chapter_id) {
-        if (win().is_logged_in) {
-            new AjaxRequest({
-                'url': '/ajax/chapters/' + chapter_id + '/bookmark',
-                'method': 'DELETE',
-                'signed': true
-            });
-        } else {
-            LocalStorageRemove('bookmark' + chapter_id);
-        }
-    }
-}
-function getTotalBookmarks() {
-    var result = 0;
-    var keys = settingsMan.keys();
-    for (var i = 0; i < keys.length; i++) {
-        if (keys[i].indexOf('bookmark_position') != -1) {
-            result++;
-        }
-    }
-    return result;
-}
-
-function getEnableBookmarksMenu() {return settingsMan.getB("bookmarks_menu", true);}
-function setEnableBookmarksMenu(v) {settingsMan.setB("bookmarks_menu", v, true);}
-
-function getTabsLeft() {return settingsMan.getB("tabs_side", false);}
-function setTabsLeft(v) {settingsMan.setB("tabs_side", v, false);}
-function updateTabsBarSide(v) {
-    if (v) {
-        $('.tabs').parent().prepend($('.tabs'));
-        $('.tabs').addClass('left-tabs');
-    } else {
-        $('.tabs').parent().append($('.tabs'));
-        $('.left-tabs').removeClass('left-tabs');
-    }
-}
-
 function getStoryWidth() {
     if (settingsMan.has("storyWidth")) {
         var result = settingsMan.get("storyWidth",'0');
@@ -3635,16 +3283,14 @@ function setCustomBanner(url, color, pos) {
     settingsMan.set("customBannerPosition", pos);
 }
 
-function getLogoOpacity() {return settingsMan.int('logo_opacity', 100);}
-function setLogoOpacity(v) {
-    settingsMan.set('logo_opacity', v, 100);
-    if ($('#title').length) $('#title .home_link img').css('opacity', v / 100);
-}
-
 function getLogo() {return settingsMan.int("oldLogo", 0);}
 function setLogo(v) {
     settingsMan.set("oldLogo", v, 0);
-    if ($('#title').length) $('#title .home_link img').attr("src", getLogoUrl(v));
+    updateLogo(v);
+}
+
+function updateLogo(v) {
+    document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());
 }
 
 function getSnowing() {return settingsMan.int("snow_bg", 1);}
@@ -3688,18 +3334,14 @@ function setBannersEnabled(v) {
     } else {
         $('#Fimfiction_Advanced_Banner_Stylesheet, #Fimfiction_Advanced_UserBanner_Stylesheet').remove();
         $('.user_toolbar').css('background', '');
-        $('.focus-tile, header.header > #title.title').remove();
+        $('header.header > #title.title').remove();
     }
 }
 
 function getTitleHidden() {return settingsMan.getB("titleHidden", false);}
 function setTitleHidden(v) {
     settingsMan.setB("titleHidden", v, false);
-    if (v) {
-        $('body').addClass("titleHidden");
-    } else {
-        $('body').removeClass("titleHidden");
-    }
+    document.body.classList.toggle('titleHidden', v);
 }
 
 function getBGColor() {return settingsMan.get("bgColor", "");}
@@ -3723,19 +3365,7 @@ function applyBackground(c) {
     if (img == 'none') img = $('body').css('background-image');
     if (c == '' || c == 'transparent') c = $('body').css('background-color');
     var bg = (typeof img === 'string' ? img : img.Css) + " " + c;
-    makeStyle('\
-.body_container, .story-card .card-flip .tab-cover, .story-card-reverse .card-flip .tab-cover {\
-	background: ' + bg + ';}\
-.story-card .card-flip .tab-cover, .story-card-reverse .card-flip .tab-cover {\
-	border: none;\
-    width: 30px;\
-    height: 30px;\
-    transform: rotate(45deg);\
-    top: -25px;\
-    right: -25px;}\
-.story-card-container:hover .story-card .card-flip .tab-cover, .story-card-container:hover .story-card-reverse .card-flip .tab-cover {\
-    top: -16px;\
-    right: -16px;}', 'FimFiction_Advanced_BG');
+    $('.body_container').css('background', bg);
     document.body.dataset.baseColor = c;
     c = $('.body_container').css('background-color').replace(/rgb|a|\(|\)| /g,'').split(',');
     if (brightness(c[0] >> 0,c[1] >> 0,c[2] >> 0) < 100 || (typeof img !== 'string' && img.Type.Key.indexOf('d') != -1)) {
@@ -3950,8 +3580,8 @@ function Slider() {
     var fade, tit, isSliding, slideshowTimer;
     var me = {
         ready: function() {
-            fade = $('#fade_banner_image');
-            tit = $('#title a.home_link');
+            fade = document.querySelector('#fade_banner_image');
+            tit = document.querySelector('#title a.home_link');
         },
         updateSlide: function() {
             if (isSliding) {
@@ -3968,14 +3598,15 @@ function Slider() {
             this.goto(index, true);
         },
         goto: function(index, save) {
-            fade.css({"transition": "none", "opacity": "1"});
-            fade.css({
-                "background-image": tit.css("background-image"),
-                "background-position": tit.css("background-position"),
-                "background-size": tit.css("background-size")
-            });
+            fade.style.transition = 'none';
+            fade.style.opacity = '1';
+            var cc = window.getComputedStyle(tit);
+            fade.style.backgroundImage = cc.backgroundImage;
+            fade.style.backgroundPosition = cc.backgroundPosition;
+            fade.style.backgroundSize = cc.backgroundSize;
             chooseTheme(index, save);
-            fade.css({"transition": "opacity 0.25s linear", "opacity": "0"});
+            fade.style.transition = 'opacity 0.25s linear';
+            fade.style.opacity = '0';
         }
     }
     
@@ -4050,13 +3681,19 @@ function setupSweetie() {
     var curs = [
         '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'
     ];
-
-    var belle = $('<div id="belle" style="top:0;left:0;width:131px;height:384px" ><div class="speech_container"><div class="speech" /></div><div class="options_container"><div class="options" /></div></div')[0];
-    $('body').append(belle);
-
-    var canvas = $('<canvas id="belle_mask" width="131px" height="384px" />')[0];
-    var img = $('<img width="131px" height="384px" />')[0];
-    $(img).load(function() {
+    
+    var belle = jSlim.newEl('DIV', {
+        id: 'belle', style: 'top:0;left:0;width:131px;height:384px'
+    });
+    belle.speechContainer = jSlim.newEl('DIV', { 'class': 'speech_container' }, '<div class="speech" ></div>');
+    belle.appendChild(belle.speechContainer);
+    belle.optionsContainer = jSlim.newEl('DIV', { 'class': 'options_container' }, '<div class="options" ></div>');
+    belle.appendChild(belle.optionsContainer);
+    document.body.appendChild(belle);
+    
+    var canvas = jSlim.newEl('CANVAS', { id: 'belle_mask', width: 131, height: 384 });
+    var img = jSlim.newEl('IMG', { width: 131, height: 384 });
+    img.addEventListener('load', function() {
         canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
         canvas.getContext('2d').drawImage(this, 0, 0); 
     });
@@ -4064,62 +3701,80 @@ function setupSweetie() {
     initBelle();
     
     var bod = $('body');
-    $(belle).on('mousedown', function(event) {
-        $(belle).attr("dragging", "true");
-        $('iframe').css('pointer-events','none');
+    belle.addEventListener('mousedown', function(event) {
+        belle.dragging = true;
+        toggleIframes(true);
         var x = event.clientX - parseInt(this.style.left);
         var y = event.clientY - parseInt(this.style.top);
         if (canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] > 0) {
-            bod.on('mousemove.belle', function(event) {
-                setPrefPos(event.clientX - x, event.clientY - y);
-                if (grabbedImage != null) {
-                    $('.grabbedImage').attr('held', 'true');
-                    $(grabbedImage).css("top", (event.clientY - $(grabbedImage).height()/2) + "px");
-                    $(grabbedImage).css("left", (event.clientX - $(grabbedImage).width()/2) + "px");
-                }
-                if (lastX >= 0 && lastY >= 0) {
-                    var difX = event.pageX - lastX;
-                    var difY = event.pageY - lastY;
-                    var travel = Math.sqrt(difX*difX + difY*difY);
-                    if (travel / (Date.now() - timestamp) > 30) {
-                        shake();
-                    }
-                }
-
-                lastClientX = event.clientX;
-                lastClientY = event.clientY;
-                lastX = event.pageX;
-                lastY = event.pageY;
-                timestamp = Date.now();
-            });
+            document.body.addEventListener('mousemove', mouseMove);
             event.preventDefault();
         }
     });
 
-    bod.on('mousemove', $(belle), function(event) {
+    document.body.addEventListener('mousemove', function(event) {
         var x = event.clientX - parseInt(belle.style.left);
         var y = event.clientY - parseInt(belle.style.top);
-        $(belle).css('pointer-events', canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] == 0 ? 'none' : '');
-    }).on('mouseup blur', function(event) {
-        $(belle).attr("dragging", "false");
-        bod.off('mousemove.belle');
-        $('iframe').css('pointer-events','');
-        lastX = -1;
+        belle.style.pointerEvents = canvas.getContext("2d").getImageData(x, y, 1, 1).data[3] == 0 ? 'none' : '';
     });
+    document.body.addEventListener('mouseup', stopMoving);
+    document.body.addEventListener('blur', stopMoving);
+    
+    function mouseMove(event) {
+        setPrefPos(event.clientX - x, event.clientY - y);
+        if (grabbedImage != null) {
+            jSlim.all('.grabbedImage', function(me) {
+                me.setAttribute('held', true);
+            })
+            grabbedImage.style.top = (event.clientY - grabbedImage.clientHeight/2) + "px";
+            grabbedImage.style.left = (event.clientX - grabbedImage.clientWidth/2) + "px";
+        }
+        if (lastX >= 0 && lastY >= 0) {
+            var difX = event.pageX - lastX;
+            var difY = event.pageY - lastY;
+            var travel = Math.sqrt(difX*difX + difY*difY);
+            if (travel / (Date.now() - timestamp) > 30) {
+                shake();
+            }
+        }
 
+        lastClientX = event.clientX;
+        lastClientY = event.clientY;
+        lastX = event.pageX;
+        lastY = event.pageY;
+        timestamp = Date.now();
+    }
+    
+    function stopMoving() {
+        belle.dragging = false;
+        document.body.removeEventListener('mousemove', mouseMove);
+        toggleIframes(false);
+        lastX = -1;
+    }
+    
+    function toggleIframes(v) {
+        jSlim.all('iframe', function(me) {
+            me.style.pointerEvents = v ? 'none' : '';
+        });
+    }
+    
     var extra_key = 0;
     var pass = [71,85,77,66,65,76,76];
     var passLevel = 0;
     var no = false;
-    bod.on('keydown', function(event) {
+    var gameBg = null;
+    document.body.addEventListener('keydown', function(event) {
         if (event.keyCode == 32) {
-            if ($(belle).attr("dragging") == "true") {
+            if (belle.dragging) {
                 rotateObject(belle, 90);
                 if (passLevel == pass.length) {
                     help();
                 } else if (extra_key == 67) {
-                    if (!$('#game_background').length) {
-                        $('body').append('<div id="game_background" class="overlay_background" style="background:none;display:block" />');
+                    if (!gameBg) {
+                        gameBg = jSlim.newEl('DIV', {
+                            id: 'game_background', 'class': 'overlay_background', style: 'background:none;display:block'
+                        });
+                        document.body.appendChild(gameBg);
                     }
                     spawnCookie(true, lastX, lastY);
                 } else if (extra_key == 72) {
@@ -4134,10 +3789,8 @@ function setupSweetie() {
                             if (grabbedImage == null) doImg();
                         }
                     } else {
-                        $(grabbedImage).css({
-                            'top': $(window).scrollTop() + parseFloat($(grabbedImage).css('top')),
-                            'left': $(window).scrollLeft() + parseFloat($(grabbedImage).css('left'))
-                        });
+                        grabbedImage.style.top = document.body.scrollTop + parseFloat($(grabbedImage).css('top'));
+                        grabbedImage.style.top = document.body.scrollLeft + parseFloat($(grabbedImage).css('left'));
                         $('.grabbedImage').attr('held', 'false');
                         $('.grabbedImage').removeClass('grabbedImage');
                         grabbedImage = null;
@@ -4147,7 +3800,7 @@ function setupSweetie() {
             }
         } else {
             extra_key = event.keyCode;
-            if ($(belle).attr("dragging") == "true") {
+            if (belle.dragging) {
                 event.preventDefault();
             }
         }
@@ -4156,22 +3809,30 @@ function setupSweetie() {
         if (event.keyCode == 32) {
             rotateObject(belle, 0);
             no = false;
-            if ($(belle).attr("dragging") == "true") {
+            if (belle.dragging) {
                 event.preventDefault();
             }
         } else if (event.keyCode == extra_key) {
             extra_key = 0;
         }
     });
-
-    $(window).on('resize', function(event) {
+    
+    window.addEventListener('resize', function(event) {
         if (window_focused) {
             setPos(prefX, prefY);
         }
-    }).focus(initBelle);
-
+    });
+    window.addEventListener('mouseenter', initBelle);
+    
     setInterval(function() {
-        $('.floater').each(floatUp);
+        jSlim.all('.floater', function(me) {
+            var t = parseInt(me.style.top);
+            if (t <= 5) {
+                me.parentNode.removeChild(me);
+            } else {
+                me.style.top = (t - 5) + 'px';
+            }
+        });
     },50);
 
     makeStyle('\
@@ -4303,10 +3964,10 @@ img[held="true"] {\
     logger.Log('sweetie Scepter setup successfully',10);
     
     function setupImg(i) {
-        $(belle).attr('selected_image_index', i);
+        belle.setAttribute('selected_image_index', i);
         i = getImage(i);
-        $(img).attr("src", i);
-        $(belle).css('background-image', "url('" + i + "')");
+        img.src = i;
+        belle.style.backgroundImage = "url('" + i + "')";
     }
 
     function toggleHearts() {
@@ -4315,8 +3976,8 @@ img[held="true"] {\
             hearter = null;
         } else {
             hearter = setInterval(function() {
-                var x = Math.random() * $(window).width();
-                var y = Math.random() * $(window).height();
+                var x = Math.random() * document.body.clientWidth;
+                var y = Math.random() * document.body.clientHeight;
                 plusOne(x,y, '').css({
                     'font-family': 'FontAwesome',
                     'color': 'rgb(' + Math.floor(Math.random() * 255) + ',' + Math.floor(Math.random() * 255) + ',' + Math.floor(Math.random() * 255) + ')',
@@ -4327,8 +3988,6 @@ img[held="true"] {\
     }
 
     function doWobble() {
-        var x = $(belle).offset().left;
-        var y = $(belle).offset().top;
         var oldX = belle.style.left;
         belle.style.left = "-1000px";
         var img = $(document.elementFromPoint(lastClientX , lastClientY));
@@ -4399,16 +4058,7 @@ img[held="true"] {\
             }
         }
     }
-
-    function floatUp() {
-        var t = parseInt($(this).css('top'));
-        if (t <= 5) {
-            $(this).remove();
-        } else {
-            $(this).css('top', (t - 5) + 'px');
-        }
-    }
-
+    
     function plusOne(x, y, text) {
         if (typeof(text) == 'number') {
             if (text == 0) return $('');
@@ -4559,9 +4209,9 @@ img[held="true"] {\
             });
         }
     }
-
+    
     function spawnCookie(scepter, x, y) {
-        if (scepter && $('.cookie').length) {
+        if (scepter && document.querySelector('.cookie')) {
             if (bank < 1) return;
             say(getPointsName() + ': ' + --bank + '</br>' + getPointsName() + ' Clicked: ' + score);
         }
@@ -4572,29 +4222,32 @@ img[held="true"] {\
         var fadeTime = Math.max(2000 - diff,100);
         var sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)),50);
         var wrath = false;
-        if ($('.cookie').length > $('.wrath').length) {
+        if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
             for (var i = 0; i < (score/100 - 1) && !wrath && i < 10; i++) {
                 wrath |= (Math.random() * 15 < 2);
             }
         }
-        var cook = $('<img class="gameObj cookie nopickup" style="transition:opacity ' + (fadeTime/1000) + 's linear;opacity:0;display:none" src="data:image/png;base64,' + cookie[wrath ? 1 : 0] + '" />');
-        $('body').append(cook);
-        
-        if (wrath) cook.addClass('wrath');
-        
-        x -= cook.width() / 2;
-        y -= cook.height() /2;
-        
-        cook.css({
-            'top': y + 'px',
-            'left': x + 'px'
+        var cook = jSlim.newEl('IMG', {
+            'class': 'gameObj cookie nopickup',
+            style: 'transition:opacity ' + (fadeTime/1000) + 's linear;opacity:0;display:none'
         });
-        cook.on('mousedown',function(e, a) {
+        cook.src = 'data:image/png;base64,' + cookie[wrath ? 1 : 0];
+        document.body.appendChild(cook);
+        
+        if (wrath) cook.classList.add('wrath');
+        
+        x -= cook.clientWidth / 2;
+        y -= cook.clientHeight /2;
+        
+        cook.style.top = y;
+        cook.style.left = x;
+        
+        cook.addEventListener('mousedown', function(e, a) {
             if (!e.pageY) {
                 e.pageY = a.pageY;
                 e.pageX = a.pageX;
             }
-            $(this).remove();
+            document.body.removeChild(cook);
             cook = null;
             score++;
             if (wrath) {
@@ -4604,7 +4257,6 @@ img[held="true"] {\
             } else {
                 plusOne(e.pageX,e.pageY, 1);
                 bank++;
-
                 if (Math.random() < 0.5) {
                     if (!$('#song_frame').length) {
                         $('body').append('<div style="position:absolute;top-900px;left:-900px;width:0px;height:0px;" id="song_frame"><script>\
@@ -4661,9 +4313,10 @@ function playerEnded(s) {\
     }
     
     function endGame() {
-        $(document).trigger('playerEnded');
+        document.dispatchEvent(new CustomEvent('playerEnded'));
         $('.gameObj').trigger('remove').remove();
-        $('#game_background').remove();
+        document.body.removeChild(gameBg);
+        gameBg = null;
         bank = score = 0;
         cursorUpgradeCost = baseCursorUpgradeCost;
         cursorCost = baseCursorCost;
@@ -4752,15 +4405,14 @@ function playerEnded(s) {\
         }
     }
     
-    function getImage(i) {return 'data:image/png;base64,' + imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i];}
+    function getImage(i) {
+        return 'data:image/png;base64,' + imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i];
+    }
 
     function initBelle() {
         setupImg(settingsMan.int('sweetie_img_index', 0));
         if (settingsMan.has("sweetie_posX") && settingsMan.has("sweetie_posY")) {
-            $(belle).css({
-                "top": prefY = settingsMan.float("sweetie_posY"),
-                "left": prefX = settingsMan.float("sweetie_posX")
-            });
+            setPrefPos(settingsMan.float("sweetie_posX"), settingsMan.float("sweetie_posY"));
         }
     }
 
@@ -4769,17 +4421,17 @@ function playerEnded(s) {\
         prefY = y;
         setPos(x, y);
     }
-
+    
     function setPos(x, y) {
         if (x < 0) x = 0;
         if (y < 0) y = 0;
-
-        var maxX = $(window).width() - ($(belle).width() * 0.75);
+        
+        var maxX = document.body.clientWidth - (belle.clientWidth * 0.75);
         if (x > maxX) x = maxX;
-
-        var maxY = $(window).height() - ($(belle).height() * 0.75);
+        
+        var maxY = document.body.clientHeight - (belle.clientHeight * 0.75);
         if (y > maxY) y = maxY;
-
+        
         x = x + "px";
         y = y + "px";
         belle.style.top = y;
@@ -4842,23 +4494,26 @@ function snowBG(env, cont, reverse, fix) {
     return (function () {
         var saveFocus = getSaveFocus();
         var mouseX = 0, mouseY = 0;
-        $(window).on('mousemove.snow', function (e) {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-        });
+        
         var SCREEN_WIDTH = env.width(), SCREEN_HEIGHT = env.height();
         var windowHalfX = SCREEN_WIDTH / 2, windowHalfY = SCREEN_HEIGHT / 2;
         var particles = [];
         var container = cont[0];
         var particleImage = new Image();
+        
         particleImage.src = staticFimFicDomain() + '/scripts/img/ParticleSmoke.png';
+        
         var camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
         camera.position.z = 1000;
+        
         var scene = new THREE.Scene();
         scene.add(camera);
+        
         var renderer = new THREE.CanvasRenderer();
         renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+        
         var material = new THREE.ParticleBasicMaterial({ map: new THREE.Texture(particleImage) });
+        
         for (var i = 0; i < 140; i++) {
             var particle = new Particle3D(material);
             particle.position.x = Math.random() * 2000 - 1000;
@@ -4868,14 +4523,22 @@ function snowBG(env, cont, reverse, fix) {
             scene.add(particle);
             particles.push(particle);
         }
+        
+        document.addEventListener('mousemove', mouseMoved);
+        
         if (reverse) {
-            $(container).append(renderer.domElement);
+            container.appendChild(renderer.domElement);
         } else {
-            $(container).prepend(renderer.domElement);
+            container.insertBefore(container.firstChild, renderer.domElement);
         }
-        $(renderer.domElement).css({ 'pointer-events': 'none' });
-        if (fix) $(renderer.domElement).css({ 'position': 'fixed', 'top': '0px', 'left': '0px' });
+        renderer.domElement.style.pointerEvents = 'none';
+        if (fix) {
+            renderer.domElement.style.position = 'fixed';
+            renderer.domElement.style.top = 0;
+            renderer.domElement.style.left = 0;
+        }
         var ticker = window.setInterval(loop, 1000 / 60);
+        
         function loop() {
             if (window_focused || !saveFocus) {
                 for (var i = 0; i < particles.length; i++) {
@@ -4895,11 +4558,17 @@ function snowBG(env, cont, reverse, fix) {
                 renderer.render(scene, camera);
             }
         }
+        
+        function mouseMoved(e) {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        }
+        
         return {
             SetSaveFocus: function (v) {saveFocus = v;},
             start: function () {
                 if (ticker == null) ticker = window.setInterval(loop, 1000 / 60);
-                $(renderer.domElement).css('display', 'block');
+                renderer.domElement.style.display = 'block';
             },
             stop: function () {
                 if (ticker != null) {
@@ -4910,8 +4579,8 @@ function snowBG(env, cont, reverse, fix) {
             },
             dispose: function() {
                 this.stop();
-                $(renderer.domElement).remove();
-                $('body').off('mousemove.snow');
+                renderer.domElement.parentNode.removeChild(renderer.domElement);
+                document.removeEventListener('mousemove', mouseMoved);
             }
         };
     })();
