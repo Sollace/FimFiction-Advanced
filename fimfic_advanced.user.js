@@ -19,18 +19,6 @@
 
 //Utility functions for use around everywhere (will be expanded as needed)
 var jSlim = {
-    delegateEv: function(selector, func) {
-        return function (ev) {
-            for (var target = ev.target; null != target && target != document; ) {
-                if (win().matchesSelector(target, selector)) {
-                    if (('mouseout' == event || 'mouseover' == event) && target.contains(ev.relatedTarget)) break;
-                    func.call(target, ev);
-                }
-                if (node == k) break;
-                target = target.parentNode
-            }
-        }
-    },
     one: function(node, event, func) {
         var ev = function(e) {
             node.removeEventListener(event, ev);
@@ -39,9 +27,18 @@ var jSlim = {
         node.addEventListener(event, ev);
     },
     on: function addScopedEventListener(node, selector, event, func, capture) {
-        func = jSlim.delegateEv(selector, func);
-        node.addEventListener(event, func, !!capture);
-        return func;
+        var k = function (ev) {
+            for (var target = ev.target; target != null && target != document; ) {
+                if (win().matchesSelector(target, selector)) {
+                    if (('mouseout' == event || 'mouseover' == event) && target.contains(ev.relatedTarget)) break;
+                    func.call(target, ev);
+                }
+                if (node == target) break;
+                target = target.parentNode
+            }
+        };
+        node.addEventListener(event, k, !!capture);
+        return k;
     },
     off: function removeScopedEventListener(node, event, func, capture) {
         node.removeEventListener(event, func, !!capture)
@@ -56,6 +53,12 @@ var jSlim = {
         });
         if (inner) tag.innerHTML = inner;
         return tag;
+    },
+    nearest: function (node, selector) {
+        while (node = node.parentNode) {
+            if (node == document) return null;
+            if (win().matchesSelector(node, selector)) return node;
+        }
     },
     objEach: function objectEach(obj, f, this_arg) {
         jSlim.each(Object.keys(obj), function(a, index) {
@@ -237,19 +240,6 @@ var extraBanners = [
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
     Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0])
 ];
-var externalUrls = [
-    [/minecraftforum.*\/members\/([^\/]*)/,1],
-    [/intensedebate.*\/(people|profiles)\/([^\/]*)/,2],
-    [/fanfiction.*~([^\/]*)/,1],
-    [/twitter.*\/([^\/]*)$/,1],
-    [/steamcommunity.*\/id\/([^\/]*)/,1],
-    [/tvtropes.*tropers\/([^\/]*)/,1],
-    [/\/user\/([^\/]*)/,1],
-    [/\/(www\.|)github\.com\/([^\/]*)/,2],
-    [/\/equestriart.net\/([^\/]*)/,1],
-    [/.*twitch.*\/([^\/]*)\/profile/,1],
-    [/\/disqus\.com\/by\/([^\/]*)/,1]
-];
 var fonts = (function(f) {
     function a(arr, un) {
         arr = f.test(arr.split(';')).sort();
@@ -284,25 +274,21 @@ var colours = (function(raw) {
 })(['#FFFFFF', 'White','#FFC0CB', 'Pink','#FFDAB9', 'PeachPuff','#DCDCDC', 'Gainsboro','#FFB6C1', 'LightPink','#FFE4B5', 'Moccasin','#FFDEAD', 'NavajoWhite','#F5DEB3', 'Wheat','#D3D3D3', 'LightGray','#AFEEEE', 'PaleTurquoise','#EEE8AA', 'PaleGoldenRod','#D8BFD8', 'Thistle','#B0E0E6', 'PowderBlue','#ADD8E6', 'LightBlue','#98FB98', 'PaleGreen','#B0C4DE', 'LightSteelBlue','#87CEFA', 'LightSkyBlue','#C0C0C0', 'Silver','#7FFFD4', 'Aquamarine','#90EE90', 'LightGreen','#DDA0DD', 'Plum','#F0E68C', 'Khaki','#FFA07A', 'LightSalmon','#87CEEB', 'SkyBlue','#EE82EE', 'Violet','#F08080', 'LightCoral','#FA8072', 'Salmon','#FF69B4', 'HotPink','#DEB887', 'BurlyWood','#E9967A', 'DarkSalmon','#D2B48C', 'Tan','#7B68EE', 'MediumSlateBlue','#F4A460', 'SandyBrown','#A9A9A9', 'DarkGray','#6495ED', 'CornFlowerBlue','#FF7F50', 'Coral','#DB7093', 'PaleVioletRed','#9370DB', 'MediumPurple','#BC8F8F', 'RosyBrown','#DA70D6', 'Orchid','#8FBC8B', 'DarkSeaGreen','#FF6347', 'Tomato','#66CDAA', 'MediumAquamarine','#ADFF2F', 'GreenYellow','#CD5C5C', 'IndianRed','#BA55D3', 'MediumOrchid','#BDB76B', 'DarkKhaki','#6A5ACD', 'SlateBlue','#4169E1', 'RoyalBlue','#40E0D0', 'Turquoise','#1E90FF', 'DodgerBlue','#48D1CC', 'MediumTurquoise','#FF1493', 'DeepPink','#778899', 'LightSlateGray','#8A2BE2', 'BlueViolet','#CD853F', 'Peru','#708090', 'SlateGray','#808080', 'Gray','#FF00FF', 'Magenta','#0000FF', 'Blue','#00BFFF', 'DeepSkyBlue','#5F9EA0', 'CadetBlue','#00FFFF', 'Cyan','#00FF7F', 'SpringGreen','#00FF00', 'Lime','#32CD32', 'LimeGreen','#7FFF00', 'Chartreuse','#9ACD32', 'YellowGreen','#FFFF00', 'Yellow','#FFD700', 'Gold','#FFA500', 'Orange','#FF8C00', 'DarkOrange','#FF4500', 'OrangeRed','#FF0000', 'Red','#9932CC', 'DarkOrchid','#7CFC00', 'LawnGreen','#4682B4', 'Steelblue','#00FA9A', 'MediumSpringGreen','#DAA520', 'GoldenRod','#DC143C', 'Crimson','#D2691E', 'Chocolate','#3CB371', 'MediumSeaGreen','#C71585', 'MediumVioletRed','#B22222', 'FireBrick','#9400D3', 'DarkViolet','#20B2AA', 'LightSeaGreen','#696969', 'DimGray','#00CED1', 'DarkTurquoise','#A52A2A', 'Brown','#0000CD', 'MediumBlue','#A0522D', 'Sienna','#483D8B', 'DarkSlateBlue','#B8860B', 'DarkGoldenRod','#2E8B57', 'SeaGreen','#6B8E23', 'OliveDrab','#228B22', 'ForestGreen','#8B4513', 'SaddleBrown','#556B2F', 'DarkOliveGreen','#8B008B', 'DarkMagenta','#00008B', 'DarkBlue','#008B8B', 'DarkCyan','#8B0000', 'DarkRed','#191970', 'MidnightBlue','#4B0082', 'Indigo','#800080', 'Purple','#000080', 'Navy','#008080', 'Teal','#008000', 'Green','#808000', 'Olive','#800000', 'Maroon','#2F4F4F', 'DarkSlateGray','#006400', 'DarkGreen','#000000', 'Black','#666666', 'Grey','#cccccc', 'Light Grey','#383838', 'Dark Grey','#be4343', 'Red','#be7a43', 'Orange','#afa426', 'Yellow','#7aaf26', 'Lime Green','#2caf26', 'Green','#26af6d', 'Turquoise','#26a4af', 'Light Blue','#265daf', 'Blue','#3c26af', 'Purple','#9426af', 'Violet','#af2673', 'Pink','#5f4432', 'Brown','#a66ebe', 'Twilight Sparkle','#5e51a3', 'Rarity','#e97135', 'Applejack','#ea80b0', 'Pinkie Pie','#6aaadd', 'Rainbow Dash','#e6b91f', 'Fluttershy']);
 var snower;
 var slider = new Slider();
+var userToolbar;
 
 //--------------------------------------------------------------------------------------------------
 //--------------------------------------BOILER PLATE------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
-var loaded = 0;
+patchEvents();
 addCss();
-document.addEventListener("DOMContentLoaded", function(event) {
-    if ((~loaded & 1) && isJQuery()) {
-        loaded |= 1;
-        logger.Log('event: DOMContentLoaded', 2);
-        load();
-    }
-});
+document.addEventListener("DOMContentLoaded", load);
+//Run it  second time in global scope to ensure greasmonkey doesn't mess with the context
+RunScript(patchEvents, true);
 
-RunScript(function() {
-    //==API FUNCTION==//
+function patchEvents() {
     function override(obj, member, new_func) {
-        if (obj[member].super) return;
+        if (obj[member].super) obj[member] = obj[member].super;
         new_func.super = obj[member];
         obj[member] = new_func;
     }
@@ -326,23 +312,7 @@ RunScript(function() {
         result.context = context;
         return result;
     });
-}, true);
-
-chainFunctionOnto(document, 'onready', function() {
-    logger.Log('event: onready', 2);
-    if (~loaded & 3) {
-        loaded |= 2;
-        if (~loaded & 1) {
-            loaded |= 1;
-            load();
-        }
-        try {
-            registerEvents();
-        } catch (e) {
-            logger.SevereException('unhandledException in Post-init: {0}', e);
-        }
-    }
-});
+}
 
 //--------------------------------------------------------------------------------------------------
 //---------------------------------------SCRIPT BODY------------------------------------------------
@@ -350,6 +320,7 @@ chainFunctionOnto(document, 'onready', function() {
 
 function load() {
     if (!document.querySelector('.body_container')) return;
+    initGlobals();
     addFooterData('Page running <a>FimFiction Advanced ' + VERSION + '</a>');
     var start = (new Date()).getTime();
     try {
@@ -376,6 +347,10 @@ function load() {
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+function initGlobals() {
+    userToolbar = document.querySelector('.user_toolbar');
+}
+
 function initFimFictionAdvanced() {
     registerBanners(extraBanners);
     updateLogo();
@@ -389,11 +364,10 @@ function initFimFictionAdvanced() {
     if (getFancyBanners() && getBannersEnabled()) bannerScrollOn();
     if (CURRENT_LOCATION.indexOf('feed') == 0) {
         applyFeedFix();
-        Animator().on('feed', updateFeedScroll);
+        Animator().on('feed', pinnerFunc('.feed-toolbar', 'feed'));
     }
-    if (CURRENT_LOCATION.indexOf('manage/account/settings') == 0) updateAccountControls();
     applyCodePatches();
-    if ($('.right-menu-inner, #browse_form').length) addStoryList();
+    if (document.querySelector('.right-menu-inner, #browse_form')) addStoryList();
     if (isMyBlogPage()) initBlogPage();
     if (getSweetieEnabled()) setupSweetie();
     logger.Log('starting customizations setup',10);
@@ -424,10 +398,7 @@ function initSettingsTabs() {
     var tab = new FimFicSettings.SettingsTab("Advanced", 'Advanced Settings', "fimfiction_advanced", "fa fa-wrench", 'My Account', 'cog');
     if (!tab.HasInit()) return;
     
-    var userToolbar = document.querySelector('.user_toolbar');
-    
     tab.StartEndSection("General Settings");
-    
     tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', function() {
         if (getPinUserbar() != this.checked) {
             setPinUserbar(this.checked);
@@ -438,19 +409,15 @@ function initSettingsTabs() {
             }
         }
     });
-    
     tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).addEventListener('change', function() {
         setWideNotes(this.checked);
     });
-    
     tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', function() {
         setAlwaysShowImages(this.checked);
     });
-    
     tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', function() {
         setBlockLightbox(this.checked);
     });
-    
     tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).addEventListener('change', function() {
         setSweetieEnabled(this.checked);
         if ($('#belle').length) {
@@ -495,7 +462,6 @@ function initSettingsTabs() {
     });
     
     tab.StartEndSection("Banners");
-
     tab.AddCheckBox("eb", "Enable Banners", getBannersEnabled()).addEventListener('change', function() {
         setBannersEnabled(this.checked);
         bannerScrollOff();
@@ -504,54 +470,45 @@ function initSettingsTabs() {
         }
         updateBannersOptions();
     });
-
     tab.AddCheckBox("fancyB", "Enable Fancy Banners", getFancyBanners()).addEventListener('change', function() {
         if (getFancyBanners() != this.checked) {
             setFancyBanners(this.checked);
         }
     });
-    
     tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', function() {
         setTitleHidden(this.checked);
     });
-    
     var enableSlide = tab.AddDropDown("sl", "Banner Slide Show", ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"], getSlide());
     enableSlide.addEventListener('change', function() {
         setSlide(this.selectedIndex);
         slider.updateSlide();
         updateSliderOptions();
     });
-    
     tab.AddCheckBox("shuf", "Shuffle Slide Show", getShuffle()).addEventListener('change', function() {
         setShuffle(this.checked);
     });
     updateSliderOptions();
     
     tab.StartEndSection("Christmasy Stuff");
-    
     var enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getSnowing());
     enableUSnow.addEventListener('change', function() {
         setSnowing(this.selectedIndex);
         updateSnowOptions();
     });
-    
     tab.AddCheckBox("uss", "Snow In Banner", getBGSnow()).addEventListener('change', function() {
         setBGSnow(this.checked);
     });
-    
     tab.AddCheckBox('pus', 'Pause Snow when lost focus', getSaveFocus()).addEventListener('change', function() {
         setSaveFocus(this.checked);
     });
     updateSnowOptions();
     
     tab.StartEndSection("Colours and Customization");
-    
     var oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
     oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
     oldLogo.addEventListener('change', function() {
         setLogo($(this).val());
     });
-    
     var bgcolor = getBGColor();
     var backgroundImg = null;
     makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
@@ -851,7 +808,7 @@ function initSettingsTabs() {
         pop.element.querySelector(".close_button").addEventListener('mousedown', function() {
             if (hasPre) finaliseThemes();
         });
-
+        
         customBanner = getCustomBanner();
         if (customBanner != null) {
             input.attr("value", customBanner[0]);
@@ -870,53 +827,6 @@ function initSettingsTabs() {
         }
         pop.Show();
     }
-}
-
-function updateAccountControls() {
-    jSlim.all('.external_account', function(me) {
-        me.value = me.querySelector('.external_account_value');
-        me.name = addDisplayNameField(me.value.parentNode)
-        applyControlData(me);
-    });
-    document.getElementById('edit_user_form').addEventListener('submit', function() {
-        jSlim.all('.external_account', function(me) {
-            var url = me.value.value;
-            if (me.name.value != '') {
-                url += (url.indexOf('?') == -1 ? '?' : '&') + 'DisplayNameFF=' + me.name.value;
-            }
-            me.value.value = url;
-        });
-        jSlim.one(document.body, 'mousemove', function() {
-            jSlim.all('.external_account', applyControlData);
-        });
-    });
-}
-
-function applyControlData(me) {
-    var value = me.value;
-    var name = me.name;
-    var url = value.val();
-    if (url.indexOf('?') != -1) {
-        var params = url.split('?')[1].split('&');
-        for (var i = 0; i < params.length;) {
-            var item = params[i].split('=');
-            if (item[0] == 'DisplayNameFF') {
-                name.value = item[1];
-                params.splice(i, 1);
-            } else {
-                i++;
-            }
-        }
-        value.value = url.split('?')[0] + (params.length > 0 ? '?' + params.join('&') : '');
-        value.keyup();
-    }
-}
-
-function addDisplayNameField(target) {
-    var holder = jSlim.newEl('DIV', {style: 'display:inline-block;position:relative'}, '<input class="external_account_name" type="text" placeholder="display name" style="width:180px;margin-left:-3px;background-position: top -100px left;border-radius: 0px 3px 3px 0px;"></input>');
-    jSlim.after(target, holder);
-    holder.firstChild.dataset.tooltip = 'Optional display name for this account';
-    return holder.firstChild;
 }
 
 var animationUpdator;
@@ -1024,92 +934,88 @@ var lastScrollPosition = 0;
 function bannerScrollOn() {Animator().on('banners', updateBannerScroll);}
 function bannerScrollOff() {Animator().off('banners');}
 function updateBannerScroll(position) {
-    var home_link = $('.home_link');
-    if (home_link.length) {
-        var top = home_link.offset().top;
-        var offset = (position && position.class === 'Pos') ? position : banners[theme].position;
-        if (window.scrollY >= top && window.scrollY - 1 < top + home_link.height()) {
-            top = (window.scrollY - top) * 0.6;
-            var fX = offset ? offset['position-x'] : window.innerWidth < 1000 ? 'left' : 'center';
-            var X = fX != 'center' ? (offset ? offset.x : '-150') + 'px ' : '';
-            var fY = offset ? offset['position-y'] : 'top';
-            var Y = '';
-            if (offset) {
-                if (fY == 'center') {
-                    Y = 'calc(50% + ' + top + 'px)';
-                    fY = 'top';
-                } else if (fY == 'bottom') {
-                    Y = (offset.y - top) + 'px';
-                } else {
-                    Y = (offset.y + top) + 'px';
-                }
-            } else {
-                Y = (top*0.6) + 'px';
-            }
-            $('.home_link').css('background-position', fX + ' ' + X + fY + ' ' + Y);
-        } else {
-            $('.home_link').css('background-position', offset ? offset : '');
+    var home_link = document.querySelector('.home_link');
+    if (home_link) {
+        var top = offset(home_link).top;
+        var off = (position && position.class === 'Pos') ? position : banners[theme].position;
+        if (window.scrollY < top | window.scrollY - 1 >= top + home_link.offsetHeight) {
+            home_link.style.backgroundPosition = off ? off : '';
+            return;
         }
+        
+        top = (window.scrollY - top) * 0.6;
+        var fX = off ? off['position-x'] : window.innerWidth < 1000 ? 'left' : 'center';
+        var X = fX != 'center' ? (off ? off.x : '-150') + 'px ' : '';
+        var fY = off ? off['position-y'] : 'top';
+        var Y = '';
+        if (off) {
+            if (fY == 'center') {
+                Y = 'calc(50% + ' + top + 'px)';
+                fY = 'top';
+            } else if (fY == 'bottom') {
+                Y = (off.y - top) + 'px';
+            } else {
+                Y = (off.y + top) + 'px';
+            }
+        } else {
+            Y = (top*0.6) + 'px';
+        }
+        home_link.style.backgroundPosition = fX + ' ' + X + fY + ' ' + Y;
     }
 }
 
-function barScrollOn() {
-    Animator().on('userbar', updateUserbarScroll);
-}
+function barScrollOn() {Animator().on('userbar', pinnerFunc('.user_toolbar', 'userbar'));}
 function barScrollOff() {
     Animator().off('userbar');
-    $('.fix_userbar').removeClass('fix_userbar');
+    document.body.classList.remove('fix_userbar');
 }
-function updateUserbarScroll() {updatePinned('.user_toolbar', 'userbar');}
-function updateFeedScroll() {updatePinned('.feed-toolbar', 'feed');}
-function updatePinned(target, pinClass) {
-    var min = window.scrollY + ($('.pin_nav_bar').length ? 45 : 0);
-    if (!$('.fix_' + pinClass).length) {
-        if (min >= $(target).offset().top) {
-            $('body').attr('data-' + pinClass + '-pos', $(target).offset().top);
-            $('body').addClass('fix_' + pinClass);
+
+function pinnerFunc(target, pinClass, bounder) {
+    target = document.querySelector(target);
+    return function() {
+        if (bounder) {
+            var max = offset(bounder).top + bounder.offsetHeight - 100;
+            if (window.scrollY >= max) {
+                document.body.classList.remove('fix_' + pinClass);
+                return;
+            }
         }
-    } else {
-        if (min < parseInt($('body').attr('data-' + pinClass + '-pos'))) {
-            $('.fix_' + pinClass).removeClass('fix_' + pinClass);
+        var min = window.scrollY + (document.body.classList.contains('pin_nav_bar') ? 45 : 0);
+        if (document.body.classList.contains('fix_' + pinClass)) {
+            if (min < parseInt(document.body.dataset[pinClass + 'Pos'])) {
+                document.body.classList.remove('fix_' + pinClass);
+            }
+            return;
         }
-    }
-}
-function updatePinnedWithMax(target, pinClass, bounder) {
-    var max = bounder ? $(bounder) : $(target).parent();
-    max = max.offset().top + max.height() - 100;
-    var min = window.scrollY + ($('.pin_nav_bar').length ? 45 : 0);
-    if (!$('.fix_' + pinClass).length && window.scrollY < max) {
-        if (min >= $(target).offset().top) {
-            $('body').attr('data-' + pinClass + '-pos', $(target).offset().top);
-            $('body').addClass('fix_' + pinClass);
+        var top = offset(target).top;
+        if (min >= top) {
+            document.body.dataset[pinClass + 'Pos'] = top;
+            document.body.classList.add('fix_' + pinClass);
         }
-    } else {
-        if (window.scrollY > max || min < parseInt($('body').attr('data-' + pinClass + '-pos'))) {
-            $('body').removeClass('fix_' + pinClass);
-        }
-    }
+    };
 }
 
 function applyChapterButtons() {
-    $('ul.chapters').each(addChapterButtonsExtras);
-    $(document).on('click', 'a.compact_chapters', function() {
-        $(this).parent().parent().removeClass('all-shown');
-    }).on('click', 'a.compact.min', function() {
-        var me = $(this).parent().parent();
-        me.toggleClass('chapters_compact');
-        this.innerHTML = me.hasClass('chapters_compact') ? 'Maximize' : 'Minimize';
-    }).on('click', 'a.compact.max', function() {
-        var me = $(this).parents('.chapters_compact');
-        if (me.length) {
-            me.removeClass('chapters_compact');
-            me.find('a.compact.min').html('Minimize');
+    jSlim.all('ul.chapters', addChapterButtonsExtras);
+    jSlim.on(document, 'a.compact_chapters', 'click', function() {
+        this.parentNode.parentNode.classList.remove('all-shown');
+    });
+    jSlim.on(document, 'a.compact.min', 'click', function() {
+        var me = this.parentNode.parentNode;
+        me.classList.toggle('chapters_compact');
+        this.innerHTML = me.classList.contains('chapters_compact') ? 'Maximize' : 'Minimize';
+    });
+    jSlim.on(document, 'a.compact.max', 'click', function() {
+        var me = jSlim.nearest(this, '.chapters_compact');
+        if (me) {
+            me.classList.remove('chapters_compact');
+            me.querySelector('a.compact.min').innerHTML = 'Minimize';
         }
     });
 }
 
-function addChapterButtonsExtras() {
-    var me = $(this);
+function addChapterButtonsExtras(me) {
+    me = $(this);
     var loggedIn = getIsLoggedIn();
     var chapters = me.find('li .chapter-read-icon').length;
     var compact = chapters > 1;
@@ -1174,7 +1080,7 @@ function makeGreen(element) {
     element.selectionStart = start;
     element.selectionEnd = start + selected.length;
     element.scrollTop = top;
-    $(element).focus();
+    element.focus();
 }
 
 function makeList(element, ordered) {
@@ -1216,7 +1122,7 @@ function makeList(element, ordered) {
     element.selectionStart = start;
     element.selectionEnd = start + selected.length;
     element.scrollTop = top;
-    $(element).focus();
+    element.focus();
 }
 
 function addStoryList() {
@@ -1246,11 +1152,11 @@ function addStoryList() {
 }
 
 function applyFeedFix() {
-    $(document).on('click', '.feed_body img.thumbnail_image', function(e) {
+    jSlim.on(document, '.feed_body img.thumbnail_image', 'click', function(e) {
         e.preventDefault();
-        var a = $(this).parents('a').first();
-        if (a.attr('href') && a.attr('href').length > 0) {
-            a.attr('title', a.attr('href'));
+        var a = jSlim.nearest(this, 'a');
+        if (a.href && a.href.length > 0) {
+            a.setAttribute('title', a.href);
         }
     });
 }
@@ -1262,14 +1168,22 @@ function applyCodePatches() {
             this.chapter.style.fontSize = this.text_size + 'rem';
             this.chapter.style.fontFamily = this.font;
             /****/
-            if (this.previous_colour_scheme) $('.content_format_' + this.previous_colour_scheme).removeClass('.content_format_' + this.previous_colour_scheme); /**/
+            if (this.previous_colour_scheme) jSlim.all('.content_format_' + this.previous_colour_scheme, function(me) {
+                me.classList.remove('.content_format_' + this.previous_colour_scheme); /**/
+            });
             /****/
             this.chapterFormat.className = 'content_format_' + this.colour_scheme;
             /****/
-            $('.chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a').addClass('content_format_' + this.colour_scheme);
-            
-            $('.content_plus_format').removeClass('content_plus_format'); /**/
-            $('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title').addClass('content_plus_format').css('color', $('.content_format_' + this.colour_scheme + ' .inner_margin').css('color')); /**/
+            jSlim.all('.chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a', function(me) {
+                me.classList.add('content_format_' + this.colour_scheme);
+            });
+            jSlim.all('.content_plus_format', function(me) {
+                me.classList.remove('content_plus_format');
+            });
+            jSlim.all('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title', function(me) {
+                me.classList.add('content_plus_format');
+                me.style.color = window.getComputedStyle(document.querySelector('.content_format_' + this.colour_scheme + ' .inner_margin')).color;
+            });
             /****/
             
             this.chapterBody.style.lineHeight = this.line_spacing + 'em';
@@ -1341,9 +1255,10 @@ function applyCodePatches() {
     });
     if (!window.__window_focused_fix) {
         window.__window_focused_fix = true;
-        $(window).on('focus', function() {
+        window.addEventListener('focus', function() {
             window.window_focused = true;
-        }).on('blur', function() {
+        });
+        window.addEventListener('blur', function() {
             window.window_focused = false;
         });
     }
@@ -1442,43 +1357,41 @@ function initBlogPage() {
 function loopUnspoiler() {
     logger.Log('loopUnspoiler: loop_start');
     if (!getExtraEmotesInit()) {
-        var comments = $('.comment_data');
-        if (comments.length) {
-            logger.Log('applyDirectImages: start');
-            comments = comments.find('.user_image_link');
-            if (comments.length) comments.each(unspoilerSiblings);
-        }
+        jSlim.all('.comment_data a.user_image_link', unspoilerSiblings);
     }
 }
 
 function initImageUnspoiler() {
-    $('.comment_data .user_image_link').each(function() {
-        var me = $(this);
-        me.parent().after('<img class="user_image" data-lightbox="" src="' + me.attr('href') + '" />').remove();
+    jSlim.all('.comment_data .user_image_link', function(me) {
+        me.parentNode.insertBefore(jSlim.newEl('IMG', { 'class': 'user_image', 'data-lightbox': '', src: me.href }));
+        me.parentNode.parentNode.removeChild(me.parentNode);
     });
 }
 
 function lightboxblocker() {
-    $('body').on('mouseover', '[data-lightbox]', function(e) {
-        var me = $(this);
-        if (me.hasClass('user_image')) {
-            me.removeAttr('data-lightbox').removeAttr('title').attr('data-resizable', 'false');
-            me.removeClass('user_image').addClass('user_image_no_lightbox');
+    jSlim.on(document.body, '[data-lightbox]', 'mouseover', function(e) {
+        if (this.classList.contains('user_image')) {
+            this.removeAttribute('data-lightbox');
+            this.removeAttribute('title');
+            this.dataset.resizeable = false;
+            this.classList.remove('user_image');
+            this.classList.add('user_image_no_lightbox');
         }
-    }).addClass('no-lightbox');
+        this.classList.add('no-lightbox');
+    });
 }
 
-function unspoilerSiblings() {
-    var me = $(this).parent();
-    var url = $(this).attr('href').replace(/$(https:|http:)/g,'');
+function unspoilerSiblings(me) {
+    var url = me.href.replace(/$(https:|http:)/g,'');
+    me = me.parentNode;
     if (mustUnspoiler(url)) {
-        me.after('<img class="user_image" src="' + url + '" />').remove();
+        me.outerHTML += '<img class="user_image" src="' + url + '"></img>';
+        me.parentNode.removeChild(me);
         logger.Log("unspoilerSiblings: " + url);
-    } else {
-        var next = me.next();
-        if (next.length && !next.is('br')) {
-            me.after('<br />');
-        }
+        return;
+    }
+    if (me.nextSibling && me.nextSibling.tagName != 'BR') {
+        me.parentNode.insertBefore(me.nextSibling, document.createElement('BR'));
     }
 }
 
@@ -1565,12 +1478,17 @@ function buildAdvancedButton(button, controller) {
         pop.SetWidth(350);
         pop.SetContent('<div style="padding:10px;"><input id="find" type="text" required="required" placeholder="Find" name="find" /><input id="replace" type="text" required="required" placeholder="Replace" name="replace" />');
         pop.SetFooter('<button id="find_button" type="button" nextStart="0" class="styled_button">Find</button><button id="replace_button" type="button" class="styled_button">Replace</button><button id="replace_2_button" type="button" class="styled_button">Replace All</button>');
-        $('#find').change(function() {
-            $('#find_button').attr('nextStart', 0);
+        var finder = pop.content.getElementById('find');
+        var replacer = pop.content.getElementById('replace');
+        var findButt = pop.content.getElementById('find_button');
+        var replaceButt = pop.content.getElementById('replace_button');
+        jSlim.on(pop.content, '#find', 'change', function() {
+            pop.content.getElementById
+            findButt.dataset.nextstart = 0;
         });
-        $('#find_button').click(function() {
-            var find = $('#find').val();
-            var nextStart = parseInt($(this).attr('nextStart'));
+        jSlim.on(pop.content, '#find_button', 'click', function() {
+            var find = finder.value;
+            var nextStart = parseInt(this.dataset.nextstart);
             var text = controller.textarea.value.substring(nextStart, controller.textarea.value.length);
             if (find != '') {
                 var start = text.indexOf(find);
@@ -1583,14 +1501,14 @@ function buildAdvancedButton(button, controller) {
                     start += nextStart;
                     end = start + find.length;
                 }
-                $(this).attr('nextStart', end);
+                this.dataset.nextstart = end;
                 controller.textarea.selectionStart = start;
                 controller.textarea.selectionEnd = end;
-                $(controller.textarea).focus();
+                controller.textarea.focus();
             }
         });
-        $('#replace_button').click(function() {
-            var find = $('#find').val();
+        jSlim.on(pop.content, '#replace_button', 'click', function() {
+            var find = finder.value;
             if (find != '') {
                 var start = controller.textarea.selectionStart;
                 var end = controller.textarea.selectionEnd;
@@ -1614,13 +1532,12 @@ function buildAdvancedButton(button, controller) {
                         replB.click();
                     }
                 }
-                $(controller.textarea).focus();
+                controller.textarea.focus();
             }
         });
-        $('#replace_2_button').click(function() {
-            var find = $('#find').val();
-            if (find != '') {
-                controller.setText(replaceAll(find, $('#replace').val(), controller.getText()));
+        jSlim.on(pop.content, '#replace_2_button', 'click', function() {
+            if (finder.value != '') {
+                controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
             }
         });
         pop.Show();
@@ -1962,7 +1879,7 @@ function addColorTiles(controller, panel, colors) {
             item.dataset.colour = code;
             item.setAttribute('title', name);
             item.addEventListener('click', function() {
-                var t = controller || App.GetControllerFromElement($('.active_text_area').parents('.bbcode-editor')[0]);
+                var t = controller || App.GetControllerFromElement(jSlim.nearest(document.querySelector('.active_text_area'), '.bbcode-editor'));
                 var c = this.dataset.colour;
                 t.insertTags('[color=' + c + ']', '[/color]');
                 addRecent(c);
@@ -2021,19 +1938,19 @@ function listNames() {
     var bbCode = "";
     var sfw = "";
     var sfwCode = "";
-
+    
     var stories;
-    if ($('.story-card-list').length) {
-        stories = $('.story-card-list .story-card .story_link');
-    } else if ($('.story-list').length) {
-        stories = $('.story-list .right .story-title');
+    if (document.querySelector('.story-card-list')) {
+        stories = document.querySelectorAll('.story-card-list .story-card .story_link');
+    } else if (document.querySelector('.story-list')) {
+        stories = document.querySelectorAll('.story-list .right .story-title');
     } else {
-        stories = $('.story_container .story_name');
+        stories = document.querySelectorAll('.story_container .story_name');
     }
     var len = stories.length;
     for (var i = 0; i < len; i++) {
-        var name = $(stories[i]).text();
-        var link = $(stories[i]).attr('href');
+        var name = stories[i].innerText;
+        var link = stories[i].href;
         if  (name != null && name != "") {
             result += "#" + (start + i + 1) + "  " + name + "\n";
             bbCode += "#" + (start + i + 1) + "  [url=//www.fimfiction.net" + link + "]" + name + "[/url]\n";
@@ -2042,61 +1959,67 @@ function listNames() {
             sfwCode += "#" + (start + i + 1) + "  " + (name == '--hidden--' ? name : "[url=//www.fimfiction.net" + link + "]" + name + "[/url]") + "\n";
         }
     }
-
+    
     var pop = makePopup("Items", "fa fa-bar-chart-o");
-    var area = $('<textarea class="listText" style="min-height:300px;" />');
-    pop.SetContent(area);
+    
+    pop.SetContent('\
+<textarea class="listText" style="min-height:300px;"></textarea>\
+<div class="drop-down-pop-up-footer">\
+    <label class="toggleable-switch">\
+        <input class="bbc" type="checkbox"></input><a></a>\
+        <span class="toggle-on">BBcode</span>\
+        <span class="toggle-off">Plain Text</span>\
+    </label>\
+    <label class="toggleable-switch">\
+        <input checked="" class="sfw" type="checkbox"></input><a></a>\
+    </label>\
+    <span class="toggle-on">Include Mature Stories</span>\
+</div>');
     pop.SetWidth(600);
-    area.val(sfw);
-
-    var toggle = $('<input type="checkbox" />');
-    var div = $('<div class="drop-down-pop-up-footer" />');
-    pop.content.append(div);
-    div.append(toggle);
-    div.append('<span style="padding-left: 5px;">BBCode</span>');
-
-    var toggleSFW = $('<input checked="" type="checkbox" />');
-    div.append(toggleSFW);
-    div.append('<span style="padding-left: 5px;">Hide Mature Stories</span>');
-
-    toggle.click(upd);
-    toggleSFW.click(upd);
+    
+    
+    var area = pop.content.querySelector('textarea');
+    area.value = sfw;
+    var toggle = pop.content.querySelector('input.bbc');
+    var toggleSFW = pop.content.querySelector('input.sfw');
+    
+    jSlim.on(pop.content, 'input', 'change', upd);
     pop.Show();
-
+    
     function upd() {
-        if (toggle[0].checked) {
-            area.val(toggleSFW[0].checked ? sfwCode : bbCode);
+        if (toggle.checked) {
+            area.value = toggleSFW.checked ? sfwCode : bbCode;
         } else {
-            area.val(toggleSFW[0].checked ? sfw : result);
+            area.value = toggleSFW.checked ? sfw : result;
         }
     }
-}
-
-function censorStory(element) {
-    if ($(element).parent().find('.content_rating_mature').length) return true;
-    var storyEntry = element.parentNode.parentNode;
-    if ($(storyEntry).hasClass('title')) storyEntry = storyEntry.parentNode;
-    if ($(storyEntry).hasClass('story_card')) {
-        storyEntry = $(storyEntry).find('.info span');
-    } else {
-        storyEntry = $(storyEntry).find('.description .story_category');
+    
+    function censorStory(element) {
+        if (element.parentNode.querySelector('.content_rating_mature')) return true;
+        var storyEntry = element.parentNode.parentNode;
+        if (storyEntry.classList.contains('title')) storyEntry = storyEntry.parentNode;
+        if (storyEntry.classList.contains('story_card')) {
+            storyEntry = storyEntry.querySelectorAll('.info span');
+        } else {
+            storyEntry = storyEntry.querySelectorAll('.description .story_category');
+        }
+        var len = storyEntry.length;
+        for (var i = 0; i < len; i++) {
+            var ht = storyEntry[i].getAttribute('class');
+            if (endsWith(ht, 'sex') || endsWith(ht, 'mature')) return true;
+        }
+        return false;
     }
-    var len = storyEntry.length;
-    for (var i = 0; i < len; i++) {
-        var ht = $(storyEntry[i]).attr('class');
-        if (endsWith(ht, 'sex') || endsWith(ht, 'mature')) return true;
-    }
-    return false;
 }
 
 function addExtraToolbarLinks(e) {
     if (e.event.type == 'stories') {
-        var ref = $('#user_toolbar_story_list a[href^="/user/"]').first().parent();
-        var link = ref.clone();
-        ref.after(link);
-        link = link.find('a');
-        link.attr('href', 'https://www.fimfiction.net/bookshelf/1/featured?q=' + getUserName());
-        link.html('<i class="fa fa-star-o"></i>View My Featured Stories');
+        var ref = document.querySelector('#user_toolbar_story_list a[href^="/user/"]').parentNode;
+        var link = ref.cloneNode(true);
+        ref.parentNode.insertBefore(link, ref.nextSibling);
+        link = link.querySelector('a');
+        link.href = 'https://www.fimfiction.net/bookshelf/1/featured?q=' + getUserName();
+        link.innerHTML = '<i class="fa fa-star-o"></i>View My Featured Stories';
     }
 }
 
@@ -2138,9 +2061,7 @@ function buildBanner() {
     };
     
     addBannerCss();
-    addMinorBannerCss();
     if (getTitleHidden()) document.body.classList.add("titleHidden");
-    var userToolbar = document.querySelector('.user_toolbar');
     var subHeader = document.querySelector('.user-page-header, .story-page-header');
     if (subHeader) {
         jSlim.before(userToolbar, subHeader);
@@ -2226,9 +2147,8 @@ div.banner_credits div.banner {\
             var checkbox = $(this).parents(".theme").find("input");
             checkbox.checked = !checkbox.checked;
         });
-        Animator().on('switcher', function() {
-            updatePinnedWithMax('#banner_switcher', 'switcher', $('.banner_credits').parent());
-        });
+        var bounder = document.querySelector('.banner_credits').parentNode;
+        Animator().on('switcher', pinnerFunc('#banner_switcher', 'switcher', bounder));
     }
     for (var j = sets.length; j--;) {
         var holder = $('<div class="banner_credits" data-group="' + sets[j].name + '" />');
@@ -2450,6 +2370,42 @@ textarea[required] {\
   right: 1px !important;\
   opacity: 1 !important;\
   transition: bottom 0.5s ease, right 0.5s ease !important;}\
+\
+/*Make the emoticon picker not look like plot*/\
+.emoji-selector__search {\
+  background: none !important;\
+  padding: 3px !important;}\
+.emoji-selector__search input {\
+  width: 100%;\
+  margin: 0;\
+  padding: 5px;\
+  border-radius: 4px;\
+  box-shadow: inset 0 0 5px 3px #fef;\
+  border: solid 1px #aaa;}\
+.format-toolbar .emoji-selector .emoji-selector__tabs,\
+.format-toolbar .emoji-selector .emoji-selector__list > li.emoji-selector__header {\
+  background: #f8f8f8 !important;\
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f8f8f8), color-stop(100%, #f2f2f2)) !important;\
+  background: -webkit-linear-gradient(top, #f8f8f8 0%, #f2f2f2 100%) !important;\
+  background: linear-gradient(to bottom, #f8f8f8 0%, #f2f2f2 100%) !important;}\
+.format-toolbar .emoji-selector .emoji-selector__tabs li {\
+  background: none !important;}\
+.format-toolbar .emoji-selector .emoji-selector__tabs li:hover,\
+.format-toolbar .emoji-selector .emoji-selector__tabs li.selected {\
+  background: rgba(0,0,0,0.1) !important;}\
+\
+.format-toolbar .emoji-selector .emoji-selector__list > li {\
+  margin: 4px;\
+  vertical-align: middle;}\
+.format-toolbar .emoji-selector .emoji-selector__list > li:hover {\
+  border-radius: 100% !important;}\
+.format-toolbar .emoji-selector .emoji-selector__list > li.emoji-selector__header:hover {\
+  border-radius: 0 !important;}\
+/*Center pony emoticon images vertically*/\
+.format-toolbar .emoji-selector .emoji-selector__list > li a {\
+  height: 36px;}\
+.format-toolbar .emoji-selector .emoji-selector__list > li img {\
+  margin-top: 5px;}\
 \
 .story-page-header > .inner h1 a, .user-page-header > .inner h1 a:hover {\
     text-decoration: none;}\
@@ -2673,7 +2629,7 @@ a:hover .bg_source_link {\
 .drop-down li.button-group > .drop-down {\
   margin-top: 100%;\
   margin-left: -320%;}\
-.button-group > .drop-down ul {\
+.bbcode-editor .button-group > .drop-down ul:not(.scrollable, .drop-down-emoticons) {\
   overflow: visible !important;}\
 .drop-down li.button-group:hover > .drop-down::before {\
   content: '';}\
@@ -3077,12 +3033,8 @@ header.header .home_link {\
         top: 0px;\
         bottom: 0px;\
         left: 0px;\
-        right: 0px;}}', 'Fimfiction_Advanced_Banner_Stylesheet');
-}
-
-function addMinorBannerCss() {
-    if ($('Fimfiction_Advanced_UserBanner_Stylesheet').length) return;
-    makeStyle('\
+        right: 0px;}}\
+\
 @media all and (max-width: 700px) {\
   .user-page-header, .story-page-header {\
     box-shadow: none;}}\
@@ -3165,7 +3117,7 @@ function addMinorBannerCss() {
 .user-page-header .tabs li.selected a::after {\
   display: none !important;}\
 .user-page-header .tabs li.selected a {\
-  z-index: 0 !important;}', 'Fimfiction_Advanced_UserBanner_Stylesheet');
+  z-index: 0 !important;}', 'Fimfiction_Advanced_Banner_Stylesheet');
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -3484,15 +3436,6 @@ function BG(name, css, source) {
 //--------------------------------------------------------------------------------------------------
 
 //==API FUNCTION==//
-function chainFunctionOnto(target, name, handler) {
-    var _old = target[name];
-    target[name] = function() {
-        handler.apply(this, arguments);
-        if (typeof _old === 'function') _old.apply(this, arguments);
-    }
-}
-
-//==API FUNCTION==//
 function override(obj, member, new_func) {
     if (obj[member].super) return;
     new_func.super = obj[member];
@@ -3618,31 +3561,35 @@ function Slider() {
     }
     
     function loadImg() {
-        $('.user_toolbar').css("transition-duration", "3s");
+        userToolbar.style.transitionDuration = '3s';
         chooseTheme(theme, true);
-        setTimeout(transitionEnd, 3000);
-        fade.css({"transition": "opacity 3s linear", "opacity": "0"});
+        setTimeout(function() {
+            userToolbar.style.transitionDuration = '';
+        }, 3000);
+        fade.style.transition = 'opacity 3s linear';
+        fade.style.opacity = 0;
         isSliding = false;
         me.updateSlide();
     }
     
     function transitionStart() {
-        fade.css({"transition": "none", "opacity": "1"});
-        fade.css({
-            "background-image": tit.css("background-image"),
-            "background-position": tit.css("background-position"),
-            "background-size": tit.css("background-size")});
+        fade.style.transition = 'none';
+        fade.style.opacity = 1;
+        fade.style.background = window.getComputedStyle(tit).background;
         if (getShuffle()) {
             theme = Math.floor(Math.random() * (banners.length - 1));
         } else {
             theme = theme + 1 >= banners.length ? 0 : theme + 1;
         }
-        $('<img>').attr('src', banners[theme].url).load(loadImg);
+        var img = document.createElement('IMG');
+        img.src = banners[theme].url;
+        img.addEventListsner('load', loadImg);
     }
-
-    function transitionEnd() {$('.user_toolbar').css("transition-duration", "");}
-    function getTime(v) {return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];}
-
+    
+    function getTime(v) {
+        return slideTimes[v < 0 && v >= slideTime.length ? 0 : v];
+    }
+    
     return me;
 }
 
@@ -3798,8 +3745,10 @@ function setupSweetie() {
                     } else {
                         grabbedImage.style.top = document.body.scrollTop + parseFloat($(grabbedImage).css('top'));
                         grabbedImage.style.top = document.body.scrollLeft + parseFloat($(grabbedImage).css('left'));
-                        $('.grabbedImage').attr('held', 'false');
-                        $('.grabbedImage').removeClass('grabbedImage');
+                        jSlim.all('.grabbedImage', function() {
+                            me.dataset.held = false;
+                            me.classList.remove('grabbedImage');
+                        });
                         grabbedImage = null;
                     }
                 }
@@ -3927,7 +3876,7 @@ function setupSweetie() {
 img[dragged="true"] {\
     z-index: 501;\
     position: absolute;}\
-img[held="true"] {\
+img[data-held="true"] {\
     position: fixed;}\
 .floater {\
     z-index:500;\
@@ -4022,46 +3971,50 @@ img[held="true"] {\
     }
 
     function doGrab() {
-        var x = $(belle).offset().left;
-        var y = $(belle).offset().top;
+        var p = offset(belle)
+        var x = p.left;
+        var y = p.top;
         var oldX = belle.style.left;
         belle.style.left = "-1000px";
-        var img = $(document.elementFromPoint(lastClientX , lastClientY));
+        var img = document.elementFromPoint(lastClientX , lastClientY);
         belle.style.left = oldX;
-        if (img.length && img[0].tagName == "IMG" && !img.hasClass('nopickup')) {
+        if (img && img.tagName == "IMG" && !img.classList.contains('nopickup')) {
             if (img.attr("dragged") != "true") {
-                var result = img.clone().attr('class', 'grabbedImage').removeAttr('id').attr('dragged', 'true').attr('held','true');
-                result.appendTo('body');
-                result.css({
-                    'width': img.width() + 'px',
-                    'height': img.height() + 'px',
-                    'top' : (lastClientY - result.height()/2) + 'px',
-                    'left' : (lastClientX - result.width()/2) + 'px'});
-                result.on("click", function(e) {
+                var result = img.cloneNode();
+                result.setAttribute('class', 'grabbedImage');
+                result.removeAttribute('id');
+                result.dataset.dragged = true;
+                result.dataset.held = true;
+                document.body.appendChild(result);
+                result.style.width = img.offesetWidth;
+                result.style.height = img.offsetHeight;
+                result.style.top = (lastClientY - img.offsetHeight/2);
+                result.style.left = (lastClientX - img.offsetWidth/2) 
+                result.addEventListener("click", function(e) {
                     if (e.shiftKey) {
                         if (grabbedImage == this) grabbedImage = null;
-                        $(this).remove();
+                        this.parentNode.removeChild(this);
                     } else {
-                        $('.grabbedImage').attr('held', 'false');
-                        $('.grabbedImage').removeClass('grabbedImage');
+                        jSlim.all('.grabbedImage', function(me) {
+                            me.dataset.held = false;
+                            me.classList.remove('grabbedImage');
+                        });
                         if (grabbedImage == this) {
                             grabbedImage = null;
                         } else {
-                            $(this).addClass('grabbedImage');
-                            $(this).parent().append(this);
+                            this.classList.add('grabbedImage');
+                            this.parentNode.appendChild(this);
                             grabbedImage = this;
                         }
                     }
                 });
-                grabbedImage = result[0];
+                grabbedImage = result;
             } else {
-                img.addClass('grabbedImage');
-                img.parent().append(img);
-                img.css({
-                    'top' : (lastY - img.height()/2) + 'px',
-                    'left' : (lastX - img.width()/2) + 'px',
-                });
-                grabbedImage = img[0];
+                img.classList.add('grabbedImage');
+                img.parentNode.appendChild(img);
+                img.style.top = (lastY - img.clientHeight/2);
+                img.style.left = (lastX - img.clientWidth/2);
+                grabbedImage = img;
             }
         }
     }
