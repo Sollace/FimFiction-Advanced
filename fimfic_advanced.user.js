@@ -2147,8 +2147,6 @@ div.banner_credits div.banner {\
             var checkbox = $(this).parents(".theme").find("input");
             checkbox.checked = !checkbox.checked;
         });
-        var bounder = document.querySelector('.banner_credits').parentNode;
-        Animator().on('switcher', pinnerFunc('#banner_switcher', 'switcher', bounder));
     }
     for (var j = sets.length; j--;) {
         var holder = $('<div class="banner_credits" data-group="' + sets[j].name + '" />');
@@ -2182,6 +2180,9 @@ div.banner_credits div.banner {\
     jSlim.all('.banner_credits .source input', function(me) {
         me.checked = me.value == themeId;
     });
+    
+    var bounder = document.querySelector('.banner_credits').parentNode;
+    Animator().on('switcher', pinnerFunc('#banner_switcher', 'switcher', bounder));
 }
 
 function finaliseThemes() {
