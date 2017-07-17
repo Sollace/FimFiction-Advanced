@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.1.3
+// @version     4.1.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -3064,6 +3064,7 @@ header.header .home_link {\
   .user-page-header .avatar-container,\
   .story-page-header .image-container {\
     position: relative !important;\
+    width: 1px; /*chrome fix*/\
     z-index: 13 !important;}\
   .story-page-header {\
     overflow: visible !important;}\
