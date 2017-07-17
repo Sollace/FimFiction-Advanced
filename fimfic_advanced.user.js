@@ -1,7 +1,7 @@
-﻿// ==UserScript==
+// ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.1.0
+// @version     4.1.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -687,42 +687,42 @@ function initSettingsTabs() {
         var pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
         pop.SetWidth(700);
         pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
-
+        
         var addBannerError = pop.content.querySelector('#add_banner_error');
-
+        
         var footer = jSlim.newEl('DIV', { 'class': 'drop-down-pop-up-footer' });
         pop.content.appendChild(footer);
-
+        
         var builder = new FimFicSettings.OptionsBuilder(pop.content.querySelector('tbody'));
-
+        
         var done = builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save"></i>Save</button>');
         var preview = builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye"></i>Preview</button>');
         var reset = builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o"></i>Reset</button>');
         var input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px"></input>');
-
+        
         var row = builder.AddOption('', 'Image Position', '<div></div>');
-
+        
         var alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
         var posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
         var alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
         var posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
-
+        
         row = builder.AddColorSliders('bc', 'Banner Colour', true);
-
+        
         var RInput = row.red;
         var GInput = row.green;
         var BInput = row.blue;
         var AInput = row.alpha;
-
-        builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera" />Guess from Current</button>').addEventListener('click', function() {
+        
+        builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera"></i>Guess from Current</button>').addEventListener('click', function() {
             var color = userToolbar.dataset.backgroundColor;
             if (color == '') color = 'rgb(146,27,87)';
             color = color.split('(')[1].split(')')[0];
             color = color.replace(/ /g, '').split(',');
-            RInput[0].value = RInput[1].value = color[0];
-            GInput[0].value = GInput[1].value = color[1];
-            BInput[0].value = BInput[1].value = color[2];
-            AInput[0].value = AInput[1].value = color.length == 4 ? color[3] : 1;
+            RInput[0].value = RInput[1].value = parseInt(color[0]);
+            GInput[0].value = GInput[1].value = parseInt(color[1]);
+            BInput[0].value = BInput[1].value = parseInt(color[2]);
+            AInput[0].value = AInput[1].value = color.length == 4 ? parseFloat(color[3]) : 1;
         });
 
         var getColor = function() {
@@ -738,24 +738,25 @@ function initSettingsTabs() {
 
         var updateView = function(save) {
             if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                var url = input.val();
+                var url = input.value;
                 var color = getColor();
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = tryParseInt(posX.val(), 0);
-                var y = tryParseInt(posY.val(), 0);
-
+                var vert = alignVert.value;
+                var hor = alignHor.value;
+                var x = tryParseInt(posX.value, 0);
+                var y = tryParseInt(posY.value, 0);
+                
                 if (save) {
                     setCustomBanner(url, color, [hor, x, vert, y]);
+                    customBanner = Banner('Custom', url, url, color, [hor, x, vert, y]);
                     if (customBannerindex > -1) {
-                        banners[customBannerindex] = Banner('Custom', url, '', color, [hor, x, vert, y]);
+                        banners[customBannerindex] = customBanner;
                     } else {
-                        banners.push(Banner('Custom', url, '', color, [hor, x, vert, y]));
-                        customBannerindex = banners.length - 1;
+                        customBannerindex = banners.length;
+                        banners.push(customBanner);
                     }
                 }
                 
-                repaintBannerButton(banners[customBannerindex]);
+                repaintBannerButton(customBanner);
                 
                 if (save) {
                     chooseTheme(customBannerindex, save);
@@ -768,17 +769,17 @@ function initSettingsTabs() {
             addBannerError.classList.remove('hidden');
             return false;
         };
-
+        
         var hasPre = false;
         preview.addEventListener('click', function() {
             hasPre = true;
             if (ch(RInput) && ch(GInput) && ch(BInput) && ch(AInput)) {
-                var url = input.val();
+                var url = input.value;
                 var color = getColor();
-                var vert = alignVert.val();
-                var hor = alignHor.val();
-                var x = tryParseInt(posX.val(), 0);
-                var y = tryParseInt(posY.val(), 0);
+                var vert = alignVert.value;
+                var hor = alignHor.value;
+                var x = tryParseInt(posX.value, 0);
+                var y = tryParseInt(posY.value, 0);
                 changeBanner(null, url, color, Pos([hor, x, vert, y]));
                 addBannerError.classList.add('hidden');
             } else {
@@ -801,9 +802,11 @@ function initSettingsTabs() {
         });
         done.addEventListener('click', function() {
             hasPre = false;
+            try {
             if (updateView(true)) {
                 pop.Close();
             }
+            } catch (e) {alert(e);}
         });
         pop.element.querySelector(".close_button").addEventListener('mousedown', function() {
             if (hasPre) finaliseThemes();
@@ -811,19 +814,19 @@ function initSettingsTabs() {
         
         customBanner = getCustomBanner();
         if (customBanner != null) {
-            input.attr("value", customBanner[0]);
-            var color = customBanner[1].split('(')[1].split(')')[0].replace(/ /g, '').split(',');
-            RInput.val(color[0]);
-            GInput.val(color[1]);
-            BInput.val(color[2]);
-            AInput.val(color.length == 4 ? color[3] : 1);
-            var poss = customBanner[2];
+            input.value = customBanner.url;
+            var color = customBanner.colour.split('(')[1].split(')')[0].replace(/ /g, '').split(',');
+            RInput[0].value = RInput[1].value = parseInt(color[0]);
+            GInput[0].value = GInput[1].value = parseInt(color[1]);
+            BInput[0].value = BInput[1].value = parseInt(color[2]);
+            AInput[0].value = AInput[1].value = color.length == 4 ? parseFloat(color[3]) : 1;
+            var poss = customBanner.position;
             var i = 0;
-            alignHor.val(poss[i++]);
-            if (poss[i] != 'center') posX.val(poss[i]);
+            alignHor.value = poss['position-x'];
+            if (poss[i] != 'center') posX.value = poss.x;
             i++;
-            alignVert.val(poss[i++]);
-            if (poss[i] != 'center') posY.val(poss[i]);
+            alignVert.value = poss['position-y'];
+            if (poss[i] != 'center') posY.value = poss.y;
         }
         pop.Show();
     }
@@ -2042,10 +2045,6 @@ function isBannerCreditsPage() {
     return CURRENT_LOCATION == '?view=page&page=banner_credits';
 }
 
-function registerBanner(name, img, source, color, pos) {
-    banners.push(Banner(name, img, source, color, pos));
-}
-
 function buildBanner() {
     var bannerActions = {
         prev: function() {
@@ -2092,7 +2091,7 @@ function buildBanner() {
     customBanner = getCustomBanner();
     if (customBanner != null) {
         customBannerindex = banners.length;
-        registerBanner("Custom", customBanner[0], "", customBanner[1], customBanner[2]);
+        banners.push(customBanner);
     }
     finaliseThemes();
     setTimeout(function() {
@@ -3227,7 +3226,7 @@ function getCustomBanner() {
         pos = pos.split(' ');
         pos[1] = tryParseInt(pos[1],0);
         pos[3] = tryParseInt(pos[3],0);
-        return [url,color,pos];
+        return Banner("Custom", url, url, color, pos);
     }
     return null;
 }
@@ -3341,7 +3340,7 @@ function applyBackground(c) {
 
 function Ban(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners/' + name + '.jpg', source, color, bg, pos);}
 function Ban2(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners2/' + name + '.jpg', source, color, bg, pos);}
-function Banner(name,img,source,color, bg, pos) {
+function Banner(name, img, source, color, bg, pos) {
     if (typeof bg === 'object') pos = bg, bg = null;
     return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null), 'background': bg};}
 
