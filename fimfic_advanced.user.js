@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.1.5
+// @version     4.1.6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -282,7 +282,6 @@ var userToolbar;
 //--------------------------------------------------------------------------------------------------
 
 patchEvents();
-addCss();
 document.addEventListener("DOMContentLoaded", load);
 //Run it  second time in global scope to ensure greasmonkey doesn't mess with the context
 RunScript(patchEvents, true);
@@ -321,6 +320,7 @@ function patchEvents() {
 
 function load() {
     if (!document.querySelector('.body_container')) return;
+    addCss();
     initGlobals();
     addFooterData('Page running <a>FimFiction Advanced ' + VERSION + '</a>');
     var start = (new Date()).getTime();
@@ -1167,44 +1167,17 @@ function applyFeedFix() {
 
 function applyCodePatches() {
     logger.Log('applyCodePatches');
-    if ($('.chapter-container').length) {
-        ChapterFormatController.prototype.apply = function () {
-            this.chapter.style.fontSize = this.text_size + 'rem';
-            this.chapter.style.fontFamily = this.font;
-            /****/
-            if (this.previous_colour_scheme) jSlim.all('.content_format_' + this.previous_colour_scheme, function(me) {
-                me.classList.remove('.content_format_' + this.previous_colour_scheme); /**/
-            });
-            /****/
-            this.chapterFormat.className = 'content_format_' + this.colour_scheme;
-            /****/
-            jSlim.all('.chapter, #chapter_title, .chapter_footer, .chapter .rating_container .button_container a', function(me) {
-                me.classList.add('content_format_' + this.colour_scheme);
-            });
-            jSlim.all('.content_plus_format', function(me) {
-                me.classList.remove('content_plus_format');
-            });
-            jSlim.all('.chapter_footer, .chapter .rating_container .button_container a, #chapter_title', function(me) {
-                me.classList.add('content_plus_format');
-                me.style.color = window.getComputedStyle(document.querySelector('.content_format_' + this.colour_scheme + ' .inner_margin')).color;
-            });
-            /****/
-            
-            this.chapterBody.style.lineHeight = this.line_spacing + 'em';
-            this.chapterBody.style.textAlign = 'none' != this.justify ? 'justify' : 'left';
-            var c = 'hyphens' == this.justify ? 'auto' : 'none';
-            this.chapterBody.style.webkitHyphens = c;
-            this.chapterBody.style.mozHyphens = c;
-            this.chapterBody.style.msHyphens = c;
-            this.chapterBody.style.hyphens = c;
-            this.storyContainer.style.maxWidth = 50 * this.text_size * this.line_width + 'em';
-            this.chapterBody.classList.toggle('double-spaced', 'double' == this.paragraph_style || 'both' == this.paragraph_style);
-            this.chapterBody.classList.toggle('indented', 'indented' == this.paragraph_style || 'both' == this.paragraph_style);
-            if (this.onChangeListener) this.onChangeListener(this);
-        };
-        override(ChapterFormatController.prototype, 'setColourScheme', function (c) {
-            this.previous_colour_scheme = this.colour_scheme;
-            return this.setColourScheme.super.apply(this, arguments);
+    if (document.querySelector('.chapter-container')) {
+        function formatChapter(chapter) {
+            var style = window.getComputedStyle(chapter);
+            var holder = document.querySelector('.story_content_box');
+            holder.style.backgroundColor = style.backgroundColor;
+            var footer = document.querySelector('.chapter_footer');
+            footer.style.color = style.color;
+        }
+        override(ChapterFormatController.prototype, 'apply', function (c) {
+            this.apply.super.apply(this, arguments);
+            formatChapter(this.chapter);
         });
         ChapterController.prototype.computeBackgroundColor = function() {
             ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
@@ -1249,6 +1222,7 @@ function applyCodePatches() {
         //Force update chapter themes
         try {
             App.DispatchEvent(document, 'chapterColourSchemeChanged');
+            formatChapter(document.querySelector('#chapter'));
         } catch (e) {
             logger.Error(e);
         }
@@ -1319,7 +1293,7 @@ function initBBCodeController() {
 
 function initBlogPage() {
     logger.Log('is_users_blog=true',10);
-    if (!$('.content_box.blog_post_content_box').length) {
+    if (!$('.content_box.blog-post-content-box').length) {
         logger.Log('creating notice..',8);
         var name = getUserName();
         var page = $("div.page_list").first().parent();
@@ -2373,6 +2347,15 @@ textarea[required] {\
   opacity: 1 !important;\
   transition: bottom 0.5s ease, right 0.5s ease !important;}\
 \
+/*Extend chapter themes to the footer*/\
+.chapter_footer {\
+  background: rgba(0,0,0,0.05) !important;\
+  border-top-color: rgba(0,0,0,0.2) !important;}\
+\
+.rating_container .like_button:not(.like_button_selected),\
+.rating_container .dislike_button:not(.dislike_button_selected) {\
+  color: inherit !important;}\
+\
 /*Make the emoticon picker not look like plot*/\
 .emoji-selector__search {\
   background: none !important;\
@@ -2743,20 +2726,6 @@ text-shadow: none !important;}\
     border-width: 1px;\
     border-style: solid;\
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}\
-.content_plus_format {\
-    background: none !important;\
-    border-color: rgba(255,255,255,0.3) !important;}\
-.content_plus_format hr {\
-    opacity: 0.3;}\
-.chapter_content .authors-note p {\
-    background: none !important;\
-    color: inherit;\
-    border: none !important;\
-    animation: none !important;\
-    -webkit-animation: none !important;\
-    -o-animation: none !important;\
-    -ms-animation: none !important;\
-    line-height: 1.7em;}\
 .content_format_pinkie #chapter_container,\
 .content_format_applejack #chapter_container,\
 .content_format_rarity #chapter_container,\
