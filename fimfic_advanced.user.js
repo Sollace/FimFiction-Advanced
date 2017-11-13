@@ -1137,7 +1137,7 @@ function betterSizes(me, controller) {
     </div>`);
     me = me.parentNode.querySelector('ul');
     addDelegatedEvent(me, 'a[data-sizes]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em]`, '[/size]'));
-    addDelegatedEvent(me, 'a[data-headings]', 'click', (e, target) => controller.insertTags(`[size=${sizes[target.dataset.index][1]}em][h1]`, '[/h1][/size]'));
+    addDelegatedEvent(me, 'a[data-headings]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em][h1]`, '[/h1][/size]'));
     addDelegatedEvent(me, 'a', 'mouseenter', (e, target) => {
         const sz = target.dataset.label;
         const pop = makeToolTip(target);
