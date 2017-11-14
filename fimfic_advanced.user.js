@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.2
+// @version     4.2.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -14,7 +14,7 @@
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.2',
+const VERSION = '4.2.1',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -2436,12 +2436,6 @@ function jule(s) {
     let a = '', len = s.length;
     for (var i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
     return a;
-}
-
-function urlSafe(me) {
-    const result = me.toLowerCase().replace(/['",;.?]/gi,'').replace(/[^a-z0-9_-]/gi, '-');
-    while (result.indexOf('--') != - 1) result = result.replace(/--/g, '-');
-    return result.replace(/-*$/g, '');
 }
 
 function InvalidHexColor(color) {
