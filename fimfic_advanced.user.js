@@ -5,8 +5,7 @@
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
-// @include     http://www.fimfiction.net/*
-// @include     https://www.fimfiction.net/*
+// @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
@@ -184,28 +183,39 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function patchEvents() {
-    override(EventTarget.prototype, 'addEventListener', function(ev, f, c) {
-        if (!this.eventListeners) this.eventListeners = {};
-        if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
-        this.eventListeners[ev].push(f);
-        return EventTarget.prototype.addEventListener.super.apply(this, arguments);
+    function extend(saved, onto, offof) {
+      Object.keys(offof).forEach(member => {
+        saved[member] = onto[member];
+        onto[member] = offof[member];
+      });
+      return saved;
+    }
+    const ov = extend({}, window.EventTarget.prototype, {
+        addEventListener: function(ev, f, c) {
+            if (!this.eventListeners) this.eventListeners = {};
+            if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
+            this.eventListeners[ev].push(f);
+            return ov.addEventListener.apply(this, arguments);
+        },
+        removeEventListener: function(ev, f) {
+            let l = this.getEventListeners(ev), i = l.indexOf(f);
+            if (i > -1) l.splice(i, 1);
+            return ov.removeEventListener.apply(this, arguments);
+        },
+        removeEventListeners: function(event) {
+            this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
+        },
+        getEventListeners: function(event) {
+            return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
+        }
     });
-    override(EventTarget.prototype, 'removeEventListener', function(ev, f) {
-        let l = this.getEventListeners(ev), i = l.indexOf(f);
-        if (i > -1) l.splice(i, 1);
-        return EventTarget.prototype.removeEventListener.super.apply(this, arguments); 
-    });
-    EventTarget.prototype.removeEventListeners = function(event) {
-        this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
-    };
-    EventTarget.prototype.getEventListeners = function(event) {
-        return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
-    };
-    override(window.Function.prototype, 'bind', function(context) {
-        const result = this.bind.super.apply(this, arguments);
-        result.unbound = this;
-        result.context = context;
-        return result;
+    const of = extend({}, window.Function.prototype, {
+        bind: function(context) {
+            let result = of.bind.apply(this, arguments);
+            result.unbound = this;
+            result.context = context;
+            return result;
+        }
     });
 }
 
@@ -615,56 +625,50 @@ function applyFeedFix() {
 function applyCodePatches() {
     if (document.querySelector('.chapter-container')) {
         function formatChapter(chapter) {
-            var style = window.getComputedStyle(chapter);
-            var holder = document.querySelector('.story_content_box');
-            holder.style.backgroundColor = style.backgroundColor;
-            var footer = document.querySelector('.chapter_footer');
-            footer.style.color = style.color;
+            const style = window.getComputedStyle(chapter);
+            document.querySelector('.story_content_box').style.backgroundColor = style.backgroundColor;
+            document.querySelector('.chapter_footer').style.color = style.color;
         }
-        override(ChapterFormatController.prototype, 'apply', function (c) {
-            this.apply.super.apply(this, arguments);
+        override(ChapterFormatController.prototype, 'apply', function(c) {
+            ChapterFormatController.prototype.apply.super.apply(this, arguments);
             formatChapter(this.chapter);
         });
-        ChapterController.prototype.computeBackgroundColor = function() {
+        override(ChapterController.prototype, 'computeBackgroundColor', function() {
             ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
-        }
-        ChapterController.prototype.computeBackgroundColor.patched = function (c) {
-            document.querySelector('.body_container')/*.body*/.style.backgroundColor = '';
-            this.backgroundColor = extractColor(document.body.dataset.baseColor/*window.getComputedStyle(document.body).backgroundColor*/);
-            var c = extractColor(window.getComputedStyle(this.chapterFormat.querySelector('.chapter')).backgroundColor);
-            if ('undefined' != typeof this.backgroundColor) {
-                var d = 127 > 0.39 * c[0] + 0.5 * c[1] + 0.11 * c[2];
-                this.fadedBackgroundColor = colorMult(c, d ? 0.85 : 0.95);
-                255 == c[0] && 255 == c[1] && 255 == c[2] && (this.fadedBackgroundColor = null);
-                this.border_color = colorMult(c, d ? 1.4 : 0.82);
-                this.updatePageBackgroundColor.patched.call(this, c);
-            }
-        };
+        });
+        ChapterController.prototype.computeBackgroundColor.patched = patchFunc(ChapterController.prototype.computeBackgroundColor.super, body => {
+          return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
+                    .replace('window.getComputedStyle(document.body).backgroundColor', `document.body.dataset.baseColor`)
+                    .replace('updatePageBackgroundColor(', `updatePageBackgroundColor.patched.call(this, `);
+        });
+        
         //Change styling target to the body container
         override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
             if (!this.patched) {
-                var scroll_events = document.getEventListeners('scroll');
-                for (var i = 0; i < scroll_events.length; i++) {
-                    if (scroll_events[i].context == this && !scroll_events[i].patched) {
-                        document.removeEventListener('scroll', scroll_events[i]);
-                    }
-                }
-                var ev = ChapterController.prototype.computeBackgroundColor.patched.bind(this);
-                ev.patched = true;
-                window.addEventListener('scroll', ev);
+                replaceListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+                replaceListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+                replaceListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
             }
             this.computeBackgroundColor.patched.call(this, c);
         });
-        ChapterController.prototype.updatePageBackgroundColor.patched = function (c) {
-            c = void 0 === c ? !1 : c;
-            var d = this.elements.chapterContentBox.getBoundingClientRect(),
-                d = 1 - saturate(5 * Math.min(2 - d.top / window.innerHeight, d.bottom / window.innerHeight) - 4);
-            if (d != this.lastBackgroundBlendFactor || c) document.querySelector('.body_container')/*.body*/.style.backgroundColor = null != this.fadedBackgroundColor ? rgbToCSS(colorBlend(this.backgroundColor, this.fadedBackgroundColor, d))  : null,
-                this.elements.chapterContentBox.style.borderLeftColor = rgbToCSS(this.border_color),
-                this.elements.chapterContentBox.style.borderRightColor = rgbToCSS(this.border_color),
-                this.elements.chapterContentBox.style.borderBottomColor = rgbToCSS(this.border_color)/**/
-                this.lastBackgroundBlendFactor = d
-        };
+        ChapterController.prototype.updatePageBackgroundColor.patched = patchFunc(ChapterController.prototype.updatePageBackgroundColor.super, body =>
+            body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
+                       .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`));
+        
+        function patchFunc(func, replacer) {
+          return Function('return '+ replacer(func.toString()))();
+        }
+        
+        function replaceListener(event, sender, old, neu) {
+            const scroll_events = document.getEventListeners(event);
+            for (let i = 0; i < scroll_events.length; i++) {
+              if (scroll_events[i].context == sender && scroll_events[i].unbound == old) {
+                document.removeEventListener(event, scroll_events[i]);
+              }
+            }
+            document.addEventListener(event, neu);
+        }
+        
         //Force update chapter themes
         try {
             App.DispatchEvent(document, 'chapterColourSchemeChanged');
@@ -685,10 +689,16 @@ function initCommentArea() {
     all('.bbcode-editor:not([data-fimficadv])', me => {
         me.dataset.fimficadv = '1';
         const controller = App.GetControllerFromElement(me);
-        const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
-        main_button.dataset.click = 'showFimficAdv';
-        registerButton(main_button, controller, -1);
+        if (!controller) return requestAnimationFrame(() => registerCommentButtons(me));
+        registerCommentButtons(me);
     });
+}
+
+function registerCommentButtons(me) {
+  const controller = App.GetControllerFromElement(me);
+  const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
+  main_button.dataset.click = 'showFimficAdv';
+  registerButton(main_button, controller, -1);
 }
 
 function initBBCodeController() {
@@ -730,8 +740,8 @@ function initBBCodeController() {
                     </label>`).join('')}
                 </div>
             </div>`);
-            addDelegatedEvent(pop.content, 'input', 'click', () => {
-                controller.insertText(`[icon]${this.value}[/icon]${controller.getSelection()}`);
+            addDelegatedEvent(pop.content, 'input', 'click', (s, target) => {
+                this.insertText(`[icon]${target.value}[/icon]${this.getSelection()}`);
                 pop.Close();
             });
             pop.Show();
@@ -814,10 +824,8 @@ function initBlogPage() {
         const page = document.querySelector("div.page_list");
         if (page) page.parentNode.previousSibling.insertAdjacentHTML('beforeend', `<div class="content_box blog_post_content_box" style="margin-top:0px; ">
     <div class="calendar" style="margin-top:0px">
-		<div class="month">Jan</div>
-		<div class="day">1
-            <span style="font-size:0.6em;">st</span>
-			<div class="year">1992</div>
+		  <div class="month">Jan</div>
+		  <div class="day">1<span style="font-size:0.6em;">st</span><div class="year">1992</div>
 		</div>
 	</div>
     <div class="arrow"></div>
@@ -835,18 +843,18 @@ function initBlogPage() {
 </div>
 <div class="main">
 	<div class="blog_post_content" style="text-align:center">
-        <p>Go to <b><i class="fa fa-user"></i> ' + name + '</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
+        <p>Go to <b><i class="fa fa-user"></i> ${name}</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
         <br><br>Or click <div class="button-group"><a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a></div> to create one now and start talking!
     </div>
 	<div class="information_box">
-		<a href="/user/' + urlSafe(name) + '"><b>' + name + '</b></a> <b class="dot">·</b> 0 views <b>·</b>
+		<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views <b>·</b>
 	</div>
 </div>`);
     }
 }
 
 function startCommentHandler() {
-    CommentListController.prototype.quoteComment = function (sender, event) {
+    CommentListController.prototype.quoteComment = function(sender, event) {
         const id = sender.dataset.commentId;
         sender = sender.closest('.comment');
         let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
@@ -863,7 +871,6 @@ function startCommentHandler() {
         }
     };
     
-    
     FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
         all('.comment .buttons:not([data-parsed])', insertQuoteButton);
     })();
@@ -871,14 +878,13 @@ function startCommentHandler() {
     if (!getAlwaysShowImages() && getExtraEmotesInit()) return;
     
     const unspoil = getAlwaysShowImages() ? me => {
-        replaceWith(me.parentNode, `<img class="user_image" data-lightbox src="${me.href}></img>`);
+        replaceWith(me.parentNode, `<img class="user_image" data-lightbox src="${me.href}"></img>`);
     } : me => {
-        let url = me.href.replace(/$(https:|http:)/g,'');
-        const q = url.indexOf('?');
-        if (q < 0 || url.substring(q + 1, url.length).indexOf('isEmote=true') < 0) return;
+        const url = me.href;
+        if (!/\?.*isEmote/.test(url)) return;
         me = me.parentNode;
         if (me.nextSibling && me.nextSibling.tagName != 'BR') {
-            me.parentNode.insertBefore(document.createElement('BR'), me.nextSibling);
+            me.insertAdjacentElement('afterend', document.createElement('BR'));
         }
         replaceWith(me, `<img class="user_image" src="${url}"></img>`);
     };
@@ -2422,6 +2428,9 @@ function replaceAll(find, replace, me) {return me.replace(new RegExp(find.replac
 function getExtraEmotesInit() {return !!document.querySelector('div#extraemoticons_loaded');}
 function cssToRgb(css) {return css.replace(/[^0-9,]/g, '').split(',');}
 
+
+
+
 function normalise(me) {
     if (!me) return me;
     let space = true;
@@ -2787,11 +2796,11 @@ function BannerController(sets) {
 function Slider() {
     const slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000],
           slideLabels = ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"];
-    let fade, tit, isSliding, slideshowTimer;
+    let fade, tit, isSliding, slideshowTimer, me;
     
     function loadImg() {
         userToolbar.style.transitionDuration = '3s';
-        bannerController.chooose(theme);
+        bannerController.pick(theme);
         setTimeout(() => userToolbar.style.transitionDuration = '', 3000);
         fade.style.transition = 'opacity 3s linear';
         fade.style.opacity = 0;
@@ -2799,7 +2808,7 @@ function Slider() {
         me.updateSlide();
     }
     
-    return {
+    return me = {
         ready: _ => {
             fade = document.querySelector('#fade_banner_image');
             tit = document.querySelector('#title a.home_link');
@@ -3425,7 +3434,7 @@ function setupSweetie() {
         }
         if (shakeCount >= 20) {
             shakeCount = -1;
-            say('Woah!</br>I\'m starting to feel a little dizzy here...', 5000);
+            say("Woah!</br>I'm starting to feel a little dizzy here...", 5000);
         }
     }
 
