@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.2.2
+// @version     4.2.2b
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -14,7 +14,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.2.2',
+const VERSION = '4.2.2b',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -256,7 +256,19 @@ function initFimFictionAdvanced() {
   applyChapterButtons();
   if (isMyBlogPage()) initBlogPage();
   bannerController.buildAll();
-  initBBCodeController();
+  try {
+    initBBCodeController();
+  } catch (e) {
+    console.info('[==========Debug Info==========]')
+    console.info(`Window: ${window}`);
+    console.info(`UnsafeWindow: ${unsafeWindow}`);
+    console.info(`Sandboxed: ${window !== unsafeWindow}`);
+    console.info(`this: ${this}`);
+    console.info(`this.BBCodeEditorController: ${this['BBCodeEditorController']}`);
+    console.info(`window.BBCodeEditorController: ${window['BBCodeEditorController']}`);
+    console.info(`unsafeWindow.BBCodeEditorController: ${unsafeWindow['BBCodeEditorController']}`);
+  }
+  
   if (getBlockLightbox()) lightboxblocker();
   if (getPinUserbar()) barScrollOn();
   bannerController.initFancy();
