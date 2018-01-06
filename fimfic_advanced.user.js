@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.2.2b
+// @version     4.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -14,13 +14,17 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.2.2b',
+const VERSION = '4.3',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
-if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'Stopped: Login Frame';
-if (document.querySelector('body[FimFic_Adv]')) throw 'Stopped: Repeated Execution';
-
+if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
+if (document.querySelector('body[FimFic_Adv]')) throw 'FimFAdv: Repeated Execution detected. Execution halted.';
+if (this['unsafeWindow'] && window !== unsafeWindow) {
+  console.warn(`FimFAdv: Sandboxing is enabled. This script may not run correctly.
+  Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
+  Greasemonkey is deprecated.`);
+}
 //==================================================================================================
 const settingsMan = {
   __get: (key, parse, def) => settingsMan.has(key) ? parse(localStorage[key]) : def,
@@ -256,18 +260,7 @@ function initFimFictionAdvanced() {
   applyChapterButtons();
   if (isMyBlogPage()) initBlogPage();
   bannerController.buildAll();
-  try {
-    initBBCodeController();
-  } catch (e) {
-    console.info('[==========Debug Info==========]')
-    console.info(`Window: ${window}`);
-    console.info(`UnsafeWindow: ${unsafeWindow}`);
-    console.info(`Sandboxed: ${window !== unsafeWindow}`);
-    console.info(`this: ${this}`);
-    console.info(`this.BBCodeEditorController: ${this['BBCodeEditorController']}`);
-    console.info(`window.BBCodeEditorController: ${window['BBCodeEditorController']}`);
-    console.info(`unsafeWindow.BBCodeEditorController: ${unsafeWindow['BBCodeEditorController']}`);
-  }
+  initBBCodeController();
   
   if (getBlockLightbox()) lightboxblocker();
   if (getPinUserbar()) barScrollOn();
@@ -276,6 +269,7 @@ function initFimFictionAdvanced() {
     applyFeedFix();
     animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
   }
+  removeAnnoyances();
   applyCodePatches();
   if (getSweetieEnabled()) setupSweetie();
   if (slider.getSlide()) slider.updateSlide();
@@ -286,11 +280,27 @@ function registerEvents() {
   FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', initCommentArea);
   FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
   if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) startCommentHandler();
+  applyNightModeListener();
 }
 
 //--------------------------------------------------------------------------------------------------
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
+
+function applyNightModeListener() {
+  window.addEventListener('storage', c => {
+    if (c.key == 'stylesheet') nightModeToggled();
+  });
+  override(NightModeController.prototype, 'update', function() {
+    NightModeController.prototype.update.super.apply(this, arguments);
+    nightModeToggled();
+  });
+}
+
+function nightModeToggled() {
+  addCss();
+  applyBackground(getBGColor());
+}
 
 function buildSettingsTab(tab) {
   tab.StartEndSection("General Settings");
@@ -637,6 +647,13 @@ function applyFeedFix() {
   });
 }
 
+function removeAnnoyances() {
+  all('.right.advert [data-click="hideAdvert"]', a => a.click());
+  all('.story_content_box [data-ad-class], .story_content_box .advertisment', a => {
+    a.parentNode.insertAdjacentElement('afterend', a);
+  });
+}
+
 function applyCodePatches() {
   if (document.querySelector('.chapter-container')) {
     function formatChapter(chapter) {
@@ -958,7 +975,7 @@ function buildAdvancedButton(button, controller) {
 function makeReplacePopup(controller) {
   const pop = makePopup('Find and Replace', 'fa fa-magic', false);
   pop.SetWidth(350);
-  pop.SetContent(`<div style="padding:10px;">
+  pop.SetContent(`<div class="std" style="padding:10px;">
     <input id="find" type="text" required="required" placeholder="Find" name="find"></input>
     <input id="replace" type="text" required="required" placeholder="Replace" name="replace"></input>
   </div>`);
@@ -1041,7 +1058,7 @@ function insertColor(controller) {
   const pop = makePopup("Custom Colour", 'fa fa-tint');
 
   pop.SetWidth(350);
-  pop.content.insertAdjacentHTML('beforeend', `<div style="padding:10px;">
+  pop.content.insertAdjacentHTML('beforeend', `<div class="std" style="padding:10px;">
         <div id="color_preview" class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;" >
             <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy rabbit.</span>`).join(' ')}</b>
         </div>
@@ -1235,7 +1252,7 @@ function addCollapseColorSection(panel, colors, title, collapse) {
   section.style.cursor = 'pointer';
   section.classList.add('collapsable');
   section.classList.toggle('collapsed', collapse);
-  section.addEventListener('click', () => header.classList.toggle('collapsed'));
+  section.addEventListener('click', () => section.classList.toggle('collapsed'));
 }
 
 function addColorSection(panel, colors, title) {
@@ -1286,7 +1303,7 @@ function addExtraToolbarLinks(e) {
     var link = ref.cloneNode(true);
     ref.parentNode.insertBefore(link, ref.nextSibling);
     link = link.querySelector('a');
-    link.href = 'https://www.fimfiction.net/bookshelf/1/featured?q=' + getUserName();
+    link.href = `https://www.fimfiction.net/user/${getUserId()}/${getUserName()}/stories?q=bookshelf%3A1&order=latest`;
     link.innerHTML = '<i class="fa fa-star-o"></i>View My Featured Stories';
   }
 }
@@ -1299,56 +1316,89 @@ function addFooterData(data) {
 //-------------------------------------STYLESHEETS-------------------------------------------------
 
 function addCss() {
-  makeStyle(`
+  const light = currentTheme() == 'light';
+  const container_background = light ? '#fff' : '#29313f',
+        container_foreground = light ? '#333' : '#a3abc3',
+        container_border_base = light ? '#bebab5' : '#333d4f',
+        container_border_highlight = light ? '#d6d2cb' : '#333d4f',
+        container_subtext_foreground = light ? '#888' : '#7a829a',
+        chapter_footer_background = light ? '#efefef' : '#303949',
+        chapter_message_background = light ? '#f6f6f6' : chapter_footer_background,
+        chapter_options_button_background = light ? '#fff' : '#29313f',
+        chapter_border_top = light ? '#ddd' : '#384356',
+        chapter_border_left = light ? 'rgba(0,0,0,0.3)' : '#46536b',
+        chapter_border_bottom = light ? 'rgba(0,0,0,0.15)' : chapter_border_top,
+        chapter_highlight_background = light ? 'rgb(48, 250, 255)' : '#29497b',
+        feature_selected_background = light ? '#ccc' : '#232a36',
+        gradient_highlight = light ? '255,255,255' : '44,53,68',
+        bookshelf_item_foreground = light ? '#777' : '#afceff',
+        emoji_input_background = light ? '#fff' : '#252c39',
+        emoji_input_foreground = light ? '#333' : '#a3abc3',
+        emoji_input_shadow = 'rgba(0,0,0,0.1)',
+        emoji_input_border = light ? '#aaa' : '#333d4f',
+        emoji_header_background_min = light ? '#f8f8f8' : '#232a36',
+        emoji_header_background_max = light ? '#f2f2f2' : '#333a46',
+        emoji_header_border = light ? '#ddd' : container_border_base,
+        emoji_focus_background = light ? '#eee' : '#336';
+  
+  updateStyle(`
 /*Footer overflow fix*/
 div.footer { height: auto !important;}
 
-/*Tables border fix*/
-table.properties > tbody > tr.bookmark_entry:last-child td { border-bottom: 1px solid #DDD !important;}
-
 /*Fix bleeding corners on dropdown menus*/
-.user_toolbar > ul > li ul li:last-child a i { border-bottom-left-radius: 2px;}
+.user_toolbar > ul > li ul li:last-child a i { border-bottom-left-radius: 4px;}
 
 /*Textarea fix*/
 textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
 
-/*Remove black line in chapter footers*/
-.chapter_footer hr { border: none;}
+/*Dark Theme fix*/
+.user_toolbar > ul > li ul li ul ~ a::before {color: inherit !important;}
 
 /*Background-gradient fix*/
 [fimfic_adv*=background] .topbar-shadow div.light-gradient {
-    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0)), color-stop(80px, rgba(255,255,255,0.5))) !important;
-    background: -webkit-linear-gradient(left, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;}
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(${gradient_highlight},0)), color-stop(80px, rgba(${gradient_highlight},0.5))) !important;
+    background: -webkit-linear-gradient(left, rgba(${gradient_highlight},0) 0%, rgba(${gradient_highlight},0.5) 80px) !important;
+    background: linear-gradient(to right, rgba(${gradient_highlight},0) 0%, rgba(${gradient_highlight},0.5) 80px) !important;}
 [fimfic_adv*=background] .topbar-shadow div.light-gradient::before {
-    background: rgba(255,255,255,0.5) !important;
-    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255,255,255,0.5)), color-stop(80px, rgba(255,255,255,0))) !important;
-    background: -webkit-linear-gradient(left, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;
-    background: linear-gradient(to right, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;}
+    background: rgba(${gradient_highlight},0.5) !important;
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(${gradient_highlight},0.5)), color-stop(80px, rgba(${gradient_highlight},0))) !important;
+    background: -webkit-linear-gradient(left, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;
+    background: linear-gradient(to right, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;}
 [fimfic_adv*=background] .sidebar-shadow div.light-gradient {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0)), color-stop(80px, rgba(255,255,255,0.5))) !important;
-    background: -webkit-linear-gradient(top, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;
-    background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.5) 80px) !important;}
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(${gradient_highlight},0)), color-stop(80px, rgba(${gradient_highlight},0.5))) !important;
+    background: -webkit-linear-gradient(top, rgba(${gradient_highlight},0) 0%, rgba(${gradient_highlight},0.5) 80px) !important;
+    background: linear-gradient(to bottom, rgba(${gradient_highlight},0) 0%, rgba(${gradient_highlight},0.5) 80px) !important;}
 [fimfic_adv*=background] .sidebar-shadow div.light-gradient::before {
-    background: rgba(255,255,255,0.5) !important;
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(255,255,255,0.5)), color-stop(80px, rgba(255,255,255,0))) !important;
-    background: -webkit-linear-gradient(top, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0) 80px) !important;}
+    background: rgba(${gradient_highlight},0.5) !important;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(${gradient_highlight},0.5)), color-stop(80px, rgba(${gradient_highlight},0))) !important;
+    background: -webkit-linear-gradient(top, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;
+    background: linear-gradient(to bottom, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;}
+
+/*Night mode checkboxes*/
+${light ? '' : `
+.toggleable-switch input:checked + a::before {
+    color: #7dbd3a;
+}
+.toggleable-switch a::before {
+    background: #2a4484;
+    border: 1px solid #32529e;
+    color: #efb7b7;
+    text-shadow: 1px 1px #32529e;
+}`}
 
 /*Bookshelf icon colour fix*/
-.story-toolbar .bookshelves li span {
-    color: #777;
-    transition: color 0.2s ease 0s;}
+.story-top-toolbar .bookshelves li:not(:hover) .bookshelf-icon-pony-emoji {
+    color: ${bookshelf_item_foreground} !important;}
 .user_toolbar > ul > li ul li:hover > a .bookshelf-icon-element span {
-    color: #FFF !important;}
+    color: #fff !important;}
 
 /*Start Enhancements*/
 /*Modernised source links*/
 .story_container .story_container__story_image { overflow: hidden;}
 .story_container .story_container__story_image .source {
   display: block !important;
-  background: #fff !important;
-  color: #333 !important;
+  background: ${container_background} !important;
+  color: ${container_foreground} !important;
   border: none !important;
   border-radius: 5px 0 3px 0 !important;
   text-shadow: none !important;
@@ -1378,27 +1428,38 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
   color: inherit !important;}
 
 /*Make the emoticon picker not look like plot*/
-.emoji-selector__search {
+.format-toolbar .emoji-selector .emoji-selector__search {
   background: none !important;
-  padding: 3px !important;}
+  padding: 3px !important;
+  box-shadow: none;}
 .emoji-selector__search input {
   width: 100%;
   margin: 0;
   padding: 5px;
   border-radius: 4px;
-  box-shadow: inset 0 0 5px 3px #fef;
-  border: solid 1px #aaa;}
+  background: ${emoji_input_background};
+  color: ${emoji_input_foreground};
+  box-shadow: inset 0 0 5px 3px ${emoji_input_shadow};
+  border: solid 1px ${emoji_input_border};}
 .format-toolbar .emoji-selector .emoji-selector__tabs,
 .format-toolbar .emoji-selector .emoji-selector__list > li.emoji-selector__header {
-  background: #f8f8f8 !important;
-  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, #f8f8f8), color-stop(100%, #f2f2f2)) !important;
-  background: -webkit-linear-gradient(top, #f8f8f8 0%, #f2f2f2 100%) !important;
-  background: linear-gradient(to bottom, #f8f8f8 0%, #f2f2f2 100%) !important;}
+  border-bottom: 1px solid ${emoji_header_border};
+  border-top: 1px solid ${emoji_header_border};
+  background: ${emoji_header_background_min} !important;
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, ${emoji_header_background_min}), color-stop(100%, ${emoji_header_background_max})) !important;
+  background: -webkit-linear-gradient(top, ${emoji_header_background_min} 0%, ${emoji_header_background_max} 100%) !important;
+  background: linear-gradient(to bottom, ${emoji_header_background_min} 0%, ${emoji_header_background_max} 100%) !important;}
 .format-toolbar .emoji-selector .emoji-selector__tabs li {
-  background: none !important;}
+  background: none !important;
+  box-shadow: none;}
 .format-toolbar .emoji-selector .emoji-selector__tabs li:hover,
 .format-toolbar .emoji-selector .emoji-selector__tabs li.selected {
   background: rgba(0,0,0,0.1) !important;}
+.format-toolbar .emoji-selector .emoji-selector__list > li:hover {
+    background: ${emoji_focus_background};
+    border-radius: 4px;
+    box-shadow: 0 0 0 3px ${emoji_focus_background};
+}
 
 .format-toolbar .emoji-selector .emoji-selector__list > li {
   margin: 4px;
@@ -1408,10 +1469,8 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
 .format-toolbar .emoji-selector .emoji-selector__list > li.emoji-selector__header:hover {
   border-radius: 0 !important;}
 /*Center pony emoticon images vertically*/
-.format-toolbar .emoji-selector .emoji-selector__list > li a {
-  height: 36px;}
-.format-toolbar .emoji-selector .emoji-selector__list > li img {
-  margin-top: 5px;}
+.format-toolbar .emoji-selector .emoji-selector__list > li a {height: 36px;}
+.format-toolbar .emoji-selector .emoji-selector__list > li img {margin-top: 5px;}
 
 .story-page-header > .inner h1 a, .user-page-header > .inner h1 a:hover {text-decoration: none;}
 
@@ -1449,8 +1508,7 @@ body > canvas ~ .footer {
   padding: 0 !important;}
 
 /*Fixed, well, not fixed, but removed, hideous yellow*/
-.user_cp .tabs ul li.tab_selected {
-    background: rgba(120,120,120,0.1) !important;}
+.user_cp .tabs ul li.tab_selected {background: rgba(120,120,120,0.1) !important;}
 
 /*I'll have non'a that shit*/
 .bbcode hr::after, .article hr::after { display: none !important; }
@@ -1463,7 +1521,7 @@ body > canvas ~ .footer {
     border: 0;}
 
 /*Clean up the featured box*/
-.front_page .featured_box .left ul li.selected {background: #ccc !important;}
+.front_page .featured_box .left ul li.selected {background: ${feature_selected_background} !important;}
 .front_page .featured_box .left ul li.selected::before, .front_page .featured_box .left ul li.selected::after {
     position: absolute;
     content: '';
@@ -1474,11 +1532,11 @@ body > canvas ~ .footer {
     border: solid 14px transparent;}
 .front_page .featured_box .left ul li.selected::after {
     top: 0;
-    border-right-color: #fff;}
+    border-right-color: ${container_background};}
 .front_page .featured_box .left ul li.selected::before {
     top: -1px;
     border-width: 15px;
-    border-right-color: rgba(0,0,0,0.3);}
+    border-right-color: ${chapter_border_left};}
 
 /*Global Styles*/
 .ffa-hidden {display: none !important;}
@@ -1489,15 +1547,23 @@ body > canvas ~ .footer {
 .chapter-options-header {
     text-align: justify;
     overflow: hidden;
-padding-right: 20px !important;}
+    padding-right: 20px !important;
+    margin-top: 1.0rem;
+    background-color: ${chapter_footer_background};
+    position: relative;
+    padding: 10px;
+    padding-left: 16px;
+    padding-right: 100px;
+    border-top: 1px solid ${chapter_border_top};
+    font-size: 0.9em;}
 .chapter-options-header a {
     display: inline-block;
-    color: #333;
-    background: #fff;
+    color: ${container_foreground};
+    background: ${chapter_options_button_background};
     font-size: .8125rem;
     font-weight: normal;
     padding: 3px 8px;
-    border: 1px solid #0003;
+    border: 1px solid rgba(0,0,0,0.15);
     border-radius: 4px;
     text-align: center;
     line-height: 16px;
@@ -1506,26 +1572,23 @@ padding-right: 20px !important;}
     background: #258bd4;
     color: #fff;
     text-decoration: none;}
-.chapters_compact a.compact .off, a.compact .on {
-    display: none;}
-.chapters_compact a.compact .on, a.compact .off {
-    display: inline;}
-.all-chapters-hidden {
-    display: none;
-    text-align: center;}
-.chapters_compact .all-chapters-hidden {display: block;}
 .all-chapters-hidden {
     position: relative;
     padding: 10px;
     padding-left: 16px;
     padding-right: 100px;
-    color: #888;
-    border-bottom: 1px solid rgba(0,0,0,0.15);
-    border-top: 1px solid #ddd;
+    background-color: ${chapter_message_background};
+    color: ${container_subtext_foreground};
+    border-top: 1px solid ${chapter_border_top};
+    border-bottom: 1px solid ${chapter_border_bottom};
     font-size: .9375rem;
-    background-color: #f6f6f6;}
+    text-align: center;}
+.all-chapters-hidden,
+.chapters_compact a.compact .off, a.compact .on {display: none;}
+.chapters_compact a.compact .on, a.compact .off {display: inline;}
+.chapters_compact .all-chapters-hidden {display: block;}
 .story_container .chapters > li.chapter-highlighted {
-    background: rgb(48, 250, 255);
+    background: ${chapter_highlight_background};
     transition: background 0.5s ease !important;
     display: block !important;}
 .story_container .chapters > li.unread-chapter {
@@ -1652,16 +1715,6 @@ a:hover .bg_source_link {
 .all-shown .chapters li.hidden {display: block;}
 .all-shown .chapter-expander-toggle {display: none;}
 .all-shown .compact_chapters {display: inline-block !important;}
-.story_container .chapter-options-header {
-    margin-top: 1.0rem;
-    background-color: #efefef;
-    color: #555;
-    position: relative;
-    padding: 10px;
-    padding-left: 16px;
-    padding-right: 100px;
-    border-top: 1px solid rgba(0,0,0,0.15);
-    font-size: 0.9em;}
 .story_container .chapter-options-header ~ .chapters {margin-top: 0;}
 .chapters_compact .chapters {display: none !important;}
 .sigPreview {
@@ -1684,30 +1737,7 @@ a:hover .bg_source_link {
 .previewButton {
     width: 100px !important;
     text-align: center;}
-.comment .textarea_padding {
-    padding-left: 0px !important;
-    padding-right: 0px !important;}
-.comment textarea:focus {
-    background-color: rgb(232, 239, 246) !important;
-    border-color: rgba(0, 0, 0, 0.2) !important;
-text-shadow: none !important;}
 
-.comment textarea {
-    padding: 8px;
-    color: rgb(68, 68, 68);
-    border: 1px solid rgb(204, 204, 204);
-    -moz-box-sizing: border-box;
-    outline: medium none;
-    transition: border-color 0.25s ease 0s, background-color 0.25s ease 0s;
-    box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;
-    background-color: rgb(255, 255, 250);
-    text-shadow: 1px 1px rgba(244, 244, 244, 0.8);
-    vertical-align: middle;
-    min-height: 120px;
-    border-radius: 0px !important;
-    width: 100%;
-    resize: vertical;
-    left: 0px !important;}
 .user_toolbar > .inner .button-first {
     margin-left: 0px !important;
     border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}
@@ -1751,13 +1781,12 @@ text-shadow: none !important;}
     overflow: hidden;
     border-radius: 15px;}
 #bookshelves-sidebar > li, #bookshelves-sidebar-community > li {
-    background: #fff;
+    background: ${container_background};
     margin: 5px;
     padding-left: 5px;
-    border-width: 1px;
-    border-style: solid;
-    border-right: 1px solid #BEBAB4;
-    border-color: #D6D1CB #BEBAB4 #BEBAB4 #D6D1CB;
+    border: solid 1px ${container_border_base};
+    border-top-color: ${container_border_highlight};
+    border-left-color: ${container_border_highlight};
     border-radius: 5px;}
 .left-tabs {
     padding-left: 0px !important;
@@ -1787,7 +1816,6 @@ text-shadow: none !important;}
     .fix_userbar header.header {
         margin-bottom: 40px;}
     .pin_nav_bar.fix_userbar .user_toolbar {top: 45px;}
-
     .pin_nav_bar #chapter_toolbar_container[data-fixed] {top: 3rem;}
     .fix_userbar #chapter_toolbar_container[data-fixed] {top: 2.7rem;}
     .pin_nav_bar.fix_userbar #chapter_toolbar_container[data-fixed] {top: 5.5875rem !important;}
@@ -1802,8 +1830,7 @@ text-shadow: none !important;}
     transition: background-color 0.3s linear;
     background-color: rgba(0,0,0,0.6);}
 .fix_feed .content > .content_background > .inner {margin-top: 55px;}
-.pin_nav_bar.fix_feed .feed-toolbar {
-    top: 45px;}
+.pin_nav_bar.fix_feed .feed-toolbar {top: 45px;}
 
 .banner_credits {
     vertical-align: top;
@@ -1871,7 +1898,7 @@ text-shadow: none !important;}
     background: transparent linear-gradient(to bottom, #444 0%, #404040 100%) repeat scroll 0% 0%;
     box-shadow: 0px 3px 5px #373737 inset;}
 .fix_switcher #save_banners, .fix_switcher #save_banners .fa {
-    color: #FFF;
+    color: #fff;
     text-shadow: -1px -1px rgba(0, 0, 0, 0.1);
     font-weight: bold;}
 .fix_switcher #banner_switcher {
@@ -1894,6 +1921,7 @@ text-shadow: none !important;}
 }
 
 function addBannerCss() {
+    
     makeStyle(`
 body.pin_nav_bar div.page-nav-bars {
     position: static;
@@ -2075,6 +2103,8 @@ header.header .home_link {border: none !important;}
   .user-page-header .tabs li a, .user-page-header .tabs li a:before, .user-page-header .tabs li a span {
         color: #ccc !important;
         text-shadow: none !important;}
+  .user-page-header .tabs li a::after {
+        display: none;}
   .user-page-header .tabs li a {
         transition: background 0.5s ease;
         border-radius: 4px;
@@ -2122,17 +2152,19 @@ header.header .home_link {border: none !important;}
 }
 
 function makeBannerTransitionStyle(height) {
-  const style = `
+  updateStyle(`
 @media all and (min-width: 700px) {
     .user-page-header:hover ~  header.header .title, .story-page-header:hover ~ header.header .title { height: 40px;}
     .user-page-header:hover, .story-page-header:hover,
     .user-page-header:hover .info-container, .story-page-header:hover .info-container {
         transition: height 0.5s 0.6s ease;
-        height: ${height}px;}}`;
-  const id = 'Fimfiction_Advanced_Banner_Transition_Stylesheet';
+        height: ${height}px;}}`, 'Fimfiction_Advanced_Banner_Transition_Stylesheet');
+}
+
+function updateStyle(style, id) {
   const el = document.getElementById(id);
   if (el) return el.innerHTML = style;
-  makeStyle(style, id)
+  makeStyle(style, id);
 }
 
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
@@ -2409,17 +2441,6 @@ function override(obj, member, new_func) {
   obj[member] = new_func;
 }
 
-function addDelegatedEvent(node, selector, event, func, capture) {
-  const k = ev => {
-    const target = ev.target.closest(selector);
-    if (!target) return;
-    if (('mouseout' == event || 'mouseover' == event) && target.contains(ev.relatedTarget)) return;
-    func.call(target, ev, target);
-  };
-  node.addEventListener(event, k, capture);
-  return k;
-}
-
 function newEl(html) {
   const div = document.createElement('DIV');
   div.innerHTML = html;
@@ -2431,7 +2452,6 @@ function replaceWith(el, html) {
   el.parentNode.removeChild(el);
 }
 
-function all(selector, holder, func) {return func ? Array.prototype.forEach.call(holder.querySelectorAll(selector), func) : all(selector, document, holder);}
 function extend(onto, offof) {Object.keys(offof).forEach(key => onto[key] = offof[key]);return onto;}
 function compose(one, two) {return (e) => { one(e), two(); };}
 function range(from, to) {return Array.apply(null, Array(to - from + 1)).map((_, i) => from + i);}
@@ -2810,11 +2830,7 @@ function Slider() {
   let fade, tit, isSliding, slideshowTimer, me;
 
   function loadImg() {
-    userToolbar.style.transitionDuration = '3s';
-    bannerController.pick(theme);
-    setTimeout(() => userToolbar.style.transitionDuration = '', 3000);
-    fade.style.transition = 'opacity 3s linear';
-    fade.style.opacity = 0;
+    me.goto(theme);
     isSliding = false;
     me.updateSlide();
   }
