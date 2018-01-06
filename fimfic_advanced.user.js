@@ -762,73 +762,79 @@ function initBBCodeController() {
       this.textarea.value = sign(this.textarea.value);
     },
     showIconPicker: function(sender, event) {
-      const pop = makePopup('Insert Icon', 'fa fa-anchor');
-      pop.SetWidth(400);
-      pop.SetContent(`<div class="bookshelf-edit-popup">
-                <div class="bookshelf-icons">
-                    ${icons.map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
+      const iconsHTML = match => icons.filter(a => !match.length || a.indexOf(match) > -1).map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
                         <div><span class="bookshelf-icon-element fa fa-${icon}" data-icon-type="font-awesome"></span></div>
                         <input type="radio" value="${icon}" style="display:none;" name="icon"></input>
-                    </label>`).join('')}
-                </div>
+                    </label>`).join('');
+      const pop = makePopup('Insert Icon', 'fa fa-anchor');
+      pop.SetWidth(400);
+      pop.SetContent(`
+            <div class="std">
+              <input type="text" placeholder="Search Icons"></input>
+            </div>
+            <div class="bookshelf-edit-popup">
+                <div class="bookshelf-icons">${iconsHTML('')}</div>
             </div>`);
-          addDelegatedEvent(pop.content, 'input', 'click', (s, target) => {
-            this.insertText(`[icon]${target.value}[/icon]${this.getSelection()}`);
-            pop.Close();
+      addDelegatedEvent(pop.content, 'input[type="text"]', 'keyup', (e, target) => {
+        pop.content.querySelector('.bookshelf-icons').innerHTML = iconsHTML(target.value.trim());
+      });
+      addDelegatedEvent(pop.content, 'input[type="radio"]', 'click', (s, target) => {
+        this.insertText(`[icon]${target.value}[/icon]${this.getSelection()}`);
+        pop.Close();
+      });
+      pop.Show();
+    },
+    showAddDirectImage: function(sender, event) {
+      makeImagePopup(this);
+    },
+    find: function(sender, event) {
+      makeReplacePopup(this);
+    },
+    blot: function(sender, event) {
+      this.insertText(this.getSelection().replace(/[^\s\\]/g, "█"));
+    },
+    greentext: function(sender, event) {
+      operateText(this, selected => {
+        let toggle = true;
+        selected = selected.map((line, i) => {
+          if (line.indexOf('[color=#789922]>') != 0) {
+            toggle = false;
+            return '[color=#789922]>' + line + '[/color]';
+          }
+          return line;
+        });
+        if (toggle) return selected.map(line => line.replace(/^\[color=#789922\]>(.*)\[\/color\]$/g, '$1'));
+        return selected;
+      });
+    },
+    makeUnorderedList: function(sender, event) {
+      this.makeList((line,dotted,numbered,save) => {
+        if (numbered) return save(line.replace(/\t\[b\]([0-9])*.\[\/b\] /g, '\t[b]·[/b] '));
+        if (!dotted) return save(`\t[b]·[/b] ${line}`);
+      });
+    },
+    makeOrderedList: function(sender, event) {
+      this.makeList((line,dotted,numbered,save) => {
+        if (dotted) return save(line.replace('\t[b]·[/b] ', `\t[b]${i + 1}.[/b] `));
+        if (!numbered) return save(`\t[b]${i + 1}.[/b] ${line}`);
+      });
+    },
+    makeList: function(func) {
+      operateText(this, selected => {
+        var toggle = true;
+        selected = selected.map((line, i) => {
+          const dotted = /^\t[b]·[/b] /.test(line);
+          const numbered = /^\t\[b\]([0-9])*.\[\/b\] /.test(line);
+          toggle &= func(line, dotted, numbered, a => {
+            line = a;
+            toggle = false;
           });
-          pop.Show();
-        },
-      showAddDirectImage: function(sender, event) {
-        makeImagePopup(this);
-      },
-      find: function(sender, event) {
-        makeReplacePopup(this);
-      },
-      blot: function(sender, event) {
-        this.insertText(this.getSelection().replace(/[^\s\\]/g, "█"));
-      },
-      greentext: function(sender, event) {
-        operateText(this, selected => {
-          let toggle = true;
-          selected = selected.map((line, i) => {
-            if (line.indexOf('[color=#789922]>') != 0) {
-              toggle = false;
-              return '[color=#789922]>' + line + '[/color]';
-            }
-            return line;
-          });
-          if (toggle) return selected.map(line => line.replace(/^\[color=#789922\]>(.*)\[\/color\]$/g, '$1'));
-          return selected;
         });
-      },
-      makeUnorderedList: function(sender, event) {
-        this.makeList((line,dotted,numbered,save) => {
-          if (numbered) return save(line.replace(/\t\[b\]([0-9])*.\[\/b\] /g, '\t[b]·[/b] '));
-          if (!dotted) return save(`\t[b]·[/b] ${line}`);
-        });
-      },
-      makeOrderedList: function(sender, event) {
-        this.makeList((line,dotted,numbered,save) => {
-          if (dotted) return save(line.replace('\t[b]·[/b] ', `\t[b]${i + 1}.[/b] `));
-          if (!numbered) return save(`\t[b]${i + 1}.[/b] ${line}`);
-        });
-      },
-      makeList: function(func) {
-        operateText(this, selected => {
-          var toggle = true;
-          selected = selected.map((line, i) => {
-            const dotted = /^\t[b]·[/b] /.test(line);
-            const numbered = /^\t\[b\]([0-9])*.\[\/b\] /.test(line);
-            toggle &= func(line, dotted, numbered, a => {
-              line = a;
-              toggle = false;
-            });
-          });
-          if (toggle) return selected.map(line => line.replace(/\t\[b\]([0-9]*.|·)\[\/b\] /g, ''));
-          return selected;
-        });
-      }
-    });
+        if (toggle) return selected.map(line => line.replace(/\t\[b\]([0-9]*.|·)\[\/b\] /g, ''));
+        return selected;
+      });
+    }
+  });
 }
 
 function operateText(controller, func) {
@@ -1339,7 +1345,10 @@ function addCss() {
         emoji_header_background_min = light ? '#f8f8f8' : '#232a36',
         emoji_header_background_max = light ? '#f2f2f2' : '#333a46',
         emoji_header_border = light ? '#ddd' : container_border_base,
-        emoji_focus_background = light ? '#eee' : '#336';
+        emoji_focus_background = light ? '#eee' : '#336',
+        color_section_background = light ? emoji_focus_background : '#5d3a7d',
+        color_section_foreground = light ? '#555' : '#c6c6ff',
+        color_section_border = light ? '#ccc' : '#5824ae';
   
   updateStyle(`
 /*Footer overflow fix*/
@@ -1649,10 +1658,10 @@ a:hover .bg_source_link {
     left: -32px !important;
     right: auto !important;}
 .colour-section-header {
-    color: #555;
-    background: #EEE;
+    color: ${color_section_foreground};
+    background: ${color_section_background};
     line-height: 1.7em;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid ${color_section_border};
     padding: 5px 10px;
     margin: 1px;}
 .collapsable.collapsed ~ * {display: none;}
@@ -1674,7 +1683,7 @@ a:hover .bg_source_link {
     border-radius: 100%;
     display: inline-block;
     vertical-align: middle;
-    box-shadow: 0 0 1px #000, 0 0 3px #222 inset;}
+    box-shadow: 0 0 1px #000, 0 0 0px 1px rgba(155,155,255,0.5) inset;}
 .colour-tile:hover a {background: none !important;}
 .tooltip {
     position: relative;
@@ -1687,18 +1696,16 @@ a:hover .bg_source_link {
     box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);}
 .drop-down .drop-down {
     display: none !important;
-    top: 0px !important;
+    top: 0 !important;
     left: 150% !important;
     right: auto !important;}
 .drop-down li:hover > .drop-down {display: block !important;}
-.drop-down li:hover > .drop-down:before {
+.drop-down .drop-down + a::after {
     font-family: 'FontAwesome';
     display: inline-block;
     content: '';
-    position: absolute;
-    top: 0px;
-    left: -10px;
-    line-height: 3em;}
+    font-size: 0.6em;
+    float: right;}
 .drop-down li.button-group:hover > .drop-down {display: none !important;}
 .drop-down li.button-group.drop-down-show > .drop-down {display: block !important;}
 .drop-down li.button-group {position: relative !important;}
@@ -1799,7 +1806,7 @@ a:hover .bg_source_link {
     content: '';
     font-family: FontAwesome;}
 .chapter_content > .inner_margin {max-width: 100% !important;}
-.chapter_content #chapter_container${(getWideNotes() ? "" : ", .authors-note")} {
+.chapter_content #chapter_container${(getWideNotes() ? `` : `, .authors-note`)} {
     margin-left: auto !important;
     margin-right: auto !important;
     max-width: ${getStoryWidth()};}
