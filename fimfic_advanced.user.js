@@ -9,7 +9,7 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
+// @require    https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -145,18 +145,18 @@ const bannerController = new BannerController([
     Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0])
   ]}
 ]);
+const creditsController = new BannerCreditsController(bannerController);
 const colours = {Mapping: {}, Keys: [], Names: [], NamesLower: [], Sets: {
-    'Standard Colours': [false, [0,73,70,68,107,59,103,24,112]],
-    'FimFiction': [false, range(113,127)],
-    'Mane Six': [false, range(128, 133)],
-    'More Colours': [true, range(0,112)] }
+    'Standard Colours': [0, [0,73,70,68,107,59,103,24,112]],
+    'FimFiction': [0, range(113,127)],
+    'Mane Six': [0, range(128, 133)],
+    'More Colours': [1, range(0,112)] }
 };
 'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').forEach(a => {
   a = a.split(':');
   colours.Keys.push(a[1]);
-  colours.Names.push(a[0]);
+  colours.Names.push(colours.Mapping[a[1]] = a[0]);
   colours.NamesLower.push(a[0].toLowerCase());
-  colours.Mapping[a[1]] = a[0];
 });
 let snower, userToolbar;
 
@@ -169,16 +169,18 @@ RunScript(patchEvents, true);
 earlyStart();
 document.addEventListener("DOMContentLoaded", () => {
   if (!document.querySelector('.body_container')) return;
+  const start = (new Date()).getTime();
   initGlobals();
   let stage = 'Ready-init';
-  const start = (new Date()).getTime();
   try {
-    addFooterData(`Page running <a>FimFiction Advanced ${VERSION}</a>`);
+    addFooterData(`Page running <a href="manage/local-settings#fimfiction_advanced">FimFiction Advanced ${VERSION}</a>`);
     document.lastChild.setAttribute('FimFic_Adv', '');
     stage = 'Init';
     initFimFictionAdvanced();
-    stage = 'Settings Tag';
+    stage = 'Settings Tab';
     FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
+    const settingsButt = document.querySelector('.user_toolbar li a[href="/manage/local-settings"] + ul');
+    settingsButt.insertAdjacentHTML('beforeend', `<li class="divider"></li><li><a href="/manage/local-settings#fimfiction_advanced"><i class="fa fa-gear"></i>Advanced Settings</a></li>`);
     stage = 'Events';
     registerEvents();
     stage = 'End-init';
@@ -259,7 +261,7 @@ function initFimFictionAdvanced() {
   applyCustomFont();
   applyChapterButtons();
   if (isMyBlogPage()) initBlogPage();
-  bannerController.buildAll();
+  creditsController.buildAll();
   initBBCodeController();
   
   if (getBlockLightbox()) lightboxblocker();
@@ -269,7 +271,7 @@ function initFimFictionAdvanced() {
     applyFeedFix();
     animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
   }
-  removeAnnoyances();
+  if (getFixAds()) removeAnnoyances();
   applyCodePatches();
   if (getSweetieEnabled()) setupSweetie();
   if (slider.getSlide()) slider.updateSlide();
@@ -299,15 +301,16 @@ function applyNightModeListener() {
 
 function nightModeToggled() {
   addCss();
+  if (bannerController.getEnabled()) addBannerCss();
   applyBackground(getBGColor());
 }
 
 function buildSettingsTab(tab) {
   tab.StartEndSection("General Settings");
   tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', setPinUserbar);
-  tab.AddCheckBox("wat", "Wide Author's Notes", getWideNotes()).addEventListener('change', setWideNotes);
   tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', setAlwaysShowImages);
   tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', setBlockLightbox);
+  tab.AddCheckBox("btrds", "Improved Advertisements", getFixAds()).addEventListener('change', setFixAds);
   tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).addEventListener('change', setSweetieEnabled);
 
   fillFontOptGroups(tab.AddDropDown("ffs", "Site Font", []));
@@ -334,30 +337,32 @@ function buildSettingsTab(tab) {
   updateSnowOptions();
 
   tab.StartEndSection("Colours and Customization");
-  var oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
+  
+  const oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
   oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
   oldLogo.addEventListener('change', setLogo);
-  var bgcolor = getBGColor();
-  var backgroundImg = null;
-  makeStyle(".body_container {transition: background-color 0.125s ease;}", "Fimfiction_Advanced_T");
+  
+  let bgcolor = getBGColor();
+  let backgroundImg = null;
+  makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
+  
   const colorPick = tab.AddColorPick("bg", "Background Colour", bgcolor == 'transparent' ? '' : bgcolor, me => {
     me.value = me.value.trim();
     if (me.value.length) {
       if (me.value.indexOf('#') !== 0) {
-        me.value = rgbToHex(extractColor(me.value));
+        me.value = toHex(extractColor(me.value));
       }
     }
 
     applyBackground(setBGColor(me.value));
-    var i = backgroundImg.length - 1;
-    while (i--) backgroundImg[i].children[0].style.backgroundColor = me.value;
+    all('.toolbar', backgroundImg.element, a => a.style.backgroundColor = me.value);
   });
+  
   const camera = tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar');
   camera.addEventListener('click', () => {
     colorPick.value = rgb2hex(userToolbar.dataset.backgroundColor);
     colorPick.change();
   });
-  camera.style.marginLeft = '10px';
 
   backgroundImg = tab.AddPresetSelect("bgI", "Background Image", backgroundImages.length + 2, true, 1);
   backgroundImg.add(el => populateBGSelect(el, 'None', '', () => {
@@ -390,13 +395,9 @@ function buildSettingsTab(tab) {
   const bgIndex = backgroundImg.element.querySelector(`[data-index="${getBGIndex() + 2}"]`);
   if (bgIndex) bgIndex.classList.add('premade_settings_selected');
 
-  tab.AddPresetSelect("bannerCust", "Custom Banner", 1, false).add(el => {
+  tab.AddPresetSelect("bannerCust", "Custom Banner").add(el => {
     el.children[1].innerHTML = '<i class="fa fa-pencil fa-5x"></i>';
-    el.style.width = '100%';
-    el.style.textAlign = 'center';
-    el.children[0].style.color = 'black';
-    el.children[0].style.textShadow = '1px 1px 0px rgba(255, 255, 255, 0.15)';
-    el.style.backgroundSize = '100%';
+    el.classList.add('custom_banner_button');
     el.addEventListener('click', () => createCustomBannerPopup(el));
     if (customBanner) repaintBannerButton(el, customBanner);
   });
@@ -483,11 +484,11 @@ function buildSettingsTab(tab) {
       row = builder.AddColorSliders('bc', 'Banner Colour', true);
 
       const updateFields = color => {
-        color = cssToRgb(color);
+        color = toComponents(color);
         upd(row.red, color[0]);
         upd(row.green, color[1]);
         upd(row.blue, color[2]);
-        upd(row.alpha, color.length == 4 ? color[3] : 1);
+        upd(row.alpha, color[3]);
       };
       const getColor = () => `rgba(${[val(row.red),val(row.green),val(row.blue),val(row.alpha)].join(',')})`;
       const upd = (me, v) => me[0].value = me[1].value = parseFloat(v);
@@ -641,79 +642,105 @@ function applyFeedFix() {
   addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
     e.preventDefault();
     const a = target.closest('a');
-    if (a.href && a.href.length) {
-      a.title = a.href;
-    }
+    if (a.href && a.href.length) a.title = a.href;
   });
 }
 
 function removeAnnoyances() {
-  all('.right.advert [data-click="hideAdvert"]', a => a.click());
+  const listBox = document.querySelector('.list_boxes');
+  if (listBox) {
+    all('.right.advert', a => {
+      listBox.insertAdjacentElement('beforeend', a);
+      all('.no-related', listBox.parentNode, a => a.classList.remove('no-related'));
+    });
+  }
   all('.story_content_box [data-ad-class], .story_content_box .advertisment', a => {
     a.parentNode.insertAdjacentElement('afterend', a);
   });
+  all('.advertisment, [data-ad-class], [data-ad-client]', a => {
+    if (a.closest('[data-ad-class] [data-ad-client]')) return;
+    a.insertAdjacentHTML('afterend', `<div class="ad-wrapper collapse"><a data-click="hideAd">[hide]</a></div>`);
+    const wrapper = a.nextSibling;
+    if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
+    wrapper.insertAdjacentElement('afterbegin', a);
+  });
+  
+  addDelegatedEvent(document.body, '.ad-wrapper [data-click="hideAd"]', 'click', (e, sender) => {
+    const ls = sender.closest('.list_boxes');
+    if (ls && !ls.querySelector('.stories')) ls.parentNode.querySelector('.chapter-comments').classList.add('no-related');
+    sender.parentNode.parentNode.removeChild(sender.parentNode);
+  });
+  
+  const updateDisplay = _ => {
+    all('.ad-wrapper', a => {
+      const d = a.querySelector('ins, .pw-ad-box');
+      a.classList.toggle('collapse', !d || !d.innerHTML.length);
+    });
+  };
+  
+  setInterval(updateDisplay, 1000);
+  updateDisplay();
 }
 
 function applyCodePatches() {
-  if (document.querySelector('.chapter-container')) {
-    function formatChapter(chapter) {
-      const style = window.getComputedStyle(chapter);
-      document.querySelector('.story_content_box').style.backgroundColor = style.backgroundColor;
-      document.querySelector('.chapter_footer').style.color = style.color;
-    }
-    override(ChapterFormatController.prototype, 'apply', function(c) {
-      ChapterFormatController.prototype.apply.super.apply(this, arguments);
-      formatChapter(this.chapter);
-    });
-    override(ChapterController.prototype, 'computeBackgroundColor', function() {
-      ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
-    });
-    ChapterController.prototype.computeBackgroundColor.patched = patchFunc(ChapterController.prototype.computeBackgroundColor.super, body => {
-      return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
-        .replace('window.getComputedStyle(document.body).backgroundColor', `document.body.dataset.baseColor`)
-        .replace('updatePageBackgroundColor(', `updatePageBackgroundColor.patched.call(this, `);
-    });
-
-    //Change styling target to the body container
-    override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
-      if (!this.patched) {
-        replaceListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
-        replaceListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
-        replaceListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
-      }
-      this.computeBackgroundColor.patched.call(this, c);
-    });
-    ChapterController.prototype.updatePageBackgroundColor.patched = patchFunc(ChapterController.prototype.updatePageBackgroundColor.super, body => {
-      return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
-        .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`);
-    });
-
-    function patchFunc(func, replacer) {
-      return Function('return '+ replacer(func.toString()))();
-    }
-
-    function replaceListener(event, sender, old, neu) {
-      const scroll_events = document.getEventListeners(event);
-      for (let i = 0; i < scroll_events.length; i++) {
-        if (scroll_events[i].context == sender && scroll_events[i].unbound == old) {
-          document.removeEventListener(event, scroll_events[i]);
-        }
-      }
-      document.addEventListener(event, neu);
-    }
-
-    //Force update chapter themes
-    try {
-      App.DispatchEvent(document, 'chapterColourSchemeChanged');
-      formatChapter(document.querySelector('#chapter'));
-    } catch (e) {
-      console.log(e);
-    }
-  }
   //Fix error window popping up whenever an operation times out/is cancelled
   override(window, 'ShowErrorWindow', function(c) {
     if (arguments[0] !== 'Request Failed (0)') return window.ShowErrorWindow.super(c);
   });
+  if (!document.querySelector('.chapter-container')) return;
+  function formatChapter(chapter) {
+    const style = window.getComputedStyle(chapter);
+    document.querySelector('.story_content_box').style.backgroundColor = style.backgroundColor;
+    document.querySelector('.chapter_footer').style.color = style.color;
+  }
+  override(ChapterFormatController.prototype, 'apply', function(c) {
+    ChapterFormatController.prototype.apply.super.apply(this, arguments);
+    formatChapter(this.chapter);
+  });
+  override(ChapterController.prototype, 'computeBackgroundColor', function() {
+    ChapterController.prototype.computeBackgroundColor.patched.call(this, !0);
+  });
+  ChapterController.prototype.computeBackgroundColor.patched = patchFunc(ChapterController.prototype.computeBackgroundColor.super, body => {
+    return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
+      .replace('window.getComputedStyle(document.body).backgroundColor', `document.body.dataset.baseColor`)
+      .replace('updatePageBackgroundColor(', `updatePageBackgroundColor.patched.call(this, `);
+  });
+
+  //Change styling target to the body container
+  override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
+    if (!this.patched) {
+      replaceListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+      replaceListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+      replaceListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
+    }
+    this.computeBackgroundColor.patched.call(this, c);
+  });
+  ChapterController.prototype.updatePageBackgroundColor.patched = patchFunc(ChapterController.prototype.updatePageBackgroundColor.super, body => {
+    return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
+      .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`);
+  });
+
+  function patchFunc(func, replacer) {
+    return Function('return '+ replacer(func.toString()))();
+  }
+
+  function replaceListener(event, sender, old, neu) {
+    const scroll_events = document.getEventListeners(event);
+    for (let i = 0; i < scroll_events.length; i++) {
+      if (scroll_events[i].context == sender && scroll_events[i].unbound == old) {
+        document.removeEventListener(event, scroll_events[i]);
+      }
+    }
+    document.addEventListener(event, neu);
+  }
+
+  //Force update chapter themes
+  try {
+    App.DispatchEvent(document, 'chapterColourSchemeChanged');
+    formatChapter(document.querySelector('#chapter'));
+  } catch (e) {
+    console.log(e);
+  }
 }
 
 function initCommentArea() {
@@ -799,7 +826,7 @@ function initBBCodeController() {
         selected = selected.map((line, i) => {
           if (line.indexOf('[color=#789922]>') != 0) {
             toggle = false;
-            return '[color=#789922]>' + line + '[/color]';
+            return `[color=#789922]>${line}[/color]`;
           }
           return line;
         });
@@ -821,7 +848,7 @@ function initBBCodeController() {
     },
     makeList: function(func) {
       operateText(this, selected => {
-        var toggle = true;
+        let toggle = true;
         selected = selected.map((line, i) => {
           const dotted = /^\t[b]·[/b] /.test(line);
           const numbered = /^\t\[b\]([0-9])*.\[\/b\] /.test(line);
@@ -838,18 +865,15 @@ function initBBCodeController() {
 }
 
 function operateText(controller, func) {
-  const element = controller.textarea;
-  const start = element.selectionStart;
-  const end = element.selectionEnd;
-
-  const before = element.value.substring(0, start);
-  const after = element.value.substring(end, element.value.length);
-
-  let selected = (end - start) > 0 ? element.value.substring(start, end).split('\n') : [''];
-  selected = func(selected).join('\n');
+  const element = controller.textarea,
+        value = element.value,
+        start = element.selectionStart,
+        end = element.selectionEnd;
 
   const top = element.scrollTop;
-  element.value = before + selected + after;
+  const selected = func((end - start) > 0 ? value.substring(start, end).split('\n') : ['']).join('\n');
+
+  element.value = value.substring(0, start) + selected + value.substring(end, value.length);
   element.selectionStart = start;
   element.selectionEnd = start + selected.length;
   element.scrollTop = top;
@@ -857,10 +881,11 @@ function operateText(controller, func) {
 }
 
 function initBlogPage() {
-  if (!document.querySelector('.content_box.blog-post-content-box')) {
-    const name = getUserName();
-    const page = document.querySelector("div.page_list");
-    if (page) page.parentNode.previousSibling.insertAdjacentHTML('beforeend', `<div class="content_box blog_post_content_box" style="margin-top:0px; ">
+  if (document.querySelector('.content_box.blog-post-content-box')) return;
+  const page = document.querySelector("div.page_list");
+  if (!page) return;
+  const name = getUserName();
+  page.parentNode.previousSibling.insertAdjacentHTML('beforeend', `<div class="content_box blog_post_content_box" style="margin-top:0px; ">
     <div class="calendar" style="margin-top:0px">
 		  <div class="month">Jan</div>
 		  <div class="day">1<span style="font-size:0.6em;">st</span><div class="year">1992</div>
@@ -888,7 +913,6 @@ function initBlogPage() {
 		<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views <b>·</b>
 	</div>
 </div>`);
-    }
 }
 
 function startCommentHandler() {
@@ -900,7 +924,7 @@ function startCommentHandler() {
     all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
     bbcode = (new HTMLToBBCode()).convert(bbcode.innerHTML.trim());
     const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
-    const e = `${controller.getText() == '' ? '' : '\n'}>>${id}\n[quote]\n${bbcode}\n[/quote]\n`;
+    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote]\n${bbcode}\n[/quote]\n`;
 
     controller.insertText(e, !event.ctrlKey && !event.shiftKey);
     event.preventDefault();
@@ -913,7 +937,7 @@ function startCommentHandler() {
     all('.comment .buttons:not([data-parsed])', insertQuoteButton);
   })();
 
-  if (!getAlwaysShowImages() && getExtraEmotesInit()) return;
+  if (!getAlwaysShowImages() || getExtraEmotesInit()) return;
 
   const unspoil = getAlwaysShowImages() ? me => {
     replaceWith(me.parentNode, `<img class="user_image" data-lightbox src="${me.href}"></img>`);
@@ -982,64 +1006,67 @@ function makeReplacePopup(controller) {
   const pop = makePopup('Find and Replace', 'fa fa-magic', false);
   pop.SetWidth(350);
   pop.SetContent(`<div class="std" style="padding:10px;">
-    <input id="find" type="text" required="required" placeholder="Find" name="find"></input>
-    <input id="replace" type="text" required="required" placeholder="Replace" name="replace"></input>
+    <input id="find" data-change="reset" type="text" placeholder="Find"></input>
+    <input id="replace" type="text" placeholder="Replace"></input>
   </div>`);
-  pop.SetFooter(`<button id="find_button" type="button" class="styled_button">Find</button>
-                <button id="replace_button" type="button" class="styled_button">Replace</button>
-                <button id="replace_all_button" type="button" class="styled_button">Replace All</button>`);
   const finder = pop.content.querySelector('#find');
   const replacer = pop.content.querySelector('#replace');
+  pop.SetFooter(`<button data-click="find" type="button" class="styled_button">Find</button>
+                <button data-click="replace" type="button" class="styled_button">Replace</button>
+                <button data-click="replaceAll" type="button" class="styled_button">Replace All</button>`);
+  addDelegatedEvent(pop.content, '[data-click]', 'click', (e, target) => events[target.dataset.click]());
+  addDelegatedEvent(pop.content, '[data-change]', 'change', (e, target) => events[target.dataset.change]());
+  
   let nextStart = 0;
-  addDelegatedEvent(pop.content, '#find', 'change', () => nextstart = 0);
-  addDelegatedEvent(pop.content, '#find_button', 'click', () => {
-    let find = finder.value;
-    if (!find.length) return;
-    let text = controller.textarea.value.substring(nextStart, controller.textarea.value.length);
-    let start = text.indexOf(find);
-    let end = 0;
-    if (start < 0) {
-      start = controller.textarea.value.indexOf(find);
-      nextStart = 0;
-    }
-    if (start > -1) {
-      start += nextStart;
-      end = start + find.length;
-    }
-    controller.textarea.selectionStart = start;
-    controller.textarea.selectionEnd = end;
-    controller.textarea.focus();
-  });
-  addDelegatedEvent(pop.content, '#replace_button', 'click', () => {
-    let find = finder.value;
-    if (!find.length) return;
-    let start = controller.textarea.selectionStart;
-    let end = controller.textarea.selectionEnd;
-    if (start != end) {
-      if (start > end) {
-        let t = start;
-        start = end;
-        start = t;
+  const events = {
+    reset: _ => {
+      nextstart = 0;
+    },
+    find: _ => {
+      const find = finder.value;
+      if (!find.length) return;
+      const text = controller.getText().substring(nextStart, controller.getText().length);
+      let start = text.indexOf(find);
+      let end = 0;
+      if (start < 0) {
+        start = controller.getText().indexOf(find);
+        nextStart = 0;
       }
-      let sel = controller.getText().substring(start, end);
-      let replace = replacer.value;
+      if (start > -1) {
+        start += nextStart;
+        end = start + find.length;
+      }
+      controller.textarea.selectionStart = start;
+      controller.textarea.selectionEnd = end;
+      controller.textarea.focus();
+    },
+    replace: _ => {
+      const find = finder.value;
+      if (!find.length) return;
+      const text = controller.getText();
+      const start = controller.textarea.selectionStart;
+      const end = controller.textarea.selectionEnd;
+      if (start != end) {
+        const replace = replacer.value;
 
-      if (sel == find) {
-        controller.setText(controller.textarea.value.substring(0, start) + replace + controller.getText().substring(start + sel.length, controller.getText().length));
-        controller.textarea.selectionStart = start + replace.length;
-        controller.textarea.selectionEnd = controller.textarea.selectionStart;
+        if (sel == find) {
+          controller.setText(text.substring(0, start) + replace + text.substring(end, text.length));
+          controller.textarea.selectionStart = start + replace.length;
+          controller.textarea.selectionEnd = controller.textarea.selectionStart;
+        }
+      } else {
+        events.find();
+        if (controller.textarea.selectionStart != controller.textarea.selectionEnd) {
+          events.replace();
+        }
       }
-    } else {
-      finB.click();
-      if (controller.textarea.selectionStart != controller.textarea.selectionEnd) {
-        replB.click();
-      }
+      controller.textarea.focus();
+    },
+    replaceAll: _ => {
+      if (finder.value.length) controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
     }
-    controller.textarea.focus();
-  });
-  addDelegatedEvent(pop.content, '#replace_all_button', 'click', () => {
-    if (finder.value.length) controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
-  });
+  };
+  
   pop.Show();
 }
 
@@ -1229,9 +1256,10 @@ function initColourWindow(controller, self) {
   controller.textarea.classList.add('active_text_area');
 
   const list = makePopup('All Colours', 'fa fa-tint', false, false);
-  for (var i in colours.Sets) {
-    addCollapseColorSection(list.content, colours.Sets[i][1], i, colours.Sets[i][0]);
-  }
+  Object.keys(colours.Sets).forEach(i => {
+    addColorSection(list.content, colours.Sets[i][1], i, ` collapsable${colours.Sets[i][0] ? ' collapsed' : ''}`);
+  })
+  addDelegatedEvent(list.content, '.colour-section-header.collapsable', 'click', (e, target) => target.toggle('collapsed'));
 
   const recent = getRecentColours(15);
   if (recent.length) {
@@ -1253,17 +1281,18 @@ function initColourWindow(controller, self) {
   list.Show();
 }
 
-function addCollapseColorSection(panel, colors, title, collapse) {
-  let section = addColorSection(panel, colors, title).querySelector('.colour-section-header');
-  section.style.cursor = 'pointer';
-  section.classList.add('collapsable');
-  section.classList.toggle('collapsed', collapse);
-  section.addEventListener('click', () => section.classList.toggle('collapsed'));
+function registerColourInsertionEvent(controller, holder) {
+  addDelegatedEvent(holder, '.colour-tile a', 'click', (e, target) => {
+    const t = controller || App.GetControllerFromElement(document.querySelector('.active_text_area').closest('.bbcode-editor'));
+    t.insertTags(`[color=${target.dataset.colour}]`, '[/color]');
+    addRecent(target.dataset.colour);
+    t.textarea.focus();
+  });
 }
 
-function addColorSection(panel, colors, title) {
+function addColorSection(panel, colors, title, headerExtra) {
   panel.insertAdjacentHTML('beforeend', `<div class="colour-section">
-        <div class="colour-section-header">${title}</div>
+        <div class="colour-section-header${headerExtra || ''}">${title}</div>
         <ul class="colour-holder">${addColorTiles(colors)}</ul>
     </div>`);
   return panel.lastChild;
@@ -1271,24 +1300,14 @@ function addColorSection(panel, colors, title) {
 
 function addColorTiles(colors) {
   return colors.map(c => {
-    var code, name;
     if (typeof c == 'string') return [c, colours.Mapping[c] || c];
     if (c < 0) return [''];
-    return [colours.Keys[c], colours.Names[c] || code]
+    return [colours.Keys[c], colours.Names[c] || c]
   }).map((a, c) => a[0] == '' ? '' : `<li class="colour-tile">
             <a title="${a[1]}" data-index="${c}" data-colour="${a[0]}">
                 <span style="background-color:${a[0]} !important" class="color-tile"></span>
             </a>
         </li>`).join('');
-}
-
-function registerColourInsertionEvent(controller, holder) {
-  addDelegatedEvent(holder, '.colour-tile a', 'click', (e, target) => {
-    const t = controller || App.GetControllerFromElement(document.querySelector('.active_text_area').closest('.bbcode-editor'));
-    t.insertTags('[color=' + target.dataset.colour + ']', '[/color]');
-    addRecent(target.dataset.colour);
-    t.focus();
-  });
 }
 
 function getLogoNames() {
@@ -1383,16 +1402,27 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
     background: -webkit-linear-gradient(top, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;
     background: linear-gradient(to bottom, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;}
 
-/*Night mode checkboxes*/
 ${light ? '' : `
-.toggleable-switch input:checked + a::before {
-    color: #7dbd3a;
-}
+/*Night mode controls*/
+.toggleable-switch input:checked + a::before {color: #7dbd3a;}
 .toggleable-switch a::before {
-    background: #2a4484;
+    background: #2a4494;
     border: 1px solid #32529e;
     color: #efb7b7;
-    text-shadow: 1px 1px #32529e;
+    text-shadow: 1px 1px #32529e;}
+
+.toggleable-radio {
+	border: 1px solid #0a0d10;
+	background: #1a2029;}
+.toggleable-radio label {
+	color: #fff;
+	text-shadow: 1px 1px #191e27;
+	border-right: 1px solid #0a0d10;}
+.toggleable-radio label:hover {background: #000;}
+
+/*fix loader colours in dark mode*/
+.nav_bar .nav-bar-list > li > ul ul.loading::after, .nav_bar .nav-bar-list > li .nav-bar-drop-down ul.loading::after {
+  color: inherit !important;
 }`}
 
 /*Bookshelf icon colour fix*/
@@ -1432,9 +1462,27 @@ ${light ? '' : `
     border-radius: 3px;
     overflow: hidden;}
 
-.rating_container .like_button:not(.like_button_selected),
-.rating_container .dislike_button:not(.dislike_button_selected) {
-  color: inherit !important;}
+${getFixAds() ? `
+/*Remove annoyances*/
+.chapter-page .advert {display: none !important;}
+
+/*ins, .pw-ad-box, .ad-wrapped ins + div {display: none !important;}*/
+.ad-wrapper ins, .ad-wrapper .pw-ad-box {display: block !important;}
+@media all and (max-width: 700px) {
+  .ad-wrapper.pw {display:none;}
+}
+.ad-wrapper {
+  text-align: center;
+  overflow: hidden;
+}
+.ad-wrapper.collapse {
+  height: 0;
+}
+.ad-wrapper [data-click="hideAdvert"] {
+  display: inline-block;
+  margin-top:-10px;
+  margin-bottom:10px;
+}` : ''}
 
 /*Make the emoticon picker not look like plot*/
 .format-toolbar .emoji-selector .emoji-selector__search {
@@ -1490,7 +1538,7 @@ ${light ? '' : `
     content: '';
     font-family: FontAwesome;
     font-size: 66px;
-    color: rgba(0,0,0,0.6);
+    color: ${container_foreground};
     -webkit-animation: fa-spin 2s infinite linear;
     animation: fa-spin 2s infinite linear;}
 
@@ -1625,10 +1673,7 @@ a:hover .bg_source_link {
     box-shadow: 0px 1px 0px rgba(255, 255, 255, 0.2) inset;
     font-family: 'Segoe UI';
     text-shadow: 1px 1px rgba(0, 0, 0, 0.3);}
-.titleHidden #title {height: 80px !important;}
-.titleHidden #title, .titleHidden .user-page-header, .titleHidden .story-page-header {overflow: hidden;}
-.titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 11.5rem;}
-.titleHidden header.header .theme_selector a, .titleHidden header.header .theme_selector a {line-height: 75px !important;}
+
 .drop-size-pick {
     margin-left: -90px !important;
     margin-right: auto !important;}
@@ -1664,6 +1709,7 @@ a:hover .bg_source_link {
     border-bottom: 1px solid ${color_section_border};
     padding: 5px 10px;
     margin: 1px;}
+.collapsable {cursor: pointer;}
 .collapsable.collapsed ~ * {display: none;}
 .collapsable.collapsed:after {content: '' !important;}
 .collapsable:after {
@@ -1745,6 +1791,16 @@ a:hover .bg_source_link {
     width: 100px !important;
     text-align: center;}
 
+a.premade_settings.custom_banner_button {
+  width: 100%;
+  text-align: center;
+  background-size: 100%;
+}
+a.premade_settings.custom_banner_button .toolbar {
+  color: black;
+  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.15);
+}
+
 .user_toolbar > .inner .button-first {
     margin-left: 0px !important;
     border-left: 1px solid rgba(0, 0, 0, 0.2) !important;}
@@ -1759,8 +1815,16 @@ a:hover .bg_source_link {
 .user-card .top-info .button-group .button-group {
   margin-right: 20px !important;
   margin-top: 30px !important;}
+.user-card .top-info > .button-group::after {
+    right: 19px;
+    top: 29px;
+    border: 1px solid #222;
+    border-radius: 5px;}
 .user-card .top-info .button:first-child {border-top-left-radius: 5px;}
-.user-card .top-info .drop-down-expander.button {border-radius: 0 5px 5px 0 !important;}
+.user-card .top-info .drop-down-expander.button {
+    border-top-right-radius: 5px !important;
+    border-bottom-right-radius: 5px !important;
+}
 .user-card .top-info .button::after {
   background: rgba(0,0,0,0) !important;
   background: -webkit-gradient(linear, left top, left bottom, rgba(0,0,0,0), #2f538c, rgba(0,0,0,0)) !important;
@@ -1795,6 +1859,7 @@ a:hover .bg_source_link {
     border-top-color: ${container_border_highlight};
     border-left-color: ${container_border_highlight};
     border-radius: 5px;}
+
 .left-tabs {
     padding-left: 0px !important;
     padding-right: 10px;}
@@ -1802,11 +1867,11 @@ a:hover .bg_source_link {
     padding-right: 0px !important;
     padding-left: 30px;}
 .left-tabs > .sidebar-shadow {left: 220px !important;}
-.chapter_content .authors-note:before {
+
+.authors-note:before {
     content: '';
     font-family: FontAwesome;}
-.chapter_content > .inner_margin {max-width: 100% !important;}
-.chapter_content #chapter_container${(getWideNotes() ? `` : `, .authors-note`)} {
+.chapter-container .bbcode {
     margin-left: auto !important;
     margin-right: auto !important;
     max-width: ${getStoryWidth()};}
@@ -1839,57 +1904,81 @@ a:hover .bg_source_link {
 .fix_feed .content > .content_background > .inner {margin-top: 55px;}
 .pin_nav_bar.fix_feed .feed-toolbar {top: 45px;}
 
-.banner_credits {
+.banner-credits {
     vertical-align: top;
     display: inline-block;
     width: 100%;
     padding-bottom: 100px;
     transition: all 0.5s ease;
     transform: translate(0%,0);}
-.banner_credits .banner {
+.banner-credits .banner {
     border: 1px solid rgba(0,0,0,0.4);
     background-position: center;
     height: 173px;
     cursor: pointer;
     border-bottom: none;
   position: relative;}
-.banner_credits input {display: none;}
-.banner_credits .source a {color: inherit;}
-.banner_credits .source {
+.banner-credits input {display: none;}
+.banner-credits .source a {color: inherit;}
+.banner-credits .source {
     padding: 5px;
     color: #eee;}
-.banner_credits input:checked + label .banner::before {
+.banner-credits input + label .banner::before {
     content: '';
     position: absolute;
+    top: 1px;
+    bottom: 1px;
+    left: 1px;
+    right: 1px;
+    outline: solid 1px #333;
+    transition: outline 0.5s ease;
+    mix-blend-mode: color-dodge;}
+.banner-credits input:checked + label .banner::before {
     top: 10px;
     bottom: 10px;
     left: 10px;
     right: 10px;
-    outline: solid 10px rgba(220,220,220,0.5);}
-.banner_credits input:checked + label .banner::after {
+    outline: solid 10px #888;
+}
+.banner-credits input:checked + label .banner::after {
     content: '\\f00c';
     font-family: 'FontAwesome';
     position: absolute;
     top: 10px;
     left: 10px;
-    background: rgba(220,220,220,0.5);
+    background: #888;
     padding: 5px;
-    border-radius: 0 0 10px 0;}
+    border-radius: 0 0 10px 0;
+    mix-blend-mode: color-dodge;}
 
-#banner_selector {
+#banner-archive .main {
+  padding: 15px;
+  line-height: 1.8em;
+}
+
+#banner-selector {
     vertical-align: top;
     white-space: nowrap;
     position: relative;
     overflow: hidden;
-    transition: height 0.5s ease;}
-#banner_selector > .content_box {
+    transition: height 0.5s ease;
+}
+#banner-selector > .content_box {
     position: absolute;
     bottom: 0px;
     left: 0px;
-    width: 100%;}
+    width: 100%;
+}
+#banner-selector .theme .banner {
+  background-size: cover !important;
+}
 
-#banner_switcher {height: 50px;}
-#banner_switcher .inner {
+#banner-switcher {
+  display: block;
+  text-align: center;
+  height: 50px;
+}
+#banner-switcher .inner {
     width: auto;
     position: relative;}
 #save_banners {
@@ -1908,7 +1997,7 @@ a:hover .bg_source_link {
     color: #fff;
     text-shadow: -1px -1px rgba(0, 0, 0, 0.1);
     font-weight: bold;}
-.fix_switcher #banner_switcher {
+.fix_switcher #banner-switcher {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -1916,20 +2005,20 @@ a:hover .bg_source_link {
     z-index: 600;
     transition: background-color 0.3s linear;
     background-color: rgba(0,0,0,0.6);}
-.fix_switcher #banner_switcher + form {
+.fix_switcher #banner-switcher + form {
     margin-top: 50px;}
-.pin_nav_bar.fix_switcher #banner_switcher {
+.pin_nav_bar.fix_switcher #banner-switcher {
     top: 45px;}
 
-.pin_nav_bar.fix_userbar.fix_switcher #banner_switcher,
+.pin_nav_bar.fix_userbar.fix_switcher #banner-switcher,
 .pin_nav_bar.fix_userbar.fix_feed .feed-toolbar {top: 85px;}\
-.fix_userbar.fix_switcher #banner_switcher,
-.fix_userbar.fix_feed .feed-toolbar {top: 40px;}`, "FimFiction_Advanced_Stylesheet");
+.fix_userbar.fix_switcher #banner-switcher,
+.fix_userbar.fix_feed .feed-toolbar {top: 40px;}`, "FFA_Stylesheet");
 }
 
 function addBannerCss() {
-    
-    makeStyle(`
+    const light = currentTheme() == 'light';
+    updateStyle(`
 body.pin_nav_bar div.page-nav-bars {
     position: static;
     top: 0;
@@ -1943,74 +2032,163 @@ body.pin_nav_bar div.page-nav-bars .nav_bar {
     z-index: 10000;
     box-shadow: 0px 0px 15px #0000004d;}
 body.pin_nav_bar div.page-nav-bars {margin-top: 46px;}
+
+.titleHidden #title {height: 80px !important;}
+.titleHidden #title, .titleHidden .user-page-header, .titleHidden .story-page-header {overflow: hidden;}
+.titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 11.5rem;}
+.titleHidden header.header .theme_selector {line-height: 75px !important;}
+
+/*Banner preload*/
+#imagePreload {
+  position:absolute;
+  overflow:hidden;
+  width:0;
+  height:0;
+  top:-1px;
+  left:-1px;
+}
+
 /*Banners*/
 .nav_bar .logo {
-    z-index: 125;
+    z-index: 100;
     position: relative;}
 .nav_bar .logo.tiny-logo {
     max-height: 32px;
     vertical-align: -10px;}
-header.header { margin-left: auto; margin-right: auto; border-top: medium none; box-sizing: border-box; position: relative; }
-header.header .title { height: 175px; background-position: center top; background-repeat: no-repeat; position: relative; display: none ! important; }
-header.header .home_link { display: block; position: absolute; border-width: medium 1px; border-style: none solid; border-color: -moz-use-text-color rgba(0, 0, 0, 0.2); -moz-border-top-colors: none; -moz-border-right-colors: none; -moz-border-bottom-colors: none; -moz-border-left-colors: none; border-image: none; right: 0px; left: 0px; top: 0px; bottom: 0px; background-position: center top; overflow: hidden; transition: background-image 0.15s ease 0s; }
+
+header.header {
+  position: relative;
+}
+header.header .title {
+  height: 180px;
+  background-position: center top;
+  background-repeat: no-repeat;
+  position: relative;
+  display: none ! important;
+}
+header.header::after {
+  display: block;
+  position: absolute;
+  content: " ";
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-top: solid 1px #222;
+  border-bottom: solid 1px #222;
+  mix-blend-mode: color-dodge;
+  pointer-events: none;
+  z-index: 10;
+}
+header.header .home_link {
+  display: block;
+  position: absolute;
+  overflow: hidden;
+  right: 0px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  background-position: center top;
+}
 @media all and (max-width: 1000px) {
     header.header .home_link { background-position: -150px top; }
 }
-header.header .home_link div { position: absolute; left: 50%; }
+header.header .home_link div {
+  position: absolute;
+  left: 50%;
+}
 @media all and (max-width: 1000px) {
     header.header .home_link div { left: 500px; }
 }
-header.header .home_link div img { margin-left: -500px; }
-header.header .home_link_link { display: block; position: absolute; z-index: 10; right: 0px; left: 0px; top: 0px; bottom: 0px; }
-header.header .banner-buttons { position: absolute; z-index: 30; visibility: hidden; opacity: 0; transition: opacity 0.2s ease 0s, visibility 0.2s ease 0s; right: 64px; bottom: 10px; }
+header.header .home_link div img {
+  margin-left: -500px;
+}
+header.header .home_link_link {
+  display: block;
+  position: absolute;
+  z-index: 10;
+  right: 0px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+}
+header.header .banner-buttons {
+  position: absolute; z-index: 30;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.2s ease 0s, visibility 0.2s ease 0s;
+  right: 64px;
+  bottom: 10px;
+}
 header.header .banner-buttons a {
-    color: #efefef;
-    font-size: 0.7rem;
-    padding: 5px 10px;
-    text-decoration: none;
-    border-radius: 3px;
-    font-family: "Open Sans",Arial,sans-serif;
-    font-weight: 600;
-    font-style: normal;
-    text-transform: uppercase;}
-header.header .banner-buttons a:hover {background-color: rgba(0, 0, 0, 0.1);}
-header.header:hover .banner-buttons { visibility: visible; opacity: 1; }
+  text-shadow: 1px 1px rgba(0,0,0,0.3);
+  color: #fff;
+  font-size: 0.7rem;
+  padding: 5px 10px;
+  text-decoration: none;
+  border-radius: 3px;
+  font-family: "Open Sans",Arial,sans-serif;
+  font-weight: 600;
+  font-style: normal;
+  text-transform: uppercase;
+}
+header.header .banner-buttons a:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
 @media all and (max-width: 950px) {
-    header.header .banner-buttons {bottom: 30px;}}
-header.header:hover .theme_selector a { opacity: 1; }
-header.header .theme_selector { width: 120px; height: 100%; position: absolute; z-index: 11; transition: background 0.3s ease 0s; background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%; }
-header.header .theme_selector a {
-    color: rgb(255, 255, 255);
-    position: absolute;
-    height: 100%;
-    width: 60px;
-    opacity: 0;
-    text-align: center;
-    line-height: 175px;
-    text-decoration: none;
-    text-shadow: 0px 2px rgba(0, 0, 0, 0.5), 0px 0px 50px rgb(0, 0, 0);
-    font-size: 32px;
-    transition: opacity 0.3s ease 0s;
-    outline: 0 !important;}
-header.header .theme_selector_left { left: 0px; }
-header.header .theme_selector_left:hover { background: transparent linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, transparent 100%) repeat scroll 0% 0%; }
-header.header .theme_selector_left a::before { font-family: "FontAwesome"; content: ""; }
-header.header .theme_selector_right { right: 0px; }
-header.header .theme_selector_right:hover { background: transparent linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 100%) repeat scroll 0% 0%; }
-header.header .theme_selector_right a { right: 0px; }
-header.header .theme_selector_right a::before { font-family: "FontAwesome"; content: ""; }
+  header.header .banner-buttons {bottom: 30px;}
+}
+header.header .theme_selector {
+  position: absolute;
+  width: 120px;
+  height: 100%;
+  z-index: 11;
+  transition: background 0.3s ease 0s, opacity 0.3s ease 0s;
+  background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%;
+  color: #fff;
+  opacity: 0;
+  line-height: 175px;
+  text-decoration: none;
+  text-shadow: 1px 1px rgba(0,0,0,0.3);
+  font-size: 32px;
+  padding: 0 10px;
+  outline: 0 !important;}
+header.header:hover .theme_selector,
+header.header:hover .banner-buttons {
+  visibility: visible;
+  opacity: 1;
+}
+header.header .theme_selector::before {font-family: "FontAwesome";}
+header.header .theme_selector_left::before { content: ""; }
+header.header .theme_selector_right::before { content: ""; }
+
+header.header .theme_selector_left { left: 0; }
+header.header .theme_selector_right {
+  right: 0;
+  text-align: right;
+}
+
+header.header .theme_selector_left:hover {
+  background: transparent linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, transparent 100%) repeat scroll 0% 0%;
+}
+header.header .theme_selector_right:hover {
+  background: transparent linear-gradient(to right, transparent 0%, rgba(0, 0, 0, 0.3) 100%) repeat scroll 0% 0%;
+}
+
+${light ? '' : `
+.user_toolbar > ul > li ul {
+  background-color: ${toRgb(toComponents(banners[theme].colour).map((i, k) => k < 3 ? i / 4 : 0.95))};
+}
+`}
+
 @media all and (max-width: 700px) {
     header.header { width: 100%; }
     header.header .title { display: none ! important; }}
-
-#banner_selector .theme .banner {background-size: auto 100% !important;}
-
-header.header .home_link {border: none !important;}
 @media all and (min-width: 701px) {
-    header.header #title {display: block !important;}}
+    header.header .title {display: block !important;}}
 @media all and (min-width: 700px) {
-    .user-page-header ~ header.header .theme_selector a,
-    .story-page-header ~ header.header .theme_selector a {
+    .user-page-header ~ header.header .theme_selector,
+    .story-page-header ~ header.header .theme_selector {
         line-height: 275px;}
     header.header .title {
         transition: height 0.5s ease;}
@@ -2018,27 +2196,25 @@ header.header .home_link {border: none !important;}
     .story-page-header:hover ~ header.header .title {
         transition: height 0.2s 0.3s ease !important;}
     .user-page-header ~ header.header .home_link img,
-    .story-page-header ~ header.header .home_link img {
-        display: none;}
+    .story-page-header ~ header.header .home_link img {display: none;}
     .user_toolbar {
         background: -webkit-gradient(linear, left top, left bottom, rgba(60, 106, 179, 0), #3a66ac);
         background: -webkit-linear-gradient(top, rgba(60, 106, 179, 0) 0%, #3a66ac 85%);
         background: linear-gradient(to bottom, rgba(60, 106, 179, 0) 0%, #3a66ac 85%);
-        margin-top: -45px;
+        margin-top: -54px;
         box-shadow: none;
         position: relative;
-        border-bottom: 1px solid rgba(0, 0, 0, 0.2);}
+        border-bottom: solid 1px rgba(0, 0, 0, 0.2);}
     .user_toolbar > ul > li {
         margin-top: 10px;
-        z-index: 10;}
+        z-index: 10;
+        text-shadow: 1px 1px rgba(0,0,0,0.3);
+        color: #fff;}
      header.header .title {
         overflow: hidden;
         background-color: #1c1c1ce6;}
     .user_toolbar.transitionable {
         transition: background-color 0.25s linear;}
-    .user_toolbar > ul > li {
-        text-shadow: none;
-        color: rgba(0, 0, 0, 0.85);}
     .user_toolbar > ul > li::before {
         right: 0;
         background: rgba(0,0,0,0);
@@ -2057,9 +2233,6 @@ header.header .home_link {border: none !important;}
         background: -webkit-linear-gradient(top, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 50%);
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 50%);
         color: #fff;}
-    .user_toolbar > ul > li {
-      text-shadow: 1px 1px rgba(0,0,0,0.3);
-      color: #efefef;}
     header.header .home_link {
         height: 175px;
         background-size: cover !important;}
@@ -2067,20 +2240,22 @@ header.header .home_link {border: none !important;}
         top: 0px;
         bottom: 0px;
         left: 0px;
-        right: 0px;}}
+        right: 0px;
+  }
+}
 
 @media(max-width: 800px) {
-  .user_toolbar > ul {
-        padding-left: 1.7rem;}}
+  .user_toolbar > ul {padding-left: 1.7rem;}
+}
 @media all and (max-width: 700px) {
-  .user-page-header, .story-page-header {
-        box-shadow: none;}}
+  .user-page-header, .story-page-header {box-shadow: none;}
+}
 @media all and (max-width: 950px) {
-  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {
-        padding-left: 7.5rem;}}
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 7.5rem;}
+}
 @media all and (max-width: 850px) {
-  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {
-        padding-left: 2rem;}}
+  .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 2rem;}
+}
 @media all and (min-width: 700px) {
   .user-page-header, .story-page-header {
         height: 70px;
@@ -2120,7 +2295,9 @@ header.header .home_link {border: none !important;}
         box-shadow: 0px 1px #555 inset !important;
         border: 1px solid #222 !important;
         text-shadow: -1px -1px rgba(0, 0, 0, 0.2) !important;}
-  .user-page-header .tabs li a:hover {background: #353535 !important;}}
+  .user-page-header .tabs li a:hover {background: #353535 !important;}
+}
+
 .story-page-header h1 .button-group .drop-down-expander,
 .user-page-header h1 .button-group .drop-down-expander {
     background: transparent linear-gradient(to bottom, #555 0%, #444 100%) repeat scroll 0% 0%;
@@ -2135,6 +2312,7 @@ header.header .home_link {border: none !important;}
 .user-page-header .tabs {
     margin-top: 10px;
     bottom: initial !important;}
+
 /*Chrome Fix*/
 .user-page-header .inner ol li {white-space: nowrap;}
 .story-page-header > .inner hr, .user-page-header > .inner hr {border-color: rgba(28,28,28,0.9) rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.1) !important;}
@@ -2152,20 +2330,20 @@ header.header .home_link {border: none !important;}
 .user-page-header ol b, .story-page-header ol b {color: #fff;}
 .story-page-header > .inner h1 .author {color: #bbb;}
 .story-page-header > .inner, .user-page-header > .inner {
-    width: 100%;
     padding: 15px 0px !important;}
 .user-page-header .tabs li.selected a::after {display: none !important;}
-.user-page-header .tabs li.selected a {z-index: 0 !important;}`, 'Fimfiction_Advanced_Banner_Stylesheet');
+.user-page-header .tabs li.selected a {z-index: 0 !important;}
+`, 'FFA_Banner_Stylesheet');
 }
 
 function makeBannerTransitionStyle(height) {
   updateStyle(`
 @media all and (min-width: 700px) {
-    .user-page-header:hover ~  header.header .title, .story-page-header:hover ~ header.header .title { height: 40px;}
+    .user-page-header:hover ~  header.header .title, .story-page-header:hover ~ header.header .title { height: 55px;}
     .user-page-header:hover, .story-page-header:hover,
     .user-page-header:hover .info-container, .story-page-header:hover .info-container {
         transition: height 0.5s 0.6s ease;
-        height: ${height}px;}}`, 'Fimfiction_Advanced_Banner_Transition_Stylesheet');
+        height: ${height}px;}}`, 'FFA_Banner_Transition_Stylesheet');
 }
 
 function updateStyle(style, id) {
@@ -2174,11 +2352,57 @@ function updateStyle(style, id) {
   makeStyle(style, id);
 }
 
+function StyledWarning(message, ok, cancel) {
+  const g = new PopUpMenu('', `<i class="fa fa-warning"></i> Warning`);
+  g.SetFixed(1);
+  g.SetCloseOnHoverOut(0);
+  g.SetWidth(600);
+  g.SetContent(`<div class="bbcode" style="padding:18px;overflow-y:auto;max-height:400px;">${message}</div>`);
+  g.SetFooter(`<div style="text-align:right;">
+    <button data-click="ok" class="styled_button"><i class="fa fa-check"></i> Continue</button>
+    <button data-click="cancel" class="styled_button styled_button_red"><i class="fa fa-times"></i>  Cancel</button>
+</div>`);
+  g.Show();
+  addDelegatedEvent(g.content, '[data-click]', 'click', (e, target) => {
+    e.preventDefault();
+    g.Close();
+    const callback = target.dataset.click == 'ok' ? ok : cancel;
+    if (callback) callback();
+  });
+}
+
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
 
 function getBlockLightbox() {return settingsMan.bool('block_lightbox', false);}
 function setBlockLightbox(e) {settingsMan.setB('block_lightbox', e.target.checked, false);}
 
+function getFixAds() {return settingsMan.bool('fix_ads', false);}
+function setFixAds(e) {
+  if (e.target.checked) {
+    StyledWarning(`
+    <h1>Thar be Dragons!</h1>
+    This feature is highly experimental and dubious at best. Advertisement breakages may occur, which makes for a sad knighty. ${emoteHTM('fluttercry')}
+    <br><br>
+    Proceed at your own peril.
+    <br>
+    <blockquote>
+      <h3>Annoyances to be removed:</h3>
+      <ol>
+        <li>Ads are positioned outside of the main story container for uninterrupted c— horse fiction enjoyment.</li>
+        <li>Scrolling sidebars only appear beside the comments, oh and they don't scroll either.</li>
+        <li>Empty ad blocks remain hidden until their respective contents load. (No more empty spaces!)</li>
+        <li>Links after every ad allows for easy removal (Just be sure to check out their <i>sweet</i> deals beforehand, okay? ;D )</li>
+        <li>More convenient container class (.ad-wrapper) that works for google, kniggy (.advertisement), <i>and</i> Project Wonderful!</li>
+      </ol>
+    </blockquote>`, () => {
+      settingsMan.setB('fix_ads', true, false);
+    }, () => {
+      e.target.checked = false;
+    });
+  } else {
+    settingsMan.setB('fix_ads', e.target.checked, false);
+  }
+}
 function getPinUserbar() {return settingsMan.bool('pin_userbar', false);}
 function setPinUserbar(e) {
   if (getPinUserbar() != e.target.checked) {
@@ -2212,9 +2436,6 @@ function setSweetieEnabled(e) {
 
 function getSig() {return settingsMan.get("user_sig", defaultSig);}
 function setSig(v) {settingsMan.set("user_sig", v, defaultSig);}
-
-function getWideNotes() {return settingsMan.bool("wideAuthorNotes", true);}
-function setWideNotes(e) {settingsMan.setB("wideAuthorNotes", e.target.checked, true);}
 
 function getSaveFocus() {return settingsMan.bool('ultra_snow_save_focus', true);}
 function setSaveFocus(e) {
@@ -2260,16 +2481,16 @@ function addRecent(color) {
 }
 
 function getStoryWidth() {
-  const result = settingsMan.get('storyWidth', '46em');
-  return parseInt(result) ? result : '46em';
+  const result = settingsMan.get('storyWidth', '100%');
+  return parseInt(result) ? result : '100%';
 }
 function setStoryWidth(e) {
-  let val = parseInt(e.target.value) || 46;
+  let val = parseInt(e.target.value) || 100;
   let form = e.target.value.replace(val.toString(), '');
-  if (['em','px','%'].indexOf(form) < 0) form = 'em';
+  if (['em','px','%'].indexOf(form) < 0) form = '%';
   if (form == '%' && val > 100) val = 100;
   e.target.value = val + form;
-  settingsMan.set("storyWidth", e.target.value, '46em');
+  settingsMan.set("storyWidth", e.target.value, '100%');
 }
 
 function getCustomBanner() {
@@ -2368,7 +2589,7 @@ function Ban(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banne
 function Ban2(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos);}
 function Banner(name, img, source, color, bg, pos) {
   if (typeof bg === 'object') pos = bg, bg = null;
-  return {'id':name, 'url':img, 'source':source, 'colour':color, 'position': (pos ? Pos(pos) : null), 'background': bg};}
+  return {id:name, url:img, source:source, colour:color, position: (pos ? Pos(pos) : null), background: bg};}
 
 function Pos(poss) {
   const result = {
@@ -2461,13 +2682,13 @@ function replaceWith(el, html) {
 
 function extend(onto, offof) {Object.keys(offof).forEach(key => onto[key] = offof[key]);return onto;}
 function compose(one, two) {return (e) => { one(e), two(); };}
-function range(from, to) {return Array.apply(null, Array(to - from + 1)).map((_, i) => from + i);}
+function arrayOf(length, func) {return Array.apply(null, Array(length)).map(func);}
+function range(from, to) {return arrayOf(to - from + 1, (_, i) => from + i);}
 function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('')  : me;}
 function endsWith(me, it) {return reverse(me).indexOf(reverse(it)) == 0;}
 function pickNext(arr) {return arr[Math.max((new Date()).getSeconds() % arr.length, 0)];}
 function replaceAll(find, replace, me) {return me.replace(new RegExp(find.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'), 'g'), replace);}
 function getExtraEmotesInit() {return !!document.querySelector('div#extraemoticons_loaded');}
-function cssToRgb(css) {return css.replace(/[^0-9,]/g, '').split(',');}
 
 function normalise(me) {
   if (!me) return me;
@@ -2481,7 +2702,7 @@ function normalise(me) {
 
 function jule(s) {
   let a = '', len = s.length;
-  for (var i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
+  for (let i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
   return a;
 }
 
@@ -2492,14 +2713,18 @@ function InvalidHexColor(color) {
   return color.length == 3 && color.length == 6 && !/^[0-9a-f]+$/ig.test(color);
 }
 
-function rgbToHex(rgb) {
+function toRgb(rgb) {
+  return `rgb${rgb.length == 3 ? 'a' : ''}(${rgb.join(',')})`;
+}
+
+function toHex(rgb) {
   rgb = rgb.map(a => parseInt(a) || 0);
   return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
 }
 
 function rgb2hex(rgb) {
   rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  return rgbToHex([rgb[1], rgb[2], rgb[3]]);
+  return toHex([rgb[1], rgb[2], rgb[3]]);
 }
 
 function hexToRgb(hex){
@@ -2507,6 +2732,21 @@ function hexToRgb(hex){
   if (c.length == 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
   c= '0x' + c.join('');
   return [(c >> 16) & 255, (c >> 8) & 255, c & 255, 1];
+}
+
+function toZeroAlpha(color, alpha) {
+  color = toComponents(color);
+  color[3] = alpha || 0;
+  return toRgb(color);
+}
+
+function toComponents(color) {
+  if (color.indexOf('(') >-1) {
+    color = color.split('(')[1].split(')')[0].split(',');
+    if (color.length < 4) color.push('1');
+    return color.map(a => parseFloat(a.trim()) || 0);
+  }
+  return hexToRgb(color);
 }
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
@@ -2555,9 +2795,71 @@ function Animator() {
   };
 }
 
+function BannerCreditsController(controller) {
+  function build() {
+    const themeId = controller.getCurrent();
+    const category = CHRIST ? 2 : 0;
+    replaceWith(document.querySelector('.front_page'), `<div id="banner-archive" class="content mobile-no-margin">
+                <div class="content_box">
+                    <div class="content_box_header"><h2>Banner Archive</h2></div>
+                    <div class="main">
+                        The My Little Pony: Friendship is Magic community has churned out some incredible artwork from enormously talented artists. The banner selection on Fimfiction is just a small selection of what I consider to be some of the defining examples of artistic quality its members can produce. If you\'d like to suggest a piece of artwork for a banner, send <a href="/user/sollace">me a pm</a> and if I think it's high enough quality I might use it, but I'm pretty picky and need artwork that works on the site so please don't be offended if I'm not interested in what you send!
+                        <br><br>
+                        If you see a banner you'd like you use permanently on the site, just click it below!
+                    </div>
+                </div>
+                <div id="banner-switcher">
+                    <div class="inner">
+                        <div class="toggleable-radio toggleable-radio-${controller.getSets().length}" >${controller.getSets().map((a, j) => 
+                            `<input data-change="switchSets" name="banner-group" id="${a.name}" type="radio" value="${a.name}"${(j == category ? ` checked="checked"` : '')} ></input><label for="${a.name}">${a.name}</label>`).join('')}<a></a>
+                        </div>
+                    </div>
+                </div>
+                <form id="banner-selector">${controller.getSets().map((a, index) => 
+                    `<div class="banner-credits" data-offset="${index}" data-group="${a.name}" style="transform:translateX(-${category * 100}%)">${a.items.map(item => `
+                        <input type="radio" data-change="selectBanner" id="banners[${item.id}]" value="${item.id}"${item.id == themeId ? ` checked="checked"` : ''} name="banners[]"></input>
+                        <label for="banners[${item.id}]" class="theme">
+                            <div class="banner" title="Click to select this banner" style="background-image:url(${item.url})${(item['position'] ? `;background-position:${item.position};` : '')}"></div>
+                            <div class="source" style="background-color:${item.colour}">
+                                ${(item['source'] ? ` Source: <a href="${item.source}">${item.source}</a>` : '')}
+                            </div>
+                        </label>`).join('')}
+                    </div>`).join('')}
+                </form>
+            </div>`);
+  }
+  return {
+    selectBanner: function(e, target) {
+      controller.setCurrent(target.value);
+      controller.finalise();
+    },
+    switchSets: function(e, target) {
+      target = document.querySelector(`.banner-credits[data-group="${target.value}"]`);
+      if (!target) return;
+      target.parentNode.style.height = `${target.offsetHeight + 50}px`;
+      const offset = parseInt(target.dataset.offset) * 100;
+      all('.banner-credits', a => a.style.transform = `translateX(-${offset}%)`);
+    },
+    buildAll: function() {
+      if (!bannerController.getEnabled()) return;
+      document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
+      if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
+      
+      build();
+
+      addDelegatedEvent(document.querySelector('#banner-archive'), '[data-change]', 'change', (e, target) => {
+        this[target.dataset.change](e, target);
+      });
+
+      animator.on('switcher', pinnerFunc('#banner-switcher', 'switcher', document.querySelector('#banner-selector')));
+    }
+  };
+}
+
 function BannerController(sets) {
-  let preloader = null;
-  const done = e => e.target.parentNode.removeChild(img);
+  let preloader, home_link, source_link;
+  
+  const done = e => e.target.parentNode.removeChild(e.target);
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
 
   if (CHRIST) sets.push({name: "Festive", items: [Ban("christmas.png", "", "#4c7e6e")]});
@@ -2566,60 +2868,49 @@ function BannerController(sets) {
   function preloadBanner(banner) {
     if (banner.catched) return;
     if (!preloader) {
-      document.body.insertAdjacentHTML('beforeend', '<div id="imagePreload" style="position:absolute;overflow:hidden;width:0px;height:0px;top:-200;left:-200"></div>');
+      document.body.insertAdjacentHTML('beforeend', '<div id="imagePreload"></div>');
       preloader = document.body.lastChild;
-      preloader.addEventListener('load', done);
-      preloader.addEventListener('error', done);
     }
-    preloader.insertAdjacentHTML('beforeend', `<img src="${banner.url}"></img>`);
+    preloader.insertAdjacentHTML('beforeend', `<img></img>`);
+    const img = preloader.lastChild;
+    img.addEventListener('load', done);
+    img.addEventListener('error', done);
+    img.src = banner.url;
     banner.catched = true;
   }
 
   function updateBannerScroll(position) {
-    var home_link = document.querySelector('.home_link');
-    if (home_link) {
-      var top = offset(home_link).top;
-      var off = (position && position.class === 'Pos') ? position : banners[theme].position;
-      if (window.scrollY < top | window.scrollY - 1 >= top + home_link.offsetHeight) {
-        home_link.style.backgroundPosition = off ? off : '';
-        return;
-      }
-
-      top = (window.scrollY - top) * 0.6;
-      var fX = off ? off['position-x'] : window.innerWidth < 1000 ? 'left' : 'center';
-      var X = fX != 'center' ? (off ? off.x : '-150') + 'px ' : '';
-      var fY = off ? off['position-y'] : 'top';
-      var Y = '';
-      if (off) {
-        if (fY == 'center') {
-          Y = 'calc(50% + ' + top + 'px)';
-          fY = 'top';
-        } else if (fY == 'bottom') {
-          Y = (off.y - top) + 'px';
-        } else {
-          Y = (off.y + top) + 'px';
-        }
-      } else {
-        Y = (top*0.6) + 'px';
-      }
-      home_link.style.backgroundPosition = fX + ' ' + X + fY + ' ' + Y;
+    if (!home_link) return;
+    
+    let top = offset(home_link).top;
+    const off = (position && position.class === 'Pos') ? position : (banners[theme].position || {
+      'position-x': window.innerWidth < 1000 ? 'left' : 'center',
+      'position-y': 'top',
+      'x': -150,
+      'y': 0
+    });
+    
+    if (window.scrollY < top | window.scrollY - 1 >= top + home_link.offsetHeight) {
+      home_link.style.backgroundPosition = off.class ? off : '';
+      return;
     }
+
+    top = (window.scrollY - top) * 0.6;
+    
+    let fX = off['position-x'], fY = off['position-y'];
+    let X = fX != 'center' ? `${off.x}px ` : '', Y = off.y;
+    
+    if (fY === 'center') {
+      Y = `calc(50% + ${top}px)`;
+      fY = 'top';
+    } else {
+      if (fY === 'bottom') top = -top;
+      Y = `${Y + top}px`;
+    }
+    
+    home_link.style.backgroundPosition = `${fX} ${X}${fY} ${Y}`;
   }
-
-  function toZeroAlpha(color) {
-    if (color.indexOf('rgb(') == 0) {
-      return color.replace('(','a(').replace(')', ',0)');
-    }
-    if (color.indexOf('rgba(') == 0) {
-      color = color.split(',');
-      color[color.length - 1] = '0)';
-      return color.join(',');
-    }
-    color = hexToRgb(color);
-    color[3] = 0;
-    return 'rgba(' + color.join(',') + ')';
-  }
-
+  
   function computeAppropriateHeight(header) {
     const el = header.querySelector('ul.tabs, ul.tags');
     return el ? el.offsetTop + el.offsetHeight + 30 : 255;
@@ -2632,6 +2923,7 @@ function BannerController(sets) {
 
   let self;
   return self = {
+    getSets: _ => sets,
     prev: _ => slider.goto(theme == 0 ? banners.length - 1 : theme - 1, true),
     next: _ => slider.goto(theme >= banners.length - 1 ? 0 : theme + 1, true),
     reset: function() {
@@ -2651,6 +2943,14 @@ function BannerController(sets) {
       }
       return CHRIST ? 'christmas.png' : null;
     },
+    getCurrentId: function() {
+      const themeId = this.getCurrent();
+      if (!themeId) return -1;
+      for (let i = 0; i < banners.length; i++) {
+        if (banners[i].id === themeId) return i;
+      }
+      return -1;
+    },
     setCurrent: function(value) {
       document.cookie = 'selected_theme=' + escape(value) + ';path=/';  
     },
@@ -2663,7 +2963,7 @@ function BannerController(sets) {
       if (e.target.checked) {
         this.build(banners);
       } else {
-        all('#Fimfiction_Advanced_Banner_Stylesheet, header.header > #title.title', s => s.parentNode.removeChild(s));
+        all('#FFA_Banner_Stylesheet, header.header > #title.title', s => s.parentNode.removeChild(s));
         document.querySelector('.user_toolbar').style.background = '';
       }
       bannerScrollOff();
@@ -2680,63 +2980,6 @@ function BannerController(sets) {
       } else {
         bannerScrollOff();
       }
-    },
-    addBannerCredits: function(sets) {
-      const themeId = this.getCurrent();
-      const category = CHRIST ? 2 : 0;
-      replaceWith(document.querySelector('.front_page'), `<div id="banner-archive" class="content mobile-no-margin">
-                <div class="content_box">
-                    <div class="content_box_header">
-                        <h2>Banner Archive</h2>
-                    </div>
-                    <div class="main" style="padding:15px; line-height:1.8em;">
-                        The My Little Pony: Friendship is Magic community has churned out some incredible artwork from enormously talented artists. The banner selection on Fimfiction is just a small selection of what I consider to be some of the defining examples of artistic quality its members can produce. If you\'d like to suggest a piece of artwork for a banner, send <a href="/user/sollace">me a pm</a> and if I think it's high enough quality I might use it, but I'm pretty picky and need artwork that works on the site so please don't be offended if I'm not interested in what you send!
-                        <br><br>
-                        If you see a banner you'd like you use permanently on the site, just click it below!
-                    </div>
-                </div>
-                <div id="banner_switcher" style="display:block;text-align:center">
-                    <div class="inner">
-                        <div class="toggleable-radio toggleable-radio-${sets.length}" >${sets.map((a, j) => 
-                            `<input name="banner-group" id="${a.name}" type="radio" value="${a.name}"${(j == category ? ` checked="checked"` : '')} ></input><label for="${a.name}">${a.name}</label>`).join('')}<a></a>
-                        </div>
-                    </div>
-                </div>
-                <form id="banner_selector">${sets.map(a => 
-                    `<div class="banner_credits" data-group="${a.name}" style="transform:translateX(-${category * 100}%)">${a.items.map(item => `
-                        <input type="radio" id="banners[${item.id}]" value="${item.id}"${item.id == themeId ? ` checked="checked"` : ''} name="banners[]"></input>
-                        <label for="banners[${item.id}]" class="theme">
-                            <div class="banner" title="Click to select this banner" style="background-image:url(${item.url})${(item['position'] ? `;background-position:${item.position};` : '')}"></div>
-                            <div class="source" style="background-color:${item.colour}">
-                                ${(item['source'] ? ` Source: <a href="${item.source}">${item.source}</a>` : '')}
-                            </div>
-                        </label>`).join('')}
-                    </div>`).join('')}
-                </form>
-            </div>`);
-
-      const archive = document.querySelector('#banner-archive');
-      addDelegatedEvent(archive, '#banner_selector input', 'change', (e, target) => {
-        this.setCurrent(target.value);
-        this.finalise();
-      });
-      addDelegatedEvent(archive, '#banner_switcher input', 'change', e => {
-        const bannersets = document.querySelectorAll('.banner_credits');
-        [].some.call(bannersets, (a, offset) => {
-          if (a.dataset.group == e.target.value) {
-            a.parentNode.style.height = `${a.offsetHeight + 50}px`;
-            Array.prototype.forEach.call(bannersets, a => a.style.transform = `translateX(-${offset * 100}%)`);
-            return true;
-          }
-        });
-      });
-
-      animator.on('switcher', pinnerFunc('#banner_switcher', 'switcher', document.querySelector('#banner_selector')));
-    },
-    buildAll: function() {
-      if (!this.getEnabled()) return;
-      document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
-      if (CURRENT_LOCATION === '?view=page&page=banner_credits') this.addBannerCredits(sets);
     },
     build: function() {
       settingsMan.flag('banners', true);
@@ -2767,15 +3010,17 @@ function BannerController(sets) {
                 <div id="title" class="title">
                     <div class="banner-buttons">
                         <a target="_blank" id="source_link">Source</a>
-                        <a data-action="reset">Reset Selection</a>
-                        <a href="/?view=page&page=banner_credits">Banner Selector</a>
+                        <a data-action="reset" title="Reset"><i class="fa fa-undo"></i></a>
+                        <a href="/?view=page&page=banner_credits" title="Select Banner"><i class="fa fa-pencil"></i></a>
                     </div>
-                    <a href="/" class="home_link"><div id="fade_banner_image" ></div></a>
+                    <a href="/" class="home_link"><div id="fade_banner_image"></div></a>
                     <a href="/" class="home_link_link"></a>
-                    <div class="theme_selector theme_selector_left"><a href="#" data-action="prev"></a></div>
-                    <div class="theme_selector theme_selector_right"><a href="#" data-action="next"></a></div>
+                    <a class="theme_selector theme_selector_left" href="#" data-action="prev"></a>
+                    <a class="theme_selector theme_selector_right" href="#" data-action="next"></a>
                 </div>
             </header>`);
+      home_link = document.querySelector('#title a.home_link');
+      source_link = document.querySelector('#title #source_link');
       addDelegatedEvent(userToolbar.previousSibling, 'a[data-action]', 'click', (e, target) => {
         e.preventDefault();
         this[target.dataset.action]();
@@ -2789,14 +3034,17 @@ function BannerController(sets) {
       }
       this.finalise();
       requestAnimationFrame(() => userToolbar.classList.add('transitionable'));
+      
+      window.addEventListener('focus', () => {
+        const id = this.getCurrentId();
+        if (id > -1) this.pick(id);
+        slider.resume();
+      });
+      window.addEventListener('blur', () => slider.pause());
+
     },
     finalise: function() {
-      const themeId = this.getCurrent();
-      if (!(themeId && banners.some((a, i) => {
-        if (a.id !== themeId) return;
-        this.pick(i);
-        return true;
-      }))) this.pick(-1);
+      this.pick(this.getCurrentId());
     },
     pick: function(id, save) {
       if (id < 0 || id > banners.length) {
@@ -2814,18 +3062,18 @@ function BannerController(sets) {
       if (color && color.length) {
         userToolbar.dataset.backgroundColor = color;
         userToolbar.style.background = `linear-gradient(to bottom, ${toZeroAlpha(color)} 0%, ${color} 85%)`;
+        addBannerCss();
       }
-
-      const homeLink = document.querySelector('#title a.home_link');
-      if (!homeLink) return;
-      homeLink.style.backgroundImage = `url('${img}')`;
-
-      const sourceLink = document.querySelector('#source_link');
-      sourceLink.classList.toggle('hidden', !(source && source.length));
-      sourceLink.href = source;
-
-      homeLink.style.backgroundSize = pos ? '1300px' : '';
-      homeLink.style.backgroundPosition = pos || '';
+      
+      if (!home_link) return;
+      home_link.style.backgroundImage = `url('${img}')`;
+      home_link.style.backgroundSize = pos ? '1300px' : '';
+      home_link.style.backgroundPosition = pos || '';
+      
+      source_link.classList.toggle('hidden', !(source && source.length));
+      source_link.href = source;
+      source_link.title = source;
+      
       if (this.getFancy()) updateBannerScroll(pos);
     }
   };
@@ -2834,13 +3082,20 @@ function BannerController(sets) {
 function Slider() {
   const slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000],
         slideLabels = ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"];
-  let fade, tit, isSliding, slideshowTimer, me;
-
-  function loadImg() {
+  let fade, tit, slideshowTimer, me;
+  
+  const blacklistBanners = 0;
+  
+  const img = document.createElement('IMG');
+  img.addEventListener('load', () => {
     me.goto(theme);
-    isSliding = false;
     me.updateSlide();
-  }
+  });
+  img.addEventListener('error', () => {
+    if (blacklistBanners++ < banners.length) {
+      me.next();
+    }
+  });
 
   return me = {
     ready: _ => {
@@ -2856,39 +3111,43 @@ function Slider() {
       this.updateSlide();
       callback();
     },
-    updateSlide: function() {
-      if (isSliding) {
+    pause: function() {
+      if (slideshowTimer) {
         clearTimeout(slideshowTimer);
-        isSliding = false;
+        slideshowTimer = null;
       }
+    },
+    resume: function() {
+      if (this.getSlide() && fade && !slideshowTimer) {
+        this.updateSlide();
+      }
+    },
+    updateSlide: function() {
+      this.pause();
       const slide = this.getSlide();
       if (slide && fade) {
-        isSliding = true;
-        slideshowTimer = setTimeout(() => {
-          fade.style.transition = 'none';
-          fade.style.opacity = 1;
-          fade.style.background = window.getComputedStyle(tit).background;
-          if (this.getShuffle()) {
-            theme = Math.floor(Math.random() * (banners.length - 1));
-          } else {
-            theme = theme + 1 >= banners.length ? 0 : theme + 1;
-          }
-          const img = document.createElement('IMG');
-          img.src = banners[theme].url;
-          img.addEventListener('load', loadImg);
-        }, slideTimes[slide]);
+        slideshowTimer = setTimeout(() => this.next(), slideTimes[slide]);
       }
+    },
+    next: function() {
+      if (this.getShuffle()) {
+        theme = Math.floor(Math.random() * (banners.length - 1));
+      } else {
+        theme = (theme + 1) % banners.length;
+      }
+      img.src = banners[theme].url;
     },
     goto: function(index, save) {
       const cc = window.getComputedStyle(tit);
       fade.style.transition = 'none';
-      fade.style.opacity = '1';
+      fade.style.opacity = 1;
+      fade.style.background = cc.background;
       fade.style.backgroundImage = cc.backgroundImage;
       fade.style.backgroundPosition = cc.backgroundPosition;
       fade.style.backgroundSize = cc.backgroundSize;
       bannerController.pick(index, save);
       fade.style.transition = 'opacity 0.25s linear';
-      fade.style.opacity = '0';
+      fade.style.opacity = 0;
     }
   };
 }
@@ -3179,7 +3438,7 @@ ${['options','speech'].map(a => `<div class="${a}_container"><div class="${a}" >
 <div class="label">
 <div>level <span class="level">1</span></div>
 <div>
-<a>Sell for <span class="value">' + base + '</span></a>
+<a>Sell for <span class="value">${base}</span></a>
 </div>
 </div>
 </div>`);
@@ -3697,14 +3956,12 @@ function snowBG(env, container, reverse, fix) {
   let window_focused = true;
   let saveFocus = getSaveFocus();
   let mouseX = 0, mouseY = 0;
-  let particles = [];
   let ticker;
-
-  const camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
-  camera.position.z = 1000;
 
   const scene = new THREE.Scene();
   scene.add(camera);
+  const camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
+  camera.position.z = 1000;
 
   const renderer = new THREE.CanvasRenderer();
   renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -3712,8 +3969,8 @@ function snowBG(env, container, reverse, fix) {
   const material = new THREE.ParticleBasicMaterial({
     map: new THREE.Texture(newEl(`<img src="${staticFimFicDomain()}/scripts/img/ParticleSmoke.png">`))
   });
-
-  for (let i = 0; i < 140; i++) particles.push(new Particle3D(scene, material));
+  
+  const particles = arrayOf(140, _ => new Particle3D(scene, material));
 
   if (fix) {
     renderer.domElement.style.position = 'fixed';
@@ -3721,29 +3978,30 @@ function snowBG(env, container, reverse, fix) {
   }
   renderer.domElement.style.pointerEvents = 'none';
 
-  function mouseMoved(e) {
+  const mouseMoved = e => {
     mouseX = e.clientX;
     mouseY = e.clientY;
-  }
+  };
 
   window.addEventListener('focus', () => window_focused = true);
   window.addEventListener('blur', () => window_focused = false);
-
+  
+  const tick = () => {
+    if (!window_focused && saveFocus) return;
+    particles.forEach(particle => particle.updatePhysics());
+    camera.position.x += (mouseX - camera.position.x) * 0.05;
+    camera.position.y += (-mouseY - camera.position.y) * 0.05;
+    camera.lookAt(scene.position);
+    renderer.render(scene, camera);
+  };
+  
   return {
     setSave: v => saveFocus = v,
     start: function () {
-      if (ticker) return this;
-      ticker = setInterval(() => {
-        if (!window_focused && saveFocus) return;
-        particles.forEach(particle => particle.updatePhysics());
-        camera.position.x += (mouseX - camera.position.x) * 0.05;
-        camera.position.y += (-mouseY - camera.position.y) * 0.05;
-        camera.lookAt(scene.position);
-        renderer.render(scene, camera);
-      }, 50 / 3);
+      if (ticker) return;
+      ticker = setInterval(tick, 50 / 3);
       container.insertAdjacentElement(reverse ? 'beforeend' : 'afterbegin', renderer.domElement);
       document.addEventListener('mousemove', mouseMoved);
-      return this;
     },
     stop: function () {
       if (!ticker) return;
