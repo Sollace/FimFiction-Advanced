@@ -1,16 +1,17 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.3
+// @version     4.3.2
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -26,26 +27,6 @@ if (this['unsafeWindow'] && window !== unsafeWindow) {
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
 }
-//==================================================================================================
-const settingsMan = {
-  __get: (key, parse, def) => settingsMan.has(key) ? parse(localStorage[key]) : def,
-  keys: () => Object.keys(localStorage),
-  has: key => localStorage[key] !== undefined,
-  remove: key => localStorage.removeItem(key),
-  get: (key, def) => settingsMan.__get(key, a => a, def),
-  bool: (key, def) => settingsMan.__get(key, a => a == 'true' || a == '1' || !!a, def),
-  int: (key, def) => settingsMan.__get(key, parseInt, def),
-  float: (key, def) => settingsMan.__get(key, parseFloat, def),
-  set: (key, val, def) => {
-    if (def === undefined) def = '';
-    if (val === def) return settingsMan.remove(key);
-    localStorage[key] = val;},
-  setB: (key, bool, def) => settingsMan.set(key, bool ? '1' : '', def),
-  flag: (key, value) => {
-    let current = (document.lastChild.getAttribute('FimFic_Adv') || '').split(',').filter(i => i != key && i != '');
-    if (value) current.push(key);
-    document.lastChild.setAttribute('FimFic_Adv', current.join(','));}
-};
 
 //-------------------------------------------DATA---------------------------------------------------
 const defaultSig = "%message%\n\n--[i]%name%[/i]";
