@@ -7,7 +7,7 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/sweetie_scepter.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
@@ -2667,12 +2667,6 @@ function BG(name, css, source) {
 function override(obj, member, new_func) {
   new_func.super = obj[member].super || obj[member];
   obj[member] = new_func;
-}
-
-function newEl(html) {
-  const div = document.createElement('DIV');
-  div.innerHTML = html;
-  return div.firstChild;
 }
 
 function replaceWith(el, html) {
