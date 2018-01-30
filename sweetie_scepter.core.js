@@ -446,7 +446,7 @@ style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility
     let dragging = false;
     let timestamp;
     
-    const mouseMove = _ => {
+    const mouseMove = event => {
       setPos(event.clientX - x, event.clientY - y);
       grabber.move(event);
       if (lastX >= 0 && lastY >= 0) {
