@@ -443,7 +443,7 @@ function setupSweetie() {
 	</g>
 </svg>`;
   
-  document.body.insertAdjacentHTML('beforeend', `<div id="belle">
+  document.body.insertAdjacentHTML('beforeend', `<div id="belle" style="top:-1px;left:-1px;">
     ${svg}
     ${['options','speech'].map(a => `<div class="${a}_container"><div class="${a}" ></div></div>`).join('')}
 </div>`);
@@ -768,7 +768,7 @@ function setupSweetie() {
       if (bank >= cost) {
         bank-= cost;
         cursorCost += multiplier;
-        say(getPointsName() + ': ' + bank + '</br>' + getPointsName() + ' Clicked: ' + score);
+        say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
         spawnCursor(smart);
         holder.innerHTML = '';
         holder.parentNode.opacity = 0;
@@ -999,8 +999,8 @@ function setupSweetie() {
   }
 
   function say(text, duration, fadeOptions) {
-    const speech = document.querySelector('#belle .speech');
-    const speechContainer = document.querySelector('#belle .speech_container');
+    const speech = belle.querySelector('.speech');
+    const speechContainer = belle.querySelector('.speech_container');
     if (speech.timeoutFunction) {
       clearInterval(speech.timeoutFunction);
     }
@@ -1009,17 +1009,17 @@ function setupSweetie() {
     speech.innerHTML = text;
 
     if (duration) speech.timeoutFunction = setTimeout(() => {
-      all('#belle .speech_container, #belle .options_container', a => a.style.opacity = 0);
+      all(belle, '.speech_container, .options_container', a => a.style.opacity = 0);
       if (fadeOptions) speech.timeoutFunction = '';
-      setTimeout(() => all('#belle .speech_container, #belle .options_container', a => a.style.display = ''), 2000);
+      setTimeout(() => all(belle, '.speech_container, .options_container', a => a.style.display = ''), 2000);
     }, duration);
   }
 
   function options(factory) {
-    const container = document.querySelector('#belle .options');
+    const container = belle.querySelector('.options');
     container.innerHTML = '';
     factory(container);
-    const optionsContainer = document.querySelector('#belle .options_container');
+    const optionsContainer = belle.querySelector('.options_container');
     optionsContainer.style.opacity = container.children.length ? 1 : 0;
     optionsContainer.style.display = 'block';
     if (!container.children.length) {
@@ -1029,9 +1029,10 @@ function setupSweetie() {
 
   function initBelle() {
     setupImg(settingsMan.int('sweetie_img_index', 0));
-    if (settingsMan.has("sweetie_posX") && settingsMan.has("sweetie_posY")) {
-      setPrefPos(settingsMan.float("sweetie_posX"), settingsMan.float("sweetie_posY"));
-    }
+    
+    const x = settingsMan.has("sweetie_posX") ? settingsMan.float("sweetie_posX") : getMaxX();
+    const y = settingsMan.has("sweetie_posY") ? settingsMan.float("sweetie_posY") : getMaxY();
+    setPrefPos(x, y);
   }
 
   function setPrefPos(x, y) {
@@ -1039,19 +1040,28 @@ function setupSweetie() {
     prefY = y;
     setPos(x, y);
   }
+  
+  function getMaxX() {
+    return document.body.offsetWidth - (belle.offsetWidth * 0.75);
+  }
+  
+  function getMaxY() {
+    return document.body.offsetHeight - (belle.offsetHeight * 0.75);
+  }
+  
+  function clamp(v, min, max) {
+    return v < min ? min : v >= max ? max : v;
+  }
 
   function setPos(x, y) {
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-
-    const maxX = document.body.offsetWidth - (belle.offsetWidth * 0.75);
-    const maxY = document.body.offsetHeight - (belle.offsetHeight * 0.75);
-
-    if (x > maxX) x = maxX;
-    if (y > maxY) y = maxY;
-
-    settingsMan.set("sweetie_posY", belle.style.top = y + 'px');
-    settingsMan.set("sweetie_posX", belle.style.left = x + 'px');
+    x = clamp(x, 0, getMaxX());
+    y = clamp(y, 0, getMaxY());
+    
+    belle.style.left = `${x}px`;
+    belle.style.top = `${y}px`;
+    
+    settingsMan.set("sweetie_posY", y);
+    settingsMan.set("sweetie_posX", x);
   }
 
   function rotateObject(obj, deg) {
