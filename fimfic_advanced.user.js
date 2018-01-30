@@ -255,7 +255,6 @@ function initFimFictionAdvanced() {
   }
   if (getFixAds()) removeAnnoyances();
   applyCodePatches();
-  if (getSweetieEnabled()) setupSweetie();
   if (slider.getSlide()) slider.updateSlide();
   applySnowing(getBGSnow(), getSnowing());
 }
@@ -272,12 +271,13 @@ function registerEvents() {
 //--------------------------------------------------------------------------------------------------
 
 function applyNightModeListener() {
+  window.addEventListener('darkmodechange', nightModeToggled);
   window.addEventListener('storage', c => {
     if (c.key == 'stylesheet') nightModeToggled();
   });
   override(NightModeController.prototype, 'update', function() {
     NightModeController.prototype.update.super.apply(this, arguments);
-    nightModeToggled();
+    window.dispatchEvent(new Event('darkmodechange'));
   });
 }
 
@@ -928,9 +928,9 @@ function startCommentHandler() {
     if (!/\?.*isEmote/.test(url)) return;
     me = me.parentNode;
     if (me.nextSibling && me.nextSibling.tagName != 'BR') {
-      me.insertAdjacentElement('afterend', document.createElement('BR'));
+      me.insertAdjacentHTML('afterend', '<br>');
     }
-    replaceWith(me, `<img class="user_image" src="${url}"></img>`);
+    replaceWith(me, `<img class="user_image" data-lightbox src="${url}"></img>`);
   };
 
   FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
@@ -1385,6 +1385,9 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
     background: linear-gradient(to bottom, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;}
 
 ${light ? '' : `
+/*Relight the belle*/
+#belle svg {filter: hue-rotate(-250deg);}
+
 /*Night mode controls*/
 .toggleable-switch input:checked + a::before {color: #7dbd3a;}
 .toggleable-switch a::before {
@@ -2327,12 +2330,6 @@ function makeBannerTransitionStyle(height) {
         height: ${height}px;}}`, 'FFA_Banner_Transition_Stylesheet');
 }
 
-function updateStyle(style, id) {
-  const el = document.getElementById(id);
-  if (el) return el.innerHTML = style;
-  makeStyle(style, id);
-}
-
 function StyledWarning(message, ok, cancel) {
   const g = new PopUpMenu('', `<i class="fa fa-warning"></i> Warning`);
   g.SetFixed(1);
@@ -2398,22 +2395,6 @@ function setPinUserbar(e) {
 
 function getAlwaysShowImages() {return settingsMan.bool('unspoiler_images', true);}
 function setAlwaysShowImages(e) {settingsMan.setB('unspoiler_images', e.target.checked, true);}
-
-function getSweetieEnabled() {return settingsMan.bool('sweetie_staff_enabled', false);}
-function setSweetieEnabled(e) {
-  settingsMan.setB("sweetie_staff_enabled", e.target.checked, false);
-  if (!e.target.checked) {
-    settingsMan.remove("sweetie_posX");
-    settingsMan.remove("sweetie_posY");
-    settingsMan.remove("sweetie_img_index");
-  }
-  const belle = document.querySelector('#belle');
-  if (belle) {
-    belle.style.display = e.target.checked ? "block" : "none";
-  } else if (e.target.checked) {
-    setupSweetie();
-  }
-}
 
 function getSig() {return settingsMan.get("user_sig", defaultSig);}
 function setSig(v) {settingsMan.set("user_sig", v, defaultSig);}
@@ -2663,7 +2644,7 @@ function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('
 function endsWith(me, it) {return reverse(me).indexOf(reverse(it)) == 0;}
 function pickNext(arr) {return arr[Math.max((new Date()).getSeconds() % arr.length, 0)];}
 function replaceAll(find, replace, me) {return me.replace(new RegExp(find.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'), 'g'), replace);}
-function getExtraEmotesInit() {return !!document.querySelector('div#extraemoticons_loaded');}
+function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
 
 function normalise(me) {
   if (!me) return me;

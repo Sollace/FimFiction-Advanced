@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2b
+// @version     4.3.2c
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -11,10 +11,28 @@
 // @grant       none
 // ==/UserScript==
 
+if (getSweetieEnabled()) setupSweetie();
+
 function jule(s) {
   let a = '', len = s.length;
   for (let i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
   return a;
+}
+
+function getSweetieEnabled() {return settingsMan.bool('sweetie_staff_enabled', false);}
+function setSweetieEnabled(e) {
+  settingsMan.setB("sweetie_staff_enabled", e.target.checked, false);
+  if (!e.target.checked) {
+    settingsMan.remove("sweetie_posX");
+    settingsMan.remove("sweetie_posY");
+    settingsMan.remove("sweetie_img_index");
+  }
+  const belle = document.querySelector('#belle');
+  if (belle) {
+    belle.style.display = e.target.checked ? "block" : "none";
+  } else if (e.target.checked) {
+    setupSweetie();
+  }
 }
 
 function setupSweetie() {
