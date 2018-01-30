@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2
+// @version     4.3.2b
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,6 +18,8 @@ function jule(s) {
 }
 
 function setupSweetie() {
+  const GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
+  
   let x, y;
   let lastX = -1, lastY = -1;
   let lastClientX = -1, lastClientY = -1;
