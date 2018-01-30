@@ -434,7 +434,7 @@ style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility
         grabbedImage.style.left = `${event.pageX - grabbedImage.offsetWidth/2}px`;
       }
     };
-  });
+  })();
   
   const belle = (_ => {
     document.body.insertAdjacentHTML('beforeend', `<div id="belle" style="top:-1px;left:-1px;">
