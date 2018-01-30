@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2c
+// @version     4.3.2d
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -9,9 +9,10 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
 // @grant       none
+// @run-at      document-start
 // ==/UserScript==
 
-if (getSweetieEnabled()) setupSweetie();
+if (getSweetieEnabled()) document.addEventListener("DOMContentLoaded", setupSweetie);
 
 function jule(s) {
   let a = '', len = s.length;
@@ -39,30 +40,16 @@ function setupSweetie() {
   const GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
   
   let x, y;
+  let prefX = 0, prefY = 0;
+  
   let lastX = -1, lastY = -1;
   let lastClientX = -1, lastClientY = -1;
-  let prefX = 0, prefY = 0;
-
-  let timestamp;
-
-  let grabbedImage = null;
-  let hearter = null;
-
-  const baseCursorUpgradeCost = 10;
-  let cursorUpgradeCost = 0;
-  const baseCursorCost = 4;
-  let cursorCost = baseCursorCost;
-
-  let score = 0;
-  let bank = 0;
-  let shaken = 0;
-  let shakeCount = 0;
-
-  let selected_image_index = 0;
-  let dragging = false;
-
-  const pointType = [0,0];
   
+  let selected_image_index = 0;
+  
+  let extra_key = 0;
+  let no = false;
+
   const imgLabels = 'Sweetie Belle;Scootaloo;Apple Bloom;Applejack;Twilight Sparkle'.split(';');
   const helpContent = 'iPkcpuD/or pmiga;ePSCA Eo(ev rmiga)eW-bolb emIgaseS;IHTFS+APECC-ooik elCciek;r+CPSCA-EeHrastH;S+APECS-ahekS;ahekV girouols-yhTsip ga;e+QPSCAE';
   
@@ -74,7 +61,652 @@ function setupSweetie() {
     '#scepter_base, #scepter_trim, #eyes_mare, #eyes_mare_bottom, #ts, #ts_back',
   ];
   
-  const svg = `
+  const randomX = () => document.scrollingElement.scrollLeft + (Math.random() * document.body.clientWidth);
+  const randomY = () => document.scrollingElement.scrollTop + (Math.random() * document.body.clientHeight);
+  const rRGB = () => Math.floor(Math.random() * 255);
+  const getMaxX = () => document.body.offsetWidth - (belle.offsetWidth * 0.75);
+  const getMaxY = () => document.body.offsetHeight - (belle.offsetHeight * 0.75);
+  const clamp = (v, min, max) => v < min ? min : v >= max ? max : v;
+  
+  const songs = (_ => {
+    let player = null;
+    return {
+      play: (ytid, ended, loaded) => {
+        if (!player) {
+          document.body.insertAdjacentHTML('beforeend', '<iframe style="display:none;" id="song_frame"></iframe>');
+          player = document.body.lastChild;
+        }
+        
+        if (player.dataset.ytid == ytid) return;
+        player.dataset.ytid = ytid;
+        player.src = `//www.youtube.com/embed/${ytid}?autoplay=1&enablejsapi=1`;
+        const ready = () => {
+          loaded();
+          player.removeEventListener('load', loaded);
+        };
+        player.addEventListener('load', loaded);
+        player.addEventListener('ended', ended);
+        return player;
+      },
+      stop: () => {
+        if (!player) return;
+        player.dispatchEvent(new Event('ended'));
+        player.parentNode.removeChild(player);
+        player = null;
+      }
+    };
+  });
+  
+  const cookieClicker = (_ => {
+    const pointType = [0,0];
+    
+    const baseCursorUpgradeCost = 10;
+    let cursorUpgradeCost = 0;
+    const baseCursorCost = 4;
+    let cursorCost = baseCursorCost;
+
+    let score = 0;
+    let bank = 0;
+    
+    let gameBg = null;
+    
+    function getPointsName() {
+      if (pointType[0] && pointType[1]) return 'Cookies/Ducks';
+      if (pointType[0]) return 'Cookies';
+      return 'Ducks';
+    }
+    
+    function spawnCursor(smart) {
+      var base = baseCursorCost;
+      if (smart) bas *= 10;
+      cursorUpgradeCost += base;
+      document.body.insertAdjacentHTML('beforeend', `<div class="gameObj cursor_container">
+  <div data-level="1" class="cursor click${smart ? ' smart' : ''}">
+    <img class="nopickup" src="${GITHUB}/assets/cursor.png"></img>
+  </div>
+  <div class="label">
+    <div>level <span class="level">1</span></div>
+    <div>
+      <a>Sell for <span class="value">${base}</span></a>
+    </div>
+  </div>
+</div>`);
+      const cursor = document.body.lastChild;
+      const cursorCursor = cursor.querySelector('.cursor');
+      cursor.addEventListener('remove', () => cursor.dataset.deleted = '1');
+      cursor.querySelector('a').addEventListener('click', e => {
+        const value = parseInt(cursorCursor.dataset.value) * base;
+        bank += value;
+        const pos = offset(cursor);
+        plusOne(pos.left, pos.top, value);
+        cursor.dispatchEvent(new Event('remove'));
+        cursor.parentNode.removeChild(cursor);
+        e.preventDefault();
+      });
+      const placing = event => {
+        cursor.style.top = event.pageY + 'px';
+        cursor.style.left = event.pageX + 'px';
+      };
+      const mouseup = event => {
+        document.removeEventListener('mousemove', placing);
+        document.removeEventListener('mouseup', mouseup);
+        cursorCursor.classList.remove('click');
+        checkClick();
+        event.preventDefault();
+      };
+
+      document.addEventListener('mousemove', placing);
+      document.addEventListener('mouseup', mouseup);
+    }
+
+
+    function checkClick(cursor) {
+      const ref = offset(cursor);
+      const distance = 100 + (50 * parseInt(cursor.dataset.level));
+      let clicks = 5;
+      [].some.call(document.querySelectorAll('.cookie'), (a) => {
+        if (clicks <= 0) return true;
+        if (!cursor.classList.contains('smart') || !a.classList.contains('wrath')) {
+          const coo = offset(a);
+
+          const cookieX = coo.left + a.offsetWidth/2;
+          const cookieY = coo.top + a.offsetHeight/2;
+
+          const dist = Math.sqrt(Math.pow(ref.left - cookieX, 2) + Math.pow(ref.top - cookieY, 2));
+          if (dist <= distance) {
+            a.dispatchEvent(new Event('mousedown', {pageX: cookieX, pageY: cookieY}));
+            clicks--;
+          }
+        }
+      });
+
+      cursor.classList.add('click');
+      setTimeout(() => cursor.classList.remove('click'), 500);
+
+      if (cursor.dataset.deleted != '1') {
+        setTimeout(() => checkClick(cursor), 5000);
+      }
+    }
+    
+    function endGame() {
+      songs.stop();
+      all('.gameObj', gameBg, a => a.dispatchEvent(new Event('remove')));
+      gameBg.parentNode.removeChild(gameBg);
+      gameBg = null;
+      bank = score = 0;
+      cursorUpgradeCost = baseCursorUpgradeCost;
+      cursorCost = baseCursorCost;
+      say('Game Over :c', 2000, true);
+    }
+    
+    function buildShop(holder) {
+      const totalCursors = document.querySelectorAll('.cursor').length;
+      const handler = (e) => {
+        const click = actions[e.target.dataset.click];
+        if (click) click();
+      };
+      let purchase = (cost, multiplier, smart) => {
+        if (bank >= cost) {
+          bank-= cost;
+          cursorCost += multiplier;
+          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
+          spawnCursor(smart);
+          holder.innerHTML = '';
+          holder.parentNode.opacity = 0;
+          holder.removeEventListener('click', handler);
+        }
+      };
+      const actions = {
+        buyCursor: _ => purchase(cursorCost, 4, false),
+        buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
+        upgradeCursor: _ => {
+          bank -= cursorUpgradeCost * totalCursors;
+          all('.cursor', a => {
+            const level = parseInt(a.dataset.level) + 1;
+            if (level < 6) {
+              a.dataset.level = level;
+              a.parentNode.querySelector('.level').innerHTML = level;
+              a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
+              if (level == 5) {
+                cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
+              } else {
+                cursorUpgradeCost += baseCursorUpgradeCost;
+                a.style.transform = `scale(${level},${level})`;
+              }
+            }
+          });
+          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
+        }
+      };
+
+      if (bank >= cursorCost) {
+        holder.insertAdjacentHTML('beforeend', `<button data-click="buyCursor" class="styled_button">Buy 1 Cursor (${cursorCost})</button>`);
+      }
+      if (bank >= cursorCost * 2) {
+        holder.insertAdjacentHTML('beforeend', `<button data-click="buySmartCursor" class="styled_button">Buy 1 Smart Cursor (${cursorCost * 10})</button>`);
+      }
+      if (totalCursors && cursorUpgradeCost && bank >= cursorUpgradeCost) {
+        holder.insertAdjacentHTML('beforeend', `<button data-click="upgradeCursor" class="styled_button">Upgrade Cursors (${cursorUpgradeCost})</button>`);
+      }
+
+      addDelegatedEvent(holder, 'button[data-click]', 'click', handler);
+    }
+
+    
+    function spawnCookie(scepter, x, y) {
+      if (scepter && document.querySelector('.cookie')) {
+        if (bank < 1) return;
+        say(`${getPointsName()}: ${--bank}</br>${getPointsName()} Clicked: ${score}`);
+      }
+
+      options(buildShop);
+
+      let diff = Math.log(score ? score : 1) * 300;
+      let fadeTime = Math.max(2000 - diff, 100);
+      let sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)), 50);
+      let wrath = false;
+
+      if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
+        for (var i = 0; i < (score/100 - 1) && !wrath && i < 10; i++) {
+          wrath |= (Math.random() * 15 < 2);
+        }
+      }
+      document.body.insertAdjacentHTML('beforeend', `<img src="${GITHUB}/assets/${wrath ? 'cookie' : 'wrath'}.png"
+class="gameObj cookie nopickup${wrath ? 'wrath' : ''}"
+style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear;opacity:0;visibility:hidden"></img>`);
+      let cook = document.body.lastChild, timer = null;
+
+      x -= cook.offsetWidth / 2;
+      y -= cook.offsetHeight /2;
+
+      cook.style.top = `${y}px`;
+      cook.style.left = `${x}px`;
+
+      cook.addEventListener('mousedown', (e, a) => {
+        try {
+          e.preventDefault();
+          if (!e.pageY) {
+            e.pageY = a.pageY;
+            e.pageX = a.pageX;
+          }
+          cook.parentNode.removeChild(cook);
+
+          if (timer) clearTimeout(timer);
+          timer = cook = null;
+
+          score++;
+          if (wrath) {
+            let newBank = Math.floor(bank * 0.8);
+            plusOne(e.pageX,e.pageY, newBank - bank, a => a.style.color = 'red');
+            bank = newBank;
+          } else {
+            plusOne(e.pageX,e.pageY, 1);
+            bank++;
+            if (Math.random() < 0.5) {
+              songs.play('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
+            }
+          }
+
+          say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
+          let max = belle.classList.contains('musical') ? 3 : 1;
+          for (let i = 0; i < max; i++) {
+            if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
+          }
+          spawnCookie(false, randomX(), randomY());}catch(e){alert(e)}
+      });
+
+      requestAnimationFrame(() => {
+        cook.style.opacity = 1;
+        cook.style.visibility = '';
+        timer = setTimeout(() => {
+          if (!cook) return;
+          cook.style.opacity = 0;
+          timer = setTimeout(() => {
+            if (!cook) return;
+            cook.parentNode.removeChild(cook);
+            if (!document.querySelector('.cookie')) {
+              if (cook.classList.contains('wrath')) {
+                spawnCookie(false, randomX(), randomY());
+              } else {
+                endGame();
+              }
+            }
+          }, fadeTime);
+        }, fadeTime + sitTime);
+      });
+    }
+    
+    function startGame() {
+      document.body.insertAdjacentHTML('beforeend', '<div id="game-background" class="dimmer" style="background:none;display:block"></div>');
+      gameBg = document.body.lastChild;
+    }
+    
+    return () => {
+      if (!gameBg) startGame();
+      spawnCookie(true, lastX, lastY);
+    };
+  });
+  
+  const toggleHearts = (_ => {
+    let hearter = null;
+    return _ => {
+      if (hearter) {
+        clearInterval(hearter);
+        hearter = null;
+      } else {
+        hearter = setInterval(() => plusOne(Math.random() * document.body.clientWidth, Math.random() * document.body.clientHeight, '?', a => {
+          a.style.fontFamily = 'FontAwesome';
+          a.style.fontSize = `${10 + Math.random() * 50}px`;
+          a.style.color = `rgb(${rRGB()},${rRGB()},${rRGB()})`;
+          a.style.position = 'fixed';
+        }), 100);
+      }
+    };
+  })();
+  
+  const shake = (_ => {
+    let shaken = 0;
+    let shakeCount = 0;
+    return () => {
+      if ((Math.floor(Math.random() * 31)) == 5) {
+        shaken = (shaken + 1) % 3;
+        if (shakeCount >= 0) shakeCount++;
+        var count = 3 + Math.floor(Math.random() * 5) + 3 * shaken;
+        all('.body_container, .footer', a => a.style.animation = 'shake_shake 0.17s linear ' + count);
+        setTimeout(() => all('.body_container, .footer', a => a.style.animation = ''), count * 170);
+      }
+      if (shakeCount >= 20) {
+        shakeCount = -1;
+        say("Woah!</br>I'm starting to feel a little dizzy here...", 5000);
+      }
+    };
+  })();
+  
+  const grabber = (grabbedImage => {
+    return {
+      grabbed: _ => !!grabbedImage,
+      grab: img => {
+        if (img.classList.contains('nopickup')) return;
+        if (img.dataset.dragged) {
+          img.classList.add('grabbed-image');
+          img.parentNode.appendChild(img);
+          img.style.top = (lastY - img.offsetHeight/2);
+          img.style.left = (lastX - img.offsetWidth/2);
+          grabbedImage = img;
+          return;
+        }
+
+        const result = img.cloneNode();
+        result.setAttribute('class', 'grabbed-image');
+        result.removeAttribute('id');
+        result.removeAttribute('data-lightbox');
+        result.dataset.dragged = true;
+        document.body.appendChild(result);
+        result.style.width = img.offsetWidth;
+        result.style.height = img.offsetHeight;
+        result.style.top = (lastClientY - img.offsetHeight/2);
+        result.style.left = (lastClientX - img.offsetWidth/2) 
+        result.addEventListener("click", e => {
+          if (e.shiftKey) {
+            if (grabbedImage == result) grabbedImage = null;
+            return result.parentNode.removeChild(result);
+          }
+          if (grabbedImage == result) {
+            grabbedImage.classList.remove('grabbed-image');
+            grabbedImage = null;
+          } else {
+            result.classList.add('grabbed-image');
+            result.parentNode.appendChild(result);
+            grabbedImage = result;
+          }
+        });
+        grabbedImage = result;
+      },
+      drop: _ => {
+        grabbedImage.style.top = document.body.scrollTop + grabbedImage.offsetTop;
+        grabbedImage.style.top = document.body.scrollLeft + grabbedImage.offsetLeft;
+        grabbedImage.classList.remove('grabbed-image');
+        grabbedImage = null;
+      },
+      move: event => {
+        if (!grabbedImage) return;
+        grabbedImage.style.top = `${event.pageY - grabbedImage.offsetHeight/2}px`;
+        grabbedImage.style.left = `${event.pageX - grabbedImage.offsetWidth/2}px`;
+      }
+    };
+  });
+  
+  const belle = (_ => {
+    document.body.insertAdjacentHTML('beforeend', `<div id="belle" style="top:-1px;left:-1px;">
+        ${svg()}
+        ${['options','speech'].map(a => `<div class="${a}_container"><div class="${a}" ></div></div>`).join('')}
+    </div>`);
+    const dom = document.body.lastChild;
+    
+    let dragging = false;
+    let timestamp;
+    
+    const mouseMove = _ => {
+      setPos(event.clientX - x, event.clientY - y);
+      grabber.move(event);
+      if (lastX >= 0 && lastY >= 0) {
+        const difX = Math.pow(event.pageX - lastX, 2);
+        const difY = Math.pow(event.pageY - lastY);
+        if (Math.sqrt(difX + difY) / (Date.now() - timestamp) > 30) shake();
+      }
+
+      lastClientX = event.clientX;
+      lastClientY = event.clientY;
+      lastX = event.pageX;
+      lastY = event.pageY;
+      timestamp = Date.now();
+    };
+    const toggleIframes = v => all('iframe', me => me.style.pointerEvents = v ? 'none' : '');
+    const stopMoving = _ => {
+      dragging = false;
+      document.body.removeEventListener('mousemove', mouseMove);
+      toggleIframes(false);
+      lastX = -1;
+    };
+    
+    dom.addEventListener('mousedown', event => {
+      dragging = true;
+      toggleIframes(true);
+      x = event.clientX - parseInt(dom.style.left);
+      y = event.clientY - parseInt(dom.style.top);
+      if (hitDetector.isHit(event)) {
+        document.body.addEventListener('mousemove', mouseMove);
+        event.preventDefault();
+      }
+    });
+
+    document.body.addEventListener('mousemove', event => {
+      dom.style.pointerEvents = hitDetector.isHit(event) ? '' : 'none';
+    });
+    
+    document.body.addEventListener('mouseup', stopMoving);
+    document.body.addEventListener('blur', stopMoving);
+    document.body.addEventListener('keydown', event => {
+      if (!dragging) return;
+      event.preventDefault();
+      if (event.keyCode == 32) {
+        rotateObject(dom, 90);
+        belleAction(event);
+      } else {
+        extra_key = event.keyCode;
+      }
+    });
+    document.body.addEventListener('keyup', event => {
+      if (event.keyCode == 32) {
+        rotateObject(dom, 0);
+        no = false;
+        if (dragging) event.preventDefault();
+      } else if (event.keyCode == extra_key) {
+        extra_key = 0;
+      }
+    });
+    window.addEventListener('resize', event => setPos(prefX, prefY));
+    window.addEventListener('mouseenter', initBelle);
+    
+    setInterval(() => all('.floater', me => {
+      const t = parseInt(me.style.top) - 5;
+      if (t <= 0) {
+        me.parentNode.removeChild(me);
+      } else {
+        me.style.top = `${t}px`;
+      }
+    }), 50);
+    
+    return dom;
+  })();
+  const speechContainer = belle.querySelector('.speech_container');
+  const optionsContainer = belle.querySelector('.options_container');
+  const speech = belle.querySelector('.speech');
+  const optionss = belle.querySelector('.options');
+  
+  const hitDetector = ((w, h) => {
+    const canvas = newEl(`<canvas id="belle_mask" width="${w}" height="${h}">`).getContext('2d');
+    const img = new Image();
+    img.addEventListener('load', () => {
+      canvas.clearRect(0, 0, w, h);
+      canvas.drawImage(img, 0, 0); 
+    });
+    return {
+      isHit: event => canvas.getImageData(event.clientX - parseInt(belle.style.left), event.clientY - parseInt(belle.style.top), 1, 1).data[3] > 0,
+      render: _ => {
+        img.src = URL.createObjectURL(new Blob([belle.querySelector('svg').outerHTML], {type: 'image/svg+xml'}));
+      }
+    };
+  })(131, 384);
+  
+  initBelle();
+  
+  function initBelle() {
+    setupImg(settingsMan.int('sweetie_img_index', 0));
+    
+    const x = settingsMan.has("sweetie_posX") ? settingsMan.float("sweetie_posX") : getMaxX();
+    const y = settingsMan.has("sweetie_posY") ? settingsMan.float("sweetie_posY") : getMaxY();
+    setPos(x, y, true);
+  }
+  
+  function setupImg(i) {
+    selected_image_index = i;
+    all('#belle svg g[id]', a => a.setAttribute('display', 'none'));
+    all(imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i], a => a.setAttribute('display', 'inline'));
+    hitDetector.render();
+  }
+  
+  function belleAction(event) {
+    if (extra_key == 81) {
+      help();
+    } else if (extra_key == 67) {
+      cookieClicker();
+    } else if (extra_key == 72) {
+      toggleHearts();
+    } else if (!no) {
+      no = true;
+      if (!grabber.grabbed()) {
+        const img = getTargettedElement();
+        if (img && img.tagName === "IMG") {
+          if (event.shiftKey) {
+            img.classList.toggle('wobbly_image');
+          } else {
+            grabber.grab(img);
+          }
+        } else {
+          doImg();
+        }
+      } else {
+        grabber.drop();
+      }
+    }
+  }
+  
+  function getTargettedElement() {
+    const oldX = belle.style.left;
+    belle.style.left = "-1000px";
+    const img = document.elementFromPoint(lastClientX , lastClientY);
+    belle.style.left = oldX;
+    return img;
+  }
+
+  function doImg() {
+    if (Math.floor(Math.random() * 100) > 85) {
+      const oldIndex = selected_image_index;
+      let index = oldIndex;
+      while (index == oldIndex) index = Math.floor(Math.random() * imgs.length);
+      setupImg(index);
+      updateSelection(index);
+      settingsMan.set('sweetie_img_index', index, 0);
+    }
+  }
+  
+  function plusOne(x, y, text, func) {
+    if (typeof(text) == 'number') {
+      if (text == 0) return;
+      text = (text > 0 ? '+' : '') + text;
+    }
+
+    document.body.insertAdjacentHTML('beforeend', `<span class="floater" style="position:absolute;transition:opacity 3s linear;opacity:1">${text}</span>`);
+    const one = document.body.lastChild;
+    one.style.top = `${y - one.offsetHeight/2}px`;
+    one.style.left = `${x - one.offsetWidth/2}px`;
+    setTimeout(() => {
+      one.style.opacity = 0;
+      setTimeout(() => {
+        if (one.parentNode) one.parentNode.removeChild(one);
+      }, 3000);
+    }, 10);
+
+    const floaters = document.querySelectorAll('.floater');
+    for (let i = 31; i < floaters.length; i++) {
+      floaters[i].parentNode.removeChild(floaters[i]);
+    }
+    
+    if (func) func(one);
+  }
+  
+  function help() {
+    const pop = makePopup(jule('wSeeit ecSpeet reSrcte snIedx'), 'fa fa-child', false);
+    pop.SetWidth(700);
+    pop.SetContent(`<table class="properties">
+            <tr>
+                <td class="label">${jule(helpContent).replace(/-/g, '</td></tr><tr><td class="label">').replace(/;/g, '</td><td>')}</td>
+            </tr>
+        </table>`);
+    pop.SetFooter(`<button class="styled_button" type="button" id="belle_type" >Switch Scepter ( <span>${selected_image_index + 1}</span>/${imgs.length} )</button><span></span>`);
+    pop.Show();
+    pop.content.querySelector('#belle_type').addEventListener('click', () => {
+      const index = (selected_image_index + 1) % imgs.length;
+      setupImg(index);
+      settingsMan.set('sweetie_img_index', index, 0);
+      updateSelection(index);
+    });
+  }
+
+  function updateSelection(index) {
+    const me = document.querySelector('#belle_type');
+    if (!me) return;
+    me.querySelector('span').innerText = index + 1;
+    me.nextSibling.innerHTML = `<span style="transition:opacity 0.5s linear">${imgLabels[index]}</span>`;
+    let t = setTimeout(() => {
+      me.nextSibling.firstChild.style.opacity = 0;
+      t = null;
+    }, 250);
+    const cancel = () => {
+      if (t) clearTimeout(t);
+      me.removeEventListener('mousedown', cancel);
+    };
+    me.addEventListener('mousedown', cancel);
+  }
+  
+  function say(text, duration, fadeOptions) {
+    if (speech.timeoutFunction) {
+      clearInterval(speech.timeoutFunction);
+    }
+    speechContainer.style.display = 'block';
+    speechContainer.style.opacity = text == '' ? 0 : 1;
+    speech.innerHTML = text;
+
+    if (duration) speech.timeoutFunction = setTimeout(() => {
+      all(belle, '.speech_container, .options_container', a => a.style.opacity = 0);
+      if (fadeOptions) speech.timeoutFunction = '';
+      setTimeout(() => all(belle, '.speech_container, .options_container', a => a.style.display = ''), 2000);
+    }, duration);
+  }
+
+  function options(factory) {
+    optionss.innerHTML = '';
+    factory(optionss);
+    optionsContainer.style.opacity = optionss.children.length ? 1 : 0;
+    optionsContainer.style.display = 'block';
+    if (!optionss.children.length) {
+      setTimeout(() => optionsContainer.style.display = '', 2000);
+    }
+  }
+  
+  function setPos(x, y, force) {
+    prefX = x;
+    prefY = y;
+    
+    if (!force) {
+      x = clamp(x, 0, getMaxX());
+      y = clamp(y, 0, getMaxY());
+    }
+    belle.style.left = `${x}px`;
+    belle.style.top = `${y}px`;
+    
+    settingsMan.set("sweetie_posY", y);
+    settingsMan.set("sweetie_posX", x);
+  }
+
+  function rotateObject(obj, deg) {
+    deg = deg % 360;
+    obj.style.transform = deg == 0 ? '' : `rotate(${deg}deg)`;
+  }
+  
+  function svg() {
+    return `
 <svg width="131" height="384" version="1.1" viewBox="0 0 252.71896 755.80217" xmlns="http://www.w3.org/2000/svg">
 	<g id="sc_back" transform="translate(12.759 20.073)" display="none">
 		<g display="inline">
@@ -442,633 +1074,8 @@ function setupSweetie() {
 		</g>
 	</g>
 </svg>`;
-  
-  document.body.insertAdjacentHTML('beforeend', `<div id="belle" style="top:-1px;left:-1px;">
-    ${svg}
-    ${['options','speech'].map(a => `<div class="${a}_container"><div class="${a}" ></div></div>`).join('')}
-</div>`);
-  const belle = document.body.lastChild;
-  const speechContainer = belle.querySelector('.speech_container');
-  const optionsContainer = belle.querySelector('.options_container');
-  
-  const hitDetector = ((w, h) => {
-    const canvas = newEl(`<canvas id="belle_mask" width="${w}" height="${h}">`).getContext('2d');
-    const img = new Image();
-    img.addEventListener('load', () => {
-      canvas.clearRect(0, 0, w, h);
-      canvas.drawImage(img, 0, 0); 
-    });
-    return {
-      isHit: event => canvas.getImageData(event.clientX - parseInt(belle.style.left), event.clientY - parseInt(belle.style.top), 1, 1).data[3] > 0,
-      render: _ => {
-        img.src = URL.createObjectURL(new Blob([belle.querySelector('svg').outerHTML], {type: 'image/svg+xml'}));
-      }
-    };
-  })(131, 384);
-  
-  initBelle();
-  
-  belle.addEventListener('mousedown', event => {
-    dragging = true;
-    toggleIframes(true);
-    x = event.clientX - parseInt(belle.style.left);
-    y = event.clientY - parseInt(belle.style.top);
-    if (hitDetector.isHit(event)) {
-      document.body.addEventListener('mousemove', mouseMove);
-      event.preventDefault();
-    }
-  });
-
-  document.body.addEventListener('mousemove', event => {
-    belle.style.pointerEvents = hitDetector.isHit(event) ? '' : 'none';
-  });
-  document.body.addEventListener('mouseup', stopMoving);
-  document.body.addEventListener('blur', stopMoving);
-
-  function stopMoving() {
-    dragging = false;
-    document.body.removeEventListener('mousemove', mouseMove);
-    toggleIframes(false);
-    lastX = -1;
-  }
-
-  function mouseMove(event) {
-    setPrefPos(event.clientX - x, event.clientY - y);
-    if (grabbedImage) {
-      grabbedImage.style.top = `${event.pageY - grabbedImage.offsetHeight/2}px`;
-      grabbedImage.style.left = `${event.pageX - grabbedImage.offsetWidth/2}px`;
-    }
-    if (lastX >= 0 && lastY >= 0) {
-      const difX = Math.pow(event.pageX - lastX, 2);
-      const difY = Math.pow(event.pageY - lastY);
-      if (Math.sqrt(difX + difY) / (Date.now() - timestamp) > 30) shake();
-    }
-
-    lastClientX = event.clientX;
-    lastClientY = event.clientY;
-    lastX = event.pageX;
-    lastY = event.pageY;
-    timestamp = Date.now();
-  }
-
-  function toggleIframes(v) {
-    all('iframe', me => me.style.pointerEvents = v ? 'none' : '');
-  }
-
-  let extra_key = 0;
-  let no = false;
-  let gameBg = null;
-  document.body.addEventListener('keydown', event => {
-    if (!dragging) return;
-    event.preventDefault();
-    if (event.keyCode == 32) {
-      rotateObject(belle, 90);
-      try {
-        belleAction(event);
-      } catch(e) {
-        console.error(e);
-      }
-    } else {
-      extra_key = event.keyCode;
-    }
-  });
-
-  function belleAction(event) {
-    if (extra_key == 81) {
-      help();
-    } else if (extra_key == 67) {
-      if (!gameBg) startGame();
-      spawnCookie(true, lastX, lastY);
-    } else if (extra_key == 72) {
-      toggleHearts();
-    } else if (!no) {
-      no = true;
-      if (!grabbedImage) {
-        const img = getTargettedElement();
-        if (img && img.tagName === "IMG") {
-          if (event.shiftKey) {
-            img.classList.toggle('wobbly_image');
-          } else {
-            doGrab(img);
-          }
-        } else {
-          doImg();
-        }
-      } else {
-        grabbedImage.style.top = document.body.scrollTop + grabbedImage.offsetTop;
-        grabbedImage.style.top = document.body.scrollLeft + grabbedImage.offsetLeft;
-        grabbedImage.classList.remove('grabbed-image');
-        grabbedImage = null;
-      }
-    }
-  }
-
-  document.body.addEventListener('keyup', event => {
-    if (event.keyCode == 32) {
-      rotateObject(belle, 0);
-      no = false;
-      if (dragging) event.preventDefault();
-    } else if (event.keyCode == extra_key) {
-      extra_key = 0;
-    }
-  });
-  window.addEventListener('resize', event => setPos(prefX, prefY));
-  window.addEventListener('mouseenter', initBelle);
-
-  function setupImg(i) {
-    selected_image_index = i;
-    all('#belle svg g[id]', a => a.setAttribute('display', 'none'));
-    all(imgs[i < 0 ? 0 : i >= imgs.length ? imgs.length - 1 : i], a => a.setAttribute('display', 'inline'));
-    hitDetector.render();
-  }
-
-  const randomX = () => document.scrollingElement.scrollLeft + (Math.random() * document.body.clientWidth);
-  const randomY = () => document.scrollingElement.scrollTop + (Math.random() * document.body.clientHeight);
-  const rRGB = () => Math.floor(Math.random() * 255);
-  function toggleHearts() {
-    if (hearter) {
-      clearInterval(hearter);
-      hearter = null;
-    } else {
-      hearter = setInterval(() => plusOne(Math.random() * document.body.clientWidth, Math.random() * document.body.clientHeight, '?', a => {
-        a.style.fontFamily = 'FontAwesome';
-        a.style.fontSize = `${10 + Math.random() * 50}px`;
-        a.style.color = `rgb(${rRGB()},${rRGB()},${rRGB()})`;
-        a.style.position = 'fixed';
-      }), 100);
-    }
-  }
-
-  function getTargettedElement() {
-    const oldX = belle.style.left;
-    belle.style.left = "-1000px";
-    const img = document.elementFromPoint(lastClientX , lastClientY);
-    belle.style.left = oldX;
-    return img;
-  }
-
-  function doImg() {
-    if (Math.floor(Math.random() * 100) > 85) {
-      const oldIndex = selected_image_index;
-      let index = oldIndex;
-      while (index == oldIndex) index = Math.floor(Math.random() * imgs.length);
-      setupImg(index);
-      updateSelection(index);
-      settingsMan.set('sweetie_img_index', index, 0);
-    }
-  }
-
-  function doGrab(img) {
-    if (img.classList.contains('nopickup')) return;
-    if (img.dataset.dragged) {
-      img.classList.add('grabbed-image');
-      img.parentNode.appendChild(img);
-      img.style.top = (lastY - img.offsetHeight/2);
-      img.style.left = (lastX - img.offsetWidth/2);
-      grabbedImage = img;
-      return;
-    }
-
-    const result = img.cloneNode();
-    result.setAttribute('class', 'grabbed-image');
-    result.removeAttribute('id');
-    result.removeAttribute('data-lightbox');
-    result.dataset.dragged = true;
-    document.body.appendChild(result);
-    result.style.width = img.offesetWidth;
-    result.style.height = img.offsetHeight;
-    result.style.top = (lastClientY - img.offsetHeight/2);
-    result.style.left = (lastClientX - img.offsetWidth/2) 
-    result.addEventListener("click", e => {
-      if (e.shiftKey) {
-        if (grabbedImage == result) grabbedImage = null;
-        return result.parentNode.removeChild(result);
-      }
-      if (grabbedImage == result) {
-        grabbedImage.classList.remove('grabbed-image');
-        grabbedImage = null;
-      } else {
-        result.classList.add('grabbed-image');
-        result.parentNode.appendChild(result);
-        grabbedImage = result;
-      }
-    });
-    grabbedImage = result;
-  }
-
-  function plusOne(x, y, text, func) {
-    if (typeof(text) == 'number') {
-      if (text == 0) return;
-      text = (text > 0 ? '+' : '') + text;
-    }
-
-    document.body.insertAdjacentHTML('beforeend', `<span class="floater" style="position:absolute;transition:opacity 3s linear;opacity:1">${text}</span>`);
-    const one = document.body.lastChild;
-    one.style.top = `${y - one.offsetHeight/2}px`;
-    one.style.left = `${x - one.offsetWidth/2}px`;
-    setTimeout(() => {
-      one.style.opacity = 0;
-      setTimeout(() => {
-        if (one.parentNode) one.parentNode.removeChild(one);
-      }, 3000);
-    }, 10);
-
-    const floaters = document.querySelectorAll('.floater');
-    for (let i = 31; i < floaters.length; i++) {
-      floaters[i].parentNode.removeChild(floaters[i]);
-    }
-    
-    if (func) func(one);
-  }
-
-  function getPointsName() {
-    if (pointType[0] && pointType[1]) return 'Cookies/Ducks';
-    if (pointType[0]) return 'Cookies';
-    return 'Ducks';
-  }
-
-  function spawnCursor(smart) {
-    var base = baseCursorCost;
-    if (smart) bas *= 10;
-    cursorUpgradeCost += base;
-    document.body.insertAdjacentHTML('beforeend', `<div class="gameObj cursor_container">
-  <div data-level="1" class="cursor click${smart ? ' smart' : ''}">
-    <img class="nopickup" src="${GITHUB}/assets/cursor.png"></img>
-  </div>
-  <div class="label">
-    <div>level <span class="level">1</span></div>
-    <div>
-      <a>Sell for <span class="value">${base}</span></a>
-    </div>
-  </div>
-</div>`);
-    const cursor = document.body.lastChild;
-    const cursorCursor = cursor.querySelector('.cursor');
-    cursor.addEventListener('remove', () => cursor.dataset.deleted = '1');
-    cursor.querySelector('a').addEventListener('click', e => {
-      const value = parseInt(cursorCursor.dataset.value) * base;
-      bank += value;
-      const pos = offset(cursor);
-      plusOne(pos.left, pos.top, value);
-      cursor.dispatchEvent(new Event('remove'));
-      cursor.parentNode.removeChild(cursor);
-      e.preventDefault();
-    });
-    const placing = event => {
-      cursor.style.top = event.pageY + 'px';
-      cursor.style.left = event.pageX + 'px';
-    };
-    const mouseup = event => {
-      document.removeEventListener('mousemove', placing);
-      document.removeEventListener('mouseup', mouseup);
-      cursorCursor.classList.remove('click');
-      checkClick();
-      event.preventDefault();
-    };
-
-    document.addEventListener('mousemove', placing);
-    document.addEventListener('mouseup', mouseup);
-  }
-
-  function checkClick(cursor) {
-    const ref = offset(cursor);
-    const distance = 100 + (50 * parseInt(cursor.dataset.level));
-    let clicks = 5;
-    [].some.call(document.querySelectorAll('.cookie'), (a) => {
-      if (clicks <= 0) return true;
-      if (!cursor.classList.contains('smart') || !a.classList.contains('wrath')) {
-        const coo = offset(a);
-
-        const cookieX = coo.left + a.offsetWidth/2;
-        const cookieY = coo.top + a.offsetHeight/2;
-
-        const dist = Math.sqrt(Math.pow(ref.left - cookieX, 2) + Math.pow(ref.top - cookieY, 2));
-        if (dist <= distance) {
-          a.dispatchEvent(new Event('mousedown', {pageX: cookieX, pageY: cookieY}));
-          clicks--;
-        }
-      }
-    });
-
-    cursor.classList.add('click');
-    setTimeout(() => cursor.classList.remove('click'), 500);
-
-    if (cursor.dataset.deleted != '1') {
-      setTimeout(() => checkClick(cursor), 5000);
-    }
-  }
-
-  function buildShop(holder) {
-    const totalCursors = document.querySelectorAll('.cursor').length;
-    const handler = (e) => {
-      const click = actions[e.target.dataset.click];
-      if (click) click();
-    };
-    let purchase = (cost, multiplier, smart) => {
-      if (bank >= cost) {
-        bank-= cost;
-        cursorCost += multiplier;
-        say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-        spawnCursor(smart);
-        holder.innerHTML = '';
-        holder.parentNode.opacity = 0;
-        holder.removeEventListener('click', handler);
-      }
-    };
-    const actions = {
-      buyCursor: _ => purchase(cursorCost, 4, false),
-      buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
-      upgradeCursor: _ => {
-        bank -= cursorUpgradeCost * totalCursors;
-        all('.cursor', a => {
-          const level = parseInt(a.dataset.level) + 1;
-          if (level < 6) {
-            a.dataset.level = level;
-            a.parentNode.querySelector('.level').innerHTML = level;
-            a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
-            if (level == 5) {
-              cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
-            } else {
-              cursorUpgradeCost += baseCursorUpgradeCost;
-              a.style.transform = `scale(${level},${level})`;
-            }
-          }
-        });
-        say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-      }
-    };
-
-    if (bank >= cursorCost) {
-      holder.insertAdjacentHTML('beforeend', `<button data-click="buyCursor" class="styled_button">Buy 1 Cursor (${cursorCost})</button>`);
-    }
-    if (bank >= cursorCost * 2) {
-      holder.insertAdjacentHTML('beforeend', `<button data-click="buySmartCursor" class="styled_button">Buy 1 Smart Cursor (${cursorCost * 10})</button>`);
-    }
-    if (totalCursors && cursorUpgradeCost && bank >= cursorUpgradeCost) {
-      holder.insertAdjacentHTML('beforeend', `<button data-click="upgradeCursor" class="styled_button">Upgrade Cursors (${cursorUpgradeCost})</button>`);
-    }
-
-    addDelegatedEvent(holder, 'button[data-click]', 'click', handler);
-  }
-
-  function spawnCookie(scepter, x, y) {
-    if (scepter && document.querySelector('.cookie')) {
-      if (bank < 1) return;
-      say(`${getPointsName()}: ${--bank}</br>${getPointsName()} Clicked: ${score}`);
-    }
-
-    options(buildShop);
-
-    let diff = Math.log(score ? score : 1) * 300;
-    let fadeTime = Math.max(2000 - diff, 100);
-    let sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)), 50);
-    let wrath = false;
-
-    if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
-      for (var i = 0; i < (score/100 - 1) && !wrath && i < 10; i++) {
-        wrath |= (Math.random() * 15 < 2);
-      }
-    }
-    document.body.insertAdjacentHTML('beforeend', `<img src="${GITHUB}/assets/${wrath ? 'cookie' : 'wrath'}.png"
-            class="gameObj cookie nopickup${wrath ? 'wrath' : ''}"
-            style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear;opacity:0;visibility:hidden"></img>`);
-    let cook = document.body.lastChild, timer = null;
-
-    x -= cook.offsetWidth / 2;
-    y -= cook.offsetHeight /2;
-
-    cook.style.top = `${y}px`;
-    cook.style.left = `${x}px`;
-
-    cook.addEventListener('mousedown', (e, a) => {
-      try {
-        e.preventDefault();
-        if (!e.pageY) {
-          e.pageY = a.pageY;
-          e.pageX = a.pageX;
-        }
-        cook.parentNode.removeChild(cook);
-
-        if (timer) clearTimeout(timer);
-        timer = cook = null;
-
-        score++;
-        if (wrath) {
-          let newBank = Math.floor(bank * 0.8);
-          plusOne(e.pageX,e.pageY, newBank - bank, a => a.style.color = 'red');
-          bank = newBank;
-        } else {
-          plusOne(e.pageX,e.pageY, 1);
-          bank++;
-          if (Math.random() < 0.5) {
-            playSong('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
-          }
-        }
-
-        say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
-        let max = belle.classList.contains('musical') ? 3 : 1;
-        for (let i = 0; i < max; i++) {
-          if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
-        }
-        spawnCookie(false, randomX(), randomY());}catch(e){alert(e)}
-    });
-
-    requestAnimationFrame(() => {
-      cook.style.opacity = 1;
-      cook.style.visibility = '';
-      timer = setTimeout(() => {
-        if (!cook) return;
-        cook.style.opacity = 0;
-        timer = setTimeout(() => {
-          if (!cook) return;
-          cook.parentNode.removeChild(cook);
-          if (!document.querySelector('.cookie')) {
-            if (cook.classList.contains('wrath')) {
-              spawnCookie(false, randomX(), randomY());
-            } else {
-              endGame();
-            }
-          }
-        }, fadeTime);
-      }, fadeTime + sitTime);
-    });
-
-  }
-
-
-  setInterval(() => all('.floater', me => {
-    const t = parseInt(me.style.top) - 5;
-    if (t <= 0) {
-      me.parentNode.removeChild(me);
-    } else {
-      me.style.top = `${t}px`;
-    }
-  }), 50);
-
-  function startGame() {
-    document.body.insertAdjacentHTML('beforeend', '<div id="game-background" class="dimmer" style="background:none;display:block"></div>');
-    gameBg = document.body.lastChild;
-  }
-
-  function endGame() {
-    stopSong();
-    all('.gameObj', gameBg, a => a.dispatchEvent(new Event('remove')));
-    gameBg.parentNode.removeChild(gameBg);
-    gameBg = null;
-    bank = score = 0;
-    cursorUpgradeCost = baseCursorUpgradeCost;
-    cursorCost = baseCursorCost;
-    say('Game Over :c', 2000, true);
-  }
-
-  function help() {
-    const pop = makePopup(jule('wSeeit ecSpeet reSrcte snIedx'), 'fa fa-child', false);
-    pop.SetWidth(700);
-    pop.SetContent(`<table class="properties">
-            <tr>
-                <td class="label">${jule(helpContent).replace(/-/g, '</td></tr><tr><td class="label">').replace(/;/g, '</td><td>')}</td>
-            </tr>
-        </table>`);
-    pop.SetFooter(`<button class="styled_button" type="button" id="belle_type" >Switch Scepter ( <span>${selected_image_index + 1}</span>/${imgs.length} )</button><span></span>`);
-    pop.Show();
-    pop.content.querySelector('#belle_type').addEventListener('click', () => {
-      let index = (selected_image_index + 1) % imgs.length;
-      setupImg(index);
-      settingsMan.set('sweetie_img_index', index, 0);
-      updateSelection(index);
-
-    });
-  }
-
-  function playSong(ytid, ended, loaded) {
-    let player = document.querySelector('#song_frame');
-    if (!player) {
-      document.body.insertAdjacentHTML('beforeend', '<iframe style="display:none;" id="song_frame"></iframe>');
-      player = document.body.lastChild;
-    }
-    
-    
-    if (player.dataset.ytid == ytid) return;
-    player.dataset.ytid = ytid;
-    player.src = `//www.youtube.com/embed/${ytid}?autoplay=1&enablejsapi=1`;
-    const ready = () => {
-      loaded();
-      player.removeEventListener('load', loaded);
-    };
-    player.addEventListener('load', loaded);
-    player.addEventListener('ended', ended);
-    return player;
   }
   
-  function stopSong() {
-    const player = document.querySelector('#song_frame');
-    if (player) {
-      player.dispatchEvent(new Event('ended'));
-      player.parentNode.removeChild(player);
-    }
-  }
-
-  function updateSelection(index) {
-    const me = document.querySelector('#belle_type');
-    if (!me) return;
-    me.querySelector('span').innerText = index + 1;
-    me.nextSibling.innerHTML = `<span style="transition:opacity 0.5s linear">${imgLabels[index]}</span>`;
-    let t = setTimeout(() => {
-      me.nextSibling.firstChild.style.opacity = 0;
-      t = null;
-    }, 250);
-    const cancel = () => {
-      if (t) clearTimeout(t);
-      me.removeEventListener('mousedown', cancel);
-    };
-    me.addEventListener('mousedown', cancel);
-  }
-
-  function shake() {
-    if ((Math.floor(Math.random() * 31)) == 5) {
-      shaken = (shaken + 1) % 3;
-      if (shakeCount >= 0) shakeCount++;
-      var count = 3 + Math.floor(Math.random() * 5) + 3 * shaken;
-      all('.body_container, .footer', a => a.style.animation = 'shake_shake 0.17s linear ' + count);
-      setTimeout(() => all('.body_container, .footer', a => a.style.animation = ''), count * 170);
-    }
-    if (shakeCount >= 20) {
-      shakeCount = -1;
-      say("Woah!</br>I'm starting to feel a little dizzy here...", 5000);
-    }
-  }
-
-  function say(text, duration, fadeOptions) {
-    const speech = belle.querySelector('.speech');
-    const speechContainer = belle.querySelector('.speech_container');
-    if (speech.timeoutFunction) {
-      clearInterval(speech.timeoutFunction);
-    }
-    speechContainer.style.display = 'block';
-    speechContainer.style.opacity = text == '' ? 0 : 1;
-    speech.innerHTML = text;
-
-    if (duration) speech.timeoutFunction = setTimeout(() => {
-      all(belle, '.speech_container, .options_container', a => a.style.opacity = 0);
-      if (fadeOptions) speech.timeoutFunction = '';
-      setTimeout(() => all(belle, '.speech_container, .options_container', a => a.style.display = ''), 2000);
-    }, duration);
-  }
-
-  function options(factory) {
-    const container = belle.querySelector('.options');
-    container.innerHTML = '';
-    factory(container);
-    const optionsContainer = belle.querySelector('.options_container');
-    optionsContainer.style.opacity = container.children.length ? 1 : 0;
-    optionsContainer.style.display = 'block';
-    if (!container.children.length) {
-      setTimeout(() => optionsContainer.style.display = '', 2000);
-    }
-  }
-
-  function initBelle() {
-    setupImg(settingsMan.int('sweetie_img_index', 0));
-    
-    const x = settingsMan.has("sweetie_posX") ? settingsMan.float("sweetie_posX") : getMaxX();
-    const y = settingsMan.has("sweetie_posY") ? settingsMan.float("sweetie_posY") : getMaxY();
-    setPrefPos(x, y);
-  }
-
-  function setPrefPos(x, y) {
-    prefX = x;
-    prefY = y;
-    setPos(x, y);
-  }
-  
-  function getMaxX() {
-    return document.body.offsetWidth - (belle.offsetWidth * 0.75);
-  }
-  
-  function getMaxY() {
-    return document.body.offsetHeight - (belle.offsetHeight * 0.75);
-  }
-  
-  function clamp(v, min, max) {
-    return v < min ? min : v >= max ? max : v;
-  }
-
-  function setPos(x, y) {
-    x = clamp(x, 0, getMaxX());
-    y = clamp(y, 0, getMaxY());
-    
-    belle.style.left = `${x}px`;
-    belle.style.top = `${y}px`;
-    
-    settingsMan.set("sweetie_posY", y);
-    settingsMan.set("sweetie_posX", x);
-  }
-
-  function rotateObject(obj, deg) {
-    deg = deg % 360;
-    obj.style.transform = deg == 0 ? '' : `rotate(${deg}deg)`;
-  }
-
   makeStyle(`
 #belle {
     transition: transform 0.07s linear;
