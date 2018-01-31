@@ -199,57 +199,55 @@ function setupSweetie() {
       say('Game Over :c', 2000, true);
     }
     
-    function buildShop(holder) {
-      const totalCursors = document.querySelectorAll('.cursor').length;
-      const handler = (e) => {
-        const click = actions[e.target.dataset.click];
-        if (click) click();
-      };
-      let purchase = (cost, multiplier, smart) => {
-        if (bank >= cost) {
-          bank-= cost;
-          cursorCost += multiplier;
-          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-          spawnCursor(smart);
-          holder.innerHTML = '';
-          holder.parentNode.opacity = 0;
-          holder.removeEventListener('click', handler);
-        }
-      };
-      const actions = {
-        buyCursor: _ => purchase(cursorCost, 4, false),
-        buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
-        upgradeCursor: _ => {
-          bank -= cursorUpgradeCost * totalCursors;
-          all('.cursor', a => {
-            const level = parseInt(a.dataset.level) + 1;
-            if (level < 6) {
-              a.dataset.level = level;
-              a.parentNode.querySelector('.level').innerHTML = level;
-              a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
-              if (level == 5) {
-                cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
-              } else {
-                cursorUpgradeCost += baseCursorUpgradeCost;
-                a.style.transform = `scale(${level},${level})`;
-              }
+    const purchase = (cost, multiplier, smart) => {
+      if (bank >= cost) {
+        bank-= cost;
+        cursorCost += multiplier;
+        say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
+        spawnCursor(smart);
+        holder.innerHTML = '';
+        holder.parentNode.opacity = 0;
+        holder.removeEventListener('click', handler);
+      }
+    };
+    const actions = {
+      buyCursor: _ => purchase(cursorCost, 4, false),
+      buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
+      upgradeCursor: _ => {
+        const totalCursors = document.querySelectorAll('.cursor').length;
+        bank -= cursorUpgradeCost * totalCursors;
+        all('.cursor', a => {
+          const level = parseInt(a.dataset.level) + 1;
+          if (level < 6) {
+            a.dataset.level = level;
+            a.parentNode.querySelector('.level').innerHTML = level;
+            a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
+            if (level == 5) {
+              cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
+            } else {
+              cursorUpgradeCost += baseCursorUpgradeCost;
+              a.style.transform = `scale(${level},${level})`;
             }
-          });
-          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-        }
-      };
-
+          }
+        });
+        say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
+      }
+    };
+    
+    function buildShop(holder) {
       if (bank >= cursorCost) {
         holder.insertAdjacentHTML('beforeend', `<button data-click="buyCursor" class="styled_button">Buy 1 Cursor (${cursorCost})</button>`);
       }
       if (bank >= cursorCost * 2) {
         holder.insertAdjacentHTML('beforeend', `<button data-click="buySmartCursor" class="styled_button">Buy 1 Smart Cursor (${cursorCost * 10})</button>`);
       }
-      if (totalCursors && cursorUpgradeCost && bank >= cursorUpgradeCost) {
+      if (document.querySelector('.cursor') && cursorUpgradeCost && bank >= cursorUpgradeCost) {
         holder.insertAdjacentHTML('beforeend', `<button data-click="upgradeCursor" class="styled_button">Upgrade Cursors (${cursorUpgradeCost})</button>`);
       }
 
-      addDelegatedEvent(holder, 'button[data-click]', 'click', handler);
+      addDelegatedEvent(holder, 'button[data-click]', 'click', e => {
+        actions[e.target.dataset.click]();
+      });
     }
 
     
@@ -283,36 +281,35 @@ style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility
       cook.style.left = `${x}px`;
 
       cook.addEventListener('mousedown', (e, a) => {
-        try {
-          e.preventDefault();
-          if (!e.pageY) {
-            e.pageY = a.pageY;
-            e.pageX = a.pageX;
-          }
-          cook.parentNode.removeChild(cook);
+        e.preventDefault();
+        if (!e.pageY) {
+          e.pageY = a.pageY;
+          e.pageX = a.pageX;
+        }
+        cook.parentNode.removeChild(cook);
 
-          if (timer) clearTimeout(timer);
-          timer = cook = null;
+        if (timer) clearTimeout(timer);
+        timer = cook = null;
 
-          score++;
-          if (wrath) {
-            let newBank = Math.floor(bank * 0.8);
-            plusOne(e.pageX,e.pageY, newBank - bank, a => a.style.color = 'red');
-            bank = newBank;
-          } else {
-            plusOne(e.pageX,e.pageY, 1);
-            bank++;
-            if (Math.random() < 0.5) {
-              songs.play('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
-            }
+        score++;
+        if (wrath) {
+          let newBank = Math.floor(bank * 0.8);
+          plusOne(e.pageX,e.pageY, newBank - bank, a => a.style.color = 'red');
+          bank = newBank;
+        } else {
+          plusOne(e.pageX,e.pageY, 1);
+          bank++;
+          if (Math.random() < 0.5) {
+            songs.play('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
           }
+        }
 
-          say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
-          let max = belle.classList.contains('musical') ? 3 : 1;
-          for (let i = 0; i < max; i++) {
-            if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
-          }
-          spawnCookie(false, randomX(), randomY());}catch(e){alert(e)}
+        say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
+        let max = belle.classList.contains('musical') ? 3 : 1;
+        for (let i = 0; i < max; i++) {
+          if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
+        }
+        spawnCookie(false, randomX(), randomY());
       });
 
       requestAnimationFrame(() => {
@@ -345,7 +342,7 @@ style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility
       if (!gameBg) startGame();
       spawnCookie(true, lastX, lastY);
     };
-  });
+  })();
   
   const toggleHearts = (_ => {
     let hearter = null;
