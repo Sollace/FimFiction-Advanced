@@ -1,13 +1,13 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2d
+// @version     4.3.2e
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/settings_man.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
@@ -77,8 +77,6 @@ function setupSweetie() {
     obj.style.transform = deg == 0 ? '' : `rotate(${deg}deg)`;
   }
   
-  
-  
   const songs = (_ => {
     let player = null;
     return {
@@ -127,11 +125,24 @@ function setupSweetie() {
       return 'Ducks';
     }
     
+    function removeGameElement(element) {
+      element.dispatchEvent(new Event('remove'));
+      element.parentNode.removeChild(element);
+    }
+    
+    function createGameObj(htm) {
+      gameBg.insertAdjacentHTML('beforeend', htm);
+      return gameBg.lastChild;
+    }
+    
     function spawnCursor(smart) {
-      let base = baseCursorCost;
-      if (smart) bas *= 10;
+      const base = baseCursorCost * (smart ? 10 : 1);
+      
       cursorUpgradeCost += base;
-      document.body.insertAdjacentHTML('beforeend', `<div class="gameObj cursor_container">
+      
+      let timer, x, y;
+      
+      const cursor = createGameObj(`<div class="gameObj cursor_container">
   <div data-level="1" class="cursor click${smart ? ' smart' : ''}">
     <img class="nopickup" src="${GITHUB}/assets/cursor.png"></img>
   </div>
@@ -142,60 +153,50 @@ function setupSweetie() {
     </div>
   </div>
 </div>`);
-      const cursor = document.body.lastChild;
       const cursorCursor = cursor.querySelector('.cursor');
-      cursor.addEventListener('remove', () => cursor.dataset.deleted = '1');
+      const clickCursor = () => {
+        smart = cursorCursor.classList.contains('smart');
+        
+        const range = 100 + (50 * parseInt(cursorCursor.dataset.level));
+        
+        const selector = `.cookie${smart ? ':not(.wrath)' : ''}`;
+
+        cursorCursor.classList.add('click');
+
+        [].filter.call(gameBg.querySelectorAll(selector), a => {
+          const cookieX = a.offsetLeft + a.offsetWidth/2;
+          const cookieY = a.offsetTop + a.offsetHeight/2;
+          return dist(x, cookieX, y, cookieY) <= range;
+        }).forEach(a => a.dispatchEvent(new Event('mousedown')));
+
+        setTimeout(() => cursorCursor.classList.remove('click'), 500);
+      };
+      const placing = event => align(cursor, x = event.pageX, y = event.pageY);
+      const mouseup = event => {
+        event.preventDefault();
+        document.removeEventListener('mousemove', placing);
+        document.removeEventListener('mouseup', mouseup);
+        
+        cursorCursor.classList.remove('click');
+        timer = setInterval(clickCursor, 2000)
+      };
+      
+      cursor.addEventListener('remove', () => clearInterval(timer));
       cursor.querySelector('a').addEventListener('click', e => {
+        e.preventDefault();
+        
         const value = parseInt(cursorCursor.dataset.value) * base;
         bank += value;
         plusOne(cursor.offsetLeft, cursor.offsetTop, value);
-        cursor.dispatchEvent(new Event('remove'));
-        cursor.parentNode.removeChild(cursor);
-        e.preventDefault();
+        removeGameElement(cursor);
       });
-      const placing = event => align(cursor, event.pageX, event.pageY);
-      const mouseup = event => {
-        document.removeEventListener('mousemove', placing);
-        document.removeEventListener('mouseup', mouseup);
-        cursorCursor.classList.remove('click');
-        checkClick();
-        event.preventDefault();
-      };
-
       document.addEventListener('mousemove', placing);
       document.addEventListener('mouseup', mouseup);
     }
     
-    function checkClick(cursor) {
-      const ref = offset(cursor);
-      const range = 100 + (50 * parseInt(cursor.dataset.level));
-      let clicks = 5;
-      [].some.call(document.querySelectorAll('.cookie'), a => {
-        if (clicks <= 0) return true;
-        if (!cursor.classList.contains('smart') || !a.classList.contains('wrath')) {
-          
-          const cookieX = a.offsetLeft + a.offsetWidth/2;
-          const cookieY = a.offsetTop + a.offsetHeight/2;
-
-          if (dist(ref.left, cookieX, ref.top, cookieY) <= range) {
-            a.dispatchEvent(new Event('mousedown', {pageX: cookieX, pageY: cookieY}));
-            clicks--;
-          }
-        }
-      });
-
-      cursor.classList.add('click');
-      setTimeout(() => {
-        cursor.classList.remove('click');
-        if (cursor.dataset.deleted != '1') {
-          setTimeout(() => checkClick(cursor), 4500);
-        }
-      }, 500);
-    }
-    
     function endGame() {
       songs.stop();
-      all(gameBg, '.gameObj', a => a.dispatchEvent(new Event('remove')));
+      all('.gameObj', gameBg, removeGameElement);
       gameBg.parentNode.removeChild(gameBg);
       gameBg = null;
       bank = score = 0;
@@ -252,8 +253,15 @@ function setupSweetie() {
           say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
         }
       };
-      
-      
+    }
+    
+    function computeWrath() {
+      if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
+        for (let i = 0; i < (score/100 - 1) && i < 10; i++) {
+          if (Math.random() * 15 < 2) return true;
+        }
+      }
+      return false;
     }
     
     function spawnCookie(scepter, x, y) {
@@ -263,44 +271,35 @@ function setupSweetie() {
       }
 
       options(buildShop);
-
-      let diff = Math.log(score ? score : 1) * 300;
-      let fadeTime = Math.max(2000 - diff, 100);
-      let sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)), 50);
-      let wrath = false;
-
-      if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
-        for (let i = 0; i < (score/100 - 1) && !wrath && i < 10; i++) {
-          wrath |= (Math.random() * 15 < 2);
-        }
-      }
       
-      document.body.insertAdjacentHTML('beforeend', `<img src="${GITHUB}/assets/${wrath ? 'cookie' : 'wrath'}.png" class="gameObj cookie nopickup${wrath ? 'wrath' : ''}" style="position:absolute;transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear;opacity:0;visibility:hidden"></img>`);
-      let cook = document.body.lastChild, timer = null;
-
-      x -= cook.offsetWidth / 2;
-      y -= cook.offsetHeight /2;
+      const diff = Math.log(score ? score : 1) * 300;
+      const fadeTime = Math.max(2000 - diff, 100);
+      const sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)), 50);
+      const wrath = computeWrath();
       
-      align(cook, x, y);
-
-      cook.addEventListener('mousedown', (e, a) => {
-        e.preventDefault();
-        if (!e.pageY) {
-          e.pageY = a.pageY;
-          e.pageX = a.pageX;
-        }
-        cook.parentNode.removeChild(cook);
-
+      const cook = createGameObj(`<img src="${GITHUB}/assets/${wrath ? 'wrath' : 'cookie'}.png" class="gameObj cookie hiding nopickup${wrath ? 'wrath' : ''}" style="transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear"></img>`);
+      
+      let timer = null;
+      
+      align(cook, x - cook.offsetWidth / 2, y - cook.offsetHeight /2);
+      
+      cook.addEventListener('remove', () => {
         if (timer) clearTimeout(timer);
-        timer = cook = null;
-
+        timer = null;
+      });
+      cook.addEventListener('mousedown', e => {
+        e.preventDefault();
+        
+        removeGameElement(cook);
+        
         score++;
+        
         if (wrath) {
           let newBank = Math.floor(bank * 0.8);
-          plusOne(e.pageX,e.pageY, newBank - bank, a => a.style.color = 'red');
+          plusOne(x, y, newBank - bank, a => a.style.color = 'red');
           bank = newBank;
         } else {
-          plusOne(e.pageX,e.pageY, 1);
+          plusOne(x, y, 1);
           bank++;
           if (Math.random() < 0.5) {
             songs.play('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
@@ -308,22 +307,25 @@ function setupSweetie() {
         }
 
         say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
-        let max = belle.classList.contains('musical') ? 3 : 1;
+        const max = belle.classList.contains('musical') ? 3 : 1;
         for (let i = 0; i < max; i++) {
           if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
         }
         spawnCookie(false, randomX(), randomY());
       });
-
+      
+      const deleted = () => {
+        if (!cook || !cook.parentNode) cook = null;
+        return !cook;
+      };
+      
       requestAnimationFrame(() => {
-        cook.style.opacity = 1;
-        cook.style.visibility = '';
+        cook.classList.remove('hiding');
         timer = setTimeout(() => {
-          if (!cook) return;
-          cook.style.opacity = 0;
+          if (deleted()) return;
+          cook.classList.add('hiding');
           timer = setTimeout(() => {
-            if (!cook) return;
-            cook.parentNode.removeChild(cook);
+            if (deleted()) return;
             if (!document.querySelector('.cookie')) {
               if (cook.classList.contains('wrath')) {
                 spawnCookie(false, randomX(), randomY());
@@ -336,13 +338,19 @@ function setupSweetie() {
       });
     }
     
-    function startGame() {
-      document.body.insertAdjacentHTML('beforeend', '<div id="game-background" class="dimmer" style="background:none;display:block"></div>');
-      gameBg = document.body.lastChild;
-    }
-    
     return () => {
-      if (!gameBg) startGame();
+      if (!gameBg) {
+        document.body.insertAdjacentHTML('beforeend', '<div id="game-background" class="dimmer" style="background:none;display:block;position:fixed;z-index:501;"></div>');
+        gameBg = document.body.lastChild;
+        const time = setInterval(() => {
+          if (gameBg) {
+            gameBg.classList.toggle('active');
+          } else {
+            clearInterval(time);
+          }
+        }, 15000);
+        requestAnimationFrame(_ => gameBg.classList.add('active'));
+      }
       spawnCookie(true, lastX, lastY);
     };
   })();
@@ -659,9 +667,9 @@ function setupSweetie() {
     speech.innerHTML = text;
 
     if (duration) speech.timeoutFunction = setTimeout(() => {
-      all(belle, '.speech_container, .options_container', a => a.style.opacity = 0);
+      all('.speech_container, .options_container', belle, a => a.style.opacity = 0);
       if (fadeOptions) speech.timeoutFunction = '';
-      setTimeout(() => all(belle, '.speech_container, .options_container', a => a.style.display = ''), 2000);
+      setTimeout(() => all('.speech_container, .options_container', belle, a => a.style.display = ''), 2000);
     }, duration);
   }
 
@@ -1096,11 +1104,31 @@ function setupSweetie() {
     line-height: 1.8em;
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.3);
     margin-left: -20px;}
+#game-background::before {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: radial-gradient(transparent 0%, black 100%);
+  opacity: 0;
+  transition: opacity 30s ease;
+}
+#game-background.active::before {
+  opacity: 1;
+}
+.gameObj {
+    position: absolute;
+}
 .cookie {
-    z-index: 501;
     border-radius: 120px;
-    position:absolute;
-    cursor:pointer;}
+    cursor: pointer;}
+.cookie.hiding {
+    visibility: hidden;
+    opacity: 0;
+}
 .cursor_container .label, .cursor_container .label a {
     white-space: nowrap;
     display: inline-block;
@@ -1116,8 +1144,6 @@ function setupSweetie() {
     opacity: 0;}
 .cursor_container:hover .label {opacity: 1;}
 .cursor, .cursor_container {
-    z-index: 600;
-    position: absolute;
     width: 0px;
     height: 0px;}
 .cursor img {max-width: 13px;}
