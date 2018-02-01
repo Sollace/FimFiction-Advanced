@@ -69,7 +69,7 @@ function setupSweetie() {
   
   function align(el, x, y) {
     el.style.top = `${y}px`;
-    el.style.left = `%{x}px`;
+    el.style.left = `${x}px`;
   }
   
   function rotateObject(obj, deg) {
