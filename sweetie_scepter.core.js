@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2e
+// @version     4.3.2f
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -14,13 +14,9 @@
 
 if (getSweetieEnabled()) document.addEventListener("DOMContentLoaded", setupSweetie);
 
-function jule(s) {
-  let a = '', len = s.length;
-  for (let i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
-  return a;
+function getSweetieEnabled() {
+  return settingsMan.bool('sweetie_staff_enabled', false);
 }
-
-function getSweetieEnabled() {return settingsMan.bool('sweetie_staff_enabled', false);}
 function setSweetieEnabled(e) {
   settingsMan.setB("sweetie_staff_enabled", e.target.checked, false);
   if (!e.target.checked) {
@@ -34,7 +30,7 @@ function setSweetieEnabled(e) {
   } else if (e.target.checked) {
     setupSweetie();
   }
-}
+};
 
 function setupSweetie() {
   const GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev';
@@ -47,7 +43,6 @@ function setupSweetie() {
   
   let selected_image_index = 0;
   
-  let extra_key = 0;
   let no = false;
 
   const imgLabels = 'Sweetie Belle;Scootaloo;Apple Bloom;Applejack;Twilight Sparkle'.split(';');
@@ -67,6 +62,12 @@ function setupSweetie() {
   const clamp = (v, min, max) => v < min ? min : v >= max ? max : v;
   const dist = (x, dx, y, dy) => Math.sqrt(Math.pow(x - dx, 2) + Math.pow(y - dy, 2));
   
+  function jule(s) {
+    let a = '', len = s.length;
+    for (let i = 0; i < len; i += 2) a += (i < len - 1 ? s[i + 1] : '') + s[i];
+    return a;
+  }
+  
   function align(el, x, y) {
     el.style.top = `${y}px`;
     el.style.left = `${x}px`;
@@ -77,8 +78,50 @@ function setupSweetie() {
     obj.style.transform = deg == 0 ? '' : `rotate(${deg}deg)`;
   }
   
-  const songs = (_ => {
-    let player = null;
+  function removeGameElement(element) {
+    if (!element || !element.parentNode) return;
+    element.dispatchEvent(new Event('remove'));
+    element.parentNode.removeChild(element);
+  }
+  
+  const plusOne = (_ => {
+    return (x, y, text, func) => {
+      if (typeof(text) == 'number') {
+        if (text == 0) return;
+        text = (text > 0 ? '+' : '') + text;
+      }
+
+      let one = document.querySelector('.floater.hiding.disposed');
+      if (!one) {
+        document.body.insertAdjacentHTML('beforeend', `<span class="floater">${text}</span>`);
+        one = document.body.lastChild;
+      }
+      one.classList.remove('disposed');
+      one.classList.remove('hiding');
+      
+      x -= one.offsetWidth/2;
+      y -= one.offsetHeight/2;
+      
+      align(one, x, y);
+      requestAnimationFrame(() => {
+        one.classList.add('hiding');
+        align(one, x, y - 300);
+        setTimeout(() => {
+          one.classList.add('disposed');
+          setTimeout(() => {
+            if (one.parentNode && one.classList.contains('disposed')) {
+              one.parentNode.removeChild(one);
+            }
+          }, 1000);
+        }, 3000);
+        
+      });
+      
+      if (func) func(one);
+    };
+  })();
+  
+  const songs = (player => {
     return {
       play: (ytid, ended, loaded) => {
         if (!player) {
@@ -93,22 +136,18 @@ function setupSweetie() {
           loaded();
           player.removeEventListener('load', loaded);
         };
-        player.addEventListener('load', loaded);
-        player.addEventListener('ended', ended);
+        player.addEventListener('load', ready);
+        player.addEventListener('remove', ended);
         return player;
       },
       stop: () => {
-        if (!player) return;
-        player.dispatchEvent(new Event('ended'));
-        player.parentNode.removeChild(player);
+        removeGameElement(player)
         player = null;
       }
     };
   })();
   
   const cookieClicker = (_ => {
-    const pointType = [0,0];
-    
     const baseCursorUpgradeCost = 10;
     let cursorUpgradeCost = 0;
     const baseCursorCost = 4;
@@ -118,17 +157,6 @@ function setupSweetie() {
     let bank = 0;
     
     let gameBg = null;
-    
-    function getPointsName() {
-      if (pointType[0] && pointType[1]) return 'Cookies/Ducks';
-      if (pointType[0]) return 'Cookies';
-      return 'Ducks';
-    }
-    
-    function removeGameElement(element) {
-      element.dispatchEvent(new Event('remove'));
-      element.parentNode.removeChild(element);
-    }
     
     function createGameObj(htm) {
       gameBg.insertAdjacentHTML('beforeend', htm);
@@ -143,31 +171,33 @@ function setupSweetie() {
       let timer, x, y;
       
       const cursor = createGameObj(`<div class="gameObj cursor_container">
-  <div data-level="1" class="cursor click${smart ? ' smart' : ''}">
-    <img class="nopickup" src="${GITHUB}/assets/cursor.png"></img>
-  </div>
-  <div class="label">
-    <div>level <span class="level">1</span></div>
-    <div>
-      <a>Sell for <span class="value">${base}</span></a>
-    </div>
-  </div>
-</div>`);
+                                      <div data-level="1" class="cursor click${smart ? ' smart' : ''}">
+                                        <img class="nopickup" src="${GITHUB}/assets/cursor.png"></img>
+                                      </div>
+                                      <div class="label">
+                                        <div>level <span class="level">1</span></div>
+                                        <div>
+                                          <a>Sell for <span class="value">${base}</span></a>
+                                        </div>
+                                      </div>
+                                    </div>`);
       const cursorCursor = cursor.querySelector('.cursor');
       const clickCursor = () => {
         smart = cursorCursor.classList.contains('smart');
         
         const range = 100 + (50 * parseInt(cursorCursor.dataset.level));
         
-        const selector = `.cookie${smart ? ':not(.wrath)' : ''}`;
-
         cursorCursor.classList.add('click');
-
-        [].filter.call(gameBg.querySelectorAll(selector), a => {
-          const cookieX = a.offsetLeft + a.offsetWidth/2;
-          const cookieY = a.offsetTop + a.offsetHeight/2;
-          return dist(x, cookieX, y, cookieY) <= range;
-        }).forEach(a => a.dispatchEvent(new Event('mousedown')));
+        
+        const cookies = gameBg.querySelectorAll(`.cookie${smart ? ':not(.wrath)' : ''}`);
+        
+        let count = 5;
+        for (let i = 0; i < cookies.length; i++) {
+          if (dist(x, parseInt(cookies[i].dataset.x), y, parseInt(cookies[i].dataset.y)) <= range && (total-- > 0)) {
+            cookies[i].dispatchEvent(new Event('mousedown'));
+            if (count-- <= 0) break;
+          }
+        }
 
         setTimeout(() => cursorCursor.classList.remove('click'), 500);
       };
@@ -178,16 +208,16 @@ function setupSweetie() {
         document.removeEventListener('mouseup', mouseup);
         
         cursorCursor.classList.remove('click');
-        timer = setInterval(clickCursor, 2000)
+        timer = setInterval(clickCursor, 5000)
       };
       
       cursor.addEventListener('remove', () => clearInterval(timer));
       cursor.querySelector('a').addEventListener('click', e => {
         e.preventDefault();
         
-        const value = parseInt(cursorCursor.dataset.value) * base;
+        const value = parseInt(cursorCursor.dataset.level) * base;
         bank += value;
-        plusOne(cursor.offsetLeft, cursor.offsetTop, value);
+        plusOne(x, y, value);
         removeGameElement(cursor);
       });
       document.addEventListener('mousemove', placing);
@@ -202,61 +232,67 @@ function setupSweetie() {
       bank = score = 0;
       cursorUpgradeCost = baseCursorUpgradeCost;
       cursorCost = baseCursorCost;
-      say('Game Over :c', 2000, true);
+      say('Game Over :c', 2000);
+      options();
     }
     
+    function updateBank(subtract, gain) {
+      if (subtract) bank -= subtract;
+      if (gain) score += gain;
+      say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
+    }
+    
+    const purchase = (cost, multiplier, smart) => {
+      if (bank < cost) return;
+      cursorCost += multiplier;
+      updateBank(cost);
+      spawnCursor(smart);
+    };
+    const actions = {
+      buyCursor: _ => purchase(cursorCost, 4, false),
+      buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
+      upgradeCursor: _ => {
+        let totalCursors = 0;
+        all('.cursor', gameBg, a => {
+          const level = parseInt(a.dataset.level) + 1;
+          if (level > 5) return;
+          totalCursors++;
+          a.dataset.level = level;
+          a.parentNode.querySelector('.level').innerHTML = level;
+          a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
+          if (level == 5) {
+            cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
+          } else {
+            cursorUpgradeCost += baseCursorUpgradeCost;
+            a.style.transform = `scale(${level},${level})`;
+          }
+        });
+        updateBank(cursorUpgradeCost * totalCursors);
+      }
+    };
+    
     function buildShop(holder) {
-      if (bank >= cursorCost) {
-        holder.insertAdjacentHTML('beforeend', `<button data-click="buyCursor" class="styled_button">Buy 1 Cursor (${cursorCost})</button>`);
-      }
-      if (bank >= cursorCost * 2) {
-        holder.insertAdjacentHTML('beforeend', `<button data-click="buySmartCursor" class="styled_button">Buy 1 Smart Cursor (${cursorCost * 10})</button>`);
-      }
-      if (document.querySelector('.cursor') && cursorUpgradeCost && bank >= cursorUpgradeCost) {
-        holder.insertAdjacentHTML('beforeend', `<button data-click="upgradeCursor" class="styled_button">Upgrade Cursors (${cursorUpgradeCost})</button>`);
-      }
-      
       const handler = addDelegatedEvent(holder, 'button[data-click]', 'click', e => {
         actions[e.target.dataset.click]();
+        holder.removeEventListener('click', handler);
+        options(buildShop);
       });
-      const purchase = (cost, multiplier, smart) => {
-        if (bank >= cost) {
-          bank-= cost;
-          cursorCost += multiplier;
-          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-          spawnCursor(smart);
-          holder.innerHTML = '';
-          holder.parentNode.opacity = 0;
-          holder.removeEventListener('click', handler);
-        }
-      };
-      const actions = {
-        buyCursor: _ => purchase(cursorCost, 4, false),
-        buySmartCursor: _ => purchase(cursorCost * 10, 4, true),
-        upgradeCursor: _ => {
-          const totalCursors = document.querySelectorAll('.cursor').length;
-          bank -= cursorUpgradeCost * totalCursors;
-          all('.cursor', a => {
-            const level = parseInt(a.dataset.level) + 1;
-            if (level < 6) {
-              a.dataset.level = level;
-              a.parentNode.querySelector('.level').innerHTML = level;
-              a.parentNode.querySelector('.value').innerHTML = level * baseCursorCost;
-              if (level == 5) {
-                cursorUpgradeCost -= baseCursorUpgradeCost * (level - 1);
-              } else {
-                cursorUpgradeCost += baseCursorUpgradeCost;
-                a.style.transform = `scale(${level},${level})`;
-              }
-            }
-          });
-          say(`${getPointsName()}: ${bank}</br>${getPointsName()} Clicked: ${score}`);
-        }
-      };
+      
+      let htm = '';
+      if (bank >= cursorCost) {
+        htm += `<button data-click="buyCursor" class="styled_button">Buy 1 Cursor (${cursorCost})</button>`;
+      }
+      if (bank >= cursorCost * 2) {
+        htm += `<button data-click="buySmartCursor" class="styled_button">Buy 1 Smart Cursor (${cursorCost * 10})</button>`;
+      }
+      if (document.querySelector('.cursor') && cursorUpgradeCost && bank >= cursorUpgradeCost) {
+        htm += `<button data-click="upgradeCursor" class="styled_button">Upgrade Cursors (${cursorUpgradeCost})</button>`;
+      }
+      return htm;
     }
     
     function computeWrath() {
-      if (document.querySelectorAll('.cookie').length > document.querySelectorAll('.wrath').length) {
+      if (gameBg.querySelector('.cookie:not(.wrath)')) {
         for (let i = 0; i < (score/100 - 1) && i < 10; i++) {
           if (Math.random() * 15 < 2) return true;
         }
@@ -267,7 +303,7 @@ function setupSweetie() {
     function spawnCookie(scepter, x, y) {
       if (scepter && document.querySelector('.cookie')) {
         if (bank < 1) return;
-        say(`${getPointsName()}: ${--bank}</br>${getPointsName()} Clicked: ${score}`);
+        updateBank(1);
       }
 
       options(buildShop);
@@ -277,22 +313,18 @@ function setupSweetie() {
       const sitTime = Math.max(8000 - (diff * (score/100 < 1 ? 1 : score/100)), 50);
       const wrath = computeWrath();
       
-      const cook = createGameObj(`<img src="${GITHUB}/assets/${wrath ? 'wrath' : 'cookie'}.png" class="gameObj cookie hiding nopickup${wrath ? 'wrath' : ''}" style="transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear"></img>`);
+      const cook = createGameObj(`<img data-x="${x} data-y="${y}" src="${GITHUB}/assets/${wrath ? 'wrath' : 'cookie'}.png" class="gameObj cookie hiding nopickup${wrath ? 'wrath' : ''}" style="transition:opacity ${fadeTime/1000}s linear, visibility ${fadeTime/1000}s linear"></img>`);
       
       let timer = null;
       
-      align(cook, x - cook.offsetWidth / 2, y - cook.offsetHeight /2);
+      align(cook, x - cook.offsetWidth / 2, y - cook.offsetHeight / 2);
       
       cook.addEventListener('remove', () => {
         if (timer) clearTimeout(timer);
         timer = null;
       });
       cook.addEventListener('mousedown', e => {
-        e.preventDefault();
-        
         removeGameElement(cook);
-        
-        score++;
         
         if (wrath) {
           let newBank = Math.floor(bank * 0.8);
@@ -301,16 +333,17 @@ function setupSweetie() {
         } else {
           plusOne(x, y, 1);
           bank++;
-          if (Math.random() < 0.5) {
+          if (score > 200 && (Math.floor(Math.random() * 30)) < 10) {
             songs.play('eaK5_eJRzmA', () => belle.classList.remove('musical'), () => belle.classList.add('musical'));
           }
         }
-
-        say(`Cookies: ${bank}</br>Cookies Clicked: ${score}`);
+        
         const max = belle.classList.contains('musical') ? 3 : 1;
         for (let i = 0; i < max; i++) {
           if (Math.random() * 16 < max) spawnCookie(false, randomX(), randomY());
         }
+        
+        updateBank(0, 1);
         spawnCookie(false, randomX(), randomY());
       });
       
@@ -326,12 +359,12 @@ function setupSweetie() {
           cook.classList.add('hiding');
           timer = setTimeout(() => {
             if (deleted()) return;
-            if (!document.querySelector('.cookie')) {
-              if (cook.classList.contains('wrath')) {
-                spawnCookie(false, randomX(), randomY());
-              } else {
-                endGame();
-              }
+            removeGameElement(cook);
+            if (document.querySelector('.cookie')) return;
+            if (cook.classList.contains('wrath')) {
+              spawnCookie(false, randomX(), randomY());
+            } else {
+              endGame();
             }
           }, fadeTime);
         }, fadeTime + sitTime);
@@ -345,11 +378,12 @@ function setupSweetie() {
         const time = setInterval(() => {
           if (gameBg) {
             gameBg.classList.toggle('active');
+            gameBg.classList.toggle('grandmas', gameBg.querySelector('wrath'));
           } else {
             clearInterval(time);
           }
         }, 15000);
-        requestAnimationFrame(_ => gameBg.classList.add('active'));
+        requestAnimationFrame(() => gameBg.classList.add('active'));
       }
       spawnCookie(true, lastX, lastY);
     };
@@ -357,13 +391,12 @@ function setupSweetie() {
   
   const toggleHearts = (hearter => {
     const rRGB = () => Math.floor(Math.random() * 255);
-    return _ => {
+    return () => {
       if (hearter) {
         clearInterval(hearter);
         hearter = null;
       } else {
-        hearter = setInterval(() => plusOne(Math.random() * document.body.clientWidth, Math.random() * document.body.clientHeight, '\f004', a => {
-          a.classList.add('floating-heart');
+        hearter = setInterval(() => plusOne(randomX(), randomY(), "", a => {
           a.style.fontSize = `${10 + Math.random() * 50}px`;
           a.style.color = `rgb(${rRGB()},${rRGB()},${rRGB()})`;
         }), 100);
@@ -372,13 +405,12 @@ function setupSweetie() {
   })();
   
   const shake = (_ => {
-    let shaken = 0;
-    let shakeCount = 0;
+    let shaken = 0, shakeCount = 0;
     return () => {
       if ((Math.floor(Math.random() * 31)) == 5) {
         shaken = (shaken + 1) % 3;
         if (shakeCount >= 0) shakeCount++;
-        var count = 3 + Math.floor(Math.random() * 5) + 3 * shaken;
+        const count = 3 + Math.floor(Math.random() * 5) + 3 * shaken;
         all('.body_container, .footer', a => a.style.animation = 'shake_shake 0.17s linear ' + count);
         setTimeout(() => all('.body_container, .footer', a => a.style.animation = ''), count * 170);
       }
@@ -439,8 +471,41 @@ function setupSweetie() {
     };
   })();
   
+  const launcher = (_ => {
+    let launchTimer, momentumX = 0, momentumY = 0, motionEvents = 0;
+    return {
+      tick: event => {
+        motionEvents++;
+        momentumX = (momentumX / 2) + (event.pageX - lastX) * 10;
+        momentumY = (momentumY / 2) + (event.pageY - lastY) * 10;
+      },
+      launch: _ => {
+        if (!launchTimer) launchTimer = setInterval(() => {
+          if ((momentumX <= 1 && momentumX >= -1) && (momentumY <= 1 && momentumY >= -1)) {
+            return launcher.unlaunch();
+          }
+
+          setPos(prefX + momentumX/motionEvents, prefY + momentumY/motionEvents);
+
+          momentumX *= 0.9;
+          momentumY *= 0.9;
+
+          if (prefX < 0 || prefX > getMaxX()) momentumX = -momentumX;
+          if (prefY < 0 || prefY > getMaxY()) momentumY = -momentumY;
+        }, 20);
+      },
+      unlaunch: _ => {
+        momentumX = momentumY = motionEvents = 0;
+        if (launchTimer) {
+          clearInterval(launchTimer);
+          launchTimer = null;
+        }
+      }
+    }
+  })();
+  
   const help = (_ => {
-    const helpContent = 'iPkcpuD/or pmiga;ePSCA Eo(ev rmiga)eW-bolb emIgaseS;IHTFS+APECC-ooik elCciek;r+CPSCA-EeHrastH;S+APECS-ahekS;ahekV girouols-yhTsip ga;e+QPSCAE';
+    const helpContent = 'iPkcpuD/or pmiga;ePSCA Eo(ev rmiga)eW-bolb emIgaseS;IHTFS+APECC-ooik elCciek;r+CPSCA-EeHrastH;S+APECS-ahekS;ahekV girouols-yaT;g+LPSCA-EhTsip ga;e+QPSCAE';
     return () => {
       const pop = makePopup(jule('wSeeit ecSpeet reSrcte snIedx'), 'fa fa-child', false);
       pop.SetWidth(700);
@@ -459,6 +524,7 @@ function setupSweetie() {
   })();
   
   const belle = (_ => {
+    addCss();
     document.body.insertAdjacentHTML('beforeend', `<div id="belle" style="top:-1px;left:-1px;">
         ${svg()}
         ${['options','speech'].map(a => `<div class="${a}_container"><div class="${a}" ></div></div>`).join('')}
@@ -471,10 +537,15 @@ function setupSweetie() {
     const mouseMove = event => {
       setPos(event.clientX - x, event.clientY - y);
       grabber.move(event);
+      
       if (lastX >= 0 && lastY >= 0) {
-        if (dist(event.pageX, lastX, event.pageY, lastY) / (Date.now() - timestamp) > 30) shake();
+        const speed = dist(event.pageX, lastX, event.pageY, lastY) / (Date.now() - timestamp);
+        
+        if (speed > 30) shake();
       }
-
+      
+      launcher.tick(event);
+      
       lastClientX = event.clientX;
       lastClientY = event.clientY;
       lastX = event.pageX;
@@ -482,14 +553,16 @@ function setupSweetie() {
       timestamp = Date.now();
     };
     const toggleIframes = v => all('iframe', me => me.style.pointerEvents = v ? 'none' : '');
-    const stopMoving = _ => {
+    const stopMoving = e => {
+      if (dragging) mouseMove(e);
       dragging = false;
       document.body.removeEventListener('mousemove', mouseMove);
       toggleIframes(false);
-      lastX = -1;
+      launcher.launch();
     };
     
     dom.addEventListener('mousedown', event => {
+      launcher.unlaunch();
       dragging = true;
       toggleIframes(true);
       x = event.clientX - parseInt(dom.style.left);
@@ -504,6 +577,9 @@ function setupSweetie() {
       dom.style.pointerEvents = hitDetector.isHit(event) ? '' : 'none';
     });
     
+    let extra_key = 0;
+    
+    document.body.addEventListener('mouseleave', stopMoving);
     document.body.addEventListener('mouseup', stopMoving);
     document.body.addEventListener('blur', stopMoving);
     document.body.addEventListener('keydown', event => {
@@ -511,7 +587,7 @@ function setupSweetie() {
       event.preventDefault();
       if (event.keyCode == 32) {
         rotateObject(dom, 90);
-        belleAction(event);
+        belleAction(event, extra_key);
       } else {
         extra_key = event.keyCode;
       }
@@ -528,16 +604,33 @@ function setupSweetie() {
     window.addEventListener('resize', () => setPos(prefX, prefY));
     window.addEventListener('mouseenter', initBelle);
     
-    setInterval(() => all('.floater', me => {
-      const t = parseInt(me.style.top);
-      if (t <= 0) {
-        me.parentNode.removeChild(me);
-      } else {
-        me.style.top = `${t - 5}px`;
-      }
-    }), 50);
-    
     return dom;
+  })();
+  
+  const say = (timeout => {
+    const speech = belle.querySelector('.speech');
+    return (text, duration) => {
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = null;
+      }
+
+      speech.innerHTML = text;
+      belle.classList.toggle('speaking', text && text.length);
+
+      if (duration && text && text.length) timeout = setTimeout(() => {
+        timeout = null;
+        belle.classList.remove('speaking');
+      }, duration);
+    };
+  })();
+  
+  const options = (_ => {
+    const optionss = belle.querySelector('.options');
+    return factory => {
+      optionss.innerHTML = factory ? factory(optionss) : '';
+      belle.classList.toggle('optioning', optionss.children.length)
+    };
   })();
   
   const hitDetector = ((w, h) => {
@@ -552,6 +645,28 @@ function setupSweetie() {
       render: _ => img.src = URL.createObjectURL(new Blob([belle.querySelector('svg').outerHTML], {type: 'image/svg+xml'}))
     };
   })(131, 384);
+  
+  const toggleAvoider = (avoider => {
+    let lastHit, edge = false;
+    function avoid(e) {
+      const hit = hitDetector.isHit(e);
+      edge = lastHit != hit;
+      lastHit = hit;
+      
+      if (hit) {
+        launcher.tick(e);
+        if (edge) launcher.launch();
+      }
+    }
+    return () => {
+      if (avoider) {
+        document.removeEventListener('mousemove', avoid);
+      } else {
+        document.addEventListener('mousemove', avoid);
+      }
+      avoider = !avoider;
+    };
+  })();
   
   initBelle();
   
@@ -570,11 +685,13 @@ function setupSweetie() {
     hitDetector.render();
   }
   
-  function belleAction(event) {
+  function belleAction(event, extra_key) {
     if (extra_key == 81) {
       help();
     } else if (extra_key == 67) {
       cookieClicker();
+    } else if (extra_key == 76) {
+      toggleAvoider();
     } else if (extra_key == 72) {
       toggleHearts();
     } else if (!no) {
@@ -599,7 +716,7 @@ function setupSweetie() {
   function getTargettedElement() {
     const oldX = belle.style.left;
     belle.style.left = "-1000px";
-    const img = document.elementFromPoint(lastClientX , lastClientY);
+    const img = document.elementFromPoint(lastClientX, lastClientY);
     belle.style.left = oldX;
     return img;
   }
@@ -615,74 +732,12 @@ function setupSweetie() {
     }
   }
   
-  function plusOne(x, y, text, func) {
-    if (typeof(text) == 'number') {
-      if (text == 0) return;
-      text = (text > 0 ? '+' : '') + text;
-    }
-
-    document.body.insertAdjacentHTML('beforeend', `<span class="floater" style="position:absolute;transition:opacity 3s linear;opacity:1">${text}</span>`);
-    const one = document.body.lastChild;
-    align(one, x - one.offsetWidth/2, y - one.offsetHeight/2);
-    setTimeout(() => {
-      one.style.opacity = 0;
-      setTimeout(() => {
-        if (one.parentNode) one.parentNode.removeChild(one);
-      }, 3000);
-    }, 10);
-
-    const floaters = document.querySelectorAll('.floater');
-    for (let i = 31; i < floaters.length; i++) {
-      floaters[i].parentNode.removeChild(floaters[i]);
-    }
-    
-    if (func) func(one);
-  }
-  
   function updateSelection(index) {
     const me = document.querySelector('#belle_type');
     if (!me) return;
     me.querySelector('span').innerText = index + 1;
-    me.nextSibling.innerHTML = `<span style="transition:opacity 0.5s linear">${imgLabels[index]}</span>`;
-    let t = setTimeout(() => {
-      me.nextSibling.firstChild.style.opacity = 0;
-      t = null;
-    }, 250);
-    const cancel = () => {
-      if (t) clearTimeout(t);
-      me.removeEventListener('mousedown', cancel);
-    };
-    me.addEventListener('mousedown', cancel);
-  }
-  
-  function say(text, duration, fadeOptions) {
-    const speech = belle.querySelector('.speech');
-    if (speech.timeoutFunction) {
-      clearInterval(speech.timeoutFunction);
-    }
-    
-    const speechContainer = belle.querySelector('.speech_container');
-    speechContainer.style.display = 'block';
-    speechContainer.style.opacity = text == '' ? 0 : 1;
-    speech.innerHTML = text;
-
-    if (duration) speech.timeoutFunction = setTimeout(() => {
-      all('.speech_container, .options_container', belle, a => a.style.opacity = 0);
-      if (fadeOptions) speech.timeoutFunction = '';
-      setTimeout(() => all('.speech_container, .options_container', belle, a => a.style.display = ''), 2000);
-    }, duration);
-  }
-
-  function options(factory) {
-    const optionsContainer = belle.querySelector('.options_container');
-    const optionss = belle.querySelector('.options');
-    optionss.innerHTML = '';
-    factory(optionss);
-    optionsContainer.style.opacity = optionss.children.length ? 1 : 0;
-    optionsContainer.style.display = 'block';
-    if (!optionss.children.length) {
-      setTimeout(() => optionsContainer.style.display = '', 2000);
-    }
+    me.nextSibling.innerHTML = `<span style="transition:opacity 0.5s linear 0.25s">${imgLabels[index]}</span>`;
+    requestAnimationFrame(() => me.nextSibling.firstChild.style.opacity = 0);
   }
   
   function setPos(x, y, force) {
@@ -1070,7 +1125,9 @@ function setupSweetie() {
 </svg>`;
   }
   
-  makeStyle(`
+  
+  function addCss() {
+    makeStyle(`
 #belle {
     transition: transform 0.07s linear;
     transform-origin: 85% 95%;
@@ -1081,12 +1138,15 @@ function setupSweetie() {
     width: 131px;
     height: 384px;}
 #belle .speech_container, #belle .options_container {
-    display: none;
+    visibility: hidden;
     opacity: 0;
     position: absolute;
     top: 0px;
     width: 200px;
-    transition: opacity 2s linear;}
+    transition: opacity 2s linear, visibility 2s linear;}
+#belle.speaking .speech_container, #belle.optioning .options_container {
+    visibility: visible;
+    opacity: 1;}
 #belle .speech_container {
     pointer-events: none;
     left: 100%;}
@@ -1115,6 +1175,9 @@ function setupSweetie() {
   background: radial-gradient(transparent 0%, black 100%);
   opacity: 0;
   transition: opacity 30s ease;
+}
+#game-background.grandmas::before {
+  background: radial-gradient(transparent 0%, red 100%);
 }
 #game-background.active::before {
   opacity: 1;
@@ -1173,15 +1236,20 @@ img[data-dragged] {
     z-index: 501;
     position: absolute;}
 .floater {
+    position: fixed;
     z-index:500;
     color: white;
     pointer-events: none;
+    font-family: FontAwesome;
     text-shadow: 3px 3px 5px black;
     font-weight: bold;
-    -{0}-animation: wobble 0.5s linear 0s infinite alternate;}
-.floater.floating-heart {
-    font-family: FontAwesome;
-    position: fixed;}
+    -{0}-animation: wobble 0.5s linear 0s infinite alternate;
+    opacity: 1;}
+.floater.hiding {
+    transition: opacity 3s linear, top 3s linear, visibility 3s linear;
+    opacity: 0;
+    visibility: hidden;
+}
 .wobbly_image {-{0}-animation: shake_shake 0.25s linear infinite;}
 #belle_type + span span {
     background: rgba(255,255,255,0.6);
@@ -1212,4 +1280,5 @@ img[data-dragged] {
     80% {transform: scale(1,1);}
     90% {transform: scale(1.0125,1.0125);}
     100% {transform: scale(1.00125,1.00125);}}`);
+  }
 }
