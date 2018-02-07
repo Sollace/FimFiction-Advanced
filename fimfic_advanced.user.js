@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.3',
+const VERSION = '4.3.2',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -550,26 +550,19 @@ function barScrollOff() {
   document.body.classList.remove('fix_userbar');
 }
 
-function pinnerFunc(target, pinClass, bounder) {
+function pinnerFunc(target, clazz, bounder) {
+  clazz = `fix_${clazz}`;
   target = document.querySelector(target);
+  let pos = -1, attached = false;
   return () => {
-    if (bounder) {
-      const max = offset(bounder).top + bounder.offsetHeight - 100;
-      if (window.scrollY >= max) {
-        return document.body.classList.remove('fix_' + pinClass);
-      }
-    }
-    const min = window.scrollY + (document.body.classList.contains('pin_nav_bar') ? 45 : 0);
-    if (document.body.classList.contains('fix_' + pinClass)) {
-      if (min < parseInt(document.body.dataset[pinClass + 'Pos'])) {
-        document.body.classList.remove('fix_' + pinClass);
-      }
-      return;
-    }
-    const top = offset(target).top;
-    if (min >= top) {
-      document.body.dataset[pinClass + 'Pos'] = top;
-      document.body.classList.add('fix_' + pinClass);
+    const scroll = window.scrollY;
+    const top = attached ? pos : target.offsetTop;
+    const max = bounder ? scroll < (bounder.offsetTop + bounder.offsetHeight) : true;
+    const min = (scroll + (document.body.classList.contains('pin_nav_bar') ? 45 : 0)) >= top;
+    const nattached = min && max;
+    if (nattached != attached) {
+      pos = top;
+      document.body.classList.toggle(clazz, attached = nattached);
     }
   };
 }
@@ -624,7 +617,7 @@ function applyFeedFix() {
   addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
     e.preventDefault();
     const a = target.closest('a');
-    if (a.href && a.href.length) a.title = a.href;
+    if (a.href) a.title = a.href;
   });
 }
 
@@ -653,12 +646,10 @@ function removeAnnoyances() {
     sender.parentNode.parentNode.removeChild(sender.parentNode);
   });
   
-  const updateDisplay = _ => {
-    all('.ad-wrapper', a => {
-      const d = a.querySelector('ins, .pw-ad-box');
-      a.classList.toggle('collapse', !d || !d.innerHTML.length);
-    });
-  };
+  const updateDisplay = _ => all('.ad-wrapper', a => {
+    const d = a.querySelector('ins, .pw-ad-box');
+    a.classList.toggle('collapse', !d || !d.innerHTML.length);
+  });
   
   setInterval(updateDisplay, 1000);
   updateDisplay();
@@ -694,6 +685,7 @@ function applyCodePatches() {
       replaceListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
       replaceListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
       replaceListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
+      this.patched = true;
     }
     this.computeBackgroundColor.patched.call(this, c);
   });
@@ -1383,6 +1375,23 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
     background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, rgba(${gradient_highlight},0.5)), color-stop(80px, rgba(${gradient_highlight},0))) !important;
     background: -webkit-linear-gradient(top, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;
     background: linear-gradient(to bottom, rgba(${gradient_highlight},0.5) 0%, rgba(${gradient_highlight},0) 80px) !important;}
+
+/*Userpage modules fix (until knighty decides what he wants to do)*/
+#user_page_editing_toolbar .modules {
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;}
+#user_page_editing_toolbar .modules li i {
+    font-size: 30px;
+    line-height: 35px;
+	  float: left;}
+#user_page_editing_toolbar .modules li {
+    flex-grow: 1;
+    vertical-align: middle;
+    margin: 0 5px;}
+#user_page_editing_toolbar .modules li a {
+    width: 100%;
+    min-height: 60px;}
 
 ${light ? '' : `
 /*Relight the belle*/
@@ -2702,45 +2711,35 @@ function toComponents(color) {
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 
 function Animator() {
-  let currentScroll, lastScroll;
+  let lastScroll;
   let listenerCount = 0;
-  let isRunning = false;
   let callbacks = {};
-  let dispatch = a => a;
-
-  function bake() {
-    dispatch = a => a;
-    Object.keys(callbacks).filter(i => !!callbacks[i]).forEach(i => dispatch = compose(callbacks[i], dispatch));
-  }
-
+  let running = false;
+  
   function animate() {
-    currentScroll = window.scrollY;
-    if (currentScroll != lastScroll) {
-      lastScroll = currentScroll;
-      dispatch();
+    const scroll = window.scrollY;
+    if (scroll != lastScroll) {
+      lastScroll = scroll;
+      document.dispatchEvent(new Event('animator'));
     }
-    if (isRunning) requestAnimationFrame(animate);
+    running = listenerCount > 0;
+    if (running) requestAnimationFrame(animate);
   }
 
   return {
     on: (type, callback) => {
       if (!callbacks[type]) listenerCount++;
       callbacks[type] = callback;
-      bake();
-      if (!isRunning) {
-        isRunning = true;
-        animate();
-      }
+      document.addEventListener('animator', callback);
+      listenerCount++;
+      if (!running) animate();
     },
     off: type => {
       if (!callbacks[type]) return;
       listenerCount--;
+      if (listenerCount <= 0) listenerCount = 0;
+      document.removeEventListener('animator', callbacks[type]);
       callbacks[type] = null;
-      if (listenerCount <= 0) {
-        listenerCount = 0;
-        isRunning = false;
-      }
-      bake();
     }
   };
 }
