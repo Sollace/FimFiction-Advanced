@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2f
+// @version     4.3.2g
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -87,10 +87,8 @@ const setSweetieEnabled = (belle => {
           settingsMan.set('sweetie_img_index', current = i, 0);
 
           all('#belle svg g[id]', a => a.setAttribute('display', 'none'));
-
-          try {
-            all(parts[i], a => a.setAttribute('display', 'inline'));
-          } catch (e) {alert(e);}
+          all(parts[i], a => a.setAttribute('display', 'inline'));
+          
           hitDetector.render();
           updateSelection(i);
         },
