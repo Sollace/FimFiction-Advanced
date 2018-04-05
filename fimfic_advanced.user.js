@@ -1,22 +1,22 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.3.2
+// @version     4.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/settings_man.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/sweetie_scepter.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.3.2',
+const VERSION = '4.4',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -63,6 +63,7 @@ let theme = 0;
 let customBanner, customBannerindex = -1;
 const animator = new Animator();
 const slider = new Slider();
+const feeder = new FancyFeedsController();
 const bannerController = new BannerController([
   { name: "Default", items: [
     Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
@@ -108,8 +109,7 @@ const bannerController = new BannerController([
     Ban("yakovlev_fluttershy", "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5E7520"),
     Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
-  ]},
-  { name: "Advanced", items: [
+  ]},{ name: "Advanced", items: [
     Ban2("sleeping_bath_bloom", "//derpibooru.org/262355", "#921B57"),
     Ban2("flutterby_dash", "//derpibooru.org/250982", "#D771A4"),
     Ban2("mommy_derp", "//derpibooru.org/96418", "rgb(189,198,205)"),
@@ -149,7 +149,7 @@ patchEvents();
 window.override = override;
 RunScript(patchEvents, true);
 earlyStart();
-document.addEventListener("DOMContentLoaded", () => {
+ready(() => {
   if (!document.querySelector('.body_container')) return;
   const start = (new Date()).getTime();
   initGlobals();
@@ -172,6 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
     console.error(e);
   }
 });
+
+function ready(func) {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') return func();
+  document.addEventListener('DOMContentLoaded', func);
+}
 
 function patchEvents() {
   function extend(saved, onto, offof) {
@@ -219,15 +224,31 @@ function initGlobals() {
 function earlyStart() {
   (function css() {
     if (document.body) {
-      if (bannerController.getEnabled()) (function banner() {
-        if (canLoadBanners()) return bannerController.build();
-        requestAnimationFrame(banner);
+      addCss();
+      
+      if (bannerController.getEnabled()) {
+        addBannerCss();
+        (function banner() {
+          if (canLoadBanners()) {
+            updateLogo();
+            return bannerController.build();
+          }
+          requestAnimationFrame(banner);
+        })();
+      }
+      
+      if (CURRENT_LOCATION.indexOf('feed') == 0) (function feed() {
+        if (document.querySelector('.feed, .footer')) {
+          return feeder.replaceFeedUI();
+        }
+        requestAnimationFrame(feed);
       })();
-      return addCss();
+      
+      return;
     }
     requestAnimationFrame(css);
   })();
-
+  
   function canLoadBanners() {
     if ((userToolbar = userToolbar || document.body.querySelector('.user_toolbar'))) {
       return !!document.querySelector('.user-page-header, .story-page-header, .footer');
@@ -237,7 +258,6 @@ function earlyStart() {
 }
 
 function initFimFictionAdvanced() {
-  updateLogo();
   initCommentArea();
   applyBackground(getBGColor());
   applyCustomFont();
@@ -247,11 +267,14 @@ function initFimFictionAdvanced() {
   initBBCodeController();
   
   if (getBlockLightbox()) lightboxblocker();
-  if (getPinUserbar()) barScrollOn();
+  document.body.classList.toggle('pin_userbar', getPinUserbar());
   bannerController.initFancy();
   if (CURRENT_LOCATION.indexOf('feed') == 0) {
     applyFeedFix();
+    feeder.fixFeedOptions();
     animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
+  } else {
+    feeder.initUnreadCount();
   }
   if (getFixAds()) removeAnnoyances();
   applyCodePatches();
@@ -263,6 +286,7 @@ function registerEvents() {
   FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', initCommentArea);
   FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
   if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) startCommentHandler();
+  if (CURRENT_LOCATION.indexOf('feed') == 0) FimFicEvents.on('afterloadfeed', feeder.initFeedItems);
   applyNightModeListener();
 }
 
@@ -289,7 +313,6 @@ function nightModeToggled() {
 
 function buildSettingsTab(tab) {
   tab.StartEndSection("General Settings");
-  tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', setPinUserbar);
   tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', setAlwaysShowImages);
   tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', setBlockLightbox);
   tab.AddCheckBox("btrds", "Improved Advertisements", getFixAds()).addEventListener('change', setFixAds);
@@ -305,6 +328,7 @@ function buildSettingsTab(tab) {
   tab.StartEndSection("Banners");
   tab.AddCheckBox("eb", "Enable Banners", bannerController.getEnabled()).addEventListener('change', compose(bannerController.setEnabled, updateBannersOptions));
   tab.AddCheckBox("fancyB", "Enable Fancy Banners", bannerController.getFancy()).addEventListener('change', bannerController.setFancy);
+  tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', setPinUserbar);
   tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', setTitleHidden);
   const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", slider.labels(), slider.getSlide());
   enableSlide.addEventListener('change', e=> slider.setSlide(e, updateSliderOptions));
@@ -430,7 +454,7 @@ function buildSettingsTab(tab) {
   });
 
   function updateBannersOptions() {
-    tab.SetEnabled(`#fancyB,#hb,#sl,#shuf,#bannerCust${enableUSnow.selectedIndex < 2 ? ',#uss' : ''}`, bannerController.getEnabled());
+    tab.SetEnabled(`#pub,#fancyB,#hb,#sl,#shuf,#bannerCust${enableUSnow.selectedIndex < 2 ? ',#uss' : ''}`, bannerController.getEnabled());
   }
 
   function updateSliderOptions() {
@@ -544,24 +568,15 @@ function buildSettingsTab(tab) {
   }
 }
 
-function barScrollOn() {animator.on('userbar', pinnerFunc('.user_toolbar', 'userbar'));}
-function barScrollOff() {
-  animator.off('userbar');
-  document.body.classList.remove('fix_userbar');
-}
-
 function pinnerFunc(target, clazz, bounder) {
   clazz = `fix_${clazz}`;
   target = document.querySelector(target);
   let pos = -1, attached = false;
-  return () => {
-    const scroll = window.scrollY;
-    const top = attached ? pos : target.offsetTop;
-    const max = bounder ? scroll < (bounder.offsetTop + bounder.offsetHeight) : true;
-    const min = (scroll + (document.body.classList.contains('pin_nav_bar') ? 45 : 0)) >= top;
-    const nattached = min && max;
+  return ev => {
+    pos = attached ? pos : target.offsetTop;
+    const scroll = ev.scrollY;
+    const nattached = (scroll >= pos) && (!bounder || scroll < (bounder.offsetTop + bounder.offsetHeight));
     if (nattached != attached) {
-      pos = top;
       document.body.classList.toggle(clazz, attached = nattached);
     }
   };
@@ -667,6 +682,21 @@ function applyCodePatches() {
     document.querySelector('.chapter_footer').style.color = style.color;
   }
   override(ChapterFormatController.prototype, 'apply', function(c) {
+    if (!this.appliedFF) {
+      this.appliedFF = true;
+      this.inputs.colour_scheme.insertAdjacentHTML('beforeend', `
+<optgroup label="Pony">
+  <option value="twilight">Twilight Sparkle</option>
+  <option value="pinkie">Pinkie Pie</option>
+  <option value="applejack">Applejack</option>
+  <option value="dash">Rainbow Dash</option>
+  <option value="rarity">Rarity</option>
+  <option value="fluttershy">Fluttershy</option>
+  <option value="celestia">Princess Celestia</option>
+  <option value="luna">Princess Luna</option>
+</optgroup>`);
+      this.inputs.colour_scheme.value = this.colour_scheme;
+    }
     ChapterFormatController.prototype.apply.super.apply(this, arguments);
     formatChapter(this.chapter);
   });
@@ -693,9 +723,9 @@ function applyCodePatches() {
     return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
       .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`);
   });
-
+  
   function patchFunc(func, replacer) {
-    return Function('return '+ replacer(func.toString()))();
+    return Function(`return ${replacer(func.toString())}`)();
   }
 
   function replaceListener(event, sender, old, neu) {
@@ -707,13 +737,13 @@ function applyCodePatches() {
     }
     document.addEventListener(event, neu);
   }
-
+  
   //Force update chapter themes
   try {
     App.DispatchEvent(document, 'chapterColourSchemeChanged');
     formatChapter(document.querySelector('#chapter'));
   } catch (e) {
-    console.log(e);
+    console.warn(e);
   }
 }
 
@@ -1321,6 +1351,7 @@ function addCss() {
         container_border_base = light ? '#bebab5' : '#333d4f',
         container_border_highlight = light ? '#d6d2cb' : '#333d4f',
         container_subtext_foreground = light ? '#888' : '#7a829a',
+        new_item_highlight_background = light ? '#fffbe0' : '#214171',
         chapter_footer_background = light ? '#efefef' : '#303949',
         chapter_message_background = light ? '#f6f6f6' : chapter_footer_background,
         chapter_options_button_background = light ? '#fff' : '#29313f',
@@ -1421,11 +1452,105 @@ ${light ? '' : `
 
 /*Bookshelf icon colour fix*/
 .story-top-toolbar .bookshelves li:not(:hover) .bookshelf-icon-pony-emoji {
-    color: ${bookshelf_item_foreground} !important;}
+  color: ${bookshelf_item_foreground} !important;}
 .user_toolbar > ul > li ul li:hover > a .bookshelf-icon-element span {
-    color: #fff !important;}
+  color: #fff !important;}
 
 /*Start Enhancements*/
+
+/*Better Story Feeds*/
+.off .on, .on .off {display: none;}
+#mark-read-button.on::after {content: attr(data-count);}
+
+.feed .feed_item.new {
+  background: ${new_item_highlight_background};}
+.feed > li.feed_item.new .arrow .inner_arrow {
+  border-right: 12px solid ${new_item_highlight_background};}
+
+.feed .simple {display: none;}
+.simplified .feed .complex {display: none;}
+.simplified .feed .simple {display: inline;}
+.simplified .feed > li .feed_body ul.group_stories li::before {
+  font-family: "fontawesome";
+  content: "\\f02d";
+  margin-right: 0.5em;
+  color: #888;}
+.simplified .feed > li .feed_body ul.group_stories li .folders {padding-left: 20px;}
+.simplified .feed > li .feed_body ul.group_stories li .folders a::before {
+  display: inline-block;
+  font-family: "fontawesome";
+  content: "\\f07b";
+  margin: 0 0.3em;
+  color: #888;}
+.simplified .feed > li .feed_body ul.group_stories li .folders a:hover::before {text-decoration: none !important;}
+
+.feed .feed_item::before {
+  border-radius: 3px;
+  height: auto;
+  bottom: 1px;
+  width: 7px;
+}
+
+/*Faster Compression (kinda)*/
+.compressed .feed_item:not(.expanded) {
+  font-size:.9375rem;
+  margin-bottom:5px;
+  border-radius:3px;
+  padding:10px
+}
+.compressed .feed_item:not(.expanded) .feed_body,
+.compressed .feed_item:not(.expanded) .comment_count,
+.compressed .feed_item:not(.expanded) .arrow,
+.compressed .feed_item:not(.expanded) .avatar {
+  display:none;
+}
+.compressed .feed_item:not(.expanded) .feed_header {
+  padding-bottom:0;
+  border:none
+}
+.compressed .feed_item:not(.expanded) .feed_header .date {
+  top:10px
+}
+.compressed .feed_item:not(.expanded) .feed_header i {
+  font-size:18px
+}
+.compressed .feed_item:not(.expanded) .feed_header a.title {
+  font-size:inherit;
+  font-family:"Open Sans",Arial,Sans-serif
+}
+
+/*Differentiate blog posts*/
+.distinguish .feed > li.feed_group_item .avatar {
+	left: auto;
+	right: -90px;}
+.distinguish .feed > li.feed_group_item .arrow {
+	border-left: 11px solid #d6d2cb;
+	border-right: 11px solid transparent;
+	left: auto;
+	right: -24px;}
+.distinguish .feed > li.feed_group_item .arrow .inner_arrow {
+	border-right: 12px solid transparent;
+	border-left: 12px solid #fff;
+	left: -13px;}
+.distinguish .feed > li.feed_group_item.new .arrow .inner_arrow {
+  border-left: 12px solid #fffbe0;}
+
+/*Inline checkboxes*/
+.check-group li label input, .check-group li label input ~ i {
+  display: none;
+}
+.check-group li label {
+  display: block;
+  position: relative;
+}
+.check-group li label input:checked ~ i {
+  position: absolute;
+  top: 50%;
+  right: 5px;
+  display: inline-block;
+  line-height: 0;
+}
+
 /*Modernised source links*/
 .story_container .story_container__story_image { overflow: hidden;}
 .story_container .story_container__story_image .source {
@@ -1833,6 +1958,8 @@ a.premade_settings.custom_banner_button .toolbar {
     border-width: 1px;
     border-style: solid;
     border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.1);}
+
+${ponyThemes()}
 .content_format_pinkie #chapter_container,
 .content_format_applejack #chapter_container,
 .content_format_rarity #chapter_container,
@@ -1870,33 +1997,15 @@ a.premade_settings.custom_banner_button .toolbar {
     margin-right: auto !important;
     max-width: ${getStoryWidth()};}
 
-@media all and (min-width: 700px) {
-    .fix_userbar .user_toolbar {
-        position: fixed;
-        top: 0px;
-        left: 0px;
-        right: 0px;
-        z-index: 1300;
-        margin-top: -210px;
-        padding-top: 200px;}
-    .fix_userbar header.header {
-        margin-bottom: 30px;}
-    .pin_nav_bar.fix_userbar .user_toolbar {top: 45px;}
-    .pin_nav_bar #chapter_toolbar_container[data-fixed] {top: 3rem;}
-    .fix_userbar #chapter_toolbar_container[data-fixed] {top: 2.7rem;}
-    .pin_nav_bar.fix_userbar #chapter_toolbar_container[data-fixed] {top: 5.5875rem !important;}
-}
-
 .fix_feed .feed-toolbar {
     position: fixed;
     top: 0px;
     left: 0px;
     right: 0px;
-    z-index: 1300;
+    z-index: 10;
     transition: background-color 0.3s linear;
     background-color: rgba(0,0,0,0.6);}
 .fix_feed .content > .content_background > .inner {margin-top: 55px;}
-.pin_nav_bar.fix_feed .feed-toolbar {top: 45px;}
 
 .banner-credits {
     vertical-align: top;
@@ -2001,31 +2110,44 @@ a.premade_settings.custom_banner_button .toolbar {
     background-color: rgba(0,0,0,0.6);}
 .fix_switcher #banner-switcher + form {
     margin-top: 50px;}
-.pin_nav_bar.fix_switcher #banner-switcher {
-    top: 45px;}
 
-.pin_nav_bar.fix_userbar.fix_switcher #banner-switcher,
-.pin_nav_bar.fix_userbar.fix_feed .feed-toolbar {top: 85px;}\
-.fix_userbar.fix_switcher #banner-switcher,
-.fix_userbar.fix_feed .feed-toolbar {top: 40px;}`, "FFA_Stylesheet");
+@media all and (min-width: 700px) {
+  .pin_nav_bar.fix_switcher #banner-switcher,
+  .pin_nav_bar.fix_feed .feed-toolbar {top: 90px;}
+}`, "FFA_Stylesheet");
 }
 
 function addBannerCss() {
     const light = currentTheme() == 'light';
     updateStyle(`
-body.pin_nav_bar div.page-nav-bars {
-    position: static;
-    top: 0;
-    z-index: initial;
-    box-shadow: none;}
-body.pin_nav_bar div.page-nav-bars .nav_bar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 10000;
-    box-shadow: 0px 0px 15px #0000004d;}
-body.pin_nav_bar div.page-nav-bars {margin-top: 46px;}
+@media all and (min-width: 700px) {
+  .pin_userbar #main_banner {
+    position: sticky;
+    top: -130px;
+    z-index: 10;
+  }
+  .pin_userbar #main_banner[data-userpage] {top: -210px;}
+  .pin_userbar.pin_nav_bar #main_banner {top: -90px;}
+  .pin_userbar.pin_nav_bar #main_banner[data-userpage] {top: -160px;}
+  
+  .pin_userbar.titleHidden #main_banner {top: -40px;}
+  .pin_userbar.titleHidden #main_banner[data-userpage] {top: -110px;}
+  .pin_userbar.pin_nav_bar.titleHidden #main_banner {top: 10px;}
+  .pin_userbar.pin_nav_bar.titleHidden #main_banner[data-userpage] {top: -60px;}
+  
+  .pin_nav_bar.fix_switcher #banner-switcher,
+  .pin_nav_bar.fix_feed .feed-toolbar {top: 45px;}
+  
+  .pin_userbar.fix_switcher #banner-switcher,
+  .pin_userbar.fix_feed .feed-toolbar {top: 50px;}
+  
+  .pin_nav_bar.pin_userbar.fix_switcher #banner-switcher,
+  .pin_nav_bar.pin_userbar.fix_feed .feed-toolbar {top: 90px;}
+  
+  .pin_nav_bar #chapter_toolbar_container[data-fixed] {top: 3rem;}
+  .pin_userbar #chapter_toolbar_container[data-fixed] {top: 2.7rem;}
+  .pin_nav_bar.pin_userbar #chapter_toolbar_container[data-fixed] {top: 5.5875rem !important;}
+}
 
 .titleHidden #title {height: 80px !important;}
 .titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 11.5rem;}
@@ -2043,6 +2165,9 @@ body.pin_nav_bar div.page-nav-bars {margin-top: 46px;}
 
 /*Banners*/
 .nav_bar .logo {
+    height: 5rem;
+    margin-top: 0;
+    margin-right: -20px;
     z-index: 100;
     position: relative;}
 .nav_bar .logo.tiny-logo {
@@ -2053,8 +2178,8 @@ header.header {
   position: relative;
 }
 header.header .title {
-  height: 180px;
-  background-position: center top;
+  height: 203px;
+  background-position: center;
   background-repeat: no-repeat;
   position: relative;
   display: none ! important;
@@ -2081,10 +2206,10 @@ header.header .home_link {
   left: 0px;
   top: 0px;
   bottom: 0px;
-  background-position: center top;
+  background-position: center;
 }
 @media all and (max-width: 1000px) {
-    header.header .home_link { background-position: -150px top; }
+    header.header .home_link { background-position: -150px center; }
 }
 header.header .home_link div {
   position: absolute;
@@ -2140,7 +2265,7 @@ header.header .theme_selector {
   background: transparent linear-gradient(to right, transparent 0%, transparent 100%) repeat scroll 0% 0%;
   color: #fff;
   opacity: 0;
-  line-height: 175px;
+  line-height: 195px;
   text-decoration: none;
   text-shadow: 1px 1px rgba(0,0,0,0.3);
   font-size: 32px;
@@ -2227,14 +2352,20 @@ ${light ? '' : `
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.1) 50%);
         color: #fff;}
     header.header .home_link {
-        height: 175px;
+        height: 195px;
         background-size: cover !important;}
     #fade_banner_image {
         top: 0px;
         bottom: 0px;
         left: 0px;
         right: 0px;
-  }
+        transition: opacity 0.35s linear;
+        opacity: 0;
+    }
+    #fade_banner_image.animating {
+        transition: none;
+        opacity: 1;
+    }
 }
 
 @media(max-width: 800px) {
@@ -2339,6 +2470,263 @@ function makeBannerTransitionStyle(height) {
         height: ${height}px;}}`, 'FFA_Banner_Transition_Stylesheet');
 }
 
+function ponyThemes() {
+  return `
+/*Pinkie Pie*/
+.content_format_pinkie .chapter {
+  background-color: #f9b8d2 !important;
+  color: #c01b75 !important;
+}
+.content_format_pinkie .chapter p {
+  padding:10px;
+  background-color:#c01b75 !important;
+  color:#fff !important;
+  margin-top:0px;
+  padding-top:10px;
+  padding-bottom:10px;
+}
+select[name="colour_scheme"] option[value="pinkie"] {
+    background: #f9b8d2;
+    color: #c01b75;
+}
+/*Twilight Sparkle*/
+.content_format_twilight .chapter {
+ background-color: #d4a4e8 !important;
+ color: #273771 !important;
+}
+select[name="colour_scheme"] option[value="twilight"] {
+ background: #d4a4e8;
+ color: #273771;
+}
+.content_format_twilight .chapter p {
+ padding:10px;
+ background-color:#273771 !important;
+ color:#b9c3e9 !important;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px;
+}
+.content_format_twilight .chapter p:nth-child(6n+3) {
+ background-color:#622e86 !important;
+ color:#e0c5f2 !important
+}
+.content_format_twilight .chapter p:nth-child(6n+4) {
+ background-color:#e6458b !important;
+ color:#f2cddd !important;
+}
+/*Applejack*/
+.content_format_applejack .chapter {
+ background-color: #f5efb3 !important;
+ color: #ea403f !important;
+}
+select[name="colour_scheme"] option[value="applejack"] {
+ background: #f5efb3;
+ color: #ea403f;
+}
+.content_format_applejack .chapter p {
+ padding:10px;
+ background-color:#ea403f !important;
+ color:#fff !important;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px
+}
+/*Rainbow Dash*/
+.content_format_dash .chapter {
+ background-color: #9dd9f8 !important;
+ color: #285c85 !important;
+}
+select[name="colour_scheme"] option[value="dash"] {
+ background: #9dd9f8;
+ color: #285c85;
+}
+.content_format_dash .chapter p {
+ padding:10px;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px
+}
+.content_format_dash .chapter p:nth-child(6n+1) {
+ background-color:#ee4144 !important;
+ color:#fff !important
+}
+.content_format_dash .chapter p:nth-child(6n+2) {
+ background-color:#f37033 !important;
+ color:#fff !important
+}
+.content_format_dash .chapter p:nth-child(6n+3) {
+ background-color:#fdf6af !important;
+ color:#1e98d3 !important
+}
+.content_format_dash .chapter p:nth-child(6n+4) {
+ background-color:#62bc4d !important;
+ color:#fff !important
+}
+.content_format_dash .chapter p:nth-child(6n+5) {
+ background-color:#1e98d3 !important;
+ color:#fff !important
+}
+.content_format_dash .chapter p:nth-child(6n+6) {
+ background-color:#672f89 !important;
+ color:#fff !important
+}
+/*Rarity*/
+.content_format_rarity .chapter {
+ background-color: #d0c9f3 !important;
+ color: #4b1566 !important;
+}
+select[name="colour_scheme"] option[value="rarity"] {
+ background: #d0c9f3;
+ color: #4b1566;
+}
+.content_format_rarity .chapter p {
+ padding:10px;
+ background-color:#5e51a3 !important;
+ color:#f0f2f3 !important;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px
+}
+/*Fluttershy*/
+.content_format_fluttershy .chapter {
+ background-color: #fff9b0 !important;
+ color: #a98300 !important;
+}
+select[name="colour_scheme"] option[value="fluttershy"] {
+ background: #fff9b0;
+ color: #a98300;
+}
+.content_format_fluttershy .chapter p {
+ padding:10px;
+ background-color:#e77db3 !important;
+ color:#fff !important;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px
+}
+/*Celestia*/
+@-webkit-keyframes celestia-hair {
+ 0%, 100% {left:-20px}
+ 50% {left:20px}
+}
+@keyframes celestia-hair {
+ 0%, 100% {left:-20px}
+ 50% {left:20px}
+}
+.content_format_celestia .chapter {
+ background-color:#fff !important;
+ color:#444 !important
+}
+.content_format_celestia .chapter p {
+ padding:10px;
+ margin-top:0px;
+ padding-top:10px;
+ padding-bottom:10px;
+ position:relative;
+ -webkit-animation:celestia-hair 4s infinite;
+ animation:celestia-hair 4s infinite;
+ -webkit-animation-timing-function:cubic-bezier(0.445, 0.05, 0.55, 0.95);
+ animation-timing-function:cubic-bezier(0.445, 0.05, 0.55, 0.95)
+}
+select[name="colour_scheme"] option[value="celestia"] {
+ background: #50c8a1;
+ color: #105C43;
+}
+.content_format_celestia .chapter p:nth-child(3n+1) {
+ background-color: #50c8a1 !important;
+ color: #105C43 !important
+}
+.content_format_celestia .chapter p:nth-child(3n+2) {
+ background-color:#80a5eb !important;
+ color:#193261 !important
+}
+.content_format_celestia .chapter p:nth-child(3n+3) {
+ background-color:#e098f2 !important;
+ color:#42194D !important
+}
+.content_format_celestia .chapter p:nth-child(10n+2) {
+ -webkit-animation-delay:-0.8s;
+ animation-delay:-0.8s
+}
+.content_format_celestia .chapter p:nth-child(10n+3) {
+ -webkit-animation-delay:-1.2s;
+ animation-delay:-1.2s
+}
+.content_format_celestia .chapter p:nth-child(10n+4) {
+ -webkit-animation-delay:-1.6s;
+ animation-delay:-1.6s
+}
+.content_format_celestia .chapter p:nth-child(10n+5) {
+ -webkit-animation-delay:-2s;
+ animation-delay:-2s
+}
+.content_format_celestia .chapter p:nth-child(10n+6) {
+ -webkit-animation-delay:-2.4s;
+ animation-delay:-2.4s
+}
+.content_format_celestia .chapter p:nth-child(10n+7) {
+ -webkit-animation-delay:-2.8s;
+ animation-delay:-2.8s
+}
+.content_format_celestia .chapter p:nth-child(10n+8) {
+ -webkit-animation-delay:-3.2s;
+ animation-delay:-3.2s
+}
+.content_format_celestia .chapter p:nth-child(10n+9) {
+ -webkit-animation-delay:-3.6s;
+ animation-delay:-3.6s
+}
+.content_format_celestia .chapter p:nth-child(10n+10) {
+ -webkit-animation-delay:-4s;
+ animation-delay:-4s
+}
+/*Luna*/
+@-webkit-keyframes luna {
+ 0% {background-position:0px 0px}
+ 100% {background-position:408px 0px}
+}
+@keyframes luna {
+ 0% {background-position:0px 0px}
+ 100% {background-position:408px 0px}
+}
+.content_format_luna .chapter {
+  background-color:#442d6c;
+  background-image:url("https://static.fimfiction.net/images/custom_backgrounds/luna.png");
+  background-attachment:fixed;
+  -webkit-animation:luna 20s infinite;
+  animation:luna 20s infinite;
+  background-position:0px 0px;
+  -webkit-animation-timing-function:linear;
+  animation-timing-function:linear
+}
+select[name="colour_scheme"] option[value="luna"] {
+ background: #442d6c;
+ color: #c4c6e9;
+}
+.content_format_luna .chapter .chapter-body {
+  background:rgba(26,28,69,0.5);
+  padding:10px 20px;
+  margin-top:0px;
+  padding-top:10px;
+  padding-bottom:10px;
+  color:#c4c6e9;
+}
+.content_format_luna .chapter .chapter-title {
+  border-color:rgba(0,0,0,0.2);
+}
+.content_format_luna .chapter .chapter-title {
+ color:#fff;
+}
+.content_format_luna .chapter p {
+ background:#444784;
+ padding:10px 20px;
+ margin-top:0px
+}
+.content_format_luna .chapter p:nth-child(5n) {
+ background:#2d3067
+}`;
+}
+
 function StyledWarning(message, ok, cancel) {
   const g = new PopUpMenu('', `<i class="fa fa-warning"></i> Warning`);
   g.SetFixed(1);
@@ -2392,14 +2780,8 @@ function setFixAds(e) {
 }
 function getPinUserbar() {return settingsMan.bool('pin_userbar', false);}
 function setPinUserbar(e) {
-  if (getPinUserbar() != e.target.checked) {
-    settingsMan.setB('pin_userbar', e.target.checked, false);
-    if (e.target.checked) {
-      barScrollOn();
-    } else {
-      barScrollOff();
-    }
-  }
+  settingsMan.setB('pin_userbar', e.target.checked, false);
+  document.body.classList.toggle('pin_userbar', e.target.checked);
 }
 
 function getAlwaysShowImages() {return settingsMan.bool('unspoiler_images', true);}
@@ -2710,6 +3092,203 @@ function toComponents(color) {
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 
+
+function FancyFeedsController() {
+  
+  let computedUnreadCount = 0;
+  let unreadCount = getUnreadCount();
+  
+  let feedRead = getFeedRead();
+  
+  function getFancyFeeds() {return settingsMan.int('feed_compressed', 0);}
+
+  function getSimpleFeeds() {return settingsMan.bool('simple_feeds', true);}
+  function getDistinguishedFeeds() {return settingsMan.bool('distinguished_feeds', false);}
+  
+  function getFeedRead() {return settingsMan.int('feedRead', 0);}
+  function getUnreadCount() {return settingsMan.int('unread_count', 0);}
+  
+  function setUnreadCount(count, sender) {
+    count = Math.max(0, count);
+    unreadCount = count;
+    settingsMan.set('unread_count', count);
+    if (sender) {
+      sender.classList.toggle('on', count > 0);
+      sender.classList.toggle('off', count <= 0);
+      sender.dataset.count = count;
+    }
+  }
+  
+  function updateFeedUi() {
+    document.body.classList.toggle("compressed", getFancyFeeds() > 0);
+    document.body.classList.toggle("distinguish", getDistinguishedFeeds());
+    document.body.classList.toggle('simplified', getSimpleFeeds());
+  }
+  
+  function getNewFeedOptions() {
+    const checkof = (icon, title, input) => `<li>
+        <label>
+          <i class="fa fa-fw fa-${icon}"></i>${title}
+          ${input}
+          <i class="fa fa-check"></i>
+        </label>
+      </li>`;
+    const state = getFancyFeeds();
+    const soc = document.querySelector('#social_site_posts');
+    soc.name = 'social-posts';
+    return `<div class="button-group check-group collapsible search-view">
+          <button type="button" class="drop-down-expander styled_button styled_button_brown">
+            <i class="fa fa-bars"></i> Options<i class="fa fa-caret-down"></i>
+          </button>
+          <div id="feed-options" style="width:300px;" class="drop-down">
+            <ul style="font-size:14px;">
+              ${checkof('newspaper-o', 'Social Site Posts', soc.outerHTML)}
+              <li class="divider"></li>
+              ${checkof('tasks', 'Group By Story', `<input ${getSimpleFeeds() ? 'checked=""' : ''} data-change="setSimpleFeeds" name="simple-feeds" type="checkbox">`)}
+              ${checkof('magic', 'Separate Blogs', `<input ${getDistinguishedFeeds() ? 'checked=""' : ''} data-change="setDistinguishedFeeds" name="distenguish-feeds" type="checkbox">`)}
+              <li class="divider"></li>
+              ${checkof('newspaper-o', 'Full View', `<input name="feed-type" value="0" ${state == '0' ? 'checked=""' : ''} data-change="changeCompactMode" type="radio">`)}
+              ${checkof('th', 'Mixed View', `<input name="feed-type" value="2" ${state == '2' ? 'checked=""' : ''} data-change="changeCompactMode" type="radio">`)}
+              ${checkof('list', 'Compact View', `<input id="feed_compact_view" name="feed-type" value="1" ${state == '1' ? 'checked=""' : ''} data-change="changeCompactMode" type="radio">`)}
+            </ul>
+          </div>
+        </div>`;
+  }
+
+  function updateUnreadFeedItems(markAllRead) {
+    const t = document.querySelector('[data-timestamp]');
+    if (!t) return;
+    const timestamp = feedRead;
+    settingsMan.set('feedRead', t.dataset.timestamp, 0);
+    const fancy = getFancyFeeds() == 2;
+    
+    let count = 0;
+    
+    all('.feed_item:not(.touched)', item => {
+      const neu = parseInt(item.dataset.timestamp) > timestamp;
+      const worth = item.querySelectorAll('.group_stories ul > li').length || 1;
+      
+      item.classList.toggle('expanded', fancy && neu);
+      item.classList.toggle('new', neu && !item.classList.contains('marked'));
+      item.classList.add('touched');
+      item.dataset.worth = worth;
+      
+      if (item.classList.contains('new')) count += worth;
+      
+      if (!item.classList.contains('feed_group_item')) return;
+      let group = item.querySelector('.group_stories');
+      if (group) {
+        const stories = getParsedStoryFeedItem(item);
+        const kes = Object.keys(stories);
+        
+        item.querySelector('.feed_header h1').lastChild.textContent = kes.length > 1 ? ` had ${kes.length} new stories added to it ` : ' had a new story added to it ';
+        
+        group.innerHTML = `<span class="complex">${group.innerHTML}</span><span class="simple"></span>`;
+        group = group.lastChild;
+        kes.forEach(title => {
+          group.appendChild(stories[title].element);
+          stories[title].element.insertAdjacentHTML('beforeend', `<div class="folders"></i> ${stories[title].folders.sort((a, b) => {
+            const nameA = a.name.toUpperCase();
+            const nameB = b.name.toUpperCase();
+            return nameA < nameB ? -1 : nameA > nameB ? 1 : 0;
+          }).map(a => a.html).join(', ')}</div>`);
+        });
+      }
+    });
+    
+    computedUnreadCount += count;
+    if (computedUnreadCount > unreadCount) setUnreadCount(count, markAllRead);
+  }
+
+  function getParsedStoryFeedItem(item) {
+    const stories = {};
+    all('a[href^="/story/"]', item, storyLink => {
+      const title = storyLink.innerText.trim();
+      if (!stories[title]) {
+        stories[title] = { element: storyLink.closest('li'), folders: [], tolders: [] };
+      }
+      const folder = storyLink.closest('ul').parentNode.querySelector('a[href^="/group/"]');
+      if (folder) {
+        const tolder = folder.innerText.trim();
+        if (stories[title].tolders.indexOf(tolder) < 0) {
+          stories[title].folders.push({ name: tolder, html: folder.outerHTML });
+          stories[title].tolders.push(tolder);
+        }
+      }
+    });
+    return stories;
+  }
+  
+  return {
+    initUnreadCount: _ => {
+      const count = document.querySelector('.feed-link.new div');
+      setUnreadCount(count ? count.innerText.trim() : 0);
+    },
+    initFeedItems: _ => {
+      updateUnreadFeedItems(document.querySelector('#mark-read-button'));
+    },
+    replaceFeedUI: _ => {
+      const options = document.querySelector('#feed-options');
+      if (options) {
+        const toggle = document.querySelector('[data-click="toggleOptions"]');
+        toggle.parentNode.removeChild(toggle);
+        options.insertAdjacentHTML('afterend', getNewFeedOptions());
+        options.parentNode.removeChild(options);
+        const reload = document.querySelector('#refresh-button');
+        reload.insertAdjacentHTML('afterend', `
+          <a id="mark-read-button" class="styled_button button-icon-only ${unreadCount > 0 ? 'on' : 'off'}" data-element="markAllRead" data-click="markAllRead" data-count="${unreadCount}">
+            <i class="off fa fa-check"></i>
+            <i class="on fa fa-check-square-o"></i>
+          </a>`);
+      }
+      updateFeedUi();
+    },
+    fixFeedOptions: function() {
+      this.initFeedItems();
+      
+      FeedController.prototype.changeCompactMode = function(c, d, sender) {
+        this.column.classList.toggle("compressed", false);
+        LocalStorageSet("feed_compressed", sender.value);
+        updateFeedUi();
+        all('.feed .touched', t => t.classList.remove('touched'));
+        updateUnreadFeedItems(this.elements.markAllRead);
+      };
+      FeedController.prototype.markAllRead = function(sender) {
+        setUnreadCount(0, sender);
+        feedRead = getFeedRead();
+        all('.feed .new', t => {
+          t.classList.add('marked');
+          t.classList.remove('new');
+          t.classList.remove('expanded');
+        });
+      };
+      FeedController.prototype.setSimpleFeeds = function(event, d, sender) {
+        settingsMan.setB('simple_feeds', sender.checked, true);
+        updateFeedUi();
+      };
+      FeedController.prototype.setDistinguishedFeeds = function(event, d, sender) {
+        settingsMan.setB('distinguished_feeds', sender.checked, false);
+        updateFeedUi();
+      };
+      override(FeedController.prototype, 'toggleCompressed', function(sender, event) {
+        if (event.target.tagName === 'A') return true;
+        sender = sender.closest('.feed_item');
+        sender.classList.toggle('expanded');
+        if (sender.classList.contains('new')) {
+          sender.classList.remove('new');
+          sender.classList.add('marked');
+          if (unreadCount > 0) {
+            if (!this.elements.markAllRead) all('[data-element]', this.element, a => this.elements[a.dataset.element] = a);
+            const worth = parseInt(sender.dataset.worth);
+            computedUnreadCount = Math.max(0, computedUnreadCount - worth);
+            setUnreadCount(unreadCount - worth, this.elements.markAllRead);
+          }
+        }
+      });
+    }
+  };
+}
+
 function Animator() {
   let lastScroll;
   let listenerCount = 0;
@@ -2719,8 +3298,9 @@ function Animator() {
   function animate() {
     const scroll = window.scrollY;
     if (scroll != lastScroll) {
-      lastScroll = scroll;
-      document.dispatchEvent(new Event('animator'));
+      const ev = new Event('animator');
+      ev.scrollY = lastScroll = scroll;
+      document.dispatchEvent(ev);
     }
     running = listenerCount > 0;
     if (running) requestAnimationFrame(animate);
@@ -2932,17 +3512,38 @@ function BannerController(sets) {
     },
     build: function() {
       settingsMan.flag('banners', true);
+      addBannerCss();
+      
+      let mainBanner = document.querySelector('#main_banner');
+      if (mainBanner) return;
+      
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
-
+      
       if (getTitleHidden()) document.body.classList.add("titleHidden");
+      
+      userToolbar.parentNode.insertAdjacentHTML('afterend', `<div id="main_banner">
+        <header class="header">
+              <div id="title" class="title">
+                  <div class="banner-buttons">
+                      <a target="_blank" id="source_link">Source</a>
+                      <a data-action="reset" title="Reset"><i class="fa fa-undo"></i></a>
+                      <a href="/?view=page&page=banner_credits" title="Select Banner"><i class="fa fa-pencil"></i></a>
+                  </div>
+                  <a href="/" class="home_link"><div id="fade_banner_image"></div></a>
+                  <a href="/" class="home_link_link"></a>
+                  <a class="theme_selector theme_selector_left" href="#" data-action="prev"></a>
+                  <a class="theme_selector theme_selector_right" href="#" data-action="next"></a>
+              </div>
+          </header>
+      </div>`);
+      mainBanner = document.querySelector('#main_banner');
+      mainBanner.appendChild(userToolbar);
+      
       const subHeader = document.querySelector('.user-page-header, .story-page-header');
+      
       if (subHeader) {
-        userToolbar.insertAdjacentElement('beforebegin', subHeader);
-
-        if (subHeader.classList.contains('story-page-header')) {
-          subHeader.querySelector('.inner').classList.add('content');
-        }
-
+        mainBanner.dataset.userpage = true;
+        mainBanner.insertAdjacentElement('afterbegin', subHeader);
         document.querySelector('.nav_bar .logo').classList.add('tiny-logo');
 
         const readyBannerAnim = () => {
@@ -2953,24 +3554,10 @@ function BannerController(sets) {
         window.addEventListener('DOMContentLoaded', readyBannerAnim);
         requestAnimationFrame(readyBannerAnim);
       }
-
-      addBannerCss();
-      userToolbar.insertAdjacentHTML('beforebegin', `<header class="header">
-                <div id="title" class="title">
-                    <div class="banner-buttons">
-                        <a target="_blank" id="source_link">Source</a>
-                        <a data-action="reset" title="Reset"><i class="fa fa-undo"></i></a>
-                        <a href="/?view=page&page=banner_credits" title="Select Banner"><i class="fa fa-pencil"></i></a>
-                    </div>
-                    <a href="/" class="home_link"><div id="fade_banner_image"></div></a>
-                    <a href="/" class="home_link_link"></a>
-                    <a class="theme_selector theme_selector_left" href="#" data-action="prev"></a>
-                    <a class="theme_selector theme_selector_right" href="#" data-action="next"></a>
-                </div>
-            </header>`);
+      
       home_link = document.querySelector('#title a.home_link');
       source_link = document.querySelector('#title #source_link');
-      addDelegatedEvent(userToolbar.previousSibling, 'a[data-action]', 'click', (e, target) => {
+      addDelegatedEvent(mainBanner, 'a[data-action]', 'click', (e, target) => {
         e.preventDefault();
         this[target.dataset.action]();
       });
@@ -3088,15 +3675,14 @@ function Slider() {
     },
     goto: function(index, save) {
       const cc = window.getComputedStyle(tit);
-      fade.style.transition = 'none';
-      fade.style.opacity = 1;
-      fade.style.background = cc.background;
+      fade.classList.add('animating');
       fade.style.backgroundImage = cc.backgroundImage;
       fade.style.backgroundPosition = cc.backgroundPosition;
       fade.style.backgroundSize = cc.backgroundSize;
-      bannerController.pick(index, save);
-      fade.style.transition = 'opacity 0.25s linear';
-      fade.style.opacity = 0;
+      requestAnimationFrame(() => {
+        bannerController.pick(index, save);
+        requestAnimationFrame(() => fade.classList.remove('animating'));
+      });
     }
   };
 }
