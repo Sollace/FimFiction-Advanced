@@ -2123,12 +2123,12 @@ function addBannerCss() {
 @media all and (min-width: 700px) {
   .pin_userbar #main_banner {
     position: sticky;
-    top: -130px;
+    top: -150px;
     z-index: 10;
   }
   .pin_userbar #main_banner[data-userpage] {top: -210px;}
-  .pin_userbar.pin_nav_bar #main_banner {top: -90px;}
-  .pin_userbar.pin_nav_bar #main_banner[data-userpage] {top: -160px;}
+  .pin_userbar.pin_nav_bar #main_banner {top: -100px;}
+  .pin_userbar.pin_nav_bar #main_banner[data-userpage] {top: -180px;}
   
   .pin_userbar.titleHidden #main_banner {top: -40px;}
   .pin_userbar.titleHidden #main_banner[data-userpage] {top: -110px;}
