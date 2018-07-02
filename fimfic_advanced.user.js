@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4
+// @version     4.4.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4',
+const VERSION = '4.4.1',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -128,11 +128,16 @@ const bannerController = new BannerController([
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
-const colours = {Mapping: {}, Keys: [], Names: [], NamesLower: [], Sets: {
+const colours = {
+  Mapping: {},
+  Keys: [], Names: [],
+  NamesLower: [],
+  Sets: {
     'Standard Colours': [0, [0,73,70,68,107,59,103,24,112]],
     'FimFiction': [0, range(113,127)],
     'Mane Six': [0, range(128, 133)],
-    'More Colours': [1, range(0,112)] }
+    'More Colours': [1, range(0,112)]
+  }
 };
 'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').forEach(a => {
   a = a.split(':');
@@ -174,7 +179,6 @@ ready(() => {
 });
 
 function ready(func) {
-  if (document.readyState === 'interactive' || document.readyState === 'complete') return func();
   document.addEventListener('DOMContentLoaded', func);
 }
 
@@ -225,7 +229,7 @@ function earlyStart() {
   (function css() {
     if (document.body) {
       addCss();
-      
+
       if (bannerController.getEnabled()) {
         addBannerCss();
         (function banner() {
@@ -236,19 +240,19 @@ function earlyStart() {
           requestAnimationFrame(banner);
         })();
       }
-      
+
       if (CURRENT_LOCATION.indexOf('feed') == 0) (function feed() {
         if (document.querySelector('.feed, .footer')) {
           return feeder.replaceFeedUI();
         }
         requestAnimationFrame(feed);
       })();
-      
+
       return;
     }
     requestAnimationFrame(css);
   })();
-  
+
   function canLoadBanners() {
     if ((userToolbar = userToolbar || document.body.querySelector('.user_toolbar'))) {
       return !!document.querySelector('.user-page-header, .story-page-header, .footer');
@@ -265,7 +269,7 @@ function initFimFictionAdvanced() {
   if (isMyBlogPage()) initBlogPage();
   creditsController.buildAll();
   initBBCodeController();
-  
+
   if (getBlockLightbox()) lightboxblocker();
   document.body.classList.toggle('pin_userbar', getPinUserbar());
   bannerController.initFancy();
@@ -343,15 +347,15 @@ function buildSettingsTab(tab) {
   updateSnowOptions();
 
   tab.StartEndSection("Colours and Customization");
-  
+
   const oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
   oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
   oldLogo.addEventListener('change', setLogo);
-  
+
   let bgcolor = getBGColor();
   let backgroundImg = null;
   makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
-  
+
   const colorPick = tab.AddColorPick("bg", "Background Colour", bgcolor == 'transparent' ? '' : bgcolor, me => {
     me.value = me.value.trim();
     if (me.value.length) {
@@ -363,7 +367,7 @@ function buildSettingsTab(tab) {
     applyBackground(setBGColor(me.value));
     all('.toolbar', backgroundImg.element, a => a.style.backgroundColor = me.value);
   });
-  
+
   const camera = tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar');
   camera.addEventListener('click', () => {
     colorPick.value = rgb2hex(userToolbar.dataset.backgroundColor);
@@ -606,7 +610,7 @@ function applyChapterButtons() {
       <a class="compact_chapters" data-click="expand">Collapse Chapters</a>
     </div>
     <div class="all-chapters-hidden">${chapters} chapters hidden. <a data-click="minimise" >Show</a></div>`);
-        
+
       if (!unreadChap) return;
 
       unreadChap = unreadChap.closest('li');
@@ -654,18 +658,18 @@ function removeAnnoyances() {
     if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
     wrapper.insertAdjacentElement('afterbegin', a);
   });
-  
+
   addDelegatedEvent(document.body, '.ad-wrapper [data-click="hideAd"]', 'click', (e, sender) => {
     const ls = sender.closest('.list_boxes');
     if (ls && !ls.querySelector('.stories')) ls.parentNode.querySelector('.chapter-comments').classList.add('no-related');
     sender.parentNode.parentNode.removeChild(sender.parentNode);
   });
-  
+
   const updateDisplay = _ => all('.ad-wrapper', a => {
     const d = a.querySelector('ins, .pw-ad-box');
     a.classList.toggle('collapse', !d || !d.innerHTML.length);
   });
-  
+
   setInterval(updateDisplay, 1000);
   updateDisplay();
 }
@@ -723,7 +727,7 @@ function applyCodePatches() {
     return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
       .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`);
   });
-  
+
   function patchFunc(func, replacer) {
     return Function(`return ${replacer(func.toString())}`)();
   }
@@ -737,7 +741,7 @@ function applyCodePatches() {
     }
     document.addEventListener(event, neu);
   }
-  
+
   //Force update chapter themes
   try {
     App.DispatchEvent(document, 'chapterColourSchemeChanged');
@@ -891,10 +895,10 @@ function initBlogPage() {
   const name = getUserName();
   page.parentNode.previousSibling.insertAdjacentHTML('beforeend', `<div class="content_box blog_post_content_box" style="margin-top:0px; ">
     <div class="calendar" style="margin-top:0px">
-		  <div class="month">Jan</div>
-		  <div class="day">1<span style="font-size:0.6em;">st</span><div class="year">1992</div>
-		</div>
-	</div>
+          <div class="month">Jan</div>
+          <div class="day">1<span style="font-size:0.6em;">st</span><div class="year">1992</div>
+        </div>
+    </div>
     <div class="arrow"></div>
     <div class="blog-title show-buttons">
         <div class="right_box"><div class="button-group">
@@ -909,13 +913,13 @@ function initBlogPage() {
     </h2>
 </div>
 <div class="main">
-	<div class="blog_post_content" style="text-align:center">
+    <div class="blog_post_content" style="text-align:center">
         <p>Go to <b><i class="fa fa-user"></i> ${name}</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
         <br><br>Or click <div class="button-group"><a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a></div> to create one now and start talking!
     </div>
-	<div class="information_box">
-		<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views <b>·</b>
-	</div>
+    <div class="information_box">
+        <a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views <b>·</b>
+    </div>
 </div>`);
 }
 
@@ -1020,7 +1024,7 @@ function makeReplacePopup(controller) {
                 <button data-click="replaceAll" type="button" class="styled_button">Replace All</button>`);
   addDelegatedEvent(pop.content, '[data-click]', 'click', (e, target) => events[target.dataset.click]());
   addDelegatedEvent(pop.content, '[data-change]', 'change', (e, target) => events[target.dataset.change]());
-  
+
   let nextStart = 0;
   const events = {
     reset: _ => {
@@ -1070,7 +1074,7 @@ function makeReplacePopup(controller) {
       if (finder.value.length) controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
     }
   };
-  
+
   pop.Show();
 }
 
@@ -1373,7 +1377,7 @@ function addCss() {
         color_section_background = light ? emoji_focus_background : '#5d3a7d',
         color_section_foreground = light ? '#555' : '#c6c6ff',
         color_section_border = light ? '#ccc' : '#5824ae';
-  
+
   updateStyle(`
 /*Footer overflow fix*/
 div.footer { height: auto !important;}
@@ -1415,7 +1419,7 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
 #user_page_editing_toolbar .modules li i {
     font-size: 30px;
     line-height: 35px;
-	  float: left;}
+      float: left;}
 #user_page_editing_toolbar .modules li {
     flex-grow: 1;
     vertical-align: middle;
@@ -1437,12 +1441,12 @@ ${light ? '' : `
     text-shadow: 1px 1px #32529e;}
 
 .toggleable-radio {
-	border: 1px solid #0a0d10;
-	background: #1a2029;}
+    border: 1px solid #0a0d10;
+    background: #1a2029;}
 .toggleable-radio label {
-	color: #fff;
-	text-shadow: 1px 1px #191e27;
-	border-right: 1px solid #0a0d10;}
+    color: #fff;
+    text-shadow: 1px 1px #191e27;
+    border-right: 1px solid #0a0d10;}
 .toggleable-radio label:hover {background: #000;}
 
 /*fix loader colours in dark mode*/
@@ -1521,17 +1525,17 @@ ${light ? '' : `
 
 /*Differentiate blog posts*/
 .distinguish .feed > li.feed_group_item .avatar {
-	left: auto;
-	right: -90px;}
+    left: auto;
+    right: -90px;}
 .distinguish .feed > li.feed_group_item .arrow {
-	border-left: 11px solid #d6d2cb;
-	border-right: 11px solid transparent;
-	left: auto;
-	right: -24px;}
+    border-left: 11px solid #d6d2cb;
+    border-right: 11px solid transparent;
+    left: auto;
+    right: -24px;}
 .distinguish .feed > li.feed_group_item .arrow .inner_arrow {
-	border-right: 12px solid transparent;
-	border-left: 12px solid #fff;
-	left: -13px;}
+    border-right: 12px solid transparent;
+    border-left: 12px solid #fff;
+    left: -13px;}
 .distinguish .feed > li.feed_group_item.new .arrow .inner_arrow {
   border-left: 12px solid #fffbe0;}
 
@@ -2129,21 +2133,21 @@ function addBannerCss() {
   .pin_userbar #main_banner[data-userpage] {top: -210px;}
   .pin_userbar.pin_nav_bar #main_banner {top: -100px;}
   .pin_userbar.pin_nav_bar #main_banner[data-userpage] {top: -180px;}
-  
+
   .pin_userbar.titleHidden #main_banner {top: -40px;}
   .pin_userbar.titleHidden #main_banner[data-userpage] {top: -110px;}
   .pin_userbar.pin_nav_bar.titleHidden #main_banner {top: 10px;}
   .pin_userbar.pin_nav_bar.titleHidden #main_banner[data-userpage] {top: -60px;}
-  
+
   .pin_nav_bar.fix_switcher #banner-switcher,
   .pin_nav_bar.fix_feed .feed-toolbar {top: 45px;}
-  
+
   .pin_userbar.fix_switcher #banner-switcher,
   .pin_userbar.fix_feed .feed-toolbar {top: 50px;}
-  
+
   .pin_nav_bar.pin_userbar.fix_switcher #banner-switcher,
   .pin_nav_bar.pin_userbar.fix_feed .feed-toolbar {top: 90px;}
-  
+
   .pin_nav_bar #chapter_toolbar_container[data-fixed] {top: 3rem;}
   .pin_userbar #chapter_toolbar_container[data-fixed] {top: 2.7rem;}
   .pin_nav_bar.pin_userbar #chapter_toolbar_container[data-fixed] {top: 5.5875rem !important;}
@@ -3094,20 +3098,20 @@ function toComponents(color) {
 
 
 function FancyFeedsController() {
-  
+
   let computedUnreadCount = 0;
   let unreadCount = getUnreadCount();
-  
+
   let feedRead = getFeedRead();
-  
+
   function getFancyFeeds() {return settingsMan.int('feed_compressed', 0);}
 
   function getSimpleFeeds() {return settingsMan.bool('simple_feeds', true);}
   function getDistinguishedFeeds() {return settingsMan.bool('distinguished_feeds', false);}
-  
+
   function getFeedRead() {return settingsMan.int('feedRead', 0);}
   function getUnreadCount() {return settingsMan.int('unread_count', 0);}
-  
+
   function setUnreadCount(count, sender) {
     count = Math.max(0, count);
     unreadCount = count;
@@ -3118,13 +3122,13 @@ function FancyFeedsController() {
       sender.dataset.count = count;
     }
   }
-  
+
   function updateFeedUi() {
     document.body.classList.toggle("compressed", getFancyFeeds() > 0);
     document.body.classList.toggle("distinguish", getDistinguishedFeeds());
     document.body.classList.toggle('simplified', getSimpleFeeds());
   }
-  
+
   function getNewFeedOptions() {
     const checkof = (icon, title, input) => `<li>
         <label>
@@ -3161,28 +3165,28 @@ function FancyFeedsController() {
     const timestamp = feedRead;
     settingsMan.set('feedRead', t.dataset.timestamp, 0);
     const fancy = getFancyFeeds() == 2;
-    
+
     let count = 0;
-    
+
     all('.feed_item:not(.touched)', item => {
       const neu = parseInt(item.dataset.timestamp) > timestamp;
       const worth = item.querySelectorAll('.group_stories ul > li').length || 1;
-      
+
       item.classList.toggle('expanded', fancy && neu);
       item.classList.toggle('new', neu && !item.classList.contains('marked'));
       item.classList.add('touched');
       item.dataset.worth = worth;
-      
+
       if (item.classList.contains('new')) count += worth;
-      
+
       if (!item.classList.contains('feed_group_item')) return;
       let group = item.querySelector('.group_stories');
       if (group) {
         const stories = getParsedStoryFeedItem(item);
         const kes = Object.keys(stories);
-        
+
         item.querySelector('.feed_header h1').lastChild.textContent = kes.length > 1 ? ` had ${kes.length} new stories added to it ` : ' had a new story added to it ';
-        
+
         group.innerHTML = `<span class="complex">${group.innerHTML}</span><span class="simple"></span>`;
         group = group.lastChild;
         kes.forEach(title => {
@@ -3195,7 +3199,7 @@ function FancyFeedsController() {
         });
       }
     });
-    
+
     computedUnreadCount += count;
     if (computedUnreadCount > unreadCount) setUnreadCount(count, markAllRead);
   }
@@ -3218,7 +3222,7 @@ function FancyFeedsController() {
     });
     return stories;
   }
-  
+
   return {
     initUnreadCount: _ => {
       const count = document.querySelector('.feed-link.new div');
@@ -3230,7 +3234,7 @@ function FancyFeedsController() {
     replaceFeedUI: _ => {
       const options = document.querySelector('#feed-options');
       if (options) {
-        const toggle = document.querySelector('[data-click="toggleOptions"]');
+        const toggle = document.querySelector('.feed-toolbar .drop-down-expander');
         toggle.parentNode.removeChild(toggle);
         options.insertAdjacentHTML('afterend', getNewFeedOptions());
         options.parentNode.removeChild(options);
@@ -3245,7 +3249,7 @@ function FancyFeedsController() {
     },
     fixFeedOptions: function() {
       this.initFeedItems();
-      
+
       FeedController.prototype.changeCompactMode = function(c, d, sender) {
         this.column.classList.toggle("compressed", false);
         LocalStorageSet("feed_compressed", sender.value);
@@ -3294,7 +3298,7 @@ function Animator() {
   let listenerCount = 0;
   let callbacks = {};
   let running = false;
-  
+
   function animate() {
     const scroll = window.scrollY;
     if (scroll != lastScroll) {
@@ -3373,7 +3377,7 @@ function BannerCreditsController(controller) {
       if (!bannerController.getEnabled()) return;
       document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
-      
+
       build();
 
       addDelegatedEvent(document.querySelector('#banner-archive'), '[data-change]', 'change', (e, target) => {
@@ -3387,7 +3391,7 @@ function BannerCreditsController(controller) {
 
 function BannerController(sets) {
   let preloader, home_link, source_link;
-  
+
   const done = e => e.target.parentNode.removeChild(e.target);
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
 
@@ -3410,7 +3414,7 @@ function BannerController(sets) {
 
   function updateBannerScroll(position) {
     if (!home_link) return;
-    
+
     let top = offset(home_link).top;
     const off = (position && position.class === 'Pos') ? position : (banners[theme].position || {
       'position-x': window.innerWidth < 1000 ? 'left' : 'center',
@@ -3418,17 +3422,17 @@ function BannerController(sets) {
       'x': -150,
       'y': 0
     });
-    
+
     if (window.scrollY < top | window.scrollY - 1 >= top + home_link.offsetHeight) {
       home_link.style.backgroundPosition = off.class ? off : '';
       return;
     }
 
     top = (window.scrollY - top) * 0.6;
-    
+
     let fX = off['position-x'], fY = off['position-y'];
     let X = fX != 'center' ? `${off.x}px ` : '', Y = off.y;
-    
+
     if (fY === 'center') {
       Y = `calc(50% + ${top}px)`;
       fY = 'top';
@@ -3436,10 +3440,10 @@ function BannerController(sets) {
       if (fY === 'bottom') top = -top;
       Y = `${Y + top}px`;
     }
-    
+
     home_link.style.backgroundPosition = `${fX} ${X}${fY} ${Y}`;
   }
-  
+
   function computeAppropriateHeight(header) {
     const el = header.querySelector('ul.tabs, ul.tags');
     return el ? el.offsetTop + el.offsetHeight + 30 : 255;
@@ -3513,14 +3517,14 @@ function BannerController(sets) {
     build: function() {
       settingsMan.flag('banners', true);
       addBannerCss();
-      
+
       let mainBanner = document.querySelector('#main_banner');
       if (mainBanner) return;
-      
+
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
-      
+
       if (getTitleHidden()) document.body.classList.add("titleHidden");
-      
+
       userToolbar.parentNode.insertAdjacentHTML('afterend', `<div id="main_banner">
         <header class="header">
               <div id="title" class="title">
@@ -3538,9 +3542,9 @@ function BannerController(sets) {
       </div>`);
       mainBanner = document.querySelector('#main_banner');
       mainBanner.appendChild(userToolbar);
-      
+
       const subHeader = document.querySelector('.user-page-header, .story-page-header');
-      
+
       if (subHeader) {
         mainBanner.dataset.userpage = true;
         mainBanner.insertAdjacentElement('afterbegin', subHeader);
@@ -3554,7 +3558,7 @@ function BannerController(sets) {
         window.addEventListener('DOMContentLoaded', readyBannerAnim);
         requestAnimationFrame(readyBannerAnim);
       }
-      
+
       home_link = document.querySelector('#title a.home_link');
       source_link = document.querySelector('#title #source_link');
       addDelegatedEvent(mainBanner, 'a[data-action]', 'click', (e, target) => {
@@ -3570,7 +3574,7 @@ function BannerController(sets) {
       }
       this.finalise();
       requestAnimationFrame(() => userToolbar.classList.add('transitionable'));
-      
+
       window.addEventListener('focus', () => {
         const id = this.getCurrentId();
         if (id > -1) this.pick(id);
@@ -3600,16 +3604,16 @@ function BannerController(sets) {
         userToolbar.style.background = `linear-gradient(to bottom, ${toZeroAlpha(color)} 0%, ${color} 85%)`;
         addBannerCss();
       }
-      
+
       if (!home_link) return;
       home_link.style.backgroundImage = `url('${img}')`;
       home_link.style.backgroundSize = pos ? '1300px' : '';
       home_link.style.backgroundPosition = pos || '';
-      
+
       source_link.classList.toggle('hidden', !(source && source.length));
       source_link.href = source;
       source_link.title = source;
-      
+
       if (this.getFancy()) updateBannerScroll(pos);
     }
   };
@@ -3619,9 +3623,9 @@ function Slider() {
   const slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000],
         slideLabels = ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"];
   let fade, tit, slideshowTimer, me;
-  
+
   const blacklistBanners = 0;
-  
+
   const img = document.createElement('IMG');
   img.addEventListener('load', () => {
     me.goto(theme);
@@ -3736,8 +3740,8 @@ function snowBG(env, container, reverse, fix) {
   let ticker;
 
   const scene = new THREE.Scene();
-  scene.add(camera);
   const camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
+  scene.add(camera);
   camera.position.z = 1000;
 
   const renderer = new THREE.CanvasRenderer();
@@ -3746,7 +3750,7 @@ function snowBG(env, container, reverse, fix) {
   const material = new THREE.ParticleBasicMaterial({
     map: new THREE.Texture(newEl(`<img src="${staticFimFicDomain()}/scripts/img/ParticleSmoke.png">`))
   });
-  
+
   const particles = arrayOf(140, _ => new Particle3D(scene, material));
 
   if (fix) {
@@ -3762,7 +3766,7 @@ function snowBG(env, container, reverse, fix) {
 
   window.addEventListener('focus', () => window_focused = true);
   window.addEventListener('blur', () => window_focused = false);
-  
+
   const tick = () => {
     if (!window_focused && saveFocus) return;
     particles.forEach(particle => particle.updatePhysics());
@@ -3771,7 +3775,7 @@ function snowBG(env, container, reverse, fix) {
     camera.lookAt(scene.position);
     renderer.render(scene, camera);
   };
-  
+
   return {
     setSave: v => saveFocus = v,
     start: function () {
