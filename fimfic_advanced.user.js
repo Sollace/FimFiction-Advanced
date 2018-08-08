@@ -7,11 +7,11 @@
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/settings_man.core.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/sweetie_scepter.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
