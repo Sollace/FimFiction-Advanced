@@ -1,22 +1,22 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.1
+// @version     4.4.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
-// @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/Events.user.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/settings_man.core.js
+// @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/sweetie_scepter.core.js
 // @grant       none
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.1',
+const VERSION = '4.4.3',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -153,7 +153,7 @@ patchEvents();
 //Run it a second time in global scope to ensure greasmonkey doesn't mess with the context
 window.override = override;
 RunScript(patchEvents, true);
-earlyStart();
+
 ready(() => {
   if (!document.querySelector('.body_container')) return;
   const start = (new Date()).getTime();
@@ -177,6 +177,13 @@ ready(() => {
     console.error(e);
   }
 });
+
+try {
+  earlyStart();
+} catch (e) {
+  console.error(`FimficAdv: Unhandled Exception in Early Init`);
+  console.error(e);
+}
 
 function ready(func) {
   document.addEventListener('DOMContentLoaded', func);
@@ -227,7 +234,7 @@ function initGlobals() {
 
 function earlyStart() {
   (function css() {
-    if (document.body) {
+    if (document.body && document.querySelector('#stylesheetMain')) {
       addCss();
 
       if (bannerController.getEnabled()) {
@@ -271,7 +278,7 @@ function initFimFictionAdvanced() {
   initBBCodeController();
 
   if (getBlockLightbox()) lightboxblocker();
-  document.body.classList.toggle('pin_userbar', getPinUserbar());
+  
   bannerController.initFancy();
   if (CURRENT_LOCATION.indexOf('feed') == 0) {
     applyFeedFix();
@@ -332,7 +339,7 @@ function buildSettingsTab(tab) {
   tab.StartEndSection("Banners");
   tab.AddCheckBox("eb", "Enable Banners", bannerController.getEnabled()).addEventListener('change', compose(bannerController.setEnabled, updateBannersOptions));
   tab.AddCheckBox("fancyB", "Enable Fancy Banners", bannerController.getFancy()).addEventListener('change', bannerController.setFancy);
-  tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', setPinUserbar);
+  tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', e => setPinUserbar(e.target.checked));
   tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', setTitleHidden);
   const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", slider.labels(), slider.getSlide());
   enableSlide.addEventListener('change', e=> slider.setSlide(e, updateSliderOptions));
@@ -657,6 +664,9 @@ function removeAnnoyances() {
     const wrapper = a.nextSibling;
     if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
     wrapper.insertAdjacentElement('afterbegin', a);
+    if (wrapper.nextElementSibling.classList.contains('patreon-reminder')) {
+      wrapper.insertAdjacentElement('beforeend', wrapper.nextElementSibling);
+    }
   });
 
   addDelegatedEvent(document.body, '.ad-wrapper [data-click="hideAd"]', 'click', (e, sender) => {
@@ -930,7 +940,7 @@ function startCommentHandler() {
     let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
     all('.comment', bbcode, a => a.parentNode.removeChild(a));
     all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
-    bbcode = (new HTMLToBBCode()).convert(bbcode.innerHTML.trim());
+    bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
     const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
     const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote]\n${bbcode}\n[/quote]\n`;
 
@@ -1597,6 +1607,7 @@ ${getFixAds() ? `
 .ad-wrapper {
   text-align: center;
   overflow: hidden;
+  line-height: 1.4em;
 }
 .ad-wrapper.collapse {
   height: 0;
@@ -1653,17 +1664,6 @@ ${getFixAds() ? `
 .format-toolbar .emoji-selector .emoji-selector__list > li img {margin-top: 5px;}
 
 .story-page-header > .inner h1 a, .user-page-header > .inner h1 a:hover {text-decoration: none;}
-
-/*Better Feed End Marker*/
-#feed_end_marker img { display: none; }
-#feed_end_marker::before {
-    display: inline-block;
-    content: '';
-    font-family: FontAwesome;
-    font-size: 66px;
-    color: ${container_foreground};
-    -webkit-animation: fa-spin 2s infinite linear;
-    animation: fa-spin 2s infinite linear;}
 
 /*For snow in the background*/
 body > canvas ~ .body_container .nav_bar,
@@ -2131,7 +2131,7 @@ function addBannerCss() {
     z-index: 10;
   }
   .pin_userbar #main_banner[data-userpage] {top: -210px;}
-  .pin_userbar.pin_nav_bar #main_banner {top: -100px;}
+  .pin_userbar.pin_nav_bar #main_banner {top: -115px;}
   .pin_userbar.pin_nav_bar #main_banner[data-userpage] {top: -180px;}
 
   .pin_userbar.titleHidden #main_banner {top: -40px;}
@@ -2154,8 +2154,20 @@ function addBannerCss() {
 }
 
 .titleHidden #title {height: 80px !important;}
-.titleHidden .user-page-header ~ .user_toolbar > ul, .titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 11.5rem;}
+.titleHidden .user-page-header ~ .user_toolbar > ul,
+.titleHidden .story-page-header ~ .user_toolbar > ul {padding-left: 11.5rem;}
 .titleHidden header.header .theme_selector {line-height: 75px !important;}
+
+.pin_nav_bar.pin_userbar .user_toolbar > ul {
+  padding-left: 9.5rem;
+}
+
+.pin_userbar #pin_userbar .pin_link {
+  opacity: 1 !important;
+}
+body:not(.pin_userbar) #pin_userbar .pin_link {
+  opacity: 0.5 !important;
+}
 
 /*Banner preload*/
 #imagePreload {
@@ -2783,9 +2795,9 @@ function setFixAds(e) {
   }
 }
 function getPinUserbar() {return settingsMan.bool('pin_userbar', false);}
-function setPinUserbar(e) {
-  settingsMan.setB('pin_userbar', e.target.checked, false);
-  document.body.classList.toggle('pin_userbar', e.target.checked);
+function setPinUserbar(v) {
+  settingsMan.setB('pin_userbar', v, false);
+  document.body.classList.toggle('pin_userbar', v);
 }
 
 function getAlwaysShowImages() {return settingsMan.bool('unspoiler_images', true);}
@@ -3146,6 +3158,11 @@ function FancyFeedsController() {
           </button>
           <div id="feed-options" style="width:300px;" class="drop-down">
             <ul style="font-size:14px;">
+              <li><a data-click="changeViewMode" data-value="all"><i class="fa fa-globe"></i> All</a></li>
+              <li><a data-click="changeViewMode" data-value="stories"><i class="fa fa-book"></i> Stories</a></li>
+              <li><a data-click="changeViewMode" data-value="blogs"><i class="fa fa-file-text-o"></i> Blogs</a></li>
+              <li><a data-click="changeViewMode" data-value="groups"><i class="fa fa-group"></i> Groups</a></li>
+              <li class="divider"></li>
               ${checkof('newspaper-o', 'Social Site Posts', soc.outerHTML)}
               <li class="divider"></li>
               ${checkof('tasks', 'Group By Story', `<input ${getSimpleFeeds() ? 'checked=""' : ''} data-change="setSimpleFeeds" name="simple-feeds" type="checkbox">`)}
@@ -3523,8 +3540,15 @@ function BannerController(sets) {
 
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
 
-      if (getTitleHidden()) document.body.classList.add("titleHidden");
-
+      if (getTitleHidden()) document.body.classList.add('titleHidden');
+      if (getPinUserbar()) document.body.classList.add('pin_userbar');
+      
+      const pinLink = document.querySelector('.pin_link_container');
+      pinLink.insertAdjacentHTML('afterend', pinLink.outerHTML.replace('pin_nav_bar', 'pin_userbar'));
+      pinLink.nextSibling.addEventListener('click', () => {
+        setPinUserbar(!getPinUserbar());
+      });
+      
       userToolbar.parentNode.insertAdjacentHTML('afterend', `<div id="main_banner">
         <header class="header">
               <div id="title" class="title">
