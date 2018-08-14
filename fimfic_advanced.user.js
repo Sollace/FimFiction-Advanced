@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.3
+// @version     4.4.3b
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.3',
+const VERSION = '4.4.3b',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -110,7 +110,7 @@ const bannerController = new BannerController([
     Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
   ]},{ name: "Advanced", items: [
-    Ban2("sleeping_bath_bloom", "//derpibooru.org/262355", "#921B57"),
+    Ban2("discorded_applebloom", "//derpibooru.org/1735150", "#D0D3FC"),
     Ban2("flutterby_dash", "//derpibooru.org/250982", "#D771A4"),
     Ban2("mommy_derp", "//derpibooru.org/96418", "rgb(189,198,205)"),
     Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "#6E1414"),
