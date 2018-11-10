@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.3b
+// @version     4.4.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.3b',
+const VERSION = '4.4.4',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -2422,11 +2422,13 @@ ${light ? '' : `
   .user-page-header .patreon-sponsor-silver:before { content: "S";}
   .user-page-header .patreon-sponsor-bronze:before { content: "B";}
   .story-page-header {overflow: visible !important;}
+  .user-page-header .edit-link,
   .user-page-header .tabs li a, .user-page-header .tabs li a:before, .user-page-header .tabs li a span {
         color: #ccc !important;
         text-shadow: none !important;}
   .user-page-header .tabs li a::after {
         display: none;}
+  .user-page-header .edit-link,
   .user-page-header .tabs li a {
         transition: background 0.5s ease;
         border-radius: 4px;
@@ -2436,6 +2438,11 @@ ${light ? '' : `
         border: 1px solid #222 !important;
         text-shadow: -1px -1px rgba(0, 0, 0, 0.2) !important;}
   .user-page-header .tabs li a:hover {background: #353535 !important;}
+  .user-page-header .bio form input {
+        color: #d1d1d1;
+        background: #222;
+        border-color: #555;
+        text-shadow: 1px 1px rgba(101, 101, 101, 0.8);}
 }
 
 .story-page-header h1 .button-group .drop-down-expander,
