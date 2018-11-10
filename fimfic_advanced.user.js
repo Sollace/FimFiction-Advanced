@@ -3587,7 +3587,7 @@ function BannerController(sets) {
 
         window.addEventListener('resize', readyBannerAnim);
         window.addEventListener('DOMContentLoaded', readyBannerAnim);
-        requestAnimationFrame(readyBannerAnim);
+        setTimeout(readyBannerAnim, 500);
       }
 
       home_link = document.querySelector('#title a.home_link');
