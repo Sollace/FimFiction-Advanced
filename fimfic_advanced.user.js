@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.4
+// @version     4.4.5
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.4',
+const VERSION = '4.4.5',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -186,6 +186,9 @@ try {
 }
 
 function ready(func) {
+  if (this['App']) {
+      return func();
+  }
   document.addEventListener('DOMContentLoaded', func);
 }
 
@@ -2417,10 +2420,12 @@ ${light ? '' : `
         margin-top: 10px;
         display: inline-block;
         vertical-align: top;}
-  .user-page-header .patreon-sponsor::before { content: "P";}
-  .user-page-header .patreon-sponsor-gold:before { content: "G";}
-  .user-page-header .patreon-sponsor-silver:before { content: "S";}
-  .user-page-header .patreon-sponsor-bronze:before { content: "B";}
+  .user-page-header .patreon-sponsor::before {
+        display: none;}
+  .user-page-header .patreon-sponsor:after { content: "P";}
+  .user-page-header .patreon-sponsor-gold:after { content: "G";}
+  .user-page-header .patreon-sponsor-silver:after { content: "S";}
+  .user-page-header .patreon-sponsor-bronze:after { content: "B";}
   .story-page-header {overflow: visible !important;}
   .user-page-header .edit-link,
   .user-page-header .tabs li a, .user-page-header .tabs li a:before, .user-page-header .tabs li a span {
@@ -3492,6 +3497,8 @@ function BannerController(sets) {
         bannerScrollOn();
         updateBannerScroll();
       }
+      
+      all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
     getCurrent: function() {
       for (let d = document.cookie.split(';'), i = 0; i < d.length; i++) {
@@ -3544,8 +3551,6 @@ function BannerController(sets) {
 
       let mainBanner = document.querySelector('#main_banner');
       if (mainBanner) return;
-
-      all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
 
       if (getTitleHidden()) document.body.classList.add('titleHidden');
       if (getPinUserbar()) document.body.classList.add('pin_userbar');
