@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.5
+// @version     4.4.6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -276,13 +276,20 @@ function initFimFictionAdvanced() {
   applyBackground(getBGColor());
   applyCustomFont();
   applyChapterButtons();
-  if (isMyBlogPage()) initBlogPage();
+  
+  if (isMyBlogPage()) {
+    initBlogPage();
+  }
+  
   creditsController.buildAll();
   initBBCodeController();
 
-  if (getBlockLightbox()) lightboxblocker();
+  if (getBlockLightbox()) {
+    lightboxblocker();
+  }
   
   bannerController.initFancy();
+  
   if (CURRENT_LOCATION.indexOf('feed') == 0) {
     applyFeedFix();
     feeder.fixFeedOptions();
@@ -290,10 +297,21 @@ function initFimFictionAdvanced() {
   } else {
     feeder.initUnreadCount();
   }
-  if (getFixAds()) removeAnnoyances();
+  
+  if (getFixAds()) {
+    removeAnnoyances();
+  }
+  
   applyCodePatches();
-  if (slider.getSlide()) slider.updateSlide();
-  applySnowing(getBGSnow(), getSnowing());
+  
+  setTimeout(() => {
+    if (slider.getSlide()) {
+      slider.updateSlide();
+    }
+    
+    applySnowing(getBGSnow(), getSnowing());
+  }, 300);
+  
 }
 
 function registerEvents() {
@@ -2920,9 +2938,15 @@ function setBGSnow(e) {
 
 function applySnowing(g, v) {
   if (v < 2 && (v == 0 || DECEMBER)) {
-    if (snower) return snower.start();
+    if (snower) {
+      return snower.start();
+    }
+    
     const context = g ? document.querySelector('#title .home_link') : document.body;
-    if (context) snower = snowBG(document.body, context, g, !g).start();
+    
+    if (context) {
+      snower = snowBG(document.body, context, g, !g).start();
+    }
   } else if (snower) {
     snower.stop();
   }
@@ -3424,7 +3448,7 @@ function BannerController(sets) {
   const done = e => e.target.parentNode.removeChild(e.target);
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
 
-  if (CHRIST) sets.push({name: "Festive", items: [Ban("christmas.png", "", "#4c7e6e")]});
+  if (CHRIST) sets.push({name: "Festive", items: [Ban("christmas.png", "Merry Christmas!", "#4c7e6e")]});
   sets.forEach(set => banners.push.apply(banners, set.items));
 
   function preloadBanner(banner) {
