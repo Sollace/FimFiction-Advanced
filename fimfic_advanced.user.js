@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.6
+// @version     4.4.7
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.5',
+const VERSION = '4.4.7',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -959,11 +959,17 @@ function startCommentHandler() {
     const id = sender.dataset.commentId;
     sender = sender.closest('.comment');
     let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
+    
     all('.comment', bbcode, a => a.parentNode.removeChild(a));
     all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
+    
     bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
+    
+    let who = sender.querySelector('.author a.name').innerText;
+    who = who ? '=' + who.trim() : '';
+    
     const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
-    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote]\n${bbcode}\n[/quote]\n`;
+    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
 
     controller.insertText(e, !event.ctrlKey && !event.shiftKey);
     event.preventDefault();
