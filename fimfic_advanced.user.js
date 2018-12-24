@@ -836,10 +836,7 @@ function initBBCodeController() {
           <div class="color-selector" style="padding:10px">
             <div class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;">
               <b id="opacity_preview">
-                <span style="font-size:30px">The quick brown fox jumped over the lazy rabbit.</span>
-                <span style="font-size:20px">The quick brown fox jumped over the lazy rabbit.</span>
-                <span style="font-size:10px">The quick brown fox jumped over the lazy rabbit.</span>
-                <span style="font-size:5px">The quick brown fox jumped over the lazy rabbit.</span>
+                ${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}
               </b>
             </div>
             <div class="alpha">
@@ -1183,7 +1180,7 @@ function insertColor(controller) {
   pop.SetWidth(350);
   pop.content.insertAdjacentHTML('beforeend', `<div class="std" style="padding:10px;">
         <div id="color_preview" class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;" >
-            <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy rabbit.</span>`).join(' ')}</b>
+            <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}</b>
         </div>
         <input id="valid" type="hidden" value="0" name="valid"></input>
         <input id="color" type="text" placeholder="Text Colour"></input>
