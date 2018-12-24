@@ -827,6 +827,50 @@ function initBBCodeController() {
     sign: function(sender, event) {
       this.textarea.value = sign(this.textarea.value);
     },
+    showOpacityDialogue: function(sender, event) {
+      const pop = makePopup('Opacity', 'fa fa-tint');
+      pop.SetWidth(400);
+      pop.SetContent(`
+      <form>
+        <div class="std properties">
+          <div class="color-selector" style="padding:10px">
+            <div class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;">
+              <b id="opacity_preview">
+                <span style="font-size:30px">The quick brown fox jumped over the lazy rabbit.</span>
+                <span style="font-size:20px">The quick brown fox jumped over the lazy rabbit.</span>
+                <span style="font-size:10px">The quick brown fox jumped over the lazy rabbit.</span>
+                <span style="font-size:5px">The quick brown fox jumped over the lazy rabbit.</span>
+              </b>
+            </div>
+            <div class="alpha">
+                <input value="1" type="number" min="0" max="1" step="0.01">
+                <input value="1" type="range" max="1" step="0.01">
+            </div>
+          </div>
+        </div>
+        <div class="drop-down-pop-up-footer-right">
+          <button class="styled_button"><i class="fa fa-check"></i> Apply</button>
+        </div>
+      </form>`);
+      
+      const change = (e, target) => {
+        pop.content.querySelector('#opacity_preview').style.opacity = target.value;
+        
+        all('input', pop.content, a => a.value = target.value);
+      };
+      
+      addDelegatedEvent(pop.content, 'input', 'input', change);
+      addDelegatedEvent(pop.content, 'form', 'submit', (e, target) => {
+        e.preventDefault();
+        
+        const value = pop.content.querySelector('input').value;
+        this.insertTags(`[opacity=${value}]`, '[/opacity]');
+        
+        pop.Close();
+      });
+      
+      pop.Show();
+    },
     showIconPicker: function(sender, event) {
       const iconsHTML = match => icons.filter(a => !match.length || a.indexOf(match) > -1).map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
                         <div><span class="bookshelf-icon-element fa fa-${icon}" data-icon-type="font-awesome"></span></div>
@@ -1039,6 +1083,7 @@ function buildAdvancedButton(button, controller) {
     addOption(a, "Unordered List").dataset.click = 'makeUnorderedList';
     addOption(a, "Green Text").dataset.click = 'greentext';
     addOption(a, "Icon").dataset.click = 'showIconPicker';
+    addOption(a, "Opacity").dataset.click = 'showOpacityDialogue';
   });
   addOption(items, "Sign").dataset.click = 'sign';
   addOption(items, "Insert Direct Image").dataset.click = 'showAddDirectImage';
