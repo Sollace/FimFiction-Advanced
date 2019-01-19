@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.7
+// @version     4.4.8
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.7',
+const VERSION = '4.4.8',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -1469,6 +1469,11 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
 
 /*Dark Theme fix*/
 .user_toolbar > ul > li ul li ul ~ a::before {color: inherit !important;}
+
+/*Bookshelf z-index fix*/
+.story-top-toolbar .bookshelves li.selected {
+    z-index: 0 !important;
+}
 
 /*Background-gradient fix*/
 [fimfic_adv*=background] .topbar-shadow div.light-gradient {
