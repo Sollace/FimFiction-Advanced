@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.6
+// @version     4.4.8
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.5',
+const VERSION = '4.4.8',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -827,6 +827,47 @@ function initBBCodeController() {
     sign: function(sender, event) {
       this.textarea.value = sign(this.textarea.value);
     },
+    showOpacityDialogue: function(sender, event) {
+      const pop = makePopup('Opacity', 'fa fa-tint');
+      pop.SetWidth(400);
+      pop.SetContent(`
+      <form>
+        <div class="std properties">
+          <div class="color-selector" style="padding:10px">
+            <div class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;">
+              <b id="opacity_preview">
+                ${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}
+              </b>
+            </div>
+            <div class="alpha">
+                <input value="1" type="number" min="0" max="1" step="0.01">
+                <input value="1" type="range" max="1" step="0.01">
+            </div>
+          </div>
+        </div>
+        <div class="drop-down-pop-up-footer-right">
+          <button class="styled_button"><i class="fa fa-check"></i> Apply</button>
+        </div>
+      </form>`);
+      
+      const change = (e, target) => {
+        pop.content.querySelector('#opacity_preview').style.opacity = target.value;
+        
+        all('input', pop.content, a => a.value = target.value);
+      };
+      
+      addDelegatedEvent(pop.content, 'input', 'input', change);
+      addDelegatedEvent(pop.content, 'form', 'submit', (e, target) => {
+        e.preventDefault();
+        
+        const value = pop.content.querySelector('input').value;
+        this.insertTags(`[opacity=${value}]`, '[/opacity]');
+        
+        pop.Close();
+      });
+      
+      pop.Show();
+    },
     showIconPicker: function(sender, event) {
       const iconsHTML = match => icons.filter(a => !match.length || a.indexOf(match) > -1).map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
                         <div><span class="bookshelf-icon-element fa fa-${icon}" data-icon-type="font-awesome"></span></div>
@@ -959,11 +1000,17 @@ function startCommentHandler() {
     const id = sender.dataset.commentId;
     sender = sender.closest('.comment');
     let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
+    
     all('.comment', bbcode, a => a.parentNode.removeChild(a));
     all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
+    
     bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
+    
+    let who = sender.querySelector('.author a.name').innerText;
+    who = who ? '=' + who.trim() : '';
+    
     const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
-    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote]\n${bbcode}\n[/quote]\n`;
+    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
 
     controller.insertText(e, !event.ctrlKey && !event.shiftKey);
     event.preventDefault();
@@ -1033,6 +1080,7 @@ function buildAdvancedButton(button, controller) {
     addOption(a, "Unordered List").dataset.click = 'makeUnorderedList';
     addOption(a, "Green Text").dataset.click = 'greentext';
     addOption(a, "Icon").dataset.click = 'showIconPicker';
+    addOption(a, "Opacity").dataset.click = 'showOpacityDialogue';
   });
   addOption(items, "Sign").dataset.click = 'sign';
   addOption(items, "Insert Direct Image").dataset.click = 'showAddDirectImage';
@@ -1132,7 +1180,7 @@ function insertColor(controller) {
   pop.SetWidth(350);
   pop.content.insertAdjacentHTML('beforeend', `<div class="std" style="padding:10px;">
         <div id="color_preview" class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;" >
-            <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy rabbit.</span>`).join(' ')}</b>
+            <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}</b>
         </div>
         <input id="valid" type="hidden" value="0" name="valid"></input>
         <input id="color" type="text" placeholder="Text Colour"></input>
@@ -1421,6 +1469,11 @@ textarea[required] { box-shadow: 0px 0px 12px rgba(0, 0, 0, 0.07) inset;}
 
 /*Dark Theme fix*/
 .user_toolbar > ul > li ul li ul ~ a::before {color: inherit !important;}
+
+/*Bookshelf z-index fix*/
+.story-top-toolbar .bookshelves li.selected {
+    z-index: 0 !important;
+}
 
 /*Background-gradient fix*/
 [fimfic_adv*=background] .topbar-shadow div.light-gradient {
