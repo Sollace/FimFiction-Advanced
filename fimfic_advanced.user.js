@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.8
+// @version     4.4.9
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.8',
+const VERSION = '4.4.9',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -124,7 +124,8 @@ const bannerController = new BannerController([
     Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "#2E737A"),
     Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "#9E75A9"),
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0])
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0]),
+    Ban2("buttercupsaiyan_dash", "", "#4C7A7E", ["center",0,"top",0])
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
