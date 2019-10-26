@@ -202,18 +202,18 @@ function patchEvents() {
     return saved;
   }
   const ov = extend({}, window.EventTarget.prototype, {
-    addEventListener: function(ev, f, c) {
+    addEventListener(ev, f, c) {
       if (!this.eventListeners) this.eventListeners = {};
       if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
       this.eventListeners[ev].push(f);
       return ov.addEventListener.apply(this, arguments);
     },
-    removeEventListener: function(ev, f) {
+    removeEventListener(ev, f) {
       let l = this.getEventListeners(ev), i = l.indexOf(f);
       if (i > -1) l.splice(i, 1);
       return ov.removeEventListener.apply(this, arguments);
     },
-    removeEventListeners: function(event) {
+    removeEventListeners(event) {
       this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
     },
     getEventListeners: function(event) {
@@ -221,7 +221,7 @@ function patchEvents() {
     }
   });
   const of = extend({}, window.Function.prototype, {
-    bind: function(context) {
+    bind(context) {
       let result = of.bind.apply(this, arguments);
       result.unbound = this;
       result.context = context;
@@ -803,33 +803,33 @@ function registerCommentButtons(me, recurs) {
 
 function initBBCodeController() {
   extend(BBCodeEditorController.prototype, {
-    showColourPicker: function(sender, event) {
+    showColourPicker(sender, event) {
       event.preventDefault();
       betterColours(sender.parentNode, this);
     },
-    showSizePicker: function(sender, event) {
+    showSizePicker(sender, event) {
       event.preventDefault();
       if (!sender.parentNode.querySelector('div')) betterSizes(sender, this);
     },
-    showFimficAdv: function(sender, event) {
+    showFimficAdv(sender, event) {
       if (!sender.parentNode.querySelector('div')) buildAdvancedButton(sender, this);
     },
-    showAllColours: function(sender, event) {
+    showAllColours(sender, event) {
       initColourWindow(this, sender);
     },
-    showColourCreator: function(sender, event) {
+    showColourCreator(sender, event) {
       insertColor(this);
     },
-    right: function(sender, event) {
+    right(sender, event) {
       this.insertTag('right');
     },
-    figure: function(sender, event) {
+    figure(sender, event) {
       this.insertTags(`[figure=${sender.dataset.align}]`, '[/figure]');
     },
-    sign: function(sender, event) {
+    sign(sender, event) {
       this.textarea.value = sign(this.textarea.value);
     },
-    showOpacityDialogue: function(sender, event) {
+    showOpacityDialogue(sender, event) {
       const pop = makePopup('Opacity', 'fa fa-tint');
       pop.SetWidth(400);
       pop.SetContent(`
@@ -870,7 +870,7 @@ function initBBCodeController() {
       
       pop.Show();
     },
-    showIconPicker: function(sender, event) {
+    showIconPicker(sender, event) {
       const iconsHTML = match => icons.filter(a => !match.length || a.indexOf(match) > -1).map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
                         <div><span class="bookshelf-icon-element fa fa-${icon}" data-icon-type="font-awesome"></span></div>
                         <input type="radio" value="${icon}" style="display:none;" name="icon"></input>
@@ -893,16 +893,16 @@ function initBBCodeController() {
       });
       pop.Show();
     },
-    showAddDirectImage: function(sender, event) {
+    showAddDirectImage(sender, event) {
       makeImagePopup(this);
     },
-    find: function(sender, event) {
+    find(sender, event) {
       makeReplacePopup(this);
     },
-    blot: function(sender, event) {
+    blot(sender, event) {
       this.insertText(this.getSelection().replace(/[^\s\\]/g, "█"));
     },
-    greentext: function(sender, event) {
+    greentext(sender, event) {
       operateText(this, selected => {
         let toggle = true;
         selected = selected.map((line, i) => {
@@ -916,19 +916,19 @@ function initBBCodeController() {
         return selected;
       });
     },
-    makeUnorderedList: function(sender, event) {
+    makeUnorderedList(sender, event) {
       this.makeList((line,dotted,numbered,save) => {
         if (numbered) return save(line.replace(/\t\[b\]([0-9])*.\[\/b\] /g, '\t[b]·[/b] '));
         if (!dotted) return save(`\t[b]·[/b] ${line}`);
       });
     },
-    makeOrderedList: function(sender, event) {
+    makeOrderedList(sender, event) {
       this.makeList((line,dotted,numbered,save) => {
         if (dotted) return save(line.replace('\t[b]·[/b] ', `\t[b]${i + 1}.[/b] `));
         if (!numbered) return save(`\t[b]${i + 1}.[/b] ${line}`);
       });
     },
-    makeList: function(func) {
+    makeList(func) {
       operateText(this, selected => {
         let toggle = true;
         selected = selected.map((line, i) => {
@@ -1108,10 +1108,10 @@ function makeReplacePopup(controller) {
 
   let nextStart = 0;
   const events = {
-    reset: _ => {
+    reset() {
       nextstart = 0;
     },
-    find: _ => {
+    find() {
       const find = finder.value;
       if (!find.length) return;
       const text = controller.getText().substring(nextStart, controller.getText().length);
@@ -1129,7 +1129,7 @@ function makeReplacePopup(controller) {
       controller.textarea.selectionEnd = end;
       controller.textarea.focus();
     },
-    replace: _ => {
+    replace() {
       const find = finder.value;
       if (!find.length) return;
       const text = controller.getText();
@@ -3090,7 +3090,7 @@ function BG(name, css, source) {
     Type: { Key: '', param: '' },
     Css: css,
     Name: name,
-    Setup: function(blank, c, i) {
+    Setup(blank, c, i) {
       blank.children[1].innerHTML = name;
       blank.children[0].style.backgroundColor = c;
       blank.children[0].style.opacity = '0.8';
@@ -3332,14 +3332,14 @@ function FancyFeedsController() {
   }
 
   return {
-    initUnreadCount: _ => {
+    initUnreadCount() {
       const count = document.querySelector('.feed-link.new div');
       setUnreadCount(count ? count.innerText.trim() : 0);
     },
-    initFeedItems: _ => {
+    initFeedItems() {
       updateUnreadFeedItems(document.querySelector('#mark-read-button'));
     },
-    replaceFeedUI: _ => {
+    replaceFeedUI() {
       const options = document.querySelector('#feed-options');
       if (options) {
         const toggle = document.querySelector('.feed-toolbar .drop-down-expander');
@@ -3355,7 +3355,7 @@ function FancyFeedsController() {
       }
       updateFeedUi();
     },
-    fixFeedOptions: function() {
+    fixFeedOptions() {
       this.initFeedItems();
 
       FeedController.prototype.changeCompactMode = function(c, d, sender) {
@@ -3419,14 +3419,14 @@ function Animator() {
   }
 
   return {
-    on: (type, callback) => {
+    on(type, callback) {
       if (!callbacks[type]) listenerCount++;
       callbacks[type] = callback;
       document.addEventListener('animator', callback);
       listenerCount++;
       if (!running) animate();
     },
-    off: type => {
+    off(type) {
       if (!callbacks[type]) return;
       listenerCount--;
       if (listenerCount <= 0) listenerCount = 0;
@@ -3470,18 +3470,18 @@ function BannerCreditsController(controller) {
             </div>`);
   }
   return {
-    selectBanner: function(e, target) {
+    selectBanner(e, target) {
       controller.setCurrent(target.value);
       controller.finalise();
     },
-    switchSets: function(e, target) {
+    switchSets(e, target) {
       target = document.querySelector(`.banner-credits[data-group="${target.value}"]`);
       if (!target) return;
       target.parentNode.style.height = `${target.offsetHeight + 50}px`;
       const offset = parseInt(target.dataset.offset) * 100;
       all('.banner-credits', a => a.style.transform = `translateX(-${offset}%)`);
     },
-    buildAll: function() {
+    buildAll() {
       if (!bannerController.getEnabled()) return;
       document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
