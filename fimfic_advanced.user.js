@@ -499,10 +499,16 @@ function buildSettingsTab(tab) {
   }
 
   function repaintBannerButton(cban, banner) {
-    cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
-    cban.children[0].style.backgroundColor = banner.colour;
-    cban.style.backgroundImage = `url("${banner.url}")`;
-    cban.style.backgroundPosition = banner.position;
+    if (banner) {
+      cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
+      cban.children[0].style.backgroundColor = banner.colour;
+      cban.style.backgroundImage = `url("${banner.url}")`;
+      cban.style.backgroundPosition = banner.position;
+    } else {
+      cban.children[0].innerHTML = '';
+      cban.children[0].style.background = '#fff';
+      cban.style.backgroundImage = 'none';
+    }
   }
 
   function createCustomBannerPopup(cban) {
@@ -569,8 +575,7 @@ function buildSettingsTab(tab) {
           if (bannerController.getCurrent() == 'Custom') bannerController.pick(-1, true);
           customBannerindex = -1;
         }
-        cban.children[0].innerHTML = '';
-        cban.children[0].style.background = '#fff';
+        repaintBannerButton(cban, null);
         bannerController.finalise();
         pop.Close();
       });
@@ -2963,7 +2968,7 @@ function unsetCustomBanner() {
 function setCustomBanner(url, color, pos) {
   settingsMan.set("customBannerUrl", url);
   settingsMan.set("customBannerColor", color);
-  settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos.join(' ') : pos);
+  settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos : pos.join(' '));
 }
 
 function getLogo() {return settingsMan.int("oldLogo", 0);}
