@@ -686,8 +686,9 @@ function removeAnnoyances() {
     const wrapper = a.nextSibling;
     if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
     wrapper.insertAdjacentElement('afterbegin', a);
-    if (wrapper.nextElementSibling.classList.contains('patreon-reminder')) {
-      wrapper.insertAdjacentElement('beforeend', wrapper.nextElementSibling);
+    const reminder = wrapper.parentNode.querySelector('.ad-wrapper ~ .patreon-reminder')
+    if (reminder) {
+      wrapper.insertAdjacentElement('beforeend', reminder);
     }
   });
 
@@ -3579,11 +3580,7 @@ function BannerController(sets) {
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
     getCurrent: function() {
-      for (let d = document.cookie.split(';'), i = 0; i < d.length; i++) {
-        let a = d[i].split('=');
-        if (a[0].replace(/^\s+|\s+$/g, '') == 'selected_theme' && a[1].length) return unescape(a[1]);
-      }
-      return CHRIST ? 'christmas.png' : null;
+      return CHRIST ? 'christmas.png' : settingsMan.get('selected_theme');
     },
     getCurrentId: function() {
       const themeId = this.getCurrent();
@@ -3594,7 +3591,7 @@ function BannerController(sets) {
       return -1;
     },
     setCurrent: function(value) {
-      document.cookie = 'selected_theme=' + escape(value) + ';path=/';  
+      settingsMan.set('selected_theme', value, null);
     },
     getEnabled: function() {
       return settingsMan.bool('banners', true);
