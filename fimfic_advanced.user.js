@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.8
+// @version     4.4.9
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.8',
+const VERSION = '4.4.9',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -124,7 +124,8 @@ const bannerController = new BannerController([
     Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "#2E737A"),
     Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "#9E75A9"),
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0])
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0]),
+    Ban2("buttercupsaiyan_dash", "", "#4C7A7E", ["center",0,"top",0])
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
@@ -201,18 +202,18 @@ function patchEvents() {
     return saved;
   }
   const ov = extend({}, window.EventTarget.prototype, {
-    addEventListener: function(ev, f, c) {
+    addEventListener(ev, f, c) {
       if (!this.eventListeners) this.eventListeners = {};
       if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
       this.eventListeners[ev].push(f);
       return ov.addEventListener.apply(this, arguments);
     },
-    removeEventListener: function(ev, f) {
+    removeEventListener(ev, f) {
       let l = this.getEventListeners(ev), i = l.indexOf(f);
       if (i > -1) l.splice(i, 1);
       return ov.removeEventListener.apply(this, arguments);
     },
-    removeEventListeners: function(event) {
+    removeEventListeners(event) {
       this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
     },
     getEventListeners: function(event) {
@@ -220,7 +221,7 @@ function patchEvents() {
     }
   });
   const of = extend({}, window.Function.prototype, {
-    bind: function(context) {
+    bind(context) {
       let result = of.bind.apply(this, arguments);
       result.unbound = this;
       result.context = context;
@@ -498,10 +499,16 @@ function buildSettingsTab(tab) {
   }
 
   function repaintBannerButton(cban, banner) {
-    cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
-    cban.children[0].style.backgroundColor = banner.colour;
-    cban.style.backgroundImage = `url("${banner.url}")`;
-    cban.style.backgroundPosition = banner.position;
+    if (banner) {
+      cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
+      cban.children[0].style.backgroundColor = banner.colour;
+      cban.style.backgroundImage = `url("${banner.url}")`;
+      cban.style.backgroundPosition = banner.position;
+    } else {
+      cban.children[0].innerHTML = '';
+      cban.children[0].style.background = '#fff';
+      cban.style.backgroundImage = 'none';
+    }
   }
 
   function createCustomBannerPopup(cban) {
@@ -568,8 +575,7 @@ function buildSettingsTab(tab) {
           if (bannerController.getCurrent() == 'Custom') bannerController.pick(-1, true);
           customBannerindex = -1;
         }
-        cban.children[0].innerHTML = '';
-        cban.children[0].style.background = '#fff';
+        repaintBannerButton(cban, null);
         bannerController.finalise();
         pop.Close();
       });
@@ -685,8 +691,9 @@ function removeAnnoyances() {
     const wrapper = a.nextSibling;
     if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
     wrapper.insertAdjacentElement('afterbegin', a);
-    if (wrapper.nextElementSibling.classList.contains('patreon-reminder')) {
-      wrapper.insertAdjacentElement('beforeend', wrapper.nextElementSibling);
+    const reminder = wrapper.parentNode.querySelector('.ad-wrapper ~ .patreon-reminder')
+    if (reminder) {
+      wrapper.insertAdjacentElement('beforeend', reminder);
     }
   });
 
@@ -801,33 +808,33 @@ function registerCommentButtons(me, recurs) {
 
 function initBBCodeController() {
   extend(BBCodeEditorController.prototype, {
-    showColourPicker: function(sender, event) {
+    showColourPicker(sender, event) {
       event.preventDefault();
       betterColours(sender.parentNode, this);
     },
-    showSizePicker: function(sender, event) {
+    showSizePicker(sender, event) {
       event.preventDefault();
       if (!sender.parentNode.querySelector('div')) betterSizes(sender, this);
     },
-    showFimficAdv: function(sender, event) {
+    showFimficAdv(sender, event) {
       if (!sender.parentNode.querySelector('div')) buildAdvancedButton(sender, this);
     },
-    showAllColours: function(sender, event) {
+    showAllColours(sender, event) {
       initColourWindow(this, sender);
     },
-    showColourCreator: function(sender, event) {
+    showColourCreator(sender, event) {
       insertColor(this);
     },
-    right: function(sender, event) {
+    right(sender, event) {
       this.insertTag('right');
     },
-    figure: function(sender, event) {
+    figure(sender, event) {
       this.insertTags(`[figure=${sender.dataset.align}]`, '[/figure]');
     },
-    sign: function(sender, event) {
+    sign(sender, event) {
       this.textarea.value = sign(this.textarea.value);
     },
-    showOpacityDialogue: function(sender, event) {
+    showOpacityDialogue(sender, event) {
       const pop = makePopup('Opacity', 'fa fa-tint');
       pop.SetWidth(400);
       pop.SetContent(`
@@ -868,7 +875,7 @@ function initBBCodeController() {
       
       pop.Show();
     },
-    showIconPicker: function(sender, event) {
+    showIconPicker(sender, event) {
       const iconsHTML = match => icons.filter(a => !match.length || a.indexOf(match) > -1).map(icon => `<label class="bbcodeIcons" title="${normalise(icon)}">
                         <div><span class="bookshelf-icon-element fa fa-${icon}" data-icon-type="font-awesome"></span></div>
                         <input type="radio" value="${icon}" style="display:none;" name="icon"></input>
@@ -891,16 +898,16 @@ function initBBCodeController() {
       });
       pop.Show();
     },
-    showAddDirectImage: function(sender, event) {
+    showAddDirectImage(sender, event) {
       makeImagePopup(this);
     },
-    find: function(sender, event) {
+    find(sender, event) {
       makeReplacePopup(this);
     },
-    blot: function(sender, event) {
+    blot(sender, event) {
       this.insertText(this.getSelection().replace(/[^\s\\]/g, "█"));
     },
-    greentext: function(sender, event) {
+    greentext(sender, event) {
       operateText(this, selected => {
         let toggle = true;
         selected = selected.map((line, i) => {
@@ -914,19 +921,19 @@ function initBBCodeController() {
         return selected;
       });
     },
-    makeUnorderedList: function(sender, event) {
+    makeUnorderedList(sender, event) {
       this.makeList((line,dotted,numbered,save) => {
         if (numbered) return save(line.replace(/\t\[b\]([0-9])*.\[\/b\] /g, '\t[b]·[/b] '));
         if (!dotted) return save(`\t[b]·[/b] ${line}`);
       });
     },
-    makeOrderedList: function(sender, event) {
+    makeOrderedList(sender, event) {
       this.makeList((line,dotted,numbered,save) => {
         if (dotted) return save(line.replace('\t[b]·[/b] ', `\t[b]${i + 1}.[/b] `));
         if (!numbered) return save(`\t[b]${i + 1}.[/b] ${line}`);
       });
     },
-    makeList: function(func) {
+    makeList(func) {
       operateText(this, selected => {
         let toggle = true;
         selected = selected.map((line, i) => {
@@ -1106,10 +1113,10 @@ function makeReplacePopup(controller) {
 
   let nextStart = 0;
   const events = {
-    reset: _ => {
+    reset() {
       nextstart = 0;
     },
-    find: _ => {
+    find() {
       const find = finder.value;
       if (!find.length) return;
       const text = controller.getText().substring(nextStart, controller.getText().length);
@@ -1127,7 +1134,7 @@ function makeReplacePopup(controller) {
       controller.textarea.selectionEnd = end;
       controller.textarea.focus();
     },
-    replace: _ => {
+    replace() {
       const find = finder.value;
       if (!find.length) return;
       const text = controller.getText();
@@ -2961,7 +2968,7 @@ function unsetCustomBanner() {
 function setCustomBanner(url, color, pos) {
   settingsMan.set("customBannerUrl", url);
   settingsMan.set("customBannerColor", color);
-  settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos.join(' ') : pos);
+  settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos : pos.join(' '));
 }
 
 function getLogo() {return settingsMan.int("oldLogo", 0);}
@@ -3088,7 +3095,7 @@ function BG(name, css, source) {
     Type: { Key: '', param: '' },
     Css: css,
     Name: name,
-    Setup: function(blank, c, i) {
+    Setup(blank, c, i) {
       blank.children[1].innerHTML = name;
       blank.children[0].style.backgroundColor = c;
       blank.children[0].style.opacity = '0.8';
@@ -3330,14 +3337,14 @@ function FancyFeedsController() {
   }
 
   return {
-    initUnreadCount: _ => {
+    initUnreadCount() {
       const count = document.querySelector('.feed-link.new div');
       setUnreadCount(count ? count.innerText.trim() : 0);
     },
-    initFeedItems: _ => {
+    initFeedItems() {
       updateUnreadFeedItems(document.querySelector('#mark-read-button'));
     },
-    replaceFeedUI: _ => {
+    replaceFeedUI() {
       const options = document.querySelector('#feed-options');
       if (options) {
         const toggle = document.querySelector('.feed-toolbar .drop-down-expander');
@@ -3353,7 +3360,7 @@ function FancyFeedsController() {
       }
       updateFeedUi();
     },
-    fixFeedOptions: function() {
+    fixFeedOptions() {
       this.initFeedItems();
 
       FeedController.prototype.changeCompactMode = function(c, d, sender) {
@@ -3417,14 +3424,14 @@ function Animator() {
   }
 
   return {
-    on: (type, callback) => {
+    on(type, callback) {
       if (!callbacks[type]) listenerCount++;
       callbacks[type] = callback;
       document.addEventListener('animator', callback);
       listenerCount++;
       if (!running) animate();
     },
-    off: type => {
+    off(type) {
       if (!callbacks[type]) return;
       listenerCount--;
       if (listenerCount <= 0) listenerCount = 0;
@@ -3468,18 +3475,18 @@ function BannerCreditsController(controller) {
             </div>`);
   }
   return {
-    selectBanner: function(e, target) {
+    selectBanner(e, target) {
       controller.setCurrent(target.value);
       controller.finalise();
     },
-    switchSets: function(e, target) {
+    switchSets(e, target) {
       target = document.querySelector(`.banner-credits[data-group="${target.value}"]`);
       if (!target) return;
       target.parentNode.style.height = `${target.offsetHeight + 50}px`;
       const offset = parseInt(target.dataset.offset) * 100;
       all('.banner-credits', a => a.style.transform = `translateX(-${offset}%)`);
     },
-    buildAll: function() {
+    buildAll() {
       if (!bannerController.getEnabled()) return;
       document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
@@ -3578,11 +3585,7 @@ function BannerController(sets) {
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
     getCurrent: function() {
-      for (let d = document.cookie.split(';'), i = 0; i < d.length; i++) {
-        let a = d[i].split('=');
-        if (a[0].replace(/^\s+|\s+$/g, '') == 'selected_theme' && a[1].length) return unescape(a[1]);
-      }
-      return CHRIST ? 'christmas.png' : null;
+      return CHRIST ? 'christmas.png' : settingsMan.get('selected_theme');
     },
     getCurrentId: function() {
       const themeId = this.getCurrent();
@@ -3593,7 +3596,7 @@ function BannerController(sets) {
       return -1;
     },
     setCurrent: function(value) {
-      document.cookie = 'selected_theme=' + escape(value) + ';path=/';  
+      settingsMan.set('selected_theme', value, null);
     },
     getEnabled: function() {
       return settingsMan.bool('banners', true);
