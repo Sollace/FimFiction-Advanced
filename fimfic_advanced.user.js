@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.4.9
+// @version     4.4.10
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.4.9',
+const VERSION = '4.4.10',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -3210,8 +3210,6 @@ function FancyFeedsController() {
   let computedUnreadCount = 0;
   let unreadCount = getUnreadCount();
 
-  let feedRead = getFeedRead();
-
   function getFancyFeeds() {return settingsMan.int('feed_compressed', 0);}
 
   function getSimpleFeeds() {return settingsMan.bool('simple_feeds', true);}
@@ -3273,16 +3271,18 @@ function FancyFeedsController() {
   }
 
   function updateUnreadFeedItems(markAllRead) {
-    const t = document.querySelector('[data-timestamp]');
+    const t = document.querySelector('#feed [data-timestamp]');
     if (!t) return;
-    const timestamp = feedRead;
+    const timestamp = getFeedRead();
+    console.log("Old Feed read time:" + timestamp);
+    console.log("New Feed read time:" + t.dataset.timestamp);
     settingsMan.set('feedRead', t.dataset.timestamp, 0);
     const fancy = getFancyFeeds() == 2;
 
     let count = 0;
 
     all('.feed_item:not(.touched)', item => {
-      const neu = parseInt(item.dataset.timestamp) > timestamp;
+      const neu = parseFloat(item.dataset.timestamp) > timestamp;
       const worth = item.querySelectorAll('.group_stories ul > li').length || 1;
 
       item.classList.toggle('expanded', fancy && neu);
@@ -3372,7 +3372,6 @@ function FancyFeedsController() {
       };
       FeedController.prototype.markAllRead = function(sender) {
         setUnreadCount(0, sender);
-        feedRead = getFeedRead();
         all('.feed .new', t => {
           t.classList.add('marked');
           t.classList.remove('new');
