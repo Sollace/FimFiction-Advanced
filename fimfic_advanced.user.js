@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.5
+// @version     4.5.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -16,7 +16,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.5',
+const VERSION = '4.5.1',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -44,7 +44,7 @@ const backgroundImages = [
   BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/cloth.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
   BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png) fixed right,url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
   CBG('c', BG("Applejack", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png),url(${GITHUB}/backgrounds/aj.png) no-repeat fixed bottom right / 100% auto,url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231")),
-  CBG('kp', '60% 60%', BG("Rainbow Dash", `url(${GITHUB}/backgrounds/dash_0.png) top left -500px no-repeat, url(${GITHUB}/backgrounds/dash_0.png) bottom -30px right -500px no-repeat, url(${GITHUB}/backgrounds/dash_0.png) bottom 270px left -60px no-repeat`, "//up1ter.deviantart.com/")),
+  CBG('kp', '60% 60%', BG("Rainbow Dash", `url(${GITHUB}/backgrounds/dash_0.png) top left -500px no-repeat, url(${GITHUB}/backgrounds/dash_1.png) bottom -30px right -500px no-repeat, url(${GITHUB}/backgrounds/dash_2.png) bottom 270px left -60px no-repeat`, "//up1ter.deviantart.com/")),
   BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) fixed bottom -150px right -50px no-repeat, url(${GITHUB}/backgrounds/star.png)`),
   BG("School House", `url(${GITHUB}/backgrounds/house_0.png) bottom 100px left no-repeat, url(${GITHUB}/backgrounds/whispy2.png) top 30px center`),
   BG("Sky", `url(${GITHUB}/backgrounds/whispy.png) top 30px center, url(${GITHUB}/backgrounds/star.png) fixed`),
