@@ -25,7 +25,7 @@ switch ( LocalStorageGet( "background_image", "0" ) )
 	/images/custom_backgrounds/trees.png (GOT) = https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434
 	/images/custom_backgrounds/pinkie_choir.png
 	/images/custom_backgrounds/night_town.png
-	/images/custom_backgrounds/clouds.png
+	/images/custom_backgrounds/clouds.png (GOT)
 	/images/custom_backgrounds/apple_house.png (GOT)
 	/images/custom_backgrounds/day_town.png
 	/images/custom_backgrounds/rarity.png (GOT) = http://web.archive.org/web/20121112235744/http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751
