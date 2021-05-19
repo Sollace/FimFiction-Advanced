@@ -38,7 +38,7 @@ const backgroundPatterns = createBgManager('bgPattern', 'Background Pattern', [
   BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
   BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
   BG("Cloth (Dark)",`url(${GITHUB}/backgrounds/cloth_dark.png)`),
-  CBG('c', BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`)),
+  BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`),
   BG("Clouds", `url(${GITHUB}/backgrounds/whispy2.png) top 30px center`),
   BG("Wool", `url(${GITHUB}/backgrounds/wool.png)`),
   BG("Zecora",`url(${GITHUB}/backgrounds/zecora.png)`),
@@ -62,17 +62,18 @@ const backgroundImages = createBgManager('bgImg', 'Background Image', [
   BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
   BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
   BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
- // CBG('c', BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`)),
+ // BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`),
 
   BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_1.png) fixed right, url(${GITHUB}/backgrounds/twilight_2.png) fixed right`),
   BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
- // CBG('c', BG("Applejack", `url(${GITHUB}/backgrounds/aj.png) no-repeat bottom right / 500px auto`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231")),
+ // BG("Applejack", `url(${GITHUB}/backgrounds/aj.png) no-repeat bottom right / 500px auto`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231", {contain: true}),
   BG("Rainbow Dash", `url(${GITHUB}/backgrounds/rd.png) top 120px center`, "//up1ter.deviantart.com/"),
 
  // BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) fixed bottom -150px right -50px no-repeat, url(${GITHUB}/backgrounds/star.png)`),
  // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
- // CBG('d', BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`))
+ // BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`, '', {darken: true})
 ]);
+
 const icons = 'adjust;adn;align-center;align-justify;align-left;align-right;ambulance;anchor;android;angellist;angle-double-down;angle-double-left;angle-double-right;angle-double-up;angle-down;angle-left;angle-right;angle-up;apple;archive;area-chart;arrow-circle-down;arrow-circle-left;arrow-circle-o-down;arrow-circle-o-left;arrow-circle-o-right;arrow-circle-o-up;arrow-circle-right;arrow-circle-up;arrow-down;arrow-left;arrow-right;arrow-up;arrows;arrows-alt;arrows-h;arrows-v;asterisk;at;automobile;backward;ban;bank;bar-chart;bar-chart-o;barcode;bars;beer;behance;behance-square;bell;bell-o;bell-slash;bell-slash-o;bicycle;binoculars;birthday-cake;bitbucket;bitbucket-square;bitcoin;bold;bolt;bomb;book;bookmark;bookmark-o;briefcase;btc;bug;building;building-o;bullhorn;bullseye;bus;cab;calculator;calendar;calendar-o;camera;camera-retro;car;caret-down;caret-left;caret-right;caret-square-o-down;caret-square-o-left;caret-square-o-right;caret-square-o-up;caret-up;cc;cc-amex;cc-discover;cc-mastercard;cc-paypal;cc-stripe;cc-visa;certificate;chain;chain-broken;check;check-circle;check-circle-o;check-square;check-square-o;chevron-circle-down;chevron-circle-left;chevron-circle-right;chevron-circle-up;chevron-down;chevron-left;chevron-right;chevron-up;child;circle;circle-o;circle-o-notch;circle-thin;clipboard;clock-o;close;cloud;cloud-download;cloud-upload;cny;code;code-fork;codepen;coffee;cog;cogs;columns;comment;comment-o;comments;comments-o;compass;compress;copy;copyright;credit-card;crop;crosshairs;css3;cube;cubes;cut;cutlery;dashboard;database;dedent;delicious;desktop;deviantart;digg;dollar;dot-circle-o;download;dribbble;dropbox;drupal;edit;eject;ellipsis-h;ellipsis-v;empire;envelope;envelope-o;envelope-square;eraser;eur;euro;exchange;exclamation;exclamation-circle;exclamation-triangle;expand;external-link;external-link-square;eye;eye-slash;eyedropper;facebook;facebook-square;fast-backward;fast-forward;fax;female;fighter-jet;file;file-archive-o;file-audio-o;file-code-o;file-excel-o;file-image-o;file-movie-o;file-o;file-pdf-o;file-photo-o;file-picture-o;file-powerpoint-o;file-sound-o;file-text;file-text-o;file-video-o;file-word-o;file-zip-o;files-o;film;filter;fire;fire-extinguisher;flag;flag-checkered;flag-o;flash;flask;flickr;floppy-o;folder;folder-o;folder-open;folder-open-o;font;forward;foursquare;frown-o;futbol-o;gamepad;gavel;gbp;ge;gear;gears;gift;git;git-square;github;github-alt;github-square;gittip;glass;globe;google;google-plus;google-plus-square;google-wallet;graduation-cap;group;h-square;hacker-news;hand-o-down;hand-o-left;hand-o-right;hand-o-up;hdd-o;header;headphones;heart;heart-o;history;home;hospital-o;html5;ils;image;inbox;indent;info;info-circle;inr;instagram;institution;ioxhost;italic;joomla;jpy;jsfiddle;key;keyboard-o;krw;language;laptop;lastfm;lastfm-square;leaf;legal;lemon-o;level-down;level-up;life-bouy;life-buoy;life-ring;life-saver;lightbulb-o;line-chart;link;linkedin;linkedin-square;linux;list;list-alt;list-ol;list-ul;location-arrow;lock;long-arrow-down;long-arrow-left;long-arrow-right;long-arrow-up;magic;magnet;mail-forward;mail-reply;mail-reply-all;male;map-marker;maxcdn;meanpath;medkit;meh-o;microphone;microphone-slash;minus;minus-circle;minus-square;minus-square-o;mobile;mobile-phone;money;moon-o;mortar-board;music;navicon;newspaper-o;openid;outdent;pagelines;paint-brush;paper-plane;paper-plane-o;paperclip;paragraph;paste;pause;paw;paypal;pencil;pencil-square;pencil-square-o;phone;phone-square;photo;picture-o;pie-chart;pied-piper;pied-piper-alt;pinterest;pinterest-square;plane;play;play-circle;play-circle-o;plug;plus;plus-circle;plus-square;plus-square-o;power-off;print;puzzle-piece;qq;qrcode;question;question-circle;quote-left;quote-right;ra;random;rebel;recycle;reddit;reddit-square;refresh;remove;renren;reorder;repeat;reply;reply-all;retweet;rmb;road;rocket;rotate-left;rotate-right;rouble;rss;rss-square;rub;ruble;rupee;save;scissors;search;search-minus;search-plus;send;send-o;share;share-alt;share-alt-square;share-square;share-square-o;shekel;sheqel;shield;shopping-cart;sign-in;sign-out;signal;sitemap;skype;slack;sliders;slideshare;smile-o;soccer-ball-o;sort;sort-alpha-asc;sort-alpha-desc;sort-amount-asc;sort-amount-desc;sort-asc;sort-desc;sort-down;sort-numeric-asc;sort-numeric-desc;sort-up;soundcloud;space-shuttle;spinner;spoon;spotify;square;square-o;stack-exchange;stack-overflow;star;star-half;star-half-empty;star-half-full;star-half-o;star-o;steam;steam-square;step-backward;step-forward;stethoscope;stop;strikethrough;stumbleupon;stumbleupon-circle;subscript;suitcase;sun-o;superscript;support;table;tablet;tachometer;tag;tags;tasks;taxi;tencent-weibo;terminal;text-height;text-width;th;th-large;th-list;thumb-tack;thumbs-down;thumbs-o-down;thumbs-o-up;thumbs-up;ticket;times;times-circle;times-circle-o;tint;toggle-down;toggle-left;toggle-off;toggle-on;toggle-right;toggle-up;trash;trash-o;tree;trello;trophy;truck;try;tty;tumblr;tumblr-square;turkish-lira;twitch;twitter;twitter-square;umbrella;underline;undo;university;unlink;unlock;unlock-alt;unsorted;upload;usd;user;user-md;users;video-camera;vimeo-square;vine;vk;volume-down;volume-off;volume-up;warning;wechat;weibo;weixin;wheelchair;wifi;windows;won;wordpress;wrench;xing;xing-square;yahoo;yelp;yen;youtube;youtube-play;youtube-square'.split(';');
 const logos = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO);
 var banners = [];
@@ -417,7 +418,6 @@ function buildSettingsTab(tab) {
     }
 
     setBGColor(me.value);
-    applyBackground();
     all('.toolbar', tab.container, a => a.style.backgroundColor = getOrDefaultBGColor());
   });
 
@@ -1404,15 +1404,15 @@ function addColorTiles(colors) {
 }
 
 function getLogoNames() {
-  return logos.filter(l => l.Able).map(l => l.Name);
+  return logos.filter(l => l.able).map(l => l.name);
 }
 
 function pickNextLogo() {
-  return pickNext(logos.map((l,i) => [l, i]).filter(l => l[0].Able).map(l => l[1]));
+  return pickNext(logos.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
 }
 
 function getLogoUrl(val) {
-  return logos[val == -1 ? pickNextLogo() : val < 0 || val >= logos.length ? 0 : val].Css;
+  return logos[val == -1 ? pickNextLogo() : val < 0 || val >= logos.length ? 0 : val].css;
 }
 
 function addExtraToolbarLinks(e) {
@@ -3023,12 +3023,11 @@ function setTitleHidden(e) {
 }
 
 function getBGColor() {return settingsMan.get("bgColor", 'transparent');}
+function setBGColor(c) {settingsMan.set("bgColor", c, 'transparent');applyBackground();}
 function getOrDefaultBGColor() {
   const col = getBGColor();
   return !col || col == 'transparent' ? rgb2hex(window.getComputedStyle(document.body).backgroundColor) : col;
 }
-function setBGColor(c) {settingsMan.set("bgColor", c, 'transparent');return c;}
-function getBGIndex() {return settingsMan.int("bgImg", -1);}
 
 function applyBackground() {
   let c = getBGColor();
@@ -3048,75 +3047,23 @@ function applyBackground() {
   }
 
   bodc.style.background = `${[
-    img.Css || img || '',
-    pattern.Css || pattern || ''
+    img.css || img || '',
+    pattern.css || pattern || ''
   ].filter(s => s.length).join()} ${c}`;
 
   document.body.dataset.baseColor = c;
   c = window.getComputedStyle(bodc).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
 
-  if (brightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.Type.Key.indexOf('d') != -1)) {
+  if (brightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
     all('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1', a => a.classList.add('bright'));
   } else {
     all('.bright', a => a.classList.remove('bright'));
   }
 }
 
-function createBgManager(key, name, backgrounds) {
-  backgrounds.forEach((a, i) => {
-    a.apply = function() {
-      settingsMan.set(key, i, -1);
-      applyBackground();
-    };
-  });
-  
-  function populateDefaultSelect(element, title, bgimg, callback) {
-    element.children[1].innerHTML = title;
-    element.children[0].style.backgroundColor = getOrDefaultBGColor();
-    element.children[0].style.opacity = 0.8;
-    element.style.backgroundImage = bgimg;
-    element.addEventListener('click', callback);
-  }
-
-  return {
-    getIndex() {
-      return settingsMan.int(key, -1);
-    },
-    set(index) {
-      settingsMan.set(key, index, -1);
-    },
-    get() {
-      let index = this.getIndex();
-      if (index == -1) return 'none';
-      if (index < 0) return '';
-      return backgrounds[index % backgrounds.length];
-    },
-    createPresetSelect(tab) {
-      let select = tab.AddPresetSelect(key, name, true, 0);
-
-      backgrounds.forEach((a, i) => select.add(el => {
-        a.Setup(el, getOrDefaultBGColor(), i);
-        el.addEventListener('click', a.apply);
-      }));
-
-      addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
-        const other = select.element.querySelector('.premade_settings_selected');
-        if (other) {
-          other.classList.remove('premade_settings_selected');
-        }
-        target.classList.add('premade_settings_selected');
-      });
-
-      const bgIndex = select.element.querySelector(`[data-index="${this.getIndex()}"]`);
-      if (bgIndex) {
-        bgIndex.classList.add('premade_settings_selected');
-      }
-    }
-  };
-}
-
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 
+function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
 function Ban(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos);}
 function Ban2(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos);}
@@ -3148,49 +3095,6 @@ function Pos(poss) {
   result['position-y'] = poss[i++];
   if (poss[i] != 'center') result['y'] = poss[i];
   return result;
-}
-
-function CBG(type, p, bg2) {
-  if (typeof(p) !== 'string') return CBG(type, '', p);
-  bg2.Type = { Key: type, param: p };
-  return bg2;
-}
-
-function BG(name, css, source) {
-  const words = ['top','left','right','bottom','center'];
-  return {
-    Able: typeof (name) == 'string',
-    Type: { Key: '', param: '' },
-    Css: css,
-    Name: name,
-    Setup(blank, c, i) {
-      blank.children[1].innerHTML = name;
-      blank.children[0].style.backgroundColor = c;
-      blank.children[0].style.opacity = '0.8';
-      var css = this.Css.replace(/ fixed/g, "");
-      if (this.Type.Key.indexOf('k') != -1) {
-        css = css.split(' ').map(a => {
-          return words.indexOf(a) > -1;
-        }).join(' ');
-      }
-      blank.style.background = css;
-      blank.dataset.bgIndex = i;
-      if (this.Type.Key.indexOf('p') == -1) {
-        blank.style.backgroundPosition = "center center";
-      }
-      if (this.Type.Key.indexOf('c') != -1) {
-        blank.style.backgroundSize = 'contain';
-      } else if (this.Type.Key.indexOf('k') != -1) {
-        blank.style.backgroundSize = this.Type.param;
-      } else {
-        blank.style.backgroundSize = 'cover';
-      }
-      if (source) {
-        blank.style.position = 'relative';
-        blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${source}" >Source</a>`);
-      }
-    }
-  }
 }
 
 //--------------------------------------UTIL FUNCTIONS-----------------------------------------------
@@ -3270,6 +3174,73 @@ function toComponents(color) {
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 
+function createBgManager(key, name, backgrounds) {
+  const ALIGNMENTS = ['top','left','right','bottom','center'];
+
+  function populateDefaultSelect(element, title, bgimg, callback) {
+    element.children[1].innerHTML = title;
+    element.children[0].style.backgroundColor = getOrDefaultBGColor();
+    element.children[0].style.opacity = 0.8;
+    element.style.backgroundImage = bgimg;
+    element.addEventListener('click', callback);
+  }
+  function populateSelect(item, blank, color, index) {
+    blank.children[1].innerHTML = item.name;
+    blank.children[0].style.backgroundColor = color;
+    blank.children[0].style.opacity = '0.8';
+
+    var css = item.css.replace(/ fixed/g, "");
+    if (item.attributes.custom) {
+      css = css.split(' ').filter(a => ALIGNMENTS.indexOf(a) > -1).join(' ');
+    }
+
+    blank.style.background = css;
+    blank.dataset.bgIndex = index;
+    if (item.attributes.center) {
+      blank.style.backgroundPosition = "center center";
+    }
+    blank.style.backgroundSize = item.attributes.contain ? 'contain' : item.attributes.custom || 'cover';
+    if (item.source) {
+      blank.style.position = 'relative';
+      blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}" >Source</a>`);
+    }
+    
+    blank.addEventListener('click', () => {
+      settingsMan.set(key, index, -1);
+      applyBackground();
+    });
+  }
+
+  function getIndex() {
+    return Math.min(backgrounds.length - 1, Math.max(settingsMan.int(key, -1), 0));
+  }
+  
+  return {
+    get() {
+      return backgrounds[getIndex()];
+    },
+    createPresetSelect(tab) {
+      let select = tab.AddPresetSelect(key, name, true, 0);
+
+      backgrounds.forEach((a, i) => select.add(el => {
+        populateSelect(a, el, getOrDefaultBGColor(), i);
+      }));
+
+      addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
+        const other = select.element.querySelector('.premade_settings_selected');
+        if (other) {
+          other.classList.remove('premade_settings_selected');
+        }
+        target.classList.add('premade_settings_selected');
+      });
+
+      const bgIndex = select.element.querySelector(`[data-index="${getIndex()}"]`);
+      if (bgIndex) {
+        bgIndex.classList.add('premade_settings_selected');
+      }
+    }
+  };
+}
 
 function FancyFeedsController() {
 
