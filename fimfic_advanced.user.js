@@ -35,6 +35,7 @@ const backgroundPatterns = createBgManager('bgPattern', 'Background Pattern', [
   BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
   BG("Lines", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
   BG("Noise", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`),
+  BG("Dots",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/dots.png)`),
   BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
   BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
   BG("Cloth (Dark)",`url(${GITHUB}/backgrounds/cloth_dark.png)`),
