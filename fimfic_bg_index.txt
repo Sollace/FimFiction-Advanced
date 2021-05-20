@@ -15,7 +15,7 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/images/custom_backgrounds/flowers_6.png
 	/images/custom_backgrounds/waves.png
 	/images/custom_backgrounds/savannah.png
-	/images/custom_backgrounds/dots.png
+	/images/custom_backgrounds/dots.png (GOT - reconstructed)
 	/images/custom_backgrounds/fans.png
 	/images/custom_backgrounds/woodland.png
 	/images/custom_backgrounds/diamonds.png
