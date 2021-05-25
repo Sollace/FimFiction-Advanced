@@ -283,7 +283,7 @@ function patchEvents() {
     removeEventListeners(event) {
       this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
     },
-    getEventListeners: function(event) {
+    getEventListeners(event) {
       return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
     }
   });
@@ -3675,7 +3675,7 @@ function BannerController(sets) {
     getSets: _ => sets,
     prev: _ => slider.goto(theme == 0 ? banners.length - 1 : theme - 1, true),
     next: _ => slider.goto(theme >= banners.length - 1 ? 0 : theme + 1, true),
-    reset: function() {
+    reset() {
       this.setCurrent('');
       slider.goto(-1, false);
     },
@@ -3866,30 +3866,30 @@ function Slider() {
     setShuffle: e => settingsMan.setB("shuffle_slideShow", e.target.checked, true),
     labels: _ => slideLabels,
     getSlide: _ => settingsMan.int("slideShow", 0),
-    setSlide: function(e, callback) {
+    setSlide(e, callback) {
       settingsMan.set("slideShow", Math.abs(e.target.selectedIndex % slideTime.length), 0);
       this.updateSlide();
       callback();
     },
-    pause: function() {
+    pause() {
       if (slideshowTimer) {
         clearTimeout(slideshowTimer);
         slideshowTimer = null;
       }
     },
-    resume: function() {
+    resume() {
       if (this.getSlide() && fade && !slideshowTimer) {
         this.updateSlide();
       }
     },
-    updateSlide: function() {
+    updateSlide() {
       this.pause();
       const slide = this.getSlide();
       if (slide && fade) {
         slideshowTimer = setTimeout(() => this.next(), slideTimes[slide]);
       }
     },
-    next: function() {
+    next() {
       if (this.getShuffle()) {
         theme = Math.floor(Math.random() * (banners.length - 1));
       } else {
@@ -3897,7 +3897,7 @@ function Slider() {
       }
       img.src = banners[theme].url;
     },
-    goto: function(index, save) {
+    goto(index, save) {
       const cc = window.getComputedStyle(tit);
       fade.classList.add('animating');
       fade.style.backgroundImage = cc.backgroundImage;
@@ -3929,7 +3929,7 @@ function snowBG(env, container, reverse, fix) {
   }
   Particle3D.prototype = extend(new THREE.Particle(), {
     constructor: Particle3D,
-    updatePhysics: function() {
+    updatePhysics() {
       this.velocity.multiplyScalar(this.drag);
       this.velocity.addSelf(this.gravity);
       this.position.addSelf(this.velocity);
@@ -3949,9 +3949,9 @@ function snowBG(env, container, reverse, fix) {
     return [(u*cosRY) + (v*sinRY),(u*-sinRY) + (v*cosRY)];
   }
   extend(THREE.Vector3.prototype, {
-    rotateY: function(angle) { [this.x, this.z] = turn(angle, this.x, this.z); },
-    rotateX: function(angle) { [this.y, this.z] = turn(angle, this.y, this.z); },
-    rotateZ: function(angle) { [this.y, this.x] = turn(angle, this.y, this.x); }
+    rotateY(angle) { [this.x, this.z] = turn(angle, this.x, this.z); },
+    rotateX(angle) { [this.y, this.z] = turn(angle, this.y, this.z); },
+    rotateZ(angle) { [this.y, this.x] = turn(angle, this.y, this.x); }
   });
 
   let window_focused = true;
@@ -3998,13 +3998,13 @@ function snowBG(env, container, reverse, fix) {
 
   return {
     setSave: v => saveFocus = v,
-    start: function () {
+    start() {
       if (ticker) return;
       ticker = setInterval(tick, 50 / 3);
       container.insertAdjacentElement(reverse ? 'beforeend' : 'afterbegin', renderer.domElement);
       document.addEventListener('mousemove', mouseMoved);
     },
-    stop: function () {
+    stop() {
       if (!ticker) return;
       clearInterval(ticker);
       ticker = null;
