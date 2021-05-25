@@ -141,7 +141,7 @@ const bannerController = new BannerController([
     Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
     Ban("yakovlev_zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
-  ]},{ name: "Advanced", items: [
+  ]},{ name: "Extended", items: [
     Ban2("discorded_applebloom", "//derpibooru.org/1735150", "#D0D3FC"),
     Ban2("flutterby_dash", "//derpibooru.org/250982", "#D771A4"),
     Ban2("mommy_derp", "//derpibooru.org/96418", "rgb(189,198,205)"),
@@ -152,21 +152,21 @@ const bannerController = new BannerController([
     Ban2("flutter_bee", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
     Ban2("cmc_roped", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
     Ban2("twi_revenge", "//zacatron94.deviantart.com/art/Revenge-446974245", "#4B2164"),
-    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "#AD160B", ["right",0,"center",0]),
+    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "#AD160B", { position: ["right",0,"center",0] }),
     Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "#2E737A"),
     Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "#9E75A9"),
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0]),
-    Ban2("buttercupsaiyan_dash", "", "#4C7A7E", ["center",0,"top",0])
+    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", { position: ["center",0,"bottom",0] }),
+    Ban2("buttercupsaiyan_dash", "", "#4C7A7E", { position: ["center",0,"top",0] })
   ]}, { name: "Nostalgic", items: [
-    Ban0("fields", "", "#4C7A7E"),
-    Ban0("fluttershypinkie", "", "#4C7A7E"),
-    Ban0("fwf", "", "#4C7A7E"),
-    Ban0("header_title_reu", "", "#4C7A7E"),
-    Ban0("rarijack", "", "#4C7A7E"),
-    Ban0("stealth", "", "#4C7A7E"),
-    Ban0("twidash", "", "#4C7A7E"),
-    Ban0("twixie", "", "#4C7A7E")
+    Ban0("fields", [ {href: "https://derpibooru.org/50676"} ], "#295D62"),
+    Ban0("fluttershypinkie", [], "#4C7A7E"),
+    Ban0("fwf", [], "#9BA447"),
+    Ban0("header_title_reu", [], "#4EB99B"),
+    Ban0("rarijack", [], "#436032"),
+    Ban0("stealth", [], "#7EA450"),
+    Ban0("twidash", [], "#A27752"),
+    Ban0("twixie", [], "#C3A550")
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
@@ -576,7 +576,7 @@ function buildSettingsTab(tab) {
 
       builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save"></i>Save</button>').addEventListener('click', paintView(false, (url, color, vert, hor, x, y) => {
         setCustomBanner(url, color, [hor, x, vert, y]);
-        customBanner = Banner('Custom', url, url, color, [hor, x, vert, y]);
+        customBanner = Banner('Custom', url, url, color, { position: [hor, x, vert, y] });
         if (customBannerindex > -1) {
           banners[customBannerindex] = customBanner;
         } else {
@@ -2132,6 +2132,7 @@ ${ponyThemes()}
 .banner-credits .source a {color: inherit;}
 .banner-credits .source {
     padding: 5px;
+    min-height: 33px;
     color: #eee;}
 .banner-credits input + label .banner::before {
     content: '';
@@ -2414,7 +2415,7 @@ header.header .theme_selector_right:hover {
 
 ${light ? '' : `
 .user_toolbar > ul > li ul {
-  background-color: ${toRgb(toComponents(banners[theme].colour).map((i, k) => k < 3 ? i / 4 : 0.95))};
+  background-color: ${toRgb(toComponents(bannerController.byTheme(theme).colour).map((i, k) => k < 3 ? i / 4 : 0.95))};
 }
 `}
 
@@ -2982,10 +2983,10 @@ function setStoryWidth(e) {
 function getCustomBanner() {
   if (!(settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition"))) return null;
   const url = settingsMan.get("customBannerUrl", '');
-  const pos = settingsMan.get("customBannerPosition", '').split(' ');
-  pos[1] = parseInt(pos[1]) || 0;
-  pos[3] = parseInt(pos[3]) || 0;
-  return Banner("Custom", url, url, settingsMan.get("customBannerColor", ''), pos);
+  const position = settingsMan.get("customBannerPosition", '').split(' ');
+  position[1] = parseInt(position[1]) || 0;
+  position[3] = parseInt(position[3]) || 0;
+  return Banner("Custom", url, url, settingsMan.get("customBannerColor", ''), { position });
 }
 function unsetCustomBanner() {
   settingsMan.remove("customBannerUrl");
@@ -3088,12 +3089,11 @@ function applyBackground() {
 
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
-function Ban(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
-function Ban2(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
-function Ban0(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
-function Banner(name, img, source, color, bg, pos, args) {
-  if (typeof bg === 'object') pos = bg, bg = null;
-  return {id:name, url:img, source:source, colour:color, position: (pos ? Pos(pos) : null), background: bg};}
+function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
+function Ban2(name, source, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
+function Ban0(name, sources, color, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
+function Banner(id, url, sources, colour, args) {
+  return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
 
 function Pos(poss) {
   const result = {
@@ -3226,7 +3226,7 @@ function createBgManager(key, name, backgrounds) {
     blank.style.backgroundSize = item.attributes.contain ? 'contain' : item.attributes.custom || 'cover';
     if (item.source) {
       blank.style.position = 'relative';
-      blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}" >Source</a>`);
+      blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}">Source</a>`);
     }
     
     blank.addEventListener('click', () => {
@@ -3522,12 +3522,12 @@ function BannerCreditsController(controller) {
                     </div>
                 </div>
                 <form id="banner-selector">${controller.getSets().map((a, index) => 
-                    `<div class="banner-credits" data-offset="${index}" data-group="${a.name}" style="transform:translateX(-${category * 100}%)">${a.items.map(item => `
+                    `<div class="banner-credits" data-offset="${index}" data-group="${a.name}" style="transform:translateX(-${category * 100}%)">${a.getVisibleItems().map(item => `
                         <input type="radio" data-change="selectBanner" id="banners[${item.id}]" value="${item.id}"${item.id == themeId ? ` checked="checked"` : ''} name="banners[]"></input>
                         <label for="banners[${item.id}]" class="theme">
                             <div class="banner" title="Click to select this banner" style="background-image:url(${item.url})${(item['position'] ? `;background-position:${item.position};` : '')}"></div>
                             <div class="source" style="background-color:${item.colour}">
-                                ${(item['source'] ? ` Source: <a href="${item.source}">${item.source}</a>` : '')}
+                                ${item.sources.map(source => ` <a href="${source.href}"><i class="fa fa-link"></i> ${source.text || 'Source'}</a>`).join(' ')}
                             </div>
                         </label>`).join('')}
                     </div>`).join('')}
@@ -3562,6 +3562,14 @@ function BannerCreditsController(controller) {
   };
 }
 
+function getDocCookie(name) {
+  return decodeURIComponent(document.cookie.replace(new RegExp(`(?:(?:^|.*;)\\s*${encodeURIComponent(name).replace(/[\-\.\+\*]/g,"\\$&")}\\s*\\=\\s*([^;]*).*$)|^.*$`), '$1')) || null;
+}
+
+function isNsfw() {
+  return getDocCookie('view_mature') == 'true';
+}
+
 function BannerController(sets) {
   let preloader, home_link, source_link;
 
@@ -3569,7 +3577,12 @@ function BannerController(sets) {
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
 
   if (CHRIST) sets.push({name: "Festive", items: [Ban("christmas.png", "Merry Christmas!", "#4c7e6e")]});
-  sets.forEach(set => banners.push.apply(banners, set.items));
+  sets.forEach(set => {
+    set.getVisibleItems = function() {
+      return this.items.filter(banner => !banner.options.nsfw || isNsfw());
+    };
+    banners.push.apply(banners, set.getVisibleItems());
+  });
 
   function preloadBanner(banner) {
     if (banner.catched) return;
@@ -3589,7 +3602,7 @@ function BannerController(sets) {
     if (!home_link) return;
 
     let top = offset(home_link).top;
-    const off = (position && position.class === 'Pos') ? position : (banners[theme].position || {
+    const off = (position && position.class === 'Pos') ? position : (byTheme(theme).position || {
       'position-x': window.innerWidth < 1000 ? 'left' : 'center',
       'position-y': 'top',
       'x': -150,
@@ -3626,6 +3639,10 @@ function BannerController(sets) {
     animator.off('banners');
     all('.home_link, #fade_banner_image', a => a.style.backgroundPosition = '');
   };
+  
+  function byTheme(theme) {
+    return banners[theme % banners.length];
+  }
 
   let self;
   return self = {
@@ -3636,7 +3653,7 @@ function BannerController(sets) {
       this.setCurrent('');
       slider.goto(-1, false);
     },
-    initFancy: function() {
+    initFancy() {
       if (this.getFancy() && this.getEnabled()) {
         bannerScrollOn();
         updateBannerScroll();
@@ -3644,10 +3661,11 @@ function BannerController(sets) {
       
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
-    getCurrent: function() {
+    byTheme,
+    getCurrent() {
       return CHRIST ? 'christmas.png' : settingsMan.get('selected_theme');
     },
-    getCurrentId: function() {
+    getCurrentId() {
       const themeId = this.getCurrent();
       if (!themeId) return -1;
       for (let i = 0; i < banners.length; i++) {
@@ -3655,13 +3673,13 @@ function BannerController(sets) {
       }
       return -1;
     },
-    setCurrent: function(value) {
+    setCurrent(value) {
       settingsMan.set('selected_theme', value, null);
     },
-    getEnabled: function() {
+    getEnabled() {
       return settingsMan.bool('banners', true);
     },
-    setEnabled: function(e) {
+    setEnabled(e) {
       settingsMan.setB("banners", e.target.checked, true);
       settingsMan.flag('banners', e.target.checked);
       if (e.target.checked) {
@@ -3673,10 +3691,10 @@ function BannerController(sets) {
       bannerScrollOff();
       self.initFancy();
     },
-    getFancy: function() {
+    getFancy() {
       return settingsMan.bool('fancy_banners', false);
     },
-    setFancy: function(e) {
+    setFancy(e) {
       if (e.target.checked == self.getFancy()) return;
       settingsMan.setB('fancy_banners', e.target.checked, false);
       if (e.target.checked) {
@@ -3685,7 +3703,7 @@ function BannerController(sets) {
         bannerScrollOff();
       }
     },
-    build: function() {
+    build() {
       settingsMan.flag('banners', true);
       addBannerCss();
 
@@ -3706,7 +3724,7 @@ function BannerController(sets) {
               <div id="title" class="title">
                   <div class="banner-buttons">
                       <a target="_blank" id="source_link">Source</a>
-                      <a data-action="reset" title="Reset"><i class="fa fa-undo"></i></a>
+                      <a data-action="reset" title="Randomize"><i class="fa fa-random"></i></a>
                       <a href="/?view=page&page=banner_credits" title="Select Banner"><i class="fa fa-pencil"></i></a>
                   </div>
                   <a href="/" class="home_link"><div id="fade_banner_image"></div></a>
@@ -3759,10 +3777,10 @@ function BannerController(sets) {
       window.addEventListener('blur', () => slider.pause());
 
     },
-    finalise: function() {
+    finalise() {
       this.pick(this.getCurrentId());
     },
-    pick: function(id, save) {
+    pick(id, save) {
       if (id < 0 || id > banners.length) {
         id = Math.floor(Math.random() * banners.length);
       }
@@ -3770,11 +3788,11 @@ function BannerController(sets) {
         this.setCurrent(id < 0 || id > banners.length ? '' : banners[id].id);
       }
       theme = id;
-      this.changeBanner(banners[id].source, banners[id].url, banners[id].colour, banners[id].position);
+      this.changeBanner(banners[id].sources, banners[id].url, banners[id].colour, banners[id].position);
       preloadBanner(banners[id == 0 ? banners.length - 1 : id - 1]);
       preloadBanner(banners[(id + 1) % banners.length]);
     },
-    changeBanner: function(source, img, color, pos) {
+    changeBanner(sources, img, color, pos) {
       if (color && color.length) {
         userToolbar.dataset.backgroundColor = color;
         userToolbar.style.background = `linear-gradient(to bottom, ${toZeroAlpha(color)} 0%, ${color} 85%)`;
@@ -3786,9 +3804,9 @@ function BannerController(sets) {
       home_link.style.backgroundSize = pos ? '1300px' : '';
       home_link.style.backgroundPosition = pos || '';
 
-      source_link.classList.toggle('hidden', !(source && source.length));
-      source_link.href = source;
-      source_link.title = source;
+      source_link.classList.toggle('hidden', !(sources && sources.length));
+      source_link.href = sources[0];
+      source_link.title = sources[0];
 
       if (this.getFancy()) updateBannerScroll(pos);
     }
