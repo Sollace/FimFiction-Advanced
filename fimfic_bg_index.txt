@@ -2,7 +2,7 @@ http://www.fimfiction-static.net
 
 switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/themes/poni2.0/images/body_background.png (plaster) (GOT)
-	/themes/poni2.0/images/user_cp_tab_overlay.png (GOT)
+	/themes/poni2.0/images/user_cp_tab_overlay.png (lines) (GOT)
 	/images/custom_backgrounds/cloth.png (GOT)
 	/images/custom_backgrounds/cloud_pattern.png (GOT - reconstructed)
 	/images/custom_backgrounds/stars.png (GOT)
