@@ -158,6 +158,15 @@ const bannerController = new BannerController([
     Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
     Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", ["center",0,"bottom",0]),
     Ban2("buttercupsaiyan_dash", "", "#4C7A7E", ["center",0,"top",0])
+  ]}, { name: "Nostalgic", items: [
+    Ban0("fields", "", "#4C7A7E"),
+    Ban0("fluttershypinkie", "", "#4C7A7E"),
+    Ban0("fwf", "", "#4C7A7E"),
+    Ban0("header_title_reu", "", "#4C7A7E"),
+    Ban0("rarijack", "", "#4C7A7E"),
+    Ban0("stealth", "", "#4C7A7E"),
+    Ban0("twidash", "", "#4C7A7E"),
+    Ban0("twixie", "", "#4C7A7E")
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
@@ -3079,9 +3088,10 @@ function applyBackground() {
 
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
-function Ban(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos);}
-function Ban2(name, source, color, bg, pos) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos);}
-function Banner(name, img, source, color, bg, pos) {
+function Ban(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
+function Ban2(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
+function Ban0(name, source, color, bg, pos, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source, color, bg, pos, args);}
+function Banner(name, img, source, color, bg, pos, args) {
   if (typeof bg === 'object') pos = bg, bg = null;
   return {id:name, url:img, source:source, colour:color, position: (pos ? Pos(pos) : null), background: bg};}
 
