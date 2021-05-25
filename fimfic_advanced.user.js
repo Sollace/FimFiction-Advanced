@@ -159,14 +159,40 @@ const bannerController = new BannerController([
     Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", { position: ["center",0,"bottom",0] }),
     Ban2("buttercupsaiyan_dash", "", "#4C7A7E", { position: ["center",0,"top",0] })
   ]}, { name: "Nostalgic", items: [
-    Ban0("fields", [ {href: "https://derpibooru.org/50676"} ], "#295D62"),
-    Ban0("fluttershypinkie", [], "#4C7A7E"),
-    Ban0("fwf", [], "#9BA447"),
-    Ban0("header_title_reu", [], "#4EB99B"),
-    Ban0("rarijack", [], "#436032"),
-    Ban0("stealth", [], "#7EA450"),
-    Ban0("twidash", [], "#A27752"),
-    Ban0("twixie", [], "#C3A550")
+    Ban0("fields", [
+      {href: "https://derpibooru.org/50676", text: 'Artwork by Qsteel'}
+    ], "#295D62"),
+    Ban0("fluttershypinkie", [
+      { href: 'https://www.deviantart.com/are-you-jealous/art/Pinkie-Pie-likes-to-sit-305832091', text: 'Pinkie Pie by Are-you-jealous'},
+      { href: 'http://mihaaaa.deviantart.com/art/Fluttershy-without-background2-213479935', text: 'Fluttershy by Mihaaaa'},
+      { href: 'https://www.deviantart.com/mlp-vector-collabs/art/Group-Background-4-304749548', text: 'Background by MLP Vector Club Collab'}
+    ], "#4C7A7E"),
+    Ban0("fwf", [
+      { href: 'https://www.deviantart.com/rainbowplasma/art/Mane-6-Project-Best-Friends-293382084', text: 'Characters by Rainbow Plasma'},
+      { href: 'https://www.deviantart.com/silvervectors/art/Nomsters-319781719', text: 'Parasprites by Silver Vectors'},
+      { href: 'https://www.deviantart.com/tgolyi/art/Running-of-the-leaves-314272905', text: 'Background by tgolyi'}
+    ], "#9BA447"),
+    Ban0("header_title_reu", [
+      { href: 'https://derpibooru.org/images/10168', text: 'Fluttershy by Reuniclus'},
+      { href: 'https://derpibooru.org/images/57598', text: 'Luna by Reuniclus'},
+      { href: 'https://www.deviantart.com/quanno3', text: 'Background by Quanno3'}
+    ], "#4EB99B"),
+    Ban0("rarijack", [
+      { href: 'https://derpibooru.org/images/414388', text: 'Characters by Joey Darkmeat'},
+      { href: 'https://www.deviantart.com/stinkehund/art/Sweet-Apple-Acres-svg-301920207', text: 'Background by Stinkehund'},
+    ], "#436032"),
+    Ban0("stealth", [
+      { href: 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434', text: 'Artwork by TimeImpact'}
+    ], "#7EA450"),
+    Ban0("twidash", [
+      { href: 'https://www.deviantart.com/goatanimedatingsim/art/Reading-Rainbow-283334545', text: 'Characters by Equestria-Prevails'},
+      { href: 'https://www.deviantart.com/mrhavre/art/NATURE-i-love-you-316005359', text: 'Background by MrHavre'},
+      { href: 'https://www.deviantart.com/kopachris/gallery/33658160/mlp-templates-and-reactions', text: 'Misc. Trees by Kopachris'}
+    ], "#A27752"),
+    Ban0("twixie", [
+      { href: 'https://derpibooru.org/images/66106', text: 'Characters by Joey Darkmeat and Atmospark'},
+      { href: 'https://www.deviantart.com/mrhavre/art/NATURE-i-love-you-316005359', text: 'Background by MrHavre'}
+    ], "#C3A550")
   ]}
 ]);
 const creditsController = new BannerCreditsController(bannerController);
