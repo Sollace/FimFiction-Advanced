@@ -139,6 +139,7 @@ const bannerController = new BannerController([
     Ban("jackalynn_pinkiedash", "//jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "#4584B6"),
     Ban("yakovlev_fluttershy", "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5E7520"),
     Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
+    Ban("yakovlev_zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
     Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
   ]},{ name: "Advanced", items: [
     Ban2("discorded_applebloom", "//derpibooru.org/1735150", "#D0D3FC"),
