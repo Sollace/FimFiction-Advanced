@@ -37,7 +37,7 @@ const backgroundPatterns = createBgManager('bgPattern', 'Background Pattern', [
   BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
   BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloud_pattern.png)`),
   BG("Stars", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/stars.png)`),
-  BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png)`),
+  BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png) top left / 40px auto`),
   BG("Flowers 1", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_1.png)`),
   BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
   BG("Flowers 3", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_3.png)`),
@@ -344,8 +344,8 @@ function initFimFictionAdvanced() {
   applyBackground();
   applyCustomFont();
   applyChapterButtons();
-  applyBetterRatingBars()
-  
+  applyBetterRatingBars();
+
   if (isMyBlogPage()) {
     initBlogPage();
   }
@@ -366,12 +366,13 @@ function initFimFictionAdvanced() {
   } else {
     feeder.initUnreadCount();
   }
-  
+
   if (getFixAds()) {
     removeAnnoyances();
   }
   
   applyCodePatches();
+  applyFeatureBoxEnhancements();
   
   setTimeout(() => {
     if (slider.getSlide()) {
@@ -1051,28 +1052,30 @@ function initBlogPage() {
 }
 
 function startCommentHandler() {
-  CommentListController.prototype.quoteComment = function(sender, event) {
-    const id = sender.dataset.commentId;
-    sender = sender.closest('.comment');
-    let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
-    
-    all('.comment', bbcode, a => a.parentNode.removeChild(a));
-    all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
-    
-    bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
-    
-    let who = sender.querySelector('.author a.name').innerText;
-    who = who ? '=' + who.trim() : '';
-    
-    const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
-    const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
+  extend(CommentListController.prototype, {
+    quoteComment(sender, event) {
+      const id = sender.dataset.commentId;
+      sender = sender.closest('.comment');
+      let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
 
-    controller.insertText(e, !event.ctrlKey && !event.shiftKey);
-    event.preventDefault();
-    if (!(event.ctrlKey || event.shiftKey)) {
-      fQuery.scrollTop(document.getElementById('add_comment_box').getBoundingClientRect().top);
+      all('.comment', bbcode, a => a.parentNode.removeChild(a));
+      all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
+
+      bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
+
+      let who = sender.querySelector('.author a.name').innerText;
+      who = who ? '=' + who.trim() : '';
+
+      const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
+      const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
+
+      controller.insertText(e, !event.ctrlKey && !event.shiftKey);
+      event.preventDefault();
+      if (!(event.ctrlKey || event.shiftKey)) {
+        fQuery.scrollTop(document.getElementById('add_comment_box').getBoundingClientRect().top);
+      }
     }
-  };
+  });
 
   FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
     all('.comment .buttons:not([data-parsed])', insertQuoteButton);
@@ -3450,29 +3453,32 @@ function FancyFeedsController() {
     fixFeedOptions() {
       this.initFeedItems();
 
-      FeedController.prototype.changeCompactMode = function(c, d, sender) {
-        this.column.classList.toggle("compressed", false);
-        LocalStorageSet("feed_compressed", sender.value);
-        updateFeedUi();
-        all('.feed .touched', t => t.classList.remove('touched'));
-        updateUnreadFeedItems(this.elements.markAllRead);
-      };
-      FeedController.prototype.markAllRead = function(sender) {
-        setUnreadCount(0, sender);
-        all('.feed .new', t => {
-          t.classList.add('marked');
-          t.classList.remove('new');
-          t.classList.remove('expanded');
-        });
-      };
-      FeedController.prototype.setSimpleFeeds = function(event, d, sender) {
-        settingsMan.setB('simple_feeds', sender.checked, true);
-        updateFeedUi();
-      };
-      FeedController.prototype.setDistinguishedFeeds = function(event, d, sender) {
-        settingsMan.setB('distinguished_feeds', sender.checked, false);
-        updateFeedUi();
-      };
+      extend(FeedController.prototype, {
+        changeCompactMode(c, d, sender) {
+          this.column.classList.toggle("compressed", false);
+          LocalStorageSet("feed_compressed", sender.value);
+          updateFeedUi();
+          all('.feed .touched', t => t.classList.remove('touched'));
+          updateUnreadFeedItems(this.elements.markAllRead);
+        },
+        markAllRead(sender) {
+          setUnreadCount(0, sender);
+          all('.feed .new', t => {
+            t.classList.add('marked');
+            t.classList.remove('new');
+            t.classList.remove('expanded');
+          });
+        },
+        setSimpleFeeds(event, d, sender) {
+          settingsMan.setB('simple_feeds', sender.checked, true);
+          updateFeedUi();
+        },
+        setDistinguishedFeeds(event, d, sender) {
+          settingsMan.setB('distinguished_feeds', sender.checked, false);
+          updateFeedUi();
+        }
+      });
+
       override(FeedController.prototype, 'toggleCompressed', function(sender, event) {
         if (event.target.tagName === 'A') return true;
         sender = sender.closest('.feed_item');
@@ -3490,6 +3496,43 @@ function FancyFeedsController() {
       });
     }
   };
+}
+
+function applyFeatureBoxEnhancements() {
+  extend(FrontpageController.prototype, {
+    prevFeaturedStory() {
+      let c = this.featuredStory - 1;
+      if (c < 1) {
+        c = 10;
+      }
+      this.selectFeaturedStory(c);
+    },
+    bindKeyEvents(element) {
+      console.log('Binding!');
+      const box = element.querySelector('.featured_box');
+      if (box) {
+        box.tabIndex = 1;
+        box.addEventListener('keydown', e => {
+          if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
+            this[`${e.keyCode == 38 ? 'prev' : 'next'}FeaturedStory`]();
+            e.preventDefault();
+          }
+        });
+      }
+    }
+  });
+  override(FrontpageController.prototype, 'bind', function(element) {
+    FrontpageController.prototype.bind.super.apply(this, arguments);
+    bindKeyEvents(element);
+  });
+  
+  const frontPage = document.querySelector('.front_page');
+  if (frontPage) {
+    const controller = App.GetControllerFromElement(frontPage);
+    if (controller) {
+      controller.bindKeyEvents(frontPage);
+    }
+  }
 }
 
 function Animator() {
