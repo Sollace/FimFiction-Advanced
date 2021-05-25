@@ -9,6 +9,8 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.color.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.reflect.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
@@ -217,10 +219,7 @@ let snower, userToolbar;
 
 //--------------------------------------BOILER PLATE------------------------------------------------
 
-patchEvents();
-//Run it a second time in global scope to ensure greasmonkey doesn't mess with the context
-window.override = override;
-RunScript(patchEvents, true);
+requireRemoveEventListeners();
 
 ready(() => {
   if (!document.querySelector('.body_container')) return;
@@ -253,49 +252,6 @@ try {
   console.error(e);
 }
 
-function ready(func) {
-  if (this['App']) {
-      return func();
-  }
-  document.addEventListener('DOMContentLoaded', func);
-}
-
-function patchEvents() {
-  function extend(saved, onto, offof) {
-    Object.keys(offof).forEach(member => {
-      saved[member] = onto[member];
-      onto[member] = offof[member];
-    });
-    return saved;
-  }
-  const ov = extend({}, window.EventTarget.prototype, {
-    addEventListener(ev, f, c) {
-      if (!this.eventListeners) this.eventListeners = {};
-      if (!this.eventListeners[ev]) this.eventListeners[ev] = [];
-      this.eventListeners[ev].push(f);
-      return ov.addEventListener.apply(this, arguments);
-    },
-    removeEventListener(ev, f) {
-      let l = this.getEventListeners(ev), i = l.indexOf(f);
-      if (i > -1) l.splice(i, 1);
-      return ov.removeEventListener.apply(this, arguments);
-    },
-    removeEventListeners(event) {
-      this.getEventListeners(event).forEach(f => this.removeEventListener(event, f));
-    },
-    getEventListeners(event) {
-      return (this.eventListeners && this.eventListeners[event]) ? this.eventListeners[event] : [];
-    }
-  });
-  const of = extend({}, window.Function.prototype, {
-    bind(context) {
-      let result = of.bind.apply(this, arguments);
-      result.unbound = this;
-      result.context = context;
-      return result;
-    }
-  });
-}
 
 //---------------------------------------SCRIPT BODY------------------------------------------------
 
@@ -396,12 +352,47 @@ function registerEvents() {
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
 
+function applyFeatureBoxEnhancements() {
+  extend(FrontpageController.prototype, {
+    prevFeaturedStory() {
+      let c = this.featuredStory - 1;
+      if (c < 1) {
+        c = 10;
+      }
+      this.selectFeaturedStory(c);
+    },
+    bindKeyEvents(element) {
+      const box = element.querySelector('.featured_box');
+      if (box) {
+        box.tabIndex = 1;
+        box.addEventListener('keydown', e => {
+          if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
+            this[`${e.keyCode == 38 ? 'prev' : 'next'}FeaturedStory`]();
+            e.preventDefault();
+          }
+        });
+      }
+    }
+  });
+  override(FrontpageController.prototype, 'bind', function(element) {
+    FrontpageController.prototype.bind.super.apply(this, arguments);
+    bindKeyEvents(element);
+  });
+  
+  const frontPage = document.querySelector('.front_page');
+  if (frontPage) {
+    const controller = App.GetControllerFromElement(frontPage);
+    if (controller) {
+      controller.bindKeyEvents(frontPage);
+    }
+  }
+}
+
 function applyBetterRatingBars() {
   all('.rating-bar > [style]', span => {
     span.parentNode.title = span.style.width;
   });
 }
-
 
 function applyNightModeListener() {
   window.addEventListener('darkmodechange', nightModeToggled);
@@ -803,9 +794,9 @@ function applyCodePatches() {
   //Change styling target to the body container
   override(ChapterController.prototype, 'updatePageBackgroundColor', function(c) {
     if (!this.patched) {
-      replaceListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
-      replaceListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
-      replaceListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
+      document.replaceEventListener('scroll', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+      document.replaceEventListener('chapterColourSchemeChanged', this, this.updatePageBackgroundColor.super, this.updatePageBackgroundColor.patched.bind(this));
+      document.replaceEventListener('chapterColourSchemeChanged', this, this.computeBackgroundColor.super, this.computeBackgroundColor.patched.bind(this));
       this.patched = true;
     }
     this.computeBackgroundColor.patched.call(this, c);
@@ -814,20 +805,6 @@ function applyCodePatches() {
     return body.replace('document.body.style.backgroundColor', `document.querySelector('.body_container').style.backgroundColor`)
       .replace('borderRightColor=', `borderRightColor=rgbToCSS(this.border_color),this.elements.chapterContentBox.style.borderBottomColor=`);
   });
-
-  function patchFunc(func, replacer) {
-    return Function(`return ${replacer(func.toString())}`)();
-  }
-
-  function replaceListener(event, sender, old, neu) {
-    const scroll_events = document.getEventListeners(event);
-    for (let i = 0; i < scroll_events.length; i++) {
-      if (scroll_events[i].context == sender && scroll_events[i].unbound == old) {
-        document.removeEventListener(event, scroll_events[i]);
-      }
-    }
-    document.addEventListener(event, neu);
-  }
 
   //Force update chapter themes
   try {
@@ -3121,8 +3098,7 @@ function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_'
 function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
 function Ban2(name, source, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
 function Ban0(name, sources, color, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
-function Banner(id, url, sources, colour, args) {
-  return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
+function Banner(id, url, sources, colour, args) {return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
 
 function Pos(poss) {
   const result = {
@@ -3152,78 +3128,12 @@ function Pos(poss) {
 
 //--------------------------------------UTIL FUNCTIONS-----------------------------------------------
 
-function override(obj, member, new_func) {
-  new_func.super = obj[member].super || obj[member];
-  obj[member] = new_func;
-}
-
 function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
 }
 
-function extend(onto, offof) {Object.keys(offof).forEach(key => onto[key] = offof[key]);return onto;}
-function compose(one, two) {return (e) => { one(e), two(); };}
-function arrayOf(length, func) {return Array.apply(null, Array(length)).map(func);}
-function range(from, to) {return arrayOf(to - from + 1, (_, i) => from + i);}
-function reverse(me) {return me && me.length > 1 ? me.split('').reverse().join('')  : me;}
-function endsWith(me, it) {return reverse(me).indexOf(reverse(it)) == 0;}
-function pickNext(arr) {return arr[Math.max((new Date()).getSeconds() % arr.length, 0)];}
-function replaceAll(find, replace, me) {return me.replace(new RegExp(find.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&'), 'g'), replace);}
 function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
-
-function normalise(me) {
-  if (!me) return me;
-  let space = true;
-  return me.split('').map(f => {
-    f = space ? f.toUpperCase()  : f.toLowerCase();
-    space = f == ' ';
-    return f;
-  }).join('');
-}
-
-function InvalidHexColor(color) {
-  const i = colours.NamesLower.indexOf(color.toLowerCase());
-  if (i > -1) return i;
-  color = color.replace(/#/g,'');
-  return color.length == 3 && color.length == 6 && !/^[0-9a-f]+$/ig.test(color);
-}
-
-function toRgb(rgb) {
-  return `rgb${rgb.length == 3 ? 'a' : ''}(${rgb.join(',')})`;
-}
-
-function toHex(rgb) {
-  rgb = rgb.map(a => parseInt(a) || 0);
-  return "#" + ((1 << 24) + (rgb[0] << 16) + (rgb[1] << 8) + rgb[2]).toString(16).slice(1);
-}
-
-function rgb2hex(rgb) {
-  rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-  return toHex([rgb[1], rgb[2], rgb[3]]);
-}
-
-function hexToRgb(hex){
-  let c = hex.substring(1).split('');
-  if (c.length == 3) c = [c[0], c[0], c[1], c[1], c[2], c[2]];
-  c= '0x' + c.join('');
-  return [(c >> 16) & 255, (c >> 8) & 255, c & 255, 1];
-}
-
-function toZeroAlpha(color, alpha) {
-  color = toComponents(color);
-  color[3] = alpha || 0;
-  return toRgb(color);
-}
-
-function toComponents(color) {
-  if (color.indexOf('(') >-1) {
-    color = color.split('(')[1].split(')')[0].split(',');
-    if (color.length < 4) color.push('1');
-    return color.map(a => parseFloat(a.trim()) || 0);
-  }
-  return hexToRgb(color);
-}
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 
@@ -3496,43 +3406,6 @@ function FancyFeedsController() {
       });
     }
   };
-}
-
-function applyFeatureBoxEnhancements() {
-  extend(FrontpageController.prototype, {
-    prevFeaturedStory() {
-      let c = this.featuredStory - 1;
-      if (c < 1) {
-        c = 10;
-      }
-      this.selectFeaturedStory(c);
-    },
-    bindKeyEvents(element) {
-      console.log('Binding!');
-      const box = element.querySelector('.featured_box');
-      if (box) {
-        box.tabIndex = 1;
-        box.addEventListener('keydown', e => {
-          if (e.ctrlKey && (e.keyCode == 38 || e.keyCode == 40)) {
-            this[`${e.keyCode == 38 ? 'prev' : 'next'}FeaturedStory`]();
-            e.preventDefault();
-          }
-        });
-      }
-    }
-  });
-  override(FrontpageController.prototype, 'bind', function(element) {
-    FrontpageController.prototype.bind.super.apply(this, arguments);
-    bindKeyEvents(element);
-  });
-  
-  const frontPage = document.querySelector('.front_page');
-  if (frontPage) {
-    const controller = App.GetControllerFromElement(frontPage);
-    if (controller) {
-      controller.bindKeyEvents(frontPage);
-    }
-  }
 }
 
 function Animator() {
