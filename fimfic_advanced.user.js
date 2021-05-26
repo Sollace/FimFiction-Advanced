@@ -32,7 +32,8 @@ if (this['unsafeWindow'] && window !== unsafeWindow) {
 
 //-------------------------------------------DATA---------------------------------------------------
 const defaultSig = "%message%\n\n--[i]%name%[/i]";
-const backgroundPatterns = createBgManager('bgPattern', 'Background Pattern', [
+const backgrounds = BackgroundsController();
+const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
   BG("None", ''),
   BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
   BG("Lines", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
@@ -65,7 +66,7 @@ const backgroundPatterns = createBgManager('bgPattern', 'Background Pattern', [
   BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png) fixed right`),
   BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
 ]);
-const backgroundImages = createBgManager('bgImg', 'Background Image', [
+const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
   BG("None", ''),
   BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
   BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
@@ -92,12 +93,10 @@ const backgroundImages = createBgManager('bgImg', 'Background Image', [
 const icons = 'adjust;adn;align-center;align-justify;align-left;align-right;ambulance;anchor;android;angellist;angle-double-down;angle-double-left;angle-double-right;angle-double-up;angle-down;angle-left;angle-right;angle-up;apple;archive;area-chart;arrow-circle-down;arrow-circle-left;arrow-circle-o-down;arrow-circle-o-left;arrow-circle-o-right;arrow-circle-o-up;arrow-circle-right;arrow-circle-up;arrow-down;arrow-left;arrow-right;arrow-up;arrows;arrows-alt;arrows-h;arrows-v;asterisk;at;automobile;backward;ban;bank;bar-chart;bar-chart-o;barcode;bars;beer;behance;behance-square;bell;bell-o;bell-slash;bell-slash-o;bicycle;binoculars;birthday-cake;bitbucket;bitbucket-square;bitcoin;bold;bolt;bomb;book;bookmark;bookmark-o;briefcase;btc;bug;building;building-o;bullhorn;bullseye;bus;cab;calculator;calendar;calendar-o;camera;camera-retro;car;caret-down;caret-left;caret-right;caret-square-o-down;caret-square-o-left;caret-square-o-right;caret-square-o-up;caret-up;cc;cc-amex;cc-discover;cc-mastercard;cc-paypal;cc-stripe;cc-visa;certificate;chain;chain-broken;check;check-circle;check-circle-o;check-square;check-square-o;chevron-circle-down;chevron-circle-left;chevron-circle-right;chevron-circle-up;chevron-down;chevron-left;chevron-right;chevron-up;child;circle;circle-o;circle-o-notch;circle-thin;clipboard;clock-o;close;cloud;cloud-download;cloud-upload;cny;code;code-fork;codepen;coffee;cog;cogs;columns;comment;comment-o;comments;comments-o;compass;compress;copy;copyright;credit-card;crop;crosshairs;css3;cube;cubes;cut;cutlery;dashboard;database;dedent;delicious;desktop;deviantart;digg;dollar;dot-circle-o;download;dribbble;dropbox;drupal;edit;eject;ellipsis-h;ellipsis-v;empire;envelope;envelope-o;envelope-square;eraser;eur;euro;exchange;exclamation;exclamation-circle;exclamation-triangle;expand;external-link;external-link-square;eye;eye-slash;eyedropper;facebook;facebook-square;fast-backward;fast-forward;fax;female;fighter-jet;file;file-archive-o;file-audio-o;file-code-o;file-excel-o;file-image-o;file-movie-o;file-o;file-pdf-o;file-photo-o;file-picture-o;file-powerpoint-o;file-sound-o;file-text;file-text-o;file-video-o;file-word-o;file-zip-o;files-o;film;filter;fire;fire-extinguisher;flag;flag-checkered;flag-o;flash;flask;flickr;floppy-o;folder;folder-o;folder-open;folder-open-o;font;forward;foursquare;frown-o;futbol-o;gamepad;gavel;gbp;ge;gear;gears;gift;git;git-square;github;github-alt;github-square;gittip;glass;globe;google;google-plus;google-plus-square;google-wallet;graduation-cap;group;h-square;hacker-news;hand-o-down;hand-o-left;hand-o-right;hand-o-up;hdd-o;header;headphones;heart;heart-o;history;home;hospital-o;html5;ils;image;inbox;indent;info;info-circle;inr;instagram;institution;ioxhost;italic;joomla;jpy;jsfiddle;key;keyboard-o;krw;language;laptop;lastfm;lastfm-square;leaf;legal;lemon-o;level-down;level-up;life-bouy;life-buoy;life-ring;life-saver;lightbulb-o;line-chart;link;linkedin;linkedin-square;linux;list;list-alt;list-ol;list-ul;location-arrow;lock;long-arrow-down;long-arrow-left;long-arrow-right;long-arrow-up;magic;magnet;mail-forward;mail-reply;mail-reply-all;male;map-marker;maxcdn;meanpath;medkit;meh-o;microphone;microphone-slash;minus;minus-circle;minus-square;minus-square-o;mobile;mobile-phone;money;moon-o;mortar-board;music;navicon;newspaper-o;openid;outdent;pagelines;paint-brush;paper-plane;paper-plane-o;paperclip;paragraph;paste;pause;paw;paypal;pencil;pencil-square;pencil-square-o;phone;phone-square;photo;picture-o;pie-chart;pied-piper;pied-piper-alt;pinterest;pinterest-square;plane;play;play-circle;play-circle-o;plug;plus;plus-circle;plus-square;plus-square-o;power-off;print;puzzle-piece;qq;qrcode;question;question-circle;quote-left;quote-right;ra;random;rebel;recycle;reddit;reddit-square;refresh;remove;renren;reorder;repeat;reply;reply-all;retweet;rmb;road;rocket;rotate-left;rotate-right;rouble;rss;rss-square;rub;ruble;rupee;save;scissors;search;search-minus;search-plus;send;send-o;share;share-alt;share-alt-square;share-square;share-square-o;shekel;sheqel;shield;shopping-cart;sign-in;sign-out;signal;sitemap;skype;slack;sliders;slideshare;smile-o;soccer-ball-o;sort;sort-alpha-asc;sort-alpha-desc;sort-amount-asc;sort-amount-desc;sort-asc;sort-desc;sort-down;sort-numeric-asc;sort-numeric-desc;sort-up;soundcloud;space-shuttle;spinner;spoon;spotify;square;square-o;stack-exchange;stack-overflow;star;star-half;star-half-empty;star-half-full;star-half-o;star-o;steam;steam-square;step-backward;step-forward;stethoscope;stop;strikethrough;stumbleupon;stumbleupon-circle;subscript;suitcase;sun-o;superscript;support;table;tablet;tachometer;tag;tags;tasks;taxi;tencent-weibo;terminal;text-height;text-width;th;th-large;th-list;thumb-tack;thumbs-down;thumbs-o-down;thumbs-o-up;thumbs-up;ticket;times;times-circle;times-circle-o;tint;toggle-down;toggle-left;toggle-off;toggle-on;toggle-right;toggle-up;trash;trash-o;tree;trello;trophy;truck;try;tty;tumblr;tumblr-square;turkish-lira;twitch;twitter;twitter-square;umbrella;underline;undo;university;unlink;unlock;unlock-alt;unsorted;upload;usd;user;user-md;users;video-camera;vimeo-square;vine;vk;volume-down;volume-off;volume-up;warning;wechat;weibo;weixin;wheelchair;wifi;windows;won;wordpress;wrench;xing;xing-square;yahoo;yelp;yen;youtube;youtube-play;youtube-square'.split(';');
 const logos = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO);
 var banners = [];
-let theme = 0;
 let customBanner, customBannerindex = -1;
-const animator = new Animator();
-const slider = new Slider();
-const feeder = new FancyFeedsController();
-const bannerController = new BannerController([
+const animator = Animator();
+const feeder = FancyFeedsController();
+const bannerController = BannerController([
   { name: "Default", items: [
     Ban("zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
     Ban("aeron_fluttershy", "//aeronjvl.deviantart.com/art/Nature-326303180", "#A47A3C"),
@@ -197,7 +196,8 @@ const bannerController = new BannerController([
     ], "#C3A550")
   ]}
 ]);
-const creditsController = new BannerCreditsController(bannerController);
+const creditsController = BannerCreditsController(bannerController);
+const snowController = SnowController();
 const colours = {
   Mapping: {},
   Keys: [], Names: [],
@@ -215,7 +215,7 @@ const colours = {
   colours.Names.push(colours.Mapping[a[1]] = a[0]);
   colours.NamesLower.push(a[0].toLowerCase());
 });
-let snower, userToolbar;
+let userToolbar;
 
 //--------------------------------------BOILER PLATE------------------------------------------------
 
@@ -297,7 +297,7 @@ function earlyStart() {
 
 function initFimFictionAdvanced() {
   initCommentArea();
-  applyBackground();
+  backgrounds.apply();
   applyCustomFont();
   applyChapterButtons();
   applyBetterRatingBars();
@@ -331,11 +331,11 @@ function initFimFictionAdvanced() {
   applyFeatureBoxEnhancements();
   
   setTimeout(() => {
-    if (slider.getSlide()) {
-      slider.updateSlide();
+    if (bannerController.slider.getSlide()) {
+      bannerController.slider.updateSlide();
     }
     
-    applySnowing(getBGSnow(), getSnowing());
+    snowController.apply();
   }, 300);
   
 }
@@ -408,7 +408,7 @@ function applyNightModeListener() {
 function nightModeToggled() {
   addCss();
   if (bannerController.getEnabled()) addBannerCss();
-  applyBackground();
+  backgrounds.apply();
 }
 
 function buildSettingsTab(tab) {
@@ -430,17 +430,13 @@ function buildSettingsTab(tab) {
   tab.AddCheckBox("fancyB", "Enable Fancy Banners", bannerController.getFancy()).addEventListener('change', bannerController.setFancy);
   tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', e => setPinUserbar(e.target.checked));
   tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', setTitleHidden);
-  const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", slider.labels(), slider.getSlide());
-  enableSlide.addEventListener('change', e=> slider.setSlide(e, updateSliderOptions));
-  tab.AddCheckBox("shuf", "Shuffle Slide Show", slider.getShuffle()).addEventListener('change', slider.setShuffle);
+  const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", bannerController.slider.labels(), bannerController.slider.getSlide());
+  enableSlide.addEventListener('change', e=> bannerController.slider.setSlide(e, updateSliderOptions));
+  tab.AddCheckBox("shuf", "Shuffle Slide Show", bannerController.slider.getShuffle()).addEventListener('change', bannerController.slider.setShuffle);
   updateSliderOptions();
 
   tab.StartEndSection("Christmasy Stuff");
-  const enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getSnowing());
-  enableUSnow.addEventListener('change', compose(setSnowing, updateSnowOptions));
-  tab.AddCheckBox("uss", "Snow In Banner", getBGSnow()).addEventListener('change', setBGSnow);
-  tab.AddCheckBox('pus', 'Pause Snow when lost focus', getSaveFocus()).addEventListener('change', setSaveFocus);
-  updateSnowOptions();
+  const enableUSnow = snowController.createOptions(tab);
 
   tab.StartEndSection("Colours and Customization");
 
@@ -450,7 +446,7 @@ function buildSettingsTab(tab) {
 
   makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
 
-  const colorPick = tab.AddColorPick("bg", "Background Colour", getBGColor(), me => {
+  const colorPick = tab.AddColorPick("bg", "Background Colour", backgrounds.getColor(), me => {
     me.value = me.value.trim();
     if (me.value.length) {
       if (me.value.indexOf('#') !== 0) {
@@ -458,8 +454,8 @@ function buildSettingsTab(tab) {
       }
     }
 
-    setBGColor(me.value);
-    all('.toolbar', tab.container, a => a.style.backgroundColor = getOrDefaultBGColor());
+    backgrounds.setColor(me.value);
+    all('.toolbar', tab.container, a => a.style.backgroundColor = backgrounds.getOrDefaultColor());
   });
 
   tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar').addEventListener('click', () => {
@@ -532,10 +528,6 @@ function buildSettingsTab(tab) {
 
   function updateSliderOptions() {
     tab.SetEnabled('#shuf', enableSlide.selectedIndex);
-  }
-
-  function updateSnowOptions() {
-    tab.SetEnabled('#pus' + (bannerController.getEnabled() ? ',#uss' : ''), enableUSnow.selectedIndex < 2);
   }
 
   function repaintBannerButton(cban, banner) {
@@ -2334,6 +2326,13 @@ header.header .home_link {
   bottom: 0px;
   background-position: center;
 }
+
+#main_banner .user_toolbar {
+   --gradient-start: transparent;
+   --gradient-end: black;
+   background: linear-gradient(to bottom, var(--gradient-start) 0%, var(--gradient-end) 85%);
+}
+
 @media all and (max-width: 1000px) {
     header.header .home_link { background-position: -150px center; }
 }
@@ -2421,7 +2420,7 @@ header.header .theme_selector_right:hover {
 
 ${light ? '' : `
 .user_toolbar > ul > li ul {
-  background-color: ${toRgb(toComponents(bannerController.byTheme(theme).colour).map((i, k) => k < 3 ? i / 4 : 0.95))};
+  background-color: ${toRgb(toComponents(bannerController.getSelected().colour).map((i, k) => k < 3 ? i / 4 : 0.95))};
 }
 `}
 
@@ -2930,12 +2929,6 @@ function setAlwaysShowImages(e) {settingsMan.setB('unspoiler_images', e.target.c
 function getSig() {return settingsMan.get("user_sig", defaultSig);}
 function setSig(v) {settingsMan.set("user_sig", v, defaultSig);}
 
-function getSaveFocus() {return settingsMan.bool('ultra_snow_save_focus', true);}
-function setSaveFocus(e) {
-  settingsMan.setB('ultra_snow_save_focus', e.target.checked, true);
-  if (snower) snower.setSave(e.target.checked);
-}
-
 function getCustomFont() {return settingsMan.get('custom_font', 'Default');}
 function applyCustomFont() {
   let val = getCustomFont();
@@ -3015,80 +3008,10 @@ function updateLogo(v) {
   document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());
 }
 
-function getSnowing() {return settingsMan.int("snow_bg", 1);}
-function setSnowing(e) {
-  settingsMan.set("snow_bg", e.target.selectedIndex, 1);
-  applySnowing(getBGSnow(), e.target.selectedIndex);
-}
-function getBGSnow() {return settingsMan.bool("snow_mode", false);}
-function setBGSnow(e) {
-  settingsMan.setB("snow_mode", e.target.checked, false);
-  if (snower) {
-    snower.stop();
-    snower = null;
-    applySnowing(e.target.checked, getSnowing());
-  }
-}
-
-function applySnowing(g, v) {
-  if (v < 2 && (v == 0 || DECEMBER)) {
-    if (snower) {
-      return snower.start();
-    }
-    
-    const context = g ? document.querySelector('#title .home_link') : document.body;
-    
-    if (context) {
-      snower = snowBG(document.body, context, g, !g).start();
-    }
-  } else if (snower) {
-    snower.stop();
-  }
-}
-
 function getTitleHidden() {return settingsMan.bool("titleHidden", false);}
 function setTitleHidden(e) {
   settingsMan.setB("titleHidden", e.target.checked, false);
   document.body.classList.toggle('titleHidden', e.target.checked);
-}
-
-function getBGColor() {return settingsMan.get("bgColor", 'transparent');}
-function setBGColor(c) {settingsMan.set("bgColor", c, 'transparent');applyBackground();}
-function getOrDefaultBGColor() {
-  const col = getBGColor();
-  return !col || col == 'transparent' ? rgb2hex(window.getComputedStyle(document.body).backgroundColor) : col;
-}
-
-function applyBackground() {
-  let c = getBGColor();
-  let img = backgroundImages.get();
-  let pattern = backgroundPatterns.get();
-
-  settingsMan.flag('background', !((c == '' || c == 'transparent') && img === 'none'));
-  
-  const bod = window.getComputedStyle(document.body);
-  const bodc = document.querySelector('.body_container');
-  
-  if (img == 'none') {
-    img = bod.backgroundImage;
-  }
-  if (c == '' || c == 'transparent') {
-    c = bod.backgroundColor;
-  }
-
-  bodc.style.background = `${[
-    img.css || img || '',
-    pattern.css || pattern || ''
-  ].filter(s => s.length).join()} ${c}`;
-
-  document.body.dataset.baseColor = c;
-  c = window.getComputedStyle(bodc).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
-
-  if (brightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
-    all('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1', a => a.classList.add('bright'));
-  } else {
-    all('.bright', a => a.classList.remove('bright'));
-  }
 }
 
 //---------------------------------------DATA STRUCTURES--------------------------------------------
@@ -3133,75 +3056,134 @@ function replaceWith(el, html) {
   el.parentNode.removeChild(el);
 }
 
+function getDocCookie(name) {
+  return decodeURIComponent(document.cookie.replace(new RegExp(`(?:(?:^|.*;)\\s*${encodeURIComponent(name).replace(/[\-\.\+\*]/g,"\\$&")}\\s*\\=\\s*([^;]*).*$)|^.*$`), '$1')) || null;
+}
+
+function isNsfw() {
+  return getDocCookie('view_mature') == 'true';
+}
+
 function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
 
-function createBgManager(key, name, backgrounds) {
+function BackgroundsController() {
   const ALIGNMENTS = ['top','left','right','bottom','center'];
 
-  function populateDefaultSelect(element, title, bgimg, callback) {
-    element.children[1].innerHTML = title;
-    element.children[0].style.backgroundColor = getOrDefaultBGColor();
-    element.children[0].style.opacity = 0.8;
-    element.style.backgroundImage = bgimg;
-    element.addEventListener('click', callback);
-  }
-  function populateSelect(item, blank, color, index) {
-    blank.children[1].innerHTML = item.name;
-    blank.children[0].style.backgroundColor = color;
-    blank.children[0].style.opacity = '0.8';
-
-    var css = item.css.replace(/ fixed/g, "");
-    if (item.attributes.custom) {
-      css = css.split(' ').filter(a => ALIGNMENTS.indexOf(a) > -1).join(' ');
-    }
-
-    blank.style.background = css;
-    blank.dataset.bgIndex = index;
-    if (item.attributes.center) {
-      blank.style.backgroundPosition = "center center";
-    }
-    blank.style.backgroundSize = item.attributes.contain ? 'contain' : item.attributes.custom || 'cover';
-    if (item.source) {
-      blank.style.position = 'relative';
-      blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}">Source</a>`);
-    }
-    
-    blank.addEventListener('click', () => {
-      settingsMan.set(key, index, -1);
-      applyBackground();
-    });
+  function getColor() {
+    return settingsMan.get("bgColor", 'transparent');
   }
 
-  function getIndex() {
-    return Math.min(backgrounds.length - 1, Math.max(settingsMan.int(key, -1), 0));
+  function getOrDefaultColor() {
+    const col = getColor();
+    return !col || col == 'transparent' ? rgb2hex(window.getComputedStyle(document.body).backgroundColor) : col;
+  }
+
+  function apply() {
+    let c = getColor();
+    let img = backgroundImages.get();
+    let pattern = backgroundPatterns.get();
+
+    settingsMan.flag('background', !((c == '' || c == 'transparent') && img === 'none'));
+
+    const bod = window.getComputedStyle(document.body);
+
+    if (img == 'none') {
+      img = bod.backgroundImage;
+    }
+    if (c == '' || c == 'transparent') {
+      c = bod.backgroundColor;
+    }
+
+    updateStyle(`
+      .body_container {
+        background: ${[ img.css || img || '', pattern.css || pattern || '' ].filter(s => s.length).join()} ${c};
+      }
+      .quote_container .comment {
+        background: ${[ pattern.css || pattern || '' ].filter(s => s.length).join()} ${c};
+      }
+    `, 'FFA_BODY_BACKGROUND');
+
+    document.body.dataset.baseColor = c;
+    c = window.getComputedStyle(document.querySelector('.body_container')).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
+
+    if (brightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
+      all('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1', a => a.classList.add('bright'));
+    } else {
+      all('.bright', a => a.classList.remove('bright'));
+    }
+  }
+
+  function createSet(key, name, backgrounds) {
+    function getIndex() {
+      return Math.min(backgrounds.length - 1, Math.max(settingsMan.int(key, -1), 0));
+    }
+
+    function populateSelect(item, blank, index) {
+      blank.children[1].innerHTML = item.name;
+      blank.children[0].style.backgroundColor = getOrDefaultColor();
+      blank.children[0].style.opacity = '0.8';
+
+      let css = item.css.replace(/ fixed/g, "");
+      if (item.attributes.custom) {
+        css = css.split(' ').filter(a => ALIGNMENTS.indexOf(a) > -1).join(' ');
+      }
+
+      blank.style.background = css;
+      blank.dataset.bgIndex = index;
+      if (item.attributes.center) {
+        blank.style.backgroundPosition = "center center";
+      }
+      blank.style.backgroundSize = item.attributes.contain ? 'contain' : item.attributes.custom || 'cover';
+      if (item.source) {
+        blank.style.position = 'relative';
+        blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}">Source</a>`);
+      }
+
+      blank.addEventListener('click', () => {
+        settingsMan.set(key, index, -1);
+        apply();
+      });
+    }
+
+    return {
+      get() {
+        console.log(getIndex());
+        return backgrounds[getIndex()] || 'none';
+      },
+      createPresetSelect(tab) {
+        const select = tab.AddPresetSelect(key, name, true, 0);
+
+        backgrounds.forEach((a, i) => select.add(el => {
+          populateSelect(a, el, i);
+        }));
+
+        addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
+          const other = select.element.querySelector('.premade_settings_selected');
+          if (other) {
+            other.classList.remove('premade_settings_selected');
+          }
+          target.classList.add('premade_settings_selected');
+        });
+
+        const bgIndex = select.element.querySelector(`[data-index="${getIndex()}"]`);
+        if (bgIndex) {
+          bgIndex.classList.add('premade_settings_selected');
+        }
+      }
+    };
   }
   
   return {
-    get() {
-      return backgrounds[getIndex()];
+    getColor,
+    setColor(c) {
+      settingsMan.set("bgColor", c, 'transparent');
+      apply();
     },
-    createPresetSelect(tab) {
-      let select = tab.AddPresetSelect(key, name, true, 0);
-
-      backgrounds.forEach((a, i) => select.add(el => {
-        populateSelect(a, el, getOrDefaultBGColor(), i);
-      }));
-
-      addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
-        const other = select.element.querySelector('.premade_settings_selected');
-        if (other) {
-          other.classList.remove('premade_settings_selected');
-        }
-        target.classList.add('premade_settings_selected');
-      });
-
-      const bgIndex = select.element.querySelector(`[data-index="${getIndex()}"]`);
-      if (bgIndex) {
-        bgIndex.classList.add('premade_settings_selected');
-      }
-    }
+    getOrDefaultColor,
+    createSet,
+    apply
   };
 }
 
@@ -3504,15 +3486,10 @@ function BannerCreditsController(controller) {
   };
 }
 
-function getDocCookie(name) {
-  return decodeURIComponent(document.cookie.replace(new RegExp(`(?:(?:^|.*;)\\s*${encodeURIComponent(name).replace(/[\-\.\+\*]/g,"\\$&")}\\s*\\=\\s*([^;]*).*$)|^.*$`), '$1')) || null;
-}
-
-function isNsfw() {
-  return getDocCookie('view_mature') == 'true';
-}
-
 function BannerController(sets) {
+  let theme = 0;
+  const slider = Slider();
+
   let preloader, home_link, source_link;
 
   const done = e => e.target.parentNode.removeChild(e.target);
@@ -3586,8 +3563,81 @@ function BannerController(sets) {
     return banners[theme % banners.length];
   }
 
+  function Slider() {
+    const slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000],
+          slideLabels = ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"];
+    let fade, tit, slideshowTimer, me;
+
+    const blacklistBanners = 0;
+
+    const img = document.createElement('IMG');
+    img.addEventListener('load', () => {
+      me.goto(theme);
+      me.updateSlide();
+    });
+    img.addEventListener('error', () => {
+      if (blacklistBanners++ < banners.length) {
+        me.next();
+      }
+    });
+
+    return me = {
+      ready: _ => {
+        fade = document.querySelector('#fade_banner_image');
+        tit = document.querySelector('#title a.home_link');
+      },
+      getShuffle: _ => settingsMan.bool("shuffle_slideShow", true),
+      setShuffle: e => settingsMan.setB("shuffle_slideShow", e.target.checked, true),
+      labels: _ => slideLabels,
+      getSlide: _ => settingsMan.int("slideShow", 0),
+      setSlide(e, callback) {
+        settingsMan.set("slideShow", Math.abs(e.target.selectedIndex % slideTime.length), 0);
+        this.updateSlide();
+        callback();
+      },
+      pause() {
+        if (slideshowTimer) {
+          clearTimeout(slideshowTimer);
+          slideshowTimer = null;
+        }
+      },
+      resume() {
+        if (this.getSlide() && fade && !slideshowTimer) {
+          this.updateSlide();
+        }
+      },
+      updateSlide() {
+        this.pause();
+        const slide = this.getSlide();
+        if (slide && fade) {
+          slideshowTimer = setTimeout(() => this.next(), slideTimes[slide]);
+        }
+      },
+      next() {
+        if (this.getShuffle()) {
+          theme = Math.floor(Math.random() * (banners.length - 1));
+        } else {
+          theme = (theme + 1) % banners.length;
+        }
+        img.src = banners[theme].url;
+      },
+      goto(index, save) {
+        const cc = window.getComputedStyle(tit);
+        fade.classList.add('animating');
+        fade.style.backgroundImage = cc.backgroundImage;
+        fade.style.backgroundPosition = cc.backgroundPosition;
+        fade.style.backgroundSize = cc.backgroundSize;
+        requestAnimationFrame(() => {
+          bannerController.pick(index, save);
+          requestAnimationFrame(() => fade.classList.remove('animating'));
+        });
+      }
+    };
+  }
+
   let self;
   return self = {
+    slider,
     getSets: _ => sets,
     prev: _ => slider.goto(theme == 0 ? banners.length - 1 : theme - 1, true),
     next: _ => slider.goto(theme >= banners.length - 1 ? 0 : theme + 1, true),
@@ -3603,6 +3653,7 @@ function BannerController(sets) {
       
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
+    getSelected: _ => byTheme(theme),
     byTheme,
     getCurrent() {
       return CHRIST ? 'christmas.png' : settingsMan.get('selected_theme');
@@ -3737,7 +3788,8 @@ function BannerController(sets) {
     changeBanner(sources, img, color, pos) {
       if (color && color.length) {
         userToolbar.dataset.backgroundColor = color;
-        userToolbar.style.background = `linear-gradient(to bottom, ${toZeroAlpha(color)} 0%, ${color} 85%)`;
+        userToolbar.style.setProperty('--gradient-start', toZeroAlpha(color));
+        userToolbar.style.setProperty('--gradient-end', color);
         addBannerCss();
       }
 
@@ -3755,177 +3807,174 @@ function BannerController(sets) {
   };
 }
 
-function Slider() {
-  const slideTimes = [-1, 60000, 180000, 300000, 600000, 1800000, 3600000],
-        slideLabels = ["Off","One Minute","Three Minutes","Five Minutes","Ten Minutes","Half Hour","One Hour"];
-  let fade, tit, slideshowTimer, me;
+function SnowController() {
+  let snower;
 
-  const blacklistBanners = 0;
-
-  const img = document.createElement('IMG');
-  img.addEventListener('load', () => {
-    me.goto(theme);
-    me.updateSlide();
-  });
-  img.addEventListener('error', () => {
-    if (blacklistBanners++ < banners.length) {
-      me.next();
-    }
-  });
-
-  return me = {
-    ready: _ => {
-      fade = document.querySelector('#fade_banner_image');
-      tit = document.querySelector('#title a.home_link');
-    },
-    getShuffle: _ => settingsMan.bool("shuffle_slideShow", true),
-    setShuffle: e => settingsMan.setB("shuffle_slideShow", e.target.checked, true),
-    labels: _ => slideLabels,
-    getSlide: _ => settingsMan.int("slideShow", 0),
-    setSlide(e, callback) {
-      settingsMan.set("slideShow", Math.abs(e.target.selectedIndex % slideTime.length), 0);
-      this.updateSlide();
-      callback();
-    },
-    pause() {
-      if (slideshowTimer) {
-        clearTimeout(slideshowTimer);
-        slideshowTimer = null;
-      }
-    },
-    resume() {
-      if (this.getSlide() && fade && !slideshowTimer) {
-        this.updateSlide();
-      }
-    },
-    updateSlide() {
-      this.pause();
-      const slide = this.getSlide();
-      if (slide && fade) {
-        slideshowTimer = setTimeout(() => this.next(), slideTimes[slide]);
-      }
-    },
-    next() {
-      if (this.getShuffle()) {
-        theme = Math.floor(Math.random() * (banners.length - 1));
-      } else {
-        theme = (theme + 1) % banners.length;
-      }
-      img.src = banners[theme].url;
-    },
-    goto(index, save) {
-      const cc = window.getComputedStyle(tit);
-      fade.classList.add('animating');
-      fade.style.backgroundImage = cc.backgroundImage;
-      fade.style.backgroundPosition = cc.backgroundPosition;
-      fade.style.backgroundSize = cc.backgroundSize;
-      requestAnimationFrame(() => {
-        bannerController.pick(index, save);
-        requestAnimationFrame(() => fade.classList.remove('animating'));
-      });
-    }
-  };
-}
-
-function snowBG(env, container, reverse, fix) {
-  const randomRange = (min, max) => ((Math.random()*(max-min)) + min);
-  const TO_RADIANS = Math.PI/180;
-  const SCREEN_WIDTH = env.offsetWidth, SCREEN_HEIGHT = env.offsetHeight;
-
-  function Particle3D(scene, material) {
-    THREE.Particle.call(this, material);
-    this.velocity = new THREE.Vector3(0,-8,0);
-    this.velocity.rotateX(randomRange(-45,45));
-    this.velocity.rotateY(randomRange(0,360));
-    this.gravity = new THREE.Vector3(0,0,0);
-    this.position = new THREE.Vector3(Math.random() * 2000 - 1000, Math.random() * 400 - 200, Math.random() * 2000 - 1000);
-    this.scale.x = this.scale.y = 1;
-    this.drag = 1;
-    scene.add(this);
+  function getSaveFocus() {
+    return settingsMan.bool('ultra_snow_save_focus', true);
   }
-  Particle3D.prototype = extend(new THREE.Particle(), {
-    constructor: Particle3D,
-    updatePhysics() {
-      this.velocity.multiplyScalar(this.drag);
-      this.velocity.addSelf(this.gravity);
-      this.position.addSelf(this.velocity);
-      with (this.position) {
-        if (y < -300) y += 550;
-        if (x > 1000) x -= 2000;
-        else if (x < -1000) x += 2000;
-        if (z > 1000) z -= 2000;
-        else if (z < -1000) z += 2000;
-      }
+  
+  function getState() {
+    return settingsMan.int("snow_bg", 1);
+  }
+  
+  function getMode() {
+    return settingsMan.bool("snow_mode", false);
+  }
+  
+  function createSnower(env, container, reverse, fix) {
+    const randomRange = (min, max) => ((Math.random()*(max-min)) + min);
+    const TO_RADIANS = Math.PI/180;
+    const SCREEN_WIDTH = env.offsetWidth, SCREEN_HEIGHT = env.offsetHeight;
+
+    function Particle3D(scene, material) {
+      THREE.Particle.call(this, material);
+      this.velocity = new THREE.Vector3(0,-8,0);
+      this.velocity.rotateX(randomRange(-45,45));
+      this.velocity.rotateY(randomRange(0,360));
+      this.gravity = new THREE.Vector3(0,0,0);
+      this.position = new THREE.Vector3(Math.random() * 2000 - 1000, Math.random() * 400 - 200, Math.random() * 2000 - 1000);
+      this.scale.x = this.scale.y = 1;
+      this.drag = 1;
+      scene.add(this);
     }
-  });
+    Particle3D.prototype = extend(new THREE.Particle(), {
+      constructor: Particle3D,
+      updatePhysics() {
+        this.velocity.multiplyScalar(this.drag);
+        this.velocity.addSelf(this.gravity);
+        this.position.addSelf(this.velocity);
+        with (this.position) {
+          if (y < -300) y += 550;
+          if (x > 1000) x -= 2000;
+          else if (x < -1000) x += 2000;
+          if (z > 1000) z -= 2000;
+          else if (z < -1000) z += 2000;
+        }
+      }
+    });
 
-  function turn(angle, u, v) {
-    const cosRY = Math.cos(angle * TO_RADIANS);
-    const sinRY = Math.sin(angle * TO_RADIANS);
-    return [(u*cosRY) + (v*sinRY),(u*-sinRY) + (v*cosRY)];
+    function turn(angle, u, v) {
+      const cosRY = Math.cos(angle * TO_RADIANS);
+      const sinRY = Math.sin(angle * TO_RADIANS);
+      return [(u*cosRY) + (v*sinRY),(u*-sinRY) + (v*cosRY)];
+    }
+    extend(THREE.Vector3.prototype, {
+      rotateY(angle) { [this.x, this.z] = turn(angle, this.x, this.z); },
+      rotateX(angle) { [this.y, this.z] = turn(angle, this.y, this.z); },
+      rotateZ(angle) { [this.y, this.x] = turn(angle, this.y, this.x); }
+    });
+
+    let window_focused = true;
+    let saveFocus = getSaveFocus();
+    let mouseX = 0, mouseY = 0;
+    let ticker;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
+    scene.add(camera);
+    camera.position.z = 1000;
+
+    const renderer = new THREE.CanvasRenderer();
+    renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    const material = new THREE.ParticleBasicMaterial({
+      map: new THREE.Texture(newEl(`<img src="${staticFimFicDomain()}/scripts/img/ParticleSmoke.png">`))
+    });
+
+    const particles = arrayOf(140, _ => new Particle3D(scene, material));
+
+    if (fix) {
+      renderer.domElement.style.position = 'fixed';
+      renderer.domElement.style.top = renderer.domElement.style.left = 0;
+    }
+    renderer.domElement.style.pointerEvents = 'none';
+
+    const mouseMoved = e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    };
+
+    window.addEventListener('focus', () => window_focused = true);
+    window.addEventListener('blur', () => window_focused = false);
+
+    const tick = () => {
+      if (!window_focused && saveFocus) return;
+      particles.forEach(particle => particle.updatePhysics());
+      camera.position.x += (mouseX - camera.position.x) * 0.05;
+      camera.position.y += (-mouseY - camera.position.y) * 0.05;
+      camera.lookAt(scene.position);
+      renderer.render(scene, camera);
+    };
+
+    return {
+      setSave: v => saveFocus = v,
+      start() {
+        console.log('starting snow');
+        if (ticker) return;
+        ticker = setInterval(tick, 50 / 3);
+        container.insertAdjacentElement(reverse ? 'beforeend' : 'afterbegin', renderer.domElement);
+        document.addEventListener('mousemove', mouseMoved);
+        return this;
+      },
+      stop() {
+        console.log('stopping snow');
+        if (!ticker) return;
+        clearInterval(ticker);
+        ticker = null;
+        renderer.domElement.parentNode.removeChild(renderer.domElement);
+        document.removeEventListener('mousemove', mouseMoved);
+        return this;
+      }
+    };
   }
-  extend(THREE.Vector3.prototype, {
-    rotateY(angle) { [this.x, this.z] = turn(angle, this.x, this.z); },
-    rotateX(angle) { [this.y, this.z] = turn(angle, this.y, this.z); },
-    rotateZ(angle) { [this.y, this.x] = turn(angle, this.y, this.x); }
-  });
 
-  let window_focused = true;
-  let saveFocus = getSaveFocus();
-  let mouseX = 0, mouseY = 0;
-  let ticker;
+  function applySnowing(mode, v, s) {
+    if (v < 2 && (v == 0 || DECEMBER)) {
+      if (snower) {
+        return snower.start();
+      }
 
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(20, SCREEN_WIDTH / SCREEN_HEIGHT, 1, 10000);
-  scene.add(camera);
-  camera.position.z = 1000;
+      const context = mode ? document.querySelector('#title .home_link') : document.body;
 
-  const renderer = new THREE.CanvasRenderer();
-  renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-  const material = new THREE.ParticleBasicMaterial({
-    map: new THREE.Texture(newEl(`<img src="${staticFimFicDomain()}/scripts/img/ParticleSmoke.png">`))
-  });
-
-  const particles = arrayOf(140, _ => new Particle3D(scene, material));
-
-  if (fix) {
-    renderer.domElement.style.position = 'fixed';
-    renderer.domElement.style.top = renderer.domElement.style.left = 0;
+      if (context) {
+        snower = createSnower(document.body, context, mode, !mode).start();
+      }
+    } else if (snower) {
+      snower.stop();
+    }
   }
-  renderer.domElement.style.pointerEvents = 'none';
-
-  const mouseMoved = e => {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  };
-
-  window.addEventListener('focus', () => window_focused = true);
-  window.addEventListener('blur', () => window_focused = false);
-
-  const tick = () => {
-    if (!window_focused && saveFocus) return;
-    particles.forEach(particle => particle.updatePhysics());
-    camera.position.x += (mouseX - camera.position.x) * 0.05;
-    camera.position.y += (-mouseY - camera.position.y) * 0.05;
-    camera.lookAt(scene.position);
-    renderer.render(scene, camera);
-  };
 
   return {
-    setSave: v => saveFocus = v,
-    start() {
-      if (ticker) return;
-      ticker = setInterval(tick, 50 / 3);
-      container.insertAdjacentElement(reverse ? 'beforeend' : 'afterbegin', renderer.domElement);
-      document.addEventListener('mousemove', mouseMoved);
+    createOptions(tab) {
+      const enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getState());
+      enableUSnow.addEventListener('change', compose(e => {
+        settingsMan.set("snow_bg", e.target.selectedIndex, 1);
+        this.apply();
+      }, updateSnowOptions));
+      tab.AddCheckBox("uss", "Snow In Banner", getMode()).addEventListener('change', e => {
+        console.log('changed snow mode');
+        settingsMan.setB("snow_mode", e.target.checked, false);
+        if (snower) {
+          snower.stop();
+          snower = null;
+        }
+        this.apply();
+      });
+      tab.AddCheckBox('pus', 'Pause Snow when lost focus', getSaveFocus()).addEventListener('change', e => {
+        settingsMan.setB('ultra_snow_save_focus', e.target.checked, true);
+        if (snower) snower.setSave(e.target.checked);
+      });
+      updateSnowOptions();
+
+      function updateSnowOptions() {
+        tab.SetEnabled('#pus' + (bannerController.getEnabled() ? ',#uss' : ''), enableUSnow.selectedIndex < 2);
+      }
+
+      return enableUSnow;
     },
-    stop() {
-      if (!ticker) return;
-      clearInterval(ticker);
-      ticker = null;
-      renderer.domElement.parentNode.removeChild(renderer.domElement);
-      document.removeEventListener('mousemove', mouseMoved);
+    apply() {
+      applySnowing(getMode(), getState());
     }
   };
 }
