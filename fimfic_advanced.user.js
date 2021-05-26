@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta
+// @version     4.6-beta-2
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6.-beta',
+const VERSION = '4.6-beta-2',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -2526,17 +2526,6 @@ ${light ? '' : `
         margin-top: 10px;
         display: inline-block;
         vertical-align: top;}
-  .user-page-header .subscribe-star-sponsor::before,
-  .user-page-header .patreon-sponsor::before {
-        display: none;}
-  .user-page-header .subscribe-star-sponsor:after,
-  .user-page-header .patreon-sponsor:after { content: "P";}
-  .user-page-header .subscribe-star-sponsor-gold:after,
-  .user-page-header .patreon-sponsor-gold:after { content: "G";}
-  .user-page-header .subscribe-star-sponsor-silver:after,
-  .user-page-header .patreon-sponsor-silver:after { content: "S";}
-  .user-page-header .subscribe-star-sponsor-bronze:after,
-  .user-page-header .patreon-sponsor-bronze:after { content: "B";}
   .story-page-header {overflow: visible !important;}
   .user-page-header .edit-link,
   .user-page-header .tabs li a, .user-page-header .tabs li a:before, .user-page-header .tabs li a span {
