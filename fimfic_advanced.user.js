@@ -2517,7 +2517,6 @@ ${light ? '' : `
         border: none;
         box-shadow: none;}
   .user-page-header .info-container, .story-page-header .info-container {
-        display: inline-block;
         overflow: hidden;
         height: 70px;
         transition: height 0.5s ease;}
