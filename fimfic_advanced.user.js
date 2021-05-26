@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-2
+// @version     4.6-beta-3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6-beta-2',
+const VERSION = '4.6-beta-3',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -128,37 +128,42 @@ const bannerController = BannerController([
     Ban("ep_shady_trough", "//equestria-prevails.deviantart.com/art/The-Shady-Trough-319986368", "#4D3CA4"),
     Ban("spittfire_1", "//spittfireart.deviantart.com/art/The-Report-Commission-340421670", "#3C55A4"),
     Ban("blitzpony_luna", "//blitzpony.deviantart.com/art/S-hard-to-say-359899432", "#4B4D55"),
-    Ban("gsphere_scoots", "//lionel23.deviantart.com/art/The-Newbie-set-an-Academy-Record-356826950", "#477FB3"),
-    Ban("stoic_celestia", "//thestoicmachine.deviantart.com/art/Radiant-Malevolence-213959523", "#706CA7"),
-    Ban("moe_canterlot", "//derpibooru.org/25", "#867D58"),
-    Ban("alasou_costumes", "//alasou.deviantart.com/art/Costume-Swap-party-381670764", "#775886"),
-    Ban("pridark_luna", "//pridark.deviantart.com/art/A-Wonderful-Night-381504014", "#525A8F"),
-    Ban("gign_flutterdash", "//gign-3208.deviantart.com/art/In-the-attic-377732207", "#A55744"),
-    Ban("goben_forest", "//noben.deviantart.com/art/Giggling-at-the-Ghosties-356451219", "#556B80"),
-    Ban("devinian_lyra_bonbon", "//devinian.deviantart.com/art/Story-of-the-bench-373750983", "#68885A"),
-    Ban("devinian_fluttershy", "//devinian.deviantart.com/art/Picnic-with-Kindness-351639714", "#749142"),
-    Ban("jackalynn_pinkiedash", "//jack-a-lynn.deviantart.com/art/Following-the-Rainbow-288432950", "#4584B6"),
-    Ban("yakovlev_fluttershy", "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", "#5E7520"),
-    Ban("yakovlev_twilight", "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", "#9E75A9"),
-    Ban("yakovlev_zecora", "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", "#A46E3C"),
-    Ban("mymagicdream_twilight", "//my-magic-dream.deviantart.com/art/Twilight-453477065", "#77599A")
+    Ban("gsphere_scoots", [{ href: "//lionel23.deviantart.com/art/The-Newbie-set-an-Academy-Record-356826950", text: 'Artwork by Lionel'}], "#477FB3"),
+    Ban("stoic_celestia", [{ href: "//thestoicmachine.deviantart.com/art/Radiant-Malevolence-213959523", text: 'Artwork by TheStoicMachine'}], "#706CA7"),
+    Ban("moe_canterlot", [{ href: "//derpibooru.org/25", text: 'Artwork by Moe'}], "#867D58"),
+    Ban("alasou_costumes", [{ href: "//alasou.deviantart.com/art/Costume-Swap-party-381670764", text: 'Artwork by Alasou'}], "#775886"),
+    Ban("pridark_luna", [{ href: "//pridark.deviantart.com/art/A-Wonderful-Night-381504014", text: 'Artwork by Pridark'}], "#525A8F"),
+    Ban("gign_flutterdash", [{ href: "//gign-3208.deviantart.com/art/In-the-attic-377732207", text: 'Artwork by Gign'}], "#A55744"),
+    Ban("goben_forest", [{ href: "//derpibooru.org/images/255541", text: 'Artwork by Noben'}], "#556B80"),
+    Ban("devinian_lyra_bonbon", [{ href: "//devinian.deviantart.com/art/Story-of-the-bench-373750983", text: 'Artwork by Devinian'}], "#68885A"),
+    Ban("devinian_fluttershy", [{ href: "//devinian.deviantart.com/art/Picnic-with-Kindness-351639714", text: 'Artwork by Devinian'}], "#749142"),
+    Ban("jackalynn_pinkiedash", [{ href: "//derpibooru.org/images/18806", text: 'Artwork by Jack-A-Lynn'}], "#4584B6"),
+    Ban("yakovlev_fluttershy", [{ href: "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", text: 'Artwork by Yakovlev-vad'}], "#5E7520"),
+    Ban("yakovlev_twilight", [{ href: "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", text: 'Artwork by Yakovlev-vad'}], "#9E75A9"),
+    Ban("yakovlev_zecora", [{ href: "//www.deviantart.com/yakovlev-vad/art/peaceful-place-request-367969466", text: 'Artwork by Yakovlev-vad'}], "#A46E3C"),
+    Ban("mymagicdream_twilight", [{ href: "//my-magic-dream.deviantart.com/art/Twilight-453477065", text: 'Artwork by My-Magic-Dream'}], "#77599A")
   ]},{ name: "Extended", items: [
-    Ban2("discorded_applebloom", "//derpibooru.org/1735150", "#D0D3FC"),
-    Ban2("flutterby_dash", "//derpibooru.org/250982", "#D771A4"),
-    Ban2("mommy_derp", "//derpibooru.org/96418", "rgb(189,198,205)"),
-    Ban2("flutter_bite", "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", "#6E1414"),
-    Ban2("movie_night", "//dracodile.deviantart.com/art/Movie-night-343553193", "#704582"),
-    Ban2("antipodes", "//www.fimfiction.net/user/ToixStory", "#ECBC6A"),
-    Ban2("steampunk", "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", "#764D17"),
-    Ban2("flutter_bee", "//atteez.deviantart.com/art/Flutterbee-437641542", "#92A43C"),
-    Ban2("cmc_roped", "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", "#6485BE"),
-    Ban2("twi_revenge", "//zacatron94.deviantart.com/art/Revenge-446974245", "#4B2164"),
-    Ban2("solar_flare", "//zodiacnlh.deviantart.com/art/solar-flare-457056305", "#AD160B", { position: ["right",0,"center",0] }),
-    Ban2("serene", "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", "#2E737A"),
-    Ban2("nightwork", "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", "#9E75A9"),
-    Ban2("shamanguli_princess", "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", "#6E6756"),
-    Ban2("yakovlev_trap", "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", "#694255", { position: ["center",0,"bottom",0] }),
-    Ban2("buttercupsaiyan_dash", "", "#4C7A7E", { position: ["center",0,"top",0] })
+    Ban2("discorded_applebloom", [{ href: "//derpibooru.org/1735150", text: 'Artwork by Discorded'}], "#D0D3FC"),
+    Ban2("flutterby_dash", [{ href: "//derpibooru.org/250982", text: 'Artwork by JunglePony'}], "#D771A4"),
+    Ban2("mommy_derp", [{ href: "//derpibooru.org/96418", text: 'Artwork by JunglePony'}], "rgb(189,198,205)"),
+    Ban2("flutter_bite", [{ href: "//johnjoseco.deviantart.com/art/Just-One-Bite-422922104", text: 'Artwork by JohnJoseco'}], "#6E1414"),
+    Ban2("movie_night", [{ href: "//dracodile.deviantart.com/art/Movie-night-343553193", text: 'Artwork by Dracodile'}], "#704582"),
+    Ban2("antipodes", [
+      { href: "//www.fimfiction.net/user/ToixStory", text: 'Antipodes'}
+    ], "#ECBC6A"),
+    Ban2("steampunk", [
+      { href: "//hinoraito.deviantart.com/art/MLP-FIM-Commission-Steampunk-ponies-293033624", text: 'Artwork by Hinoraito'},
+      { href: '/story/9038/freeze-frame', text: 'Story by ToixStory'}
+    ], "#764D17"),
+    Ban2("flutter_bee", [{ href: "//atteez.deviantart.com/art/Flutterbee-437641542", text: 'Artwork by Atteez'}], "#92A43C"),
+    Ban2("cmc_roped", [{ href: "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", text: 'Artwork by Nightcreepmax'}], "#6485BE"),
+    Ban2("twi_revenge", [{ href: "//zacatron94.deviantart.com/art/Revenge-446974245", text: 'Artwork by Zacatron94'}], "#4B2164"),
+    Ban2("solar_flare", [{ href: "https://derpibooru.org/images/639721", text: 'Artwork by ZodiacNicola'}], "#AD160B", { position: ["right",0,"center",0] }),
+    Ban2("serene", [{ href: "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", text: 'Artwork by Rain-Gear'}], "#2E737A"),
+    Ban2("nightwork", [{ href: "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", text: "Artwork by Yakovlev-vad"}], "#9E75A9"),
+    Ban2("shamanguli_princess", [{ href: "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", text: 'Artwork by Shamanguli'}], "#6E6756"),
+    Ban2("yakovlev_trap", [{ href: "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", text: 'Artwork by Yakovlev-vad'}], "#694255", { position: ["center",0,"bottom",0] }),
+    Ban2("buttercupsaiyan_dash", [{ href: '#', text: 'Anonymous Artist'}], "#4C7A7E", { position: ["center",0,"top",0] })
   ]}, { name: "Nostalgic", items: [
     Ban0("fields", [
       {href: "https://derpibooru.org/50676", text: 'Artwork by Qsteel'}
@@ -3007,8 +3012,8 @@ function setTitleHidden(e) {
 
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
-function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
-function Ban2(name, source, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), [{href: source }], color, args);}
+function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source.map ? source : [{href: source }], color, args);}
+function Ban2(name, sources, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
 function Ban0(name, sources, color, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
 function Banner(id, url, sources, colour, args) {return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
 
