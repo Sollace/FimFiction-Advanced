@@ -196,7 +196,7 @@ const bannerController = BannerController([
     ], "#7EA450"),
     Ban0("leporn", [
       { href: '#', text: 'Anonymous Artist'}
-    ], "#4C7A7E", { nsfw: true }),
+    ], "#7B123A", { nsfw: true }),
     Ban0("twidash", [
       { href: 'https://www.deviantart.com/goatanimedatingsim/art/Reading-Rainbow-283334545', text: 'Characters by Equestria-Prevails'},
       { href: 'https://www.deviantart.com/mrhavre/art/NATURE-i-love-you-316005359', text: 'Background by MrHavre'},
