@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-3
+// @version     4.6-beta-4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6-beta-3',
+const VERSION = '4.6-beta-4',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -140,7 +140,7 @@ const bannerController = BannerController([
     Ban("jackalynn_pinkiedash", [{ href: "//derpibooru.org/images/18806", text: 'Artwork by Jack-A-Lynn'}], "#4584B6"),
     Ban("yakovlev_fluttershy", [{ href: "//yakovlev-vad.deviantart.com/art/Simple-curiosity-468468925", text: 'Artwork by Yakovlev-vad'}], "#5E7520"),
     Ban("yakovlev_twilight", [{ href: "//yakovlev-vad.deviantart.com/art/Time-to-wash-3-490390076", text: 'Artwork by Yakovlev-vad'}], "#9E75A9"),
-    Ban("yakovlev_zecora", [{ href: "//www.deviantart.com/yakovlev-vad/art/peaceful-place-request-367969466", text: 'Artwork by Yakovlev-vad'}], "#A46E3C"),
+    Ban("yakovlev_zecora", [{ href: "//www.deviantart.com/yakovlev-vad/art/peaceful-place-request-367969466", text: 'Artwork by Yakovlev-vad'}], "rgb(90, 123, 126)"),
     Ban("mymagicdream_twilight", [{ href: "//my-magic-dream.deviantart.com/art/Twilight-453477065", text: 'Artwork by My-Magic-Dream'}], "#77599A")
   ]},{ name: "Extended", items: [
     Ban2("discorded_applebloom", [{ href: "//derpibooru.org/1735150", text: 'Artwork by Discorded'}], "#D0D3FC"),
@@ -183,6 +183,10 @@ const bannerController = BannerController([
       { href: 'https://derpibooru.org/images/57598', text: 'Luna by Reuniclus'},
       { href: 'https://www.deviantart.com/quanno3', text: 'Background by Quanno3'}
     ], "#4EB99B"),
+    Ban0("header_title_flittercloudchaser", [
+      { href: 'https://www.deviantart.com/mysticalpha/art/Flitter-and-Cloudchaser-294990688', text: 'Characters by MysticAlpha'},
+      { href: 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434', text: 'Background by TimeImpact'}
+    ], "#4EB99B"),
     Ban0("rarijack", [
       { href: 'https://derpibooru.org/images/414388', text: 'Characters by Joey Darkmeat'},
       { href: 'https://www.deviantart.com/stinkehund/art/Sweet-Apple-Acres-svg-301920207', text: 'Background by Stinkehund'},
@@ -190,6 +194,9 @@ const bannerController = BannerController([
     Ban0("stealth", [
       { href: 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434', text: 'Artwork by TimeImpact'}
     ], "#7EA450"),
+    Ban0("leporn", [
+      { href: '#', text: 'Anonymous Artist'}
+    ], "#4C7A7E", { nsfw: true }),
     Ban0("twidash", [
       { href: 'https://www.deviantart.com/goatanimedatingsim/art/Reading-Rainbow-283334545', text: 'Characters by Equestria-Prevails'},
       { href: 'https://www.deviantart.com/mrhavre/art/NATURE-i-love-you-316005359', text: 'Background by MrHavre'},
