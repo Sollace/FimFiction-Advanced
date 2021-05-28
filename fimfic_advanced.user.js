@@ -211,6 +211,7 @@ const bannerController = BannerController([
 ]);
 const creditsController = BannerCreditsController(bannerController);
 const snowController = SnowController();
+const signatureController = SignatureController();
 const colours = {
   Mapping: {},
   Keys: [], Names: [],
@@ -323,7 +324,7 @@ function initFimFictionAdvanced() {
   initBBCodeController();
 
   if (getBlockLightbox()) {
-    lightboxblocker();
+    initLightBoxBlocker();
   }
   
   bannerController.initFancy();
@@ -416,12 +417,12 @@ function applyNightModeListener() {
     NightModeController.prototype.update.super.apply(this, arguments);
     window.dispatchEvent(new Event('darkmodechange'));
   });
-}
 
-function nightModeToggled() {
-  addCss();
-  if (bannerController.getEnabled()) addBannerCss();
-  backgrounds.apply();
+  function nightModeToggled() {
+    addCss();
+    if (bannerController.getEnabled()) addBannerCss();
+    backgrounds.apply();
+  }
 }
 
 function buildSettingsTab(tab) {
@@ -532,7 +533,7 @@ function buildSettingsTab(tab) {
     previewButton.classList.toggle('styled_button_green');
     previewButton.classList.toggle('styled_button_blue');
     sigText.classList.toggle('sigPreviewing');
-    sigPrev.innerHTML = previewSig();
+    sigPrev.innerHTML = signatureController.previewSignature();
   });
 
   function updateBannersOptions() {
@@ -824,20 +825,331 @@ function initCommentArea() {
   all('.bbcode-editor button[title="Text Colour"]', a => a.innerHTML = '<i class="fa fa-tint"></i>');
   all('.bbcode-editor button[title="Insert Image"]', a => a.innerHTML = '<i class="fa fa-picture-o"></i>');
   all('.bbcode-editor:not([data-fimficadv])', registerCommentButtons);
-}
+  
+  function registerCommentButtons(me, recurs) {
+    const controller = App.GetControllerFromElement(me);
+    if (!recurs && !controller) return requestAnimationFrame(() => registerCommentButtons(me, 1));
 
-function registerCommentButtons(me, recurs) {
-  const controller = App.GetControllerFromElement(me);
-  if (!recurs && !controller) return requestAnimationFrame(() => registerCommentButtons(me, 1));
+    const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
 
-  const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
-
-  me.dataset.fimficadv = '1';
-  main_button.dataset.click = 'showFimficAdv';
-  registerButton(main_button, controller, -1);
+    me.dataset.fimficadv = '1';
+    main_button.dataset.click = 'showFimficAdv';
+    registerButton(main_button, controller, -1);
+  }
 }
 
 function initBBCodeController() {
+
+  function getRecentColours(num) {
+    const recent = settingsMan.get('colour_use_history', '');
+    return recent.length ? ('#' + recent.replace(/;/g,';#')).split(';').reverse().splice(0, num) : [];
+  }
+
+  function clearRecentColours() {
+    settingsMan.remove('colour_use_history');
+  }
+
+  function addRecent(color) {
+    let recent = settingsMan.get('colour_use_history', '');
+    recent = recent.length ? ('#' + recent.replace(/;/g,';#')).split(';').filter(a => a !== color) : [];
+    recent.push(color);
+    if (recent.length > 15) recent.splice(0,1);
+    settingsMan.set('colour_use_history', recent.join(';').replace(/#/g, ''));
+  }
+
+  function registerColourInsertionEvent(controller, holder) {
+    addDelegatedEvent(holder, '.colour-tile a', 'click', (e, target) => {
+      const t = controller || App.GetControllerFromElement(document.querySelector('.active_text_area').closest('.bbcode-editor'));
+      t.insertTags(`[color=${target.dataset.colour}]`, '[/color]');
+      addRecent(target.dataset.colour);
+      t.textarea.focus();
+    });
+  }
+
+  function insertColor(controller) {
+    const pop = makePopup("Custom Colour", 'fa fa-tint');
+
+    pop.SetWidth(350);
+    pop.content.insertAdjacentHTML('beforeend', `<div class="std" style="padding:10px;">
+          <div id="color_preview" class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;" >
+              <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}</b>
+          </div>
+          <input id="valid" type="hidden" value="0" name="valid"></input>
+          <input id="color" type="text" placeholder="Text Colour"></input>
+          <button id="use_colour" type="button" class="styled_button">Use Colour</button>
+          <div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>
+      </div>`);
+      pop.SetFooter(`Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using '[spoiler]text[/spoiler]'`);
+
+    const valid = pop.content.querySelector('#valid');
+    const color = pop.content.querySelector('#color');
+
+    const check = e => {
+      let c = e.target.value;
+      let va = InvalidHexColor(c);
+      valid.value = va == true ? 0 : 1;
+      if (!c || va == true) {
+        c = '';
+      } else if (va == false) {
+        if (c.indexOf('#') != 0) c = "#" + c;
+      } else {
+        c = colours.Keys[va];
+        e.target.value = colours.Names[va];
+      }
+      pop.content.querySelector('#color_preview').style.color = c;
+    };
+
+    color.addEventListener('keyup', check);
+    color.addEventListener('change', check);
+    pop.content.querySelector('#use_colour').addEventListener('click', e => {
+      let c = color.value.trim();
+      if (!(c && c.length && valid.value === "1")) {
+        return pop.content.querySelector('#color_error').classList.remove("hidden");
+      }
+      let i = colours.NamesLower.indexOf(c.toLowerCase());
+      if (i > -1) c = colours.Keys[i];
+      if (c.indexOf('#') == -1) c = '#' + c;
+      addRecent(c);
+      controller.insertTags("[color=" + c + "]", "[/color]");
+      pop.Close();
+    });
+    pop.Show();
+  }
+
+  function initColourWindow(controller, self) {
+    all('.active_text_area', me => me.classList.remove('active_text_area'));
+    controller.textarea.classList.add('active_text_area');
+
+    const list = makePopup('All Colours', 'fa fa-tint', false, false);
+    Object.keys(colours.Sets).forEach(i => {
+      addColorSection(list.content, colours.Sets[i][1], i, ` collapsable${colours.Sets[i][0] ? ' collapsed' : ''}`);
+    })
+    addDelegatedEvent(list.content, '.colour-section-header.collapsable', 'click', (e, target) => target.toggle('collapsed'));
+
+    const recent = getRecentColours(15);
+    if (recent.length) {
+      const recentSec = addColorSection(list.content, recent, 'Recent').querySelector('.colour-section-header');
+      const ul = recentSec.parentNode.querySelector('ul');
+      ul.classList.add('recent-colours');
+      ul.dataset.count = 15;
+      recentSec.insertAdjacentHTML('beforeend', '<a style="float:right;">Clear</a>');
+      recentSec.lastChild.addEventListener('click', () => {
+        clearRecentColours();
+        ul.style.opacity = 0.3;
+        ul.style.pointerEvents = 'none';
+      });
+    }
+
+    registerColourInsertionEvent(controller, list.content);
+
+    list.SetWidth(560);
+    list.Show();
+  }
+
+  function addColorTiles(colors) {
+    return colors.map(c => {
+      if (typeof c == 'string') return [c, colours.Mapping[c] || c];
+      if (c < 0) return [''];
+      return [colours.Keys[c], colours.Names[c] || c]
+    }).map((a, c) => a[0] == '' ? '' : `<li class="colour-tile">
+              <a title="${a[1]}" data-index="${c}" data-colour="${a[0]}">
+                  <span style="background-color:${a[0]} !important" class="color-tile"></span>
+              </a>
+          </li>`).join('');
+  }
+
+  function addColorSection(panel, colors, title, headerExtra) {
+    panel.insertAdjacentHTML('beforeend', `<div class="colour-section">
+          <div class="colour-section-header${headerExtra || ''}">${title}</div>
+          <ul class="colour-holder">${addColorTiles(colors)}</ul>
+      </div>`);
+    return panel.lastChild;
+  }
+
+  function find() {
+    const controller = this;
+    const pop = makePopup('Find and Replace', 'fa fa-magic', false);
+    pop.SetWidth(350);
+    pop.SetContent(`<div class="std" style="padding:10px;">
+      <input id="find" data-change="reset" type="text" placeholder="Find"></input>
+      <input id="replace" type="text" placeholder="Replace"></input>
+    </div>`);
+    const finder = pop.content.querySelector('#find');
+    const replacer = pop.content.querySelector('#replace');
+    pop.SetFooter(`<button data-click="find" type="button" class="styled_button">Find</button>
+                  <button data-click="replace" type="button" class="styled_button">Replace</button>
+                  <button data-click="replaceAll" type="button" class="styled_button">Replace All</button>`);
+    addDelegatedEvent(pop.content, '[data-click]', 'click', (e, target) => events[target.dataset.click]());
+    addDelegatedEvent(pop.content, '[data-change]', 'change', (e, target) => events[target.dataset.change]());
+
+    let nextStart = 0;
+    const events = {
+      reset() {
+        nextstart = 0;
+      },
+      find() {
+        const find = finder.value;
+        if (!find.length) return;
+        const text = controller.getText().substring(nextStart, controller.getText().length);
+        let start = text.indexOf(find);
+        let end = 0;
+        if (start < 0) {
+          start = controller.getText().indexOf(find);
+          nextStart = 0;
+        }
+        if (start > -1) {
+          start += nextStart;
+          end = start + find.length;
+        }
+        controller.textarea.selectionStart = start;
+        controller.textarea.selectionEnd = end;
+        controller.textarea.focus();
+      },
+      replace() {
+        const find = finder.value;
+        if (!find.length) return;
+        const text = controller.getText();
+        const start = controller.textarea.selectionStart;
+        const end = controller.textarea.selectionEnd;
+        if (start != end) {
+          const replace = replacer.value;
+
+          if (sel == find) {
+            controller.setText(text.substring(0, start) + replace + text.substring(end, text.length));
+            controller.textarea.selectionStart = start + replace.length;
+            controller.textarea.selectionEnd = controller.textarea.selectionStart;
+          }
+        } else {
+          events.find();
+          if (controller.textarea.selectionStart != controller.textarea.selectionEnd) {
+            events.replace();
+          }
+        }
+        controller.textarea.focus();
+      },
+      replaceAll: _ => {
+        if (finder.value.length) controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
+      }
+    };
+
+    pop.Show();
+  }
+
+  function showAddDirectImage() {
+    this.showAddImage();
+    const input = document.getElementById('bbcode_image'),
+          preview = document.getElementById('bbcode_image_preview'),
+          error = document.getElementById('add_image_error'),
+          form = document.getElementById('add_image');
+    form.closest('.drop-down-pop-up-container').querySelector('h1').firstChild.nextSibling.textContent = 'Insert Direct Image';
+    form.removeEventListeners('submit');
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!valid) return error.classList.remove('hidden');
+      const url = input.value;
+      this.insertText(`[img]${url}${url.indexOf('?') > -1 ? '&' : '?'}isEmote=true[/img]`);
+      form.closest('.drop-down-pop-up-container').querySelector('.close_button').click();
+    });
+  }
+
+  function betterColours(me, controller) {
+    if (!me.querySelector('div')) {
+      me.insertAdjacentHTML('beforeend', `<div class="drop-down drop-colour-pick" style="width:250px">
+              <div class="arrow" ></div>
+              <ul class="colour-holder">
+                  ${addColorTiles(colours.Sets['FimFiction'][1])}
+                  <li class="divider"></li>
+                  ${addColorTiles(colours.Sets['Mane Six'][1])}
+                  <li class="recent-part divider"><span>Recent</span></li>
+                  <span data-count="6" class="recent-part recent-colours"></span>
+                  <li class="divider"></li>
+              </ul>
+              <ul class="button-holder">
+                  <li><a data-click="showAllColours">More Colours</a></li>
+                  <li><a data-click="showColourCreator">Custom Colour</a></li>
+              </ul>
+          </div>`);
+      registerColourInsertionEvent(controller, me.lastChild);
+    }
+    all('.recent-colours', me => {
+      const recent = getRecentColours(parseInt(me.dataset.count));
+      me.innerHTML = addColorTiles(recent);
+      if (recent.length) {
+        me.style.opacity = me.style.pointerEvents = '';
+      } else {
+        me.style.opacity = '0.3';
+        me.style.pointerEvents = 'none';
+      }
+      all('.recent-part', me.parentNode, me => me.style.display = recent.length ? '' : 'none');
+    });
+  }
+
+  function operateText(controller, func) {
+    const element = controller.textarea,
+          value = element.value,
+          start = element.selectionStart,
+          end = element.selectionEnd;
+
+    const top = element.scrollTop;
+    const selected = func((end - start) > 0 ? value.substring(start, end).split('\n') : ['']).join('\n');
+
+    element.value = value.substring(0, start) + selected + value.substring(end, value.length);
+    element.selectionStart = start;
+    element.selectionEnd = start + selected.length;
+    element.scrollTop = top;
+    element.focus();
+  }
+
+  function betterSizes(me, controller) {
+    const basic = [[0.5,0.5],  [0.75,0.75], [1.5,1.5],  ['2.0',2]];
+    const sizes = [
+      [10,0.714], [12,0.857], [14,1], [16,1.143], [18,1.286],
+      [20,1.429], [22,1.571], [24,1.714], [26,1.857], [28,2]
+    ];
+    const mapper = (set,type) => set.map((v, i) => `<li><a data-${type} data-label="${v[0]}" data-size="${v[1]}">${v[0]}</a></li>`).join('');
+    me.insertAdjacentHTML('afterend', `<div class="drop-down drop-size-pick" style="width:177px">
+          <div class="arrow"></div>
+          <ul>${mapper(basic, 'sizes')}${mapper(sizes, 'sizes')}${mapper(sizes, 'headings')}</ul>
+      </div>`);
+    me = me.parentNode.querySelector('ul');
+    addDelegatedEvent(me, 'a[data-sizes]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em]`, '[/size]'));
+    addDelegatedEvent(me, 'a[data-headings]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em][h1]`, '[/h1][/size]'));
+    addDelegatedEvent(me, 'a', 'mouseenter', (e, target) => {
+      const sz = target.dataset.label;
+      const pop = makeToolTip(target);
+      pop[0].parentNode.style.margin = '15px 0 0 0';
+      pop[0].parentNode.style.padding = '0';
+      pop.append(`<div style="font-size: ${target.dataset.size}em !important; line-height:1;min-height:10px;height: ${sz < 10 ? sz < 1 ? 5 : 20 : sz}px;">Ab</div>`);
+    });
+    addDelegatedEvent(me, 'a', 'mouseleave', (e, target) => target.removeChild(target.childNodes[1]));
+  }
+
+  function buildAdvancedButton(button, controller) {
+    button.insertAdjacentHTML('beforebegin', '<div class="drop-down"><div class="arrow"></div><ul></ul></div>');
+    const items = button.previousSibling.lastChild;
+    addDropList(items, "BBCode Tags", a => {
+      addOption(a, "Right Align").dataset.click = 'right';
+      addOption(a, "Indent").dataset.click = 'indent';
+      addOption(a, "Outdent").dataset.click = 'outdent';
+      let b = addOption(a, "Left Figure");
+      b.dataset.click = 'figure';
+      b.dataset.align = 'left';
+      b = addOption(a, "Right Figure");
+      b.dataset.click = 'figure';
+      b.dataset.align = 'right';
+      addOption(a, "Ordered List").dataset.click = 'makeOrderedList';
+      addOption(a, "Unordered List").dataset.click = 'makeUnorderedList';
+      addOption(a, "Green Text").dataset.click = 'greentext';
+      addOption(a, "Icon").dataset.click = 'showIconPicker';
+      addOption(a, "Opacity").dataset.click = 'showOpacityDialogue';
+    });
+    addOption(items, "Sign").dataset.click = 'sign';
+    addOption(items, "Insert Direct Image").dataset.click = 'showAddDirectImage';
+    addOption(items, "Find/Replace Text").dataset.click = 'find';
+    addOption(items, "Blotter").dataset.click = 'blot';
+    inbounds(button);
+  }
+
   extend(BBCodeEditorController.prototype, {
     showColourPicker(sender, event) {
       event.preventDefault();
@@ -863,7 +1175,7 @@ function initBBCodeController() {
       this.insertTags(`[figure=${sender.dataset.align}]`, '[/figure]');
     },
     sign(sender, event) {
-      this.textarea.value = sign(this.textarea.value);
+      this.textarea.value = signatureController.applySignature(this.textarea.value);
     },
     showOpacityDialogue(sender, event) {
       const pop = makePopup('Opacity', 'fa fa-tint');
@@ -929,12 +1241,8 @@ function initBBCodeController() {
       });
       pop.Show();
     },
-    showAddDirectImage(sender, event) {
-      makeImagePopup(this);
-    },
-    find(sender, event) {
-      makeReplacePopup(this);
-    },
+    showAddDirectImage,
+    find,
     blot(sender, event) {
       this.insertText(this.getSelection().replace(/[^\s\\]/g, "█"));
     },
@@ -980,22 +1288,6 @@ function initBBCodeController() {
       });
     }
   });
-}
-
-function operateText(controller, func) {
-  const element = controller.textarea,
-        value = element.value,
-        start = element.selectionStart,
-        end = element.selectionEnd;
-
-  const top = element.scrollTop;
-  const selected = func((end - start) > 0 ? value.substring(start, end).split('\n') : ['']).join('\n');
-
-  element.value = value.substring(0, start) + selected + value.substring(end, value.length);
-  element.selectionStart = start;
-  element.selectionEnd = start + selected.length;
-  element.scrollTop = top;
-  element.focus();
 }
 
 function initBlogPage() {
@@ -1090,7 +1382,7 @@ function startCommentHandler() {
   }
 }
 
-function lightboxblocker() {
+function initLightBoxBlocker() {
   addDelegatedEvent(document.body, '[data-lightbox]', 'mouseover', (e, target) => {
     if (target.classList.contains('user_image')) {
       target.removeAttribute('data-lightbox');
@@ -1101,340 +1393,6 @@ function lightboxblocker() {
     }
     target.classList.add('no-lightbox');
   });
-}
-
-function buildAdvancedButton(button, controller) {
-  button.insertAdjacentHTML('beforebegin', '<div class="drop-down"><div class="arrow"></div><ul></ul></div>');
-  const items = button.previousSibling.lastChild;
-  addDropList(items, "BBCode Tags", a => {
-    addOption(a, "Right Align").dataset.click = 'right';
-    addOption(a, "Indent").dataset.click = 'indent';
-    addOption(a, "Outdent").dataset.click = 'outdent';
-    let b = addOption(a, "Left Figure");
-    b.dataset.click = 'figure';
-    b.dataset.align = 'left';
-    b = addOption(a, "Right Figure");
-    b.dataset.click = 'figure';
-    b.dataset.align = 'right';
-    addOption(a, "Ordered List").dataset.click = 'makeOrderedList';
-    addOption(a, "Unordered List").dataset.click = 'makeUnorderedList';
-    addOption(a, "Green Text").dataset.click = 'greentext';
-    addOption(a, "Icon").dataset.click = 'showIconPicker';
-    addOption(a, "Opacity").dataset.click = 'showOpacityDialogue';
-  });
-  addOption(items, "Sign").dataset.click = 'sign';
-  addOption(items, "Insert Direct Image").dataset.click = 'showAddDirectImage';
-  addOption(items, "Find/Replace Text").dataset.click = 'find';
-  addOption(items, "Blotter").dataset.click = 'blot';
-  inbounds(button);
-}
-
-function makeReplacePopup(controller) {
-  const pop = makePopup('Find and Replace', 'fa fa-magic', false);
-  pop.SetWidth(350);
-  pop.SetContent(`<div class="std" style="padding:10px;">
-    <input id="find" data-change="reset" type="text" placeholder="Find"></input>
-    <input id="replace" type="text" placeholder="Replace"></input>
-  </div>`);
-  const finder = pop.content.querySelector('#find');
-  const replacer = pop.content.querySelector('#replace');
-  pop.SetFooter(`<button data-click="find" type="button" class="styled_button">Find</button>
-                <button data-click="replace" type="button" class="styled_button">Replace</button>
-                <button data-click="replaceAll" type="button" class="styled_button">Replace All</button>`);
-  addDelegatedEvent(pop.content, '[data-click]', 'click', (e, target) => events[target.dataset.click]());
-  addDelegatedEvent(pop.content, '[data-change]', 'change', (e, target) => events[target.dataset.change]());
-
-  let nextStart = 0;
-  const events = {
-    reset() {
-      nextstart = 0;
-    },
-    find() {
-      const find = finder.value;
-      if (!find.length) return;
-      const text = controller.getText().substring(nextStart, controller.getText().length);
-      let start = text.indexOf(find);
-      let end = 0;
-      if (start < 0) {
-        start = controller.getText().indexOf(find);
-        nextStart = 0;
-      }
-      if (start > -1) {
-        start += nextStart;
-        end = start + find.length;
-      }
-      controller.textarea.selectionStart = start;
-      controller.textarea.selectionEnd = end;
-      controller.textarea.focus();
-    },
-    replace() {
-      const find = finder.value;
-      if (!find.length) return;
-      const text = controller.getText();
-      const start = controller.textarea.selectionStart;
-      const end = controller.textarea.selectionEnd;
-      if (start != end) {
-        const replace = replacer.value;
-
-        if (sel == find) {
-          controller.setText(text.substring(0, start) + replace + text.substring(end, text.length));
-          controller.textarea.selectionStart = start + replace.length;
-          controller.textarea.selectionEnd = controller.textarea.selectionStart;
-        }
-      } else {
-        events.find();
-        if (controller.textarea.selectionStart != controller.textarea.selectionEnd) {
-          events.replace();
-        }
-      }
-      controller.textarea.focus();
-    },
-    replaceAll: _ => {
-      if (finder.value.length) controller.setText(replaceAll(finder.value, replacer.value, controller.getText()));
-    }
-  };
-
-  pop.Show();
-}
-
-function makeImagePopup(controller) {
-  controller.showAddImage();
-  const input = document.getElementById('bbcode_image'),
-        preview = document.getElementById('bbcode_image_preview'),
-        error = document.getElementById('add_image_error'),
-        form = document.getElementById('add_image');
-  form.closest('.drop-down-pop-up-container').querySelector('h1').firstChild.nextSibling.textContent = 'Insert Direct Image';
-  form.removeEventListeners('submit');
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    if (!valid) return error.classList.remove('hidden');
-    const url = input.value;
-    controller.insertText(`[img]${url}${url.indexOf('?') > -1 ? '&' : '?'}isEmote=true[/img]`);
-    form.closest('.drop-down-pop-up-container').querySelector('.close_button').click();
-  });
-}
-
-function insertColor(controller) {
-  const pop = makePopup("Custom Colour", 'fa fa-tint');
-
-  pop.SetWidth(350);
-  pop.content.insertAdjacentHTML('beforeend', `<div class="std" style="padding:10px;">
-        <div id="color_preview" class="pattern-checkerboard" style="border: 1px solid #aaa;border-radius: 3px;margin-bottom: 10px;padding: 3px;width: 100%;height: 200px;display: flex;" >
-            <b>${[30,20,10,5].map(a => `<span style="font-size:${a}px">The quick brown fox jumped over the lazy dog.</span>`).join(' ')}</b>
-        </div>
-        <input id="valid" type="hidden" value="0" name="valid"></input>
-        <input id="color" type="text" placeholder="Text Colour"></input>
-        <button id="use_colour" type="button" class="styled_button">Use Colour</button>
-        <div id="color_error" class="error-message hidden">Invalid Hexidecimal Code</div>
-    </div>`);
-    pop.SetFooter(`Be mindeful of the colours you use.<br />Try to avoid colours that are very close to the background as it is difficult to read. If hiding is intended, consider using '[spoiler]text[/spoiler]'`);
-
-  const valid = pop.content.querySelector('#valid');
-  const color = pop.content.querySelector('#color');
-
-  const check = e => {
-    let c = e.target.value;
-    let va = InvalidHexColor(c);
-    valid.value = va == true ? 0 : 1;
-    if (!c || va == true) {
-      c = '';
-    } else if (va == false) {
-      if (c.indexOf('#') != 0) c = "#" + c;
-    } else {
-      c = colours.Keys[va];
-      e.target.value = colours.Names[va];
-    }
-    pop.content.querySelector('#color_preview').style.color = c;
-  };
-
-  color.addEventListener('keyup', check);
-  color.addEventListener('change', check);
-  pop.content.querySelector('#use_colour').addEventListener('click', e => {
-    let c = color.value.trim();
-    if (!(c && c.length && valid.value === "1")) {
-      return pop.content.querySelector('#color_error').classList.remove("hidden");
-    }
-    let i = colours.NamesLower.indexOf(c.toLowerCase());
-    if (i > -1) c = colours.Keys[i];
-    if (c.indexOf('#') == -1) c = '#' + c;
-    addRecent(c);
-    controller.insertTags("[color=" + c + "]", "[/color]");
-    pop.Close();
-  });
-  pop.Show();
-}
-
-function previewSig() {
-  return fillBBCode(sign(pickNext([
-    'Ermahgerd! I wub u so much!!!11111one11!exclamation!!mark1',
-    'I feel ya bro',
-    'Sink X Dash is OTP! ' + emoteHTM('rainbowderp'),
-    'Fräulein ' + emoteHTM('ajsmug'),
-    'Bro Hoof /). ' + emoteHTM('rainbowlaugh'),
-    'I\'ve seen better',
-    'Sanity is overrated anyway.',
-    '"0/10 needs more Maud" - IGN',
-    'Tiny box Tim NOOOOOOOOOOOOOO!!!!!!!!!!!',
-    'None more manly tears were ever shed',
-    'Do you even goat brah?',
-    'You Maud bro?',
-    'I liek trains.',
-    'Iets ryk soos kaas.',
-    'I am best Pony!!!',
-    'Your argument is invalid. <img class="user_image" src="//fc01.deviantart.net/fs71/f/2014/013/d/b/cslyra_by_comeha-d7220ek.png"></img>',
-    'U is bestest pone!',
-    '[size=10][i]Don\'t trust the parasprite.[/i][/size]',
-    '[center]<img width="100px" height="100px" src="//fc00.deviantart.net/fs70/i/2012/200/b/e/sweepy_time__by_chubble_munch-d57scrc.png" /><br />Pweese?[/center]',
-    '[url=//dileak.deviantart.com/art/Meanwhile-at-the-super-awesome-WUB-base-310634590]Epic WUB Time is now[/url]',
-    '[u][b][color=#C2851B]N[/color][color=#BC801E]y[/color][color=#B67C22]a[/color][color=#B07826]n[/color][color=#AA742A] [/color][color=#A4702E]N[/color][color=#9F6C32]y[/color][color=#996836]a[/color][color=#936439]n[/color][color=#8D603D] [/color][color=#875C41]H[/color][color=#815745]a[/color][color=#7C5349]p[/color][color=#764F4D]p[/color][color=#704B51]y[/color][color=#6A4755] [/color][color=#644358]D[/color][color=#5E3F5C]e[/color][color=#593B60]r[/color][color=#533764]p[/color][color=#4D3368]y[/color][color=#472E6C] [/color][color=#412A70]T[/color][color=#3B2673]i[/color][color=#362277]m[/color][color=#301E7B]e[/color][color=#2A1A7F] [/color][color=#241683]Y[/color][color=#1E1287]a[/color][color=#180E8B]y[/color][/b][/u]'
-  ])).replace(/\n/g, '<br />'));
-}
-
-function sign(text) {
-  let formatted = getSig();
-  const t = new Date();
-  [
-    ['%name%', getUserName()],
-    ['%year%', t.getFullYear()],
-    ['%MONTH%', t.getMonth() + 1],
-    ['%DAY%', t.getDate()],
-    ['%month%', (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])[t.getMonth()]],
-    ['%day%', (['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])[t.getDay()]],
-    ['%hour%', t.getHours()],
-    ['%min%', t.getMinutes()],
-    ['%sec%', t.getSeconds()]
-  ].forEach(t => formatted = replaceAll(t[0], t[1], formatted));
-  if (!hasSigned(text, formatted)) {
-    if (formatted.indexOf("%message%") > -1) {
-      text = formatted.replace("%message%", text);
-    } else {
-      text += formatted;
-    }
-  }
-  return text;
-}
-
-function hasSigned(value, format) {
-  return (new RegExp(encodeURI(format.replace(/%message%/g, ".*")))).test(encodeURI(value));
-}
-
-function emoteHTM(name) {
-  return `<img src="${staticFimFicDomain()}/images/emoticons/${name}.png" style="height:27px;" ></img>`;
-}
-
-function betterSizes(me, controller) {
-  const basic = [[0.5,0.5],  [0.75,0.75], [1.5,1.5],  ['2.0',2]];
-  const sizes = [
-    [10,0.714], [12,0.857], [14,1], [16,1.143], [18,1.286],
-    [20,1.429], [22,1.571], [24,1.714], [26,1.857], [28,2]
-  ];
-  const mapper = (set,type) => set.map((v, i) => `<li><a data-${type} data-label="${v[0]}" data-size="${v[1]}">${v[0]}</a></li>`).join('');
-  me.insertAdjacentHTML('afterend', `<div class="drop-down drop-size-pick" style="width:177px">
-        <div class="arrow"></div>
-        <ul>${mapper(basic, 'sizes')}${mapper(sizes, 'sizes')}${mapper(sizes, 'headings')}</ul>
-    </div>`);
-  me = me.parentNode.querySelector('ul');
-  addDelegatedEvent(me, 'a[data-sizes]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em]`, '[/size]'));
-  addDelegatedEvent(me, 'a[data-headings]', 'click', (e, target) => controller.insertTags(`[size=${target.dataset.size}em][h1]`, '[/h1][/size]'));
-  addDelegatedEvent(me, 'a', 'mouseenter', (e, target) => {
-    const sz = target.dataset.label;
-    const pop = makeToolTip(target);
-    pop[0].parentNode.style.margin = '15px 0 0 0';
-    pop[0].parentNode.style.padding = '0';
-    pop.append(`<div style="font-size: ${target.dataset.size}em !important; line-height:1;min-height:10px;height: ${sz < 10 ? sz < 1 ? 5 : 20 : sz}px;">Ab</div>`);
-  });
-  addDelegatedEvent(me, 'a', 'mouseleave', (e, target) => target.removeChild(target.childNodes[1]));
-}
-
-function betterColours(me, controller) {
-  if (!me.querySelector('div')) {
-    me.insertAdjacentHTML('beforeend', `<div class="drop-down drop-colour-pick" style="width:250px">
-            <div class="arrow" ></div>
-            <ul class="colour-holder">
-                ${addColorTiles(colours.Sets['FimFiction'][1])}
-                <li class="divider"></li>
-                ${addColorTiles(colours.Sets['Mane Six'][1])}
-                <li class="recent-part divider"><span>Recent</span></li>
-                <span data-count="6" class="recent-part recent-colours"></span>
-                <li class="divider"></li>
-            </ul>
-            <ul class="button-holder">
-                <li><a data-click="showAllColours">More Colours</a></li>
-                <li><a data-click="showColourCreator">Custom Colour</a></li>
-            </ul>
-        </div>`);
-    registerColourInsertionEvent(controller, me.lastChild);
-  }
-  all('.recent-colours', me => {
-    const recent = getRecentColours(parseInt(me.dataset.count));
-    me.innerHTML = addColorTiles(recent);
-    if (recent.length) {
-      me.style.opacity = me.style.pointerEvents = '';
-    } else {
-      me.style.opacity = '0.3';
-      me.style.pointerEvents = 'none';
-    }
-    all('.recent-part', me.parentNode, me => me.style.display = recent.length ? '' : 'none');
-  });
-}
-
-function initColourWindow(controller, self) {
-  all('.active_text_area', me => me.classList.remove('active_text_area'));
-  controller.textarea.classList.add('active_text_area');
-
-  const list = makePopup('All Colours', 'fa fa-tint', false, false);
-  Object.keys(colours.Sets).forEach(i => {
-    addColorSection(list.content, colours.Sets[i][1], i, ` collapsable${colours.Sets[i][0] ? ' collapsed' : ''}`);
-  })
-  addDelegatedEvent(list.content, '.colour-section-header.collapsable', 'click', (e, target) => target.toggle('collapsed'));
-
-  const recent = getRecentColours(15);
-  if (recent.length) {
-    const recentSec = addColorSection(list.content, recent, 'Recent').querySelector('.colour-section-header');
-    const ul = recentSec.parentNode.querySelector('ul');
-    ul.classList.add('recent-colours');
-    ul.dataset.count = 15;
-    recentSec.insertAdjacentHTML('beforeend', '<a style="float:right;">Clear</a>');
-    recentSec.lastChild.addEventListener('click', () => {
-      clearRecentColours();
-      ul.style.opacity = 0.3;
-      ul.style.pointerEvents = 'none';
-    });
-  }
-
-  registerColourInsertionEvent(controller, list.content);
-
-  list.SetWidth(560);
-  list.Show();
-}
-
-function registerColourInsertionEvent(controller, holder) {
-  addDelegatedEvent(holder, '.colour-tile a', 'click', (e, target) => {
-    const t = controller || App.GetControllerFromElement(document.querySelector('.active_text_area').closest('.bbcode-editor'));
-    t.insertTags(`[color=${target.dataset.colour}]`, '[/color]');
-    addRecent(target.dataset.colour);
-    t.textarea.focus();
-  });
-}
-
-function addColorSection(panel, colors, title, headerExtra) {
-  panel.insertAdjacentHTML('beforeend', `<div class="colour-section">
-        <div class="colour-section-header${headerExtra || ''}">${title}</div>
-        <ul class="colour-holder">${addColorTiles(colors)}</ul>
-    </div>`);
-  return panel.lastChild;
-}
-
-function addColorTiles(colors) {
-  return colors.map(c => {
-    if (typeof c == 'string') return [c, colours.Mapping[c] || c];
-    if (c < 0) return [''];
-    return [colours.Keys[c], colours.Names[c] || c]
-  }).map((a, c) => a[0] == '' ? '' : `<li class="colour-tile">
-            <a title="${a[1]}" data-index="${c}" data-colour="${a[0]}">
-                <span style="background-color:${a[0]} !important" class="color-tile"></span>
-            </a>
-        </li>`).join('');
 }
 
 function getLogoNames() {
@@ -2960,19 +2918,6 @@ function fillFontOptGroups(input) {
   });
 }
 
-function getRecentColours(num) {
-  const recent = settingsMan.get('colour_use_history', '');
-  return recent.length ? ('#' + recent.replace(/;/g,';#')).split(';').reverse().splice(0, num) : [];
-}
-function clearRecentColours() {settingsMan.remove('colour_use_history');}
-function addRecent(color) {
-  let recent = settingsMan.get('colour_use_history', '');
-  recent = recent.length ? ('#' + recent.replace(/;/g,';#')).split(';').filter(a => a !== color) : [];
-  recent.push(color);
-  if (recent.length > 15) recent.splice(0,1);
-  settingsMan.set('colour_use_history', recent.join(';').replace(/#/g, ''));
-}
-
 function getStoryWidth() {
   const result = settingsMan.get('storyWidth', '100%');
   return parseInt(result) ? result : '100%';
@@ -3011,9 +2956,7 @@ function setLogo(e) {
   updateLogo(e.target.value);
 }
 
-function updateLogo(v) {
-  document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());
-}
+function updateLogo(v) {document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());}
 
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 
@@ -3060,6 +3003,65 @@ function replaceWith(el, html) {
 function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
 
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
+
+function SignatureController() {
+  const RANDOM_COMMENTS = [
+    'Ermahgerd! I wub u so much!!!11111one11!exclamation!!mark1',
+    'I feel ya bro',
+    'Sink X Dash is OTP! ' + emoteHTM('rainbowderp'),
+    'Fräulein ' + emoteHTM('ajsmug'),
+    'Bro Hoof /). ' + emoteHTM('rainbowlaugh'),
+    'I\'ve seen better',
+    'Sanity is overrated anyway.',
+    '"0/10 needs more Maud" - IGN',
+    'Tiny box Tim NOOOOOOOOOOOOOO!!!!!!!!!!!',
+    'None more manly tears were ever shed',
+    'Do you even goat brah?',
+    'You Maud bro?',
+    'I liek trains.',
+    'Iets ryk soos kaas.',
+    'I am best Pony!!!',
+    'Your argument is invalid. <img class="user_image" src="//fc01.deviantart.net/fs71/f/2014/013/d/b/cslyra_by_comeha-d7220ek.png"></img>',
+    'U is bestest pone!',
+    '[size=10][i]Don\'t trust the parasprite.[/i][/size]',
+    '[center]<img width="100px" height="100px" src="//fc00.deviantart.net/fs70/i/2012/200/b/e/sweepy_time__by_chubble_munch-d57scrc.png" /><br />Pweese?[/center]',
+    '[url=//dileak.deviantart.com/art/Meanwhile-at-the-super-awesome-WUB-base-310634590]Epic WUB Time is now[/url]',
+    '[u][b][color=#C2851B]N[/color][color=#BC801E]y[/color][color=#B67C22]a[/color][color=#B07826]n[/color][color=#AA742A] [/color][color=#A4702E]N[/color][color=#9F6C32]y[/color][color=#996836]a[/color][color=#936439]n[/color][color=#8D603D] [/color][color=#875C41]H[/color][color=#815745]a[/color][color=#7C5349]p[/color][color=#764F4D]p[/color][color=#704B51]y[/color][color=#6A4755] [/color][color=#644358]D[/color][color=#5E3F5C]e[/color][color=#593B60]r[/color][color=#533764]p[/color][color=#4D3368]y[/color][color=#472E6C] [/color][color=#412A70]T[/color][color=#3B2673]i[/color][color=#362277]m[/color][color=#301E7B]e[/color][color=#2A1A7F] [/color][color=#241683]Y[/color][color=#1E1287]a[/color][color=#180E8B]y[/color][/b][/u]'
+  ];
+
+  function hasSigned(value, format) {
+    return (new RegExp(encodeURI(format.replace(/%message%/g, ".*")))).test(encodeURI(value));
+  }
+
+  return {
+    previewSignature() {
+      return fillBBCode(this.applySignature(pickNext(RANDOM_COMMENTS)).replace(/\n/g, '<br />'));
+    },
+    applySignature(text) {
+      let formatted = getSig();
+      const t = new Date();
+      [
+        ['%name%', getUserName()],
+        ['%year%', t.getFullYear()],
+        ['%MONTH%', t.getMonth() + 1],
+        ['%DAY%', t.getDate()],
+        ['%month%', (['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'])[t.getMonth()]],
+        ['%day%', (['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'])[t.getDay()]],
+        ['%hour%', t.getHours()],
+        ['%min%', t.getMinutes()],
+        ['%sec%', t.getSeconds()]
+      ].forEach(t => formatted = replaceAll(t[0], t[1], formatted));
+      if (!hasSigned(text, formatted)) {
+        if (formatted.indexOf("%message%") > -1) {
+          text = formatted.replace("%message%", text);
+        } else {
+          text += formatted;
+        }
+      }
+      return text;
+    }
+  };
+}
 
 function BackgroundsController() {
   const ALIGNMENTS = ['top','left','right','bottom','center'];
