@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-5
+// @version     4.6-beta-6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -19,7 +19,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6-beta-5',
+const VERSION = '4.6-beta-6',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -30,9 +30,7 @@ if (this['unsafeWindow'] && window !== unsafeWindow) {
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
 }
-
 //-------------------------------------------DATA---------------------------------------------------
-const defaultSig = "%message%\n\n--[i]%name%[/i]";
 const backgrounds = BackgroundsController();
 const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
   BG("None", ''),
@@ -90,9 +88,8 @@ const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
  // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
  // BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`, '', {darken: true})
 ]);
-
 const icons = 'adjust;adn;align-center;align-justify;align-left;align-right;ambulance;anchor;android;angellist;angle-double-down;angle-double-left;angle-double-right;angle-double-up;angle-down;angle-left;angle-right;angle-up;apple;archive;area-chart;arrow-circle-down;arrow-circle-left;arrow-circle-o-down;arrow-circle-o-left;arrow-circle-o-right;arrow-circle-o-up;arrow-circle-right;arrow-circle-up;arrow-down;arrow-left;arrow-right;arrow-up;arrows;arrows-alt;arrows-h;arrows-v;asterisk;at;automobile;backward;ban;bank;bar-chart;bar-chart-o;barcode;bars;beer;behance;behance-square;bell;bell-o;bell-slash;bell-slash-o;bicycle;binoculars;birthday-cake;bitbucket;bitbucket-square;bitcoin;bold;bolt;bomb;book;bookmark;bookmark-o;briefcase;btc;bug;building;building-o;bullhorn;bullseye;bus;cab;calculator;calendar;calendar-o;camera;camera-retro;car;caret-down;caret-left;caret-right;caret-square-o-down;caret-square-o-left;caret-square-o-right;caret-square-o-up;caret-up;cc;cc-amex;cc-discover;cc-mastercard;cc-paypal;cc-stripe;cc-visa;certificate;chain;chain-broken;check;check-circle;check-circle-o;check-square;check-square-o;chevron-circle-down;chevron-circle-left;chevron-circle-right;chevron-circle-up;chevron-down;chevron-left;chevron-right;chevron-up;child;circle;circle-o;circle-o-notch;circle-thin;clipboard;clock-o;close;cloud;cloud-download;cloud-upload;cny;code;code-fork;codepen;coffee;cog;cogs;columns;comment;comment-o;comments;comments-o;compass;compress;copy;copyright;credit-card;crop;crosshairs;css3;cube;cubes;cut;cutlery;dashboard;database;dedent;delicious;desktop;deviantart;digg;dollar;dot-circle-o;download;dribbble;dropbox;drupal;edit;eject;ellipsis-h;ellipsis-v;empire;envelope;envelope-o;envelope-square;eraser;eur;euro;exchange;exclamation;exclamation-circle;exclamation-triangle;expand;external-link;external-link-square;eye;eye-slash;eyedropper;facebook;facebook-square;fast-backward;fast-forward;fax;female;fighter-jet;file;file-archive-o;file-audio-o;file-code-o;file-excel-o;file-image-o;file-movie-o;file-o;file-pdf-o;file-photo-o;file-picture-o;file-powerpoint-o;file-sound-o;file-text;file-text-o;file-video-o;file-word-o;file-zip-o;files-o;film;filter;fire;fire-extinguisher;flag;flag-checkered;flag-o;flash;flask;flickr;floppy-o;folder;folder-o;folder-open;folder-open-o;font;forward;foursquare;frown-o;futbol-o;gamepad;gavel;gbp;ge;gear;gears;gift;git;git-square;github;github-alt;github-square;gittip;glass;globe;google;google-plus;google-plus-square;google-wallet;graduation-cap;group;h-square;hacker-news;hand-o-down;hand-o-left;hand-o-right;hand-o-up;hdd-o;header;headphones;heart;heart-o;history;home;hospital-o;html5;ils;image;inbox;indent;info;info-circle;inr;instagram;institution;ioxhost;italic;joomla;jpy;jsfiddle;key;keyboard-o;krw;language;laptop;lastfm;lastfm-square;leaf;legal;lemon-o;level-down;level-up;life-bouy;life-buoy;life-ring;life-saver;lightbulb-o;line-chart;link;linkedin;linkedin-square;linux;list;list-alt;list-ol;list-ul;location-arrow;lock;long-arrow-down;long-arrow-left;long-arrow-right;long-arrow-up;magic;magnet;mail-forward;mail-reply;mail-reply-all;male;map-marker;maxcdn;meanpath;medkit;meh-o;microphone;microphone-slash;minus;minus-circle;minus-square;minus-square-o;mobile;mobile-phone;money;moon-o;mortar-board;music;navicon;newspaper-o;openid;outdent;pagelines;paint-brush;paper-plane;paper-plane-o;paperclip;paragraph;paste;pause;paw;paypal;pencil;pencil-square;pencil-square-o;phone;phone-square;photo;picture-o;pie-chart;pied-piper;pied-piper-alt;pinterest;pinterest-square;plane;play;play-circle;play-circle-o;plug;plus;plus-circle;plus-square;plus-square-o;power-off;print;puzzle-piece;qq;qrcode;question;question-circle;quote-left;quote-right;ra;random;rebel;recycle;reddit;reddit-square;refresh;remove;renren;reorder;repeat;reply;reply-all;retweet;rmb;road;rocket;rotate-left;rotate-right;rouble;rss;rss-square;rub;ruble;rupee;save;scissors;search;search-minus;search-plus;send;send-o;share;share-alt;share-alt-square;share-square;share-square-o;shekel;sheqel;shield;shopping-cart;sign-in;sign-out;signal;sitemap;skype;slack;sliders;slideshare;smile-o;soccer-ball-o;sort;sort-alpha-asc;sort-alpha-desc;sort-amount-asc;sort-amount-desc;sort-asc;sort-desc;sort-down;sort-numeric-asc;sort-numeric-desc;sort-up;soundcloud;space-shuttle;spinner;spoon;spotify;square;square-o;stack-exchange;stack-overflow;star;star-half;star-half-empty;star-half-full;star-half-o;star-o;steam;steam-square;step-backward;step-forward;stethoscope;stop;strikethrough;stumbleupon;stumbleupon-circle;subscript;suitcase;sun-o;superscript;support;table;tablet;tachometer;tag;tags;tasks;taxi;tencent-weibo;terminal;text-height;text-width;th;th-large;th-list;thumb-tack;thumbs-down;thumbs-o-down;thumbs-o-up;thumbs-up;ticket;times;times-circle;times-circle-o;tint;toggle-down;toggle-left;toggle-off;toggle-on;toggle-right;toggle-up;trash;trash-o;tree;trello;trophy;truck;try;tty;tumblr;tumblr-square;turkish-lira;twitch;twitter;twitter-square;umbrella;underline;undo;university;unlink;unlock;unlock-alt;unsorted;upload;usd;user;user-md;users;video-camera;vimeo-square;vine;vk;volume-down;volume-off;volume-up;warning;wechat;weibo;weixin;wheelchair;wifi;windows;won;wordpress;wrench;xing;xing-square;yahoo;yelp;yen;youtube;youtube-play;youtube-square'.split(';');
-const logos = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO);
+const logoController = LogoController('Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO));
 var banners = [];
 let customBanner, customBannerindex = -1;
 const animator = Animator();
@@ -212,6 +209,8 @@ const bannerController = BannerController([
 const creditsController = BannerCreditsController(bannerController);
 const snowController = SnowController();
 const signatureController = SignatureController();
+const adsController = AdsController();
+const siteFontController = SiteFontController();
 const colours = {
   Mapping: {},
   Keys: [], Names: [],
@@ -230,11 +229,8 @@ const colours = {
   colours.NamesLower.push(a[0].toLowerCase());
 });
 let userToolbar;
-
 //--------------------------------------BOILER PLATE------------------------------------------------
-
 requireRemoveEventListeners();
-
 ready(() => {
   if (!document.querySelector('.body_container')) return;
   const start = (new Date()).getTime();
@@ -265,10 +261,7 @@ try {
   console.error(`FimficAdv: Unhandled Exception in Early Init`);
   console.error(e);
 }
-
-
 //---------------------------------------SCRIPT BODY------------------------------------------------
-
 function initGlobals() {
   if (!userToolbar) userToolbar = document.querySelector('.user_toolbar');
 }
@@ -282,7 +275,7 @@ function earlyStart() {
         addBannerCss();
         (function banner() {
           if (canLoadBanners()) {
-            updateLogo();
+            logoController.apply();
             return bannerController.build();
           }
           requestAnimationFrame(banner);
@@ -312,7 +305,7 @@ function earlyStart() {
 function initFimFictionAdvanced() {
   initCommentArea();
   backgrounds.apply();
-  applyCustomFont();
+  siteFontController.apply();
   applyChapterButtons();
   applyBetterRatingBars();
 
@@ -330,17 +323,12 @@ function initFimFictionAdvanced() {
   bannerController.initFancy();
   
   if (CURRENT_LOCATION.indexOf('feed') == 0) {
-    applyFeedFix();
-    feeder.fixFeedOptions();
-    animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
+    feeder.applyFeedFix();
   } else {
     feeder.initUnreadCount();
   }
 
-  if (getFixAds()) {
-    removeAnnoyances();
-  }
-  
+  adsController.apply();
   applyCodePatches();
   applyFeatureBoxEnhancements();
   
@@ -361,11 +349,9 @@ function registerEvents() {
   if (CURRENT_LOCATION.indexOf('feed') == 0) FimFicEvents.on('afterloadfeed', feeder.initFeedItems);
   applyNightModeListener();
 }
-
 //--------------------------------------------------------------------------------------------------
 //----------------------------------------FUNCTIONS-------------------------------------------------
 //--------------------------------------------------------------------------------------------------
-
 function applyFeatureBoxEnhancements() {
   extend(FrontpageController.prototype, {
     prevFeaturedStory() {
@@ -429,10 +415,10 @@ function buildSettingsTab(tab) {
   tab.StartEndSection("General Settings");
   tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', setAlwaysShowImages);
   tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', setBlockLightbox);
-  tab.AddCheckBox("btrds", "Improved Advertisements", getFixAds()).addEventListener('change', setFixAds);
+  adsController.createOptions(tab);
   tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).addEventListener('change', setSweetieEnabled);
 
-  fillFontOptGroups(tab.AddDropDown("ffs", "Site Font", []));
+  siteFontController.createOptions(tab);
 
   const chapWid = tab.AddTextBox("cwt", "Chapter Width");
   addTooltip("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 100% (was 46em)", chapWid);
@@ -454,9 +440,7 @@ function buildSettingsTab(tab) {
 
   tab.StartEndSection("Colours and Customization");
 
-  const oldLogo = tab.AddDropDown("ologo", "Logo Image", getLogoNames(), getLogo());
-  oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
-  oldLogo.addEventListener('change', setLogo);
+  logoController.createOptions(tab);
 
   makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
 
@@ -494,47 +478,7 @@ function buildSettingsTab(tab) {
 
   tab.StartEndSection("Signatures");
 
-  const sigText = tab.AddTextArea("sig", '', getSig());
-  sigText.style.minHeight = '150px';
-  sigText.style.minWidth = '100%';
-  sigText.style.resize = 'vertical';
-  addTooltip(`<u>Magic Strings</u><br ><div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>
-    ${['%name% - the name of the current user',
-       '%message% - posted comment',
-       '%year% - The Year eg: 2014',
-       '%MONTH% - Month of year',
-       '%DAY% - Day of month',
-       '%month% - Name of month',
-       '%day% - Day of Week',
-       '%hour% - Current hour in 24 hour format',
-       '%min% - Minute',
-       '%sec% - Second'].join('<br>')}</div></div>`, sigText);
-  sigText.insertAdjacentHTML('afterend', '<div class="sigPreview" style="min-height:150px;min-width:100%"></div>');
-  const sigPrev = sigText.nextSibling;
-  sigText.addEventListener('change', () => setSig(sigText.value));
-  tab.AppendResetButton(sigText).addEventListener('click', () => {
-    sigText.value = defaultSig;
-    setSig(sigText.value);
-  });
-
-  let sig = sigText.parentNode.parentNode.parentNode.firstChild;
-  const userTile = getUserCommentThumb(128);
-  userTile.insertAdjacentHTML('beforeend', `<style type="text/css">
-        .properties td.label .comment .author .avatar {margin-left: 0;margin-right: 0;}
-        .properties td.label .comment .author {float: right;}</style>`);
-  sig.style.verticalAlign = 'top';
-  sig.style.paddingTop = '0px';
-  sig.appendChild(userTile);
-
-  const previewButton = tab.AppendButton(sigText, 'Preview');
-  previewButton.classList.add('previewButton');
-  previewButton.addEventListener('click', e => {
-    previewButton.innerHTML = sigText.classList.contains('sigPreviewing') ? 'Preview' : 'Edit';
-    previewButton.classList.toggle('styled_button_green');
-    previewButton.classList.toggle('styled_button_blue');
-    sigText.classList.toggle('sigPreviewing');
-    sigPrev.innerHTML = signatureController.previewSignature();
-  });
+  signatureController.createOptions(tab);
 
   function updateBannersOptions() {
     tab.SetEnabled(`#pub,#fancyB,#hb,#sl,#shuf,#bannerCust${enableUSnow.selectedIndex < 2 ? ',#uss' : ''}`, bannerController.getEnabled());
@@ -652,20 +596,6 @@ function buildSettingsTab(tab) {
   }
 }
 
-function pinnerFunc(target, clazz, bounder) {
-  clazz = `fix_${clazz}`;
-  target = document.querySelector(target);
-  let pos = -1, attached = false;
-  return ev => {
-    pos = attached ? pos : target.offsetTop;
-    const scroll = ev.scrollY;
-    const nattached = (scroll >= pos) && (!bounder || scroll < (bounder.offsetTop + bounder.offsetHeight));
-    if (nattached != attached) {
-      document.body.classList.toggle(clazz, attached = nattached);
-    }
-  };
-}
-
 function applyChapterButtons() {
   const immediateText = el => [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('');
 
@@ -710,52 +640,6 @@ function applyChapterButtons() {
     a.parentNode.classList.add('chapter-expander-toggle');
     a.querySelector('a').dataset.click = "expand";
   });
-}
-
-function applyFeedFix() {
-  addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
-    e.preventDefault();
-    const a = target.closest('a');
-    if (a.href) a.title = a.href;
-  });
-}
-
-function removeAnnoyances() {
-  const listBox = document.querySelector('.list_boxes');
-  if (listBox) {
-    all('.right.advert', a => {
-      listBox.insertAdjacentElement('beforeend', a);
-      all('.no-related', listBox.parentNode, a => a.classList.remove('no-related'));
-    });
-  }
-  all('.story_content_box [data-ad-class], .story_content_box .advertisment', a => {
-    a.parentNode.insertAdjacentElement('afterend', a);
-  });
-  all('.advertisment, [data-ad-class], [data-ad-client]', a => {
-    if (a.closest('[data-ad-class] [data-ad-client]')) return;
-    a.insertAdjacentHTML('afterend', `<div class="ad-wrapper collapse"><a data-click="hideAd">[hide]</a></div>`);
-    const wrapper = a.nextSibling;
-    if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
-    wrapper.insertAdjacentElement('afterbegin', a);
-    const reminder = wrapper.parentNode.querySelector('.ad-wrapper ~ .patreon-reminder')
-    if (reminder) {
-      wrapper.insertAdjacentElement('beforeend', reminder);
-    }
-  });
-
-  addDelegatedEvent(document.body, '.ad-wrapper [data-click="hideAd"]', 'click', (e, sender) => {
-    const ls = sender.closest('.list_boxes');
-    if (ls && !ls.querySelector('.stories')) ls.parentNode.querySelector('.chapter-comments').classList.add('no-related');
-    sender.parentNode.parentNode.removeChild(sender.parentNode);
-  });
-
-  const updateDisplay = _ => all('.ad-wrapper', a => {
-    const d = a.querySelector('ins, .pw-ad-box');
-    a.classList.toggle('collapse', !d || !d.innerHTML.length);
-  });
-
-  setInterval(updateDisplay, 1000);
-  updateDisplay();
 }
 
 function applyCodePatches() {
@@ -1395,18 +1279,6 @@ function initLightBoxBlocker() {
   });
 }
 
-function getLogoNames() {
-  return logos.filter(l => l.able).map(l => l.name);
-}
-
-function pickNextLogo() {
-  return pickNext(logos.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
-}
-
-function getLogoUrl(val) {
-  return logos[val == -1 ? pickNextLogo() : val < 0 || val >= logos.length ? 0 : val].css;
-}
-
 function addExtraToolbarLinks(e) {
   if (e.event.type == 'stories') {
     var ref = document.querySelector('#user_toolbar_story_list a[href^="/user/"]').parentNode;
@@ -1417,14 +1289,7 @@ function addExtraToolbarLinks(e) {
     link.innerHTML = '<i class="fa fa-star-o"></i>View My Featured Stories';
   }
 }
-
-function addFooterData(data) {
-  const footer = document.querySelector('.footer .block');
-  if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
-}
-
 //-------------------------------------STYLESHEETS-------------------------------------------------
-
 function addCss() {
   const light = currentTheme() == 'light';
   const container_background = light ? '#fff' : '#29313f',
@@ -1667,7 +1532,7 @@ ${light ? '' : `
     border-radius: 3px;
     overflow: hidden;}
 
-${getFixAds() ? `
+${adsController.getFixAds() ? `
 /*Remove annoyances*/
 .chapter-page .advert {display: none !important;}
 
@@ -2830,58 +2695,10 @@ select[name="colour_scheme"] option[value="luna"] {
  background:#2d3067
 }`;
 }
-
-function StyledWarning(message, ok, cancel) {
-  const g = new PopUpMenu('', `<i class="fa fa-warning"></i> Warning`);
-  g.SetFixed(1);
-  g.SetCloseOnHoverOut(0);
-  g.SetWidth(600);
-  g.SetContent(`<div class="bbcode" style="padding:18px;overflow-y:auto;max-height:400px;">${message}</div>`);
-  g.SetFooter(`<div style="text-align:right;">
-    <button data-click="ok" class="styled_button"><i class="fa fa-check"></i> Continue</button>
-    <button data-click="cancel" class="styled_button styled_button_red"><i class="fa fa-times"></i>  Cancel</button>
-</div>`);
-  g.Show();
-  addDelegatedEvent(g.content, '[data-click]', 'click', (e, target) => {
-    e.preventDefault();
-    g.Close();
-    const callback = target.dataset.click == 'ok' ? ok : cancel;
-    if (callback) callback();
-  });
-}
-
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
-
 function getBlockLightbox() {return settingsMan.bool('block_lightbox', false);}
 function setBlockLightbox(e) {settingsMan.setB('block_lightbox', e.target.checked, false);}
 
-function getFixAds() {return settingsMan.bool('fix_ads', false);}
-function setFixAds(e) {
-  if (e.target.checked) {
-    StyledWarning(`
-    <h1>Thar be Dragons!</h1>
-    This feature is highly experimental and dubious at best. Advertisement breakages may occur, which makes for a sad knighty. ${emoteHTM('fluttercry')}
-    <br><br>
-    Proceed at your own peril.
-    <br>
-    <blockquote>
-      <h3>Annoyances to be removed:</h3>
-      <ol>
-        <li>Ads are positioned outside of the main story container for uninterrupted c— horse fiction enjoyment.</li>
-        <li>Scrolling sidebars only appear beside the comments, oh and they don't scroll either.</li>
-        <li>Empty ad blocks remain hidden until their respective contents load. (No more empty spaces!)</li>
-        <li>Links after every ad allows for easy removal (Just be sure to check out their <i>sweet</i> deals beforehand, okay? ;D )</li>
-        <li>More convenient container class (.ad-wrapper) that works for google, kniggy (.advertisement), <i>and</i> Project Wonderful!</li>
-      </ol>
-    </blockquote>`, () => {
-      settingsMan.setB('fix_ads', true, false);
-    }, () => {
-      e.target.checked = false;
-    });
-  } else {
-    settingsMan.setB('fix_ads', e.target.checked, false);
-  }
-}
 function getPinUserbar() {return settingsMan.bool('pin_userbar', false);}
 function setPinUserbar(v) {
   settingsMan.setB('pin_userbar', v, false);
@@ -2890,33 +2707,6 @@ function setPinUserbar(v) {
 
 function getAlwaysShowImages() {return settingsMan.bool('unspoiler_images', true);}
 function setAlwaysShowImages(e) {settingsMan.setB('unspoiler_images', e.target.checked, true);}
-
-function getSig() {return settingsMan.get("user_sig", defaultSig);}
-function setSig(v) {settingsMan.set("user_sig", v, defaultSig);}
-
-function getCustomFont() {return settingsMan.get('custom_font', 'Default');}
-function applyCustomFont() {
-  let val = getCustomFont();
-  const id = 'customFontStyle';
-  const style = document.getElementById(id);
-
-  if (val == 'Classic') val = 'Arial';
-  if (val == '' || val == 'Default') {
-    if (style) style.parentNode.removeChild(style);
-  } else {
-    val = `html, body, .blog_post_content p, .resize_text, .styled_button, h2, .story_link, h1, .story-title, .title {font-family:${val} !important;}`;
-    if (style) return style.innerHTML = val;
-    makeStyle(val, id);
-  }
-}
-function fillFontOptGroups(input) {
-  ChapterFormatController.prototype.initFonts.apply({ font: getCustomFont(), inputs: {font: input} });
-  input.insertAdjacentHTML('afterbegin', `<optgroup label="FimFiction">${['Default','Classic'].map(f => `<option value="${f}">${f}</option>`).join('')}</optgroup>`);
-  input.addEventListener('change', () => {
-    settingsMan.set('custom_font', input.value, 'Default');
-    applyCustomFont();
-  });
-}
 
 function getStoryWidth() {
   const result = settingsMan.get('storyWidth', '100%');
@@ -2949,24 +2739,13 @@ function setCustomBanner(url, color, pos) {
   settingsMan.set("customBannerColor", color);
   settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos : pos.join(' '));
 }
-
-function getLogo() {return settingsMan.int("oldLogo", 0);}
-function setLogo(e) {
-  settingsMan.set("oldLogo", e.target.value, 0);
-  updateLogo(e.target.value);
-}
-
-function updateLogo(v) {document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());}
-
 //---------------------------------------DATA STRUCTURES--------------------------------------------
-
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
 function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source.map ? source : [{href: source }], color, args);}
 function Ban2(name, sources, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
 function Ban0(name, sources, color, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
 function Banner(id, url, sources, colour, args) {return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
-
 function Pos(poss) {
   const result = {
     'class': 'Pos',
@@ -2992,19 +2771,201 @@ function Pos(poss) {
   if (poss[i] != 'center') result['y'] = poss[i];
   return result;
 }
-
 //--------------------------------------UTIL FUNCTIONS-----------------------------------------------
-
 function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
 }
 
-function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
+function addFooterData(data) {
+  const footer = document.querySelector('.footer .block');
+  if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
+}
 
+function pinnerFunc(target, clazz, bounder) {
+  clazz = `fix_${clazz}`;
+  target = document.querySelector(target);
+  let pos = -1, attached = false;
+  return ev => {
+    pos = attached ? pos : target.offsetTop;
+    const scroll = ev.scrollY;
+    const nattached = (scroll >= pos) && (!bounder || scroll < (bounder.offsetTop + bounder.offsetHeight));
+    if (nattached != attached) {
+      document.body.classList.toggle(clazz, attached = nattached);
+    }
+  };
+}
+
+function getExtraEmotesInit() {
+  return !!document.querySelector('.extraemoticons_loaded');
+}
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
+function SiteFontController() {
+
+  function getCustomFont() {
+    return settingsMan.get('custom_font', 'Default');
+  }
+
+  return {
+    apply() {
+      let val = getCustomFont();
+      const id = 'customFontStyle';
+      const style = document.getElementById(id);
+
+      if (val == 'Classic') val = 'Arial';
+      if (val == '' || val == 'Default') {
+        if (style) style.parentNode.removeChild(style);
+      } else {
+        val = `html, body, .blog_post_content p, .resize_text, .styled_button, h2, .story_link, h1, .story-title, .title {font-family:${val} !important;}`;
+        if (style) return style.innerHTML = val;
+        makeStyle(val, id);
+      }
+    },
+    createOptions(tab) {
+      const input = tab.AddDropDown("ffs", "Site Font", []);
+      ChapterFormatController.prototype.initFonts.apply({ font: getCustomFont(), inputs: {font: input} });
+      input.insertAdjacentHTML('afterbegin', `<optgroup label="FimFiction">${['Default','Classic'].map(f => `<option value="${f}">${f}</option>`).join('')}</optgroup>`);
+      input.addEventListener('change', () => {
+        settingsMan.set('custom_font', input.value, 'Default');
+        this.apply();
+      });
+    }
+  };
+}
+
+function LogoController(logos) {
+
+  function pickNextLogo() {
+    return pickNext(logos.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
+  }
+  
+  function getUrl(val) {
+    return logos[val == -1 ? pickNextLogo() : Math.max(0, val % logos.length)].css;
+  }
+  
+  function getCurrent() {
+    return settingsMan.int("oldLogo", 0);
+  }
+  
+  return {
+    getNames() {
+      return logos.filter(l => l.able).map(l => l.name);
+    },
+    apply(v) {
+      document.querySelector('#home_link img.logo').src = getUrl(v || getCurrent());
+    },
+    createOptions(tab) {
+        const oldLogo = tab.AddDropDown("ologo", "Logo Image", logos.filter(l => l.able).map(l => l.name), getCurrent());
+        oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
+        oldLogo.addEventListener('change', e => {
+          settingsMan.set("oldLogo", e.target.value, 0);
+          this.apply(e.target.value);
+        });
+    }
+  };
+}
+
+function AdsController() {
+
+  function removeAnnoyances() {
+    const listBox = document.querySelector('.list_boxes');
+    if (listBox) {
+      all('.right.advert', a => {
+        listBox.insertAdjacentElement('beforeend', a);
+        all('.no-related', listBox.parentNode, a => a.classList.remove('no-related'));
+      });
+    }
+    all('.story_content_box [data-ad-class], .story_content_box .advertisment', a => {
+      a.parentNode.insertAdjacentElement('afterend', a);
+    });
+    all('.advertisment, [data-ad-class], [data-ad-client]', a => {
+      if (a.closest('[data-ad-class] [data-ad-client]')) return;
+      a.insertAdjacentHTML('afterend', `<div class="ad-wrapper collapse"><a data-click="hideAd">[hide]</a></div>`);
+      const wrapper = a.nextSibling;
+      if (a.classList.contains('pw-ad-box') || a.dataset.adClass == 'sidebar-responsive') wrapper.classList.add('pw');
+      wrapper.insertAdjacentElement('afterbegin', a);
+      const reminder = wrapper.parentNode.querySelector('.ad-wrapper ~ .patreon-reminder')
+      if (reminder) {
+        wrapper.insertAdjacentElement('beforeend', reminder);
+      }
+    });
+
+    addDelegatedEvent(document.body, '.ad-wrapper [data-click="hideAd"]', 'click', (e, sender) => {
+      const ls = sender.closest('.list_boxes');
+      if (ls && !ls.querySelector('.stories')) ls.parentNode.querySelector('.chapter-comments').classList.add('no-related');
+      sender.parentNode.parentNode.removeChild(sender.parentNode);
+    });
+
+    const updateDisplay = _ => all('.ad-wrapper', a => {
+      const d = a.querySelector('ins, .pw-ad-box');
+      a.classList.toggle('collapse', !d || !d.innerHTML.length);
+    });
+
+    setInterval(updateDisplay, 1000);
+    updateDisplay();
+  }
+
+  function StyledWarning(message, ok, cancel) {
+    const g = new PopUpMenu('', `<i class="fa fa-warning"></i> Warning`);
+    g.SetFixed(1);
+    g.SetCloseOnHoverOut(0);
+    g.SetWidth(600);
+    g.SetContent(`<div class="bbcode" style="padding:18px;overflow-y:auto;max-height:400px;">${message}</div>`);
+    g.SetFooter(`<div style="text-align:right;">
+      <button data-click="ok" class="styled_button"><i class="fa fa-check"></i> Continue</button>
+      <button data-click="cancel" class="styled_button styled_button_red"><i class="fa fa-times"></i>  Cancel</button>
+  </div>`);
+    g.Show();
+    addDelegatedEvent(g.content, '[data-click]', 'click', (e, target) => {
+      e.preventDefault();
+      g.Close();
+      const callback = target.dataset.click == 'ok' ? ok : cancel;
+      if (callback) callback();
+    });
+  }
+
+  return {
+    apply() {
+      if (this.getFixAds()) {
+        removeAnnoyances();
+      }
+    },
+    getFixAds() {
+      return settingsMan.bool('fix_ads', false);
+    },
+    createOptions(tab) {
+      tab.AddCheckBox("btrds", "Improved Advertisements", this.getFixAds()).addEventListener('change', e => {
+        if (e.target.checked) {
+          StyledWarning(`
+          <h1>Thar be Dragons!</h1>
+          This feature is highly experimental and dubious at best. Advertisement breakages may occur, which makes for a sad knighty. ${emoteHTM('fluttercry')}
+          <br><br>
+          Proceed at your own peril.
+          <br>
+          <blockquote>
+            <h3>Annoyances to be removed:</h3>
+            <ol>
+              <li>Ads are positioned outside of the main story container for uninterrupted c— horse fiction enjoyment.</li>
+              <li>Scrolling sidebars only appear beside the comments, oh and they don't scroll either.</li>
+              <li>Empty ad blocks remain hidden until their respective contents load. (No more empty spaces!)</li>
+              <li>Links after every ad allows for easy removal (Just be sure to check out their <i>sweet</i> deals beforehand, okay? ;D )</li>
+              <li>More convenient container class (.ad-wrapper) that works for google, kniggy (.advertisement), <i>and</i> Project Wonderful!</li>
+            </ol>
+          </blockquote>`, () => {
+            settingsMan.setB('fix_ads', true, false);
+          }, () => {
+            e.target.checked = false;
+          });
+        } else {
+          settingsMan.setB('fix_ads', e.target.checked, false);
+        }
+      });
+    }
+  };
+}
 
 function SignatureController() {
+  const DEFAULT_SIG = "%message%\n\n--[i]%name%[/i]";
   const RANDOM_COMMENTS = [
     'Ermahgerd! I wub u so much!!!11111one11!exclamation!!mark1',
     'I feel ya bro',
@@ -3033,6 +2994,13 @@ function SignatureController() {
     return (new RegExp(encodeURI(format.replace(/%message%/g, ".*")))).test(encodeURI(value));
   }
 
+  function getSig() {
+    return settingsMan.get("user_sig", DEFAULT_SIG);
+  }
+  function setSig(v) {
+    settingsMan.set("user_sig", v, DEFAULT_SIG);
+  }
+
   return {
     previewSignature() {
       return fillBBCode(this.applySignature(pickNext(RANDOM_COMMENTS)).replace(/\n/g, '<br />'));
@@ -3059,6 +3027,49 @@ function SignatureController() {
         }
       }
       return text;
+    },
+    createOptions(tab) {
+      const sigText = tab.AddTextArea("sig", '', getSig());
+      sigText.style.minHeight = '150px';
+      sigText.style.minWidth = '100%';
+      sigText.style.resize = 'vertical';
+      addTooltip(`<u>Magic Strings</u><br ><div style='display:table;white-space:nowrap;'><div style='display:table-cell;padding-right:5px;'>
+        ${['%name% - the name of the current user',
+           '%message% - posted comment',
+           '%year% - The Year eg: 2014',
+           '%MONTH% - Month of year',
+           '%DAY% - Day of month',
+           '%month% - Name of month',
+           '%day% - Day of Week',
+           '%hour% - Current hour in 24 hour format',
+           '%min% - Minute',
+           '%sec% - Second'].join('<br>')}</div></div>`, sigText);
+      sigText.insertAdjacentHTML('afterend', '<div class="sigPreview" style="min-height:150px;min-width:100%"></div>');
+      const sigPrev = sigText.nextSibling;
+      sigText.addEventListener('change', () => setSig(sigText.value));
+      tab.AppendResetButton(sigText).addEventListener('click', () => {
+        sigText.value = defaultSig;
+        setSig(sigText.value);
+      });
+
+      let sig = sigText.parentNode.parentNode.parentNode.firstChild;
+      const userTile = getUserCommentThumb(128);
+      userTile.insertAdjacentHTML('beforeend', `<style type="text/css">
+            .properties td.label .comment .author .avatar {margin-left: 0;margin-right: 0;}
+            .properties td.label .comment .author {float: right;}</style>`);
+      sig.style.verticalAlign = 'top';
+      sig.style.paddingTop = '0px';
+      sig.appendChild(userTile);
+
+      const previewButton = tab.AppendButton(sigText, 'Preview');
+      previewButton.classList.add('previewButton');
+      previewButton.addEventListener('click', e => {
+        previewButton.innerHTML = sigText.classList.contains('sigPreviewing') ? 'Preview' : 'Edit';
+        previewButton.classList.toggle('styled_button_green');
+        previewButton.classList.toggle('styled_button_blue');
+        sigText.classList.toggle('sigPreviewing');
+        sigPrev.innerHTML = this.previewSignature();
+      });
     }
   };
 }
@@ -3313,6 +3324,16 @@ function FancyFeedsController() {
   }
 
   return {
+    applyFeedFix() {
+      // prevent misleading links around images
+      addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
+        e.preventDefault();
+        const a = target.closest('a');
+        if (a.href) a.title = a.href;
+      });
+      this.fixFeedOptions();
+      animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
+    },
     initUnreadCount() {
       const count = document.querySelector('.feed-link.new div');
       setUnreadCount(count ? count.innerText.trim() : 0);
