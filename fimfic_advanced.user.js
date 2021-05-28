@@ -1,24 +1,25 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-4
+// @version     4.6-beta-5
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.color.js
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.reflect.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @grant       none
+// @inject-into page
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6-beta-4',
+const VERSION = '4.6-beta-5',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -441,7 +442,7 @@ function buildSettingsTab(tab) {
   tab.AddCheckBox("eb", "Enable Banners", bannerController.getEnabled()).addEventListener('change', compose(bannerController.setEnabled, updateBannersOptions));
   tab.AddCheckBox("fancyB", "Enable Fancy Banners", bannerController.getFancy()).addEventListener('change', bannerController.setFancy);
   tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', e => setPinUserbar(e.target.checked));
-  tab.AddCheckBox("hb", "Compact Banner", getTitleHidden()).addEventListener('change', setTitleHidden);
+  tab.AddCheckBox("hb", "Compact Banner", bannerController.getCollapse()).addEventListener('change', bannerController.setCollapse);
   const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", bannerController.slider.labels(), bannerController.slider.getSlide());
   enableSlide.addEventListener('change', e=> bannerController.slider.setSlide(e, updateSliderOptions));
   tab.AddCheckBox("shuf", "Shuffle Slide Show", bannerController.slider.getShuffle()).addEventListener('change', bannerController.slider.setShuffle);
@@ -2339,10 +2340,14 @@ header.header .home_link {
   background-position: center;
 }
 
+/*Banner Theming*/
+body {
+  --banner-bar-gradient-start: transparent;
+  --banner-bar-gradient-end: black;
+}
+
 #main_banner .user_toolbar {
-   --gradient-start: transparent;
-   --gradient-end: black;
-   background: linear-gradient(to bottom, var(--gradient-start) 0%, var(--gradient-end) 85%);
+  background: linear-gradient(to bottom, var(--banner-bar-gradient-start) 0%, var(--banner-bar-gradient-end) 85%);
 }
 
 @media all and (max-width: 1000px) {
@@ -2468,7 +2473,7 @@ ${light ? '' : `
      header.header .title {
         overflow: hidden;
         background-color: #1c1c1ce6;}
-    .user_toolbar.transitionable {
+    .banner-transitionable .user_toolbar {
         transition: background-color 0.25s linear;}
     .user_toolbar > ul > li::before {
         right: 0;
@@ -2528,8 +2533,10 @@ ${light ? '' : `
         height: 70px;
         transition: height 0.5s ease;}
   .story-page-header > .inner, .user-page-header > .inner {
+        display: flex;
         padding: 25px 0px 25px 15px;}
   .user-page-header .avatar-container, .story-page-header .image-container {
+        width: auto !important;
         position: relative !important;
         z-index: 13 !important;}
   .user-page-header .patreon-sponsor, .user-page-header .subscribe-star-sponsor {
@@ -3008,12 +3015,6 @@ function updateLogo(v) {
   document.querySelector('#home_link img.logo').src = getLogoUrl(v || getLogo());
 }
 
-function getTitleHidden() {return settingsMan.bool("titleHidden", false);}
-function setTitleHidden(e) {
-  settingsMan.setB("titleHidden", e.target.checked, false);
-  document.body.classList.toggle('titleHidden', e.target.checked);
-}
-
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
@@ -3054,14 +3055,6 @@ function Pos(poss) {
 function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
-}
-
-function getDocCookie(name) {
-  return decodeURIComponent(document.cookie.replace(new RegExp(`(?:(?:^|.*;)\\s*${encodeURIComponent(name).replace(/[\-\.\+\*]/g,"\\$&")}\\s*\\=\\s*([^;]*).*$)|^.*$`), '$1')) || null;
-}
-
-function isNsfw() {
-  return getDocCookie('view_mature') == 'true';
 }
 
 function getExtraEmotesInit() {return !!document.querySelector('.extraemoticons_loaded');}
@@ -3108,7 +3101,7 @@ function BackgroundsController() {
     document.body.dataset.baseColor = c;
     c = window.getComputedStyle(document.querySelector('.body_container')).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
 
-    if (brightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
+    if (getBrightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
       all('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1', a => a.classList.add('bright'));
     } else {
       all('.bright', a => a.classList.remove('bright'));
@@ -3149,7 +3142,6 @@ function BackgroundsController() {
 
     return {
       get() {
-        console.log(getIndex());
         return backgrounds[getIndex()] || 'none';
       },
       createPresetSelect(tab) {
@@ -3684,6 +3676,13 @@ function BannerController(sets) {
       bannerScrollOff();
       self.initFancy();
     },
+    getCollapse() {
+      return settingsMan.bool("titleHidden", false);
+    },
+    setCollapse(e) {
+      settingsMan.setB("titleHidden", e.target.checked, false);
+      document.body.classList.toggle('titleHidden', e.target.checked);
+    },
     getFancy() {
       return settingsMan.bool('fancy_banners', false);
     },
@@ -3703,7 +3702,7 @@ function BannerController(sets) {
       let mainBanner = document.querySelector('#main_banner');
       if (mainBanner) return;
 
-      if (getTitleHidden()) document.body.classList.add('titleHidden');
+      if (bannerController.getCollapse()) document.body.classList.add('titleHidden');
       if (getPinUserbar()) document.body.classList.add('pin_userbar');
       
       const pinLink = document.querySelector('.pin_link_container');
@@ -3760,7 +3759,7 @@ function BannerController(sets) {
         banners.push(customBanner);
       }
       this.finalise();
-      requestAnimationFrame(() => userToolbar.classList.add('transitionable'));
+      requestAnimationFrame(() => document.body.classList.add('banner-transitionable'));
 
       window.addEventListener('focus', () => {
         const id = this.getCurrentId();
@@ -3788,8 +3787,8 @@ function BannerController(sets) {
     changeBanner(sources, img, color, pos) {
       if (color && color.length) {
         userToolbar.dataset.backgroundColor = color;
-        userToolbar.style.setProperty('--gradient-start', toZeroAlpha(color));
-        userToolbar.style.setProperty('--gradient-end', color);
+        document.body.style.setProperty('--banner-bar-gradient-start', toZeroAlpha(color));
+        document.body.style.setProperty('--banner-bar-gradient-end', color);
         addBannerCss();
       }
 
@@ -3799,8 +3798,8 @@ function BannerController(sets) {
       home_link.style.backgroundPosition = pos || '';
 
       source_link.classList.toggle('hidden', !(sources && sources.length));
-      source_link.href = sources[0];
-      source_link.title = sources[0];
+      source_link.href = sources[0].href;
+      source_link.title = sources[0].href;
 
       if (this.getFancy()) updateBannerScroll(pos);
     }
