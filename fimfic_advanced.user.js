@@ -254,7 +254,7 @@ ready(() => {
     console.error(`FimficAdv: Unhandled Exception in ${stage}`);
     console.error(e);
   }
-  
+
   function addFooterData(data) {
     const footer = document.querySelector('.footer .block');
     if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
@@ -379,7 +379,7 @@ function applyFeatureBoxEnhancements() {
     FrontpageController.prototype.bind.super.apply(this, arguments);
     bindKeyEvents(element);
   });
-  
+
   const frontPage = document.querySelector('.front_page');
   if (frontPage) {
     const controller = App.GetControllerFromElement(frontPage);
@@ -2093,7 +2093,7 @@ function CustomBannerController() {
         el.classList.add('custom_banner_button');
         el.addEventListener('click', () => createCustomBannerPopup(el));
         if (customBanner) repaintBannerButton(el, customBanner);
-        
+
         function createCustomBannerPopup(cban) {
           const pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
           pop.SetWidth(700);
@@ -2139,7 +2139,7 @@ function CustomBannerController() {
               settingsMan.set("customBannerUrl", url);
               settingsMan.set("customBannerColor", color);
               settingsMan.set("customBannerPosition", [hor, x, vert, y].join(' '));
-              
+
               customBanner = Banner('Custom', url, url, color, { position: [hor, x, vert, y] });
               if (customBannerindex > -1) {
                 banners[customBannerindex] = customBanner;
@@ -2195,7 +2195,7 @@ function CustomBannerController() {
             pop.Show();
           });
         }
-        
+
         function repaintBannerButton(cban, banner) {
           if (banner) {
             cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
@@ -2295,7 +2295,7 @@ function CommentSectionController() {
     main_button.dataset.click = 'showFimficAdv';
     registerButton(main_button, controller, -1);
   }
-  
+
   function initBBCodeController() {
     function getRecentColours(num) {
       const recent = settingsMan.get('colour_use_history', '');
@@ -2746,7 +2746,7 @@ function CommentSectionController() {
       }
     });
   }
-  
+
   return {
     initCommentArea() {
       all('.bbcode-editor button[title="Text Colour"]', a => a.innerHTML = '<i class="fa fa-tint"></i>');
@@ -3124,7 +3124,7 @@ function BackgroundsController() {
       }
     };
   }
-  
+
   return {
     getColor,
     setColor(c) {
@@ -3396,12 +3396,12 @@ function BannerCreditsController(controller) {
                 </div>
                 <div id="banner-switcher">
                     <div class="inner">
-                        <div class="toggleable-radio toggleable-radio-${controller.getSets().length}" >${controller.getSets().map((a, j) => 
+                        <div class="toggleable-radio toggleable-radio-${controller.getSets().length}" >${controller.getSets().map((a, j) =>
                             `<input data-change="switchSets" name="banner-group" id="${a.name}" type="radio" value="${a.name}"${(j == category ? ` checked="checked"` : '')} ></input><label for="${a.name}">${a.name}</label>`).join('')}<a></a>
                         </div>
                     </div>
                 </div>
-                <form id="banner-selector">${controller.getSets().map((a, index) => 
+                <form id="banner-selector">${controller.getSets().map((a, index) =>
                     `<div class="banner-credits" data-offset="${index}" data-group="${a.name}" style="transform:translateX(-${category * 100}%)">${a.getVisibleItems().map(item => `
                         <input type="radio" data-change="selectBanner" id="banners[${item.id}]" value="${item.id}"${item.id == themeId ? ` checked="checked"` : ''} name="banners[]"></input>
                         <label for="banners[${item.id}]" class="theme">
@@ -3520,7 +3520,7 @@ function BannerController(sets) {
     animator.off('banners');
     all('.home_link, #fade_banner_image', a => a.style.backgroundPosition = '');
   };
-  
+
   function byTheme(theme) {
     return banners[theme % banners.length];
   }
@@ -3614,7 +3614,7 @@ function BannerController(sets) {
         bannerScrollOn();
         updateBannerScroll();
       }
-      
+
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
     getSelected: _ => byTheme(theme),
@@ -3645,11 +3645,11 @@ function BannerController(sets) {
 
       if (getCollapse()) document.body.classList.add('titleHidden');
       if (getPinUserbar()) document.body.classList.add('pin_userbar');
-      
+
       const pinLink = document.querySelector('.pin_link_container');
       pinLink.insertAdjacentHTML('afterend', pinLink.outerHTML.replace('pin_nav_bar', 'pin_userbar'));
       pinLink.nextSibling.addEventListener('click', () => setPinUserbar(!getPinUserbar()));
-      
+
       userToolbar.parentNode.insertAdjacentHTML('afterend', `<div id="main_banner">
         <header class="header">
               <div id="title" class="title">
@@ -3777,9 +3777,9 @@ function BannerController(sets) {
       tab.AddCheckBox("shuf", "Shuffle Slide Show", slider.getShuffle()).addEventListener('change', slider.setShuffle);
 
       customBannerController.createOptions(tab);
-      
+
       dependant();
-      
+
       updateSliderOptions();
       updateBannersOptions();
     }
@@ -3791,7 +3791,7 @@ function SnowController() {
   const getSaveFocus = () => settingsMan.bool('ultra_snow_save_focus', true);
   const getState = () => settingsMan.int("snow_bg", 1);
   const getMode = () => settingsMan.bool("snow_mode", false);
-  
+
   function createSnower(env, container, reverse, fix) {
     const randomRange = (min, max) => ((Math.random()*(max-min)) + min);
     const TO_RADIANS = Math.PI/180;
