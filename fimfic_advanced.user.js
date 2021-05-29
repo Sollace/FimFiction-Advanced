@@ -3428,7 +3428,7 @@ function BannerCreditsController(controller) {
     },
     buildAll() {
       if (!bannerController.getEnabled()) return;
-      document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">» Banner Credits</a>');
+      document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">• Banner Credits</a>');
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
 
       build();
