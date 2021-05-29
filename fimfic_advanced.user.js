@@ -29,7 +29,7 @@ if (this['unsafeWindow'] && window !== unsafeWindow) {
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
 }
-//-------------------------------------------DATA---------------------------------------------------
+// DATA
 const backgrounds = BackgroundsController();
 const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
   BG("None", ''),
@@ -231,7 +231,7 @@ const colours = {
   colours.NamesLower.push(a[0].toLowerCase());
 });
 let userToolbar;
-//--------------------------------------BOILER PLATE------------------------------------------------
+// BOILER PLATE
 requireRemoveEventListeners();
 ready(() => {
   if (!document.querySelector('.body_container')) return;
@@ -262,7 +262,7 @@ try {
   console.error(`FimficAdv: Unhandled Exception in Early Init`);
   console.error(e);
 }
-//---------------------------------------SCRIPT BODY------------------------------------------------
+// SCRIPT BODY
 function initGlobals() {
   if (!userToolbar) userToolbar = document.querySelector('.user_toolbar');
 }
@@ -351,7 +351,7 @@ function buildSettingsTab(tab) {
   tab.StartEndSection("Signatures");
   signatureController.createOptions(tab);
 }
-//----------------------------------------FUNCTIONS-------------------------------------------------
+// FUNCTIONS
 function applyFeatureBoxEnhancements() {
   extend(FrontpageController.prototype, {
     prevFeaturedStory() {
@@ -509,7 +509,7 @@ function addExtraToolbarLinks(e) {
     link.innerHTML = '<i class="fa fa-star-o"></i>View My Featured Stories';
   }
 }
-//-------------------------------------STYLESHEETS-------------------------------------------------
+// STYLESHEETS
 function addCss() {
   const light = currentTheme() == 'light';
   const container_background = light ? '#fff' : '#29313f',
@@ -1912,7 +1912,7 @@ select[name="colour_scheme"] option[value="luna"] {
  background:#2d3067
 }`;
 }
-//---------------------------------------DATA STRUCTURES--------------------------------------------
+// DATA STRUCTURES
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
 function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source.map ? source : [{href: source }], color, args);}
@@ -1944,7 +1944,7 @@ function Pos(poss) {
   if (poss[i] != 'center') result['y'] = poss[i];
   return result;
 }
-//--------------------------------------UTIL FUNCTIONS-----------------------------------------------
+// UTILS
 function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
@@ -2000,7 +2000,7 @@ function Animator() {
     }
   };
 }
-//---------------------------------------CONTROLLERS-------------------------------------------------
+// CONTROLLERS
 function StoryBoxController() {
   function applyChapterButtons() {
     const immediateText = el => [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('');
