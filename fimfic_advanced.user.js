@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-7
+// @version     4.6-beta-8
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6-beta-7',
+const VERSION = '4.6-beta-8',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -3427,7 +3427,7 @@ function BannerCreditsController(controller) {
       all('.banner-credits', a => a.style.transform = `translateX(-${offset}%)`);
     },
     buildAll() {
-      if (!bannerController.getEnabled()) return;
+      if (!controller.getEnabled()) return;
       document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">• Banner Credits</a>');
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
 
