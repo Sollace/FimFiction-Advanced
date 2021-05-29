@@ -239,7 +239,7 @@ ready(() => {
   initGlobals();
   let stage = 'Ready-init';
   try {
-    addFooterData(`Page running <a href="manage/local-settings#fimfiction_advanced">FimFiction Advanced ${VERSION}</a>`);
+    addFooterData(`Page running <a href="/manage/local-settings#fimfiction_advanced">FimFiction Advanced ${VERSION}</a>`);
     document.lastChild.setAttribute('FimFic_Adv', '');
     stage = 'Init';
     initFimFictionAdvanced();
