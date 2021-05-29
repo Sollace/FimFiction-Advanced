@@ -85,7 +85,7 @@ const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
  // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
  // BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`, '', {darken: true})
 ]);
-const logoController = LogoController('Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO));
+const logoController = LogoController();
 const animator = Animator();
 const feeder = FancyFeedsController();
 const bannerController = BannerController([
@@ -208,22 +208,6 @@ const adsController = AdsController();
 const siteFontController = SiteFontController();
 const commentSectionController = CommentSectionController();
 const storyBoxController = StoryBoxController();
-const colours = {
-  Mapping: {},
-  Keys: [], Names: [],
-  NamesLower: [],
-  Sets: {
-    'Standard Colours': [0, [0,73,70,68,107,59,103,24,112]],
-    'FimFiction': [0, range(113,127)],
-    'Mane Six': [0, range(128, 133)],
-    'More Colours': [1, range(0,112)]
-  }
-};
-'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').map(a => a.split(':')).forEach(a => {
-  colours.Keys.push(a[1]);
-  colours.Names.push(colours.Mapping[a[1]] = a[0]);
-  colours.NamesLower.push(a[0].toLowerCase());
-});
 let userToolbar;
 //--------------------------------------BOILER PLATE------------------------------------------------
 requireRemoveEventListeners();
@@ -269,6 +253,7 @@ function earlyStart() {
   (function css() {
     if (document.body && document.querySelector('#stylesheetMain')) {
       addCss();
+      backgrounds.apply();
 
       if (bannerController.getEnabled()) {
         addBannerCss();
@@ -280,8 +265,7 @@ function earlyStart() {
           requestAnimationFrame(banner);
         })();
       }
-
-      backgrounds.apply();
+      
       FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
       creditsController.buildAll();
 
@@ -315,11 +299,11 @@ function initFimFictionAdvanced() {
   adsController.apply();
   applyCodePatches();
   applyFeatureBoxEnhancements();
+  snowController.apply();
   setTimeout(() => {
     if (bannerController.slider.getSlide()) {
       bannerController.slider.updateSlide();
     }
-    snowController.apply();
   }, 300);
 }
 function registerEvents() {
@@ -462,37 +446,55 @@ function applyCodePatches() {
 }
 function initBlogPage() {
   if (!isMyBlogPage() || document.querySelector('.content_box.blog-post-content-box')) return;
-  const page = document.querySelector("div.page_list");
+  const page = document.querySelector(".blog-post-list");
   if (!page) return;
   const name = getUserName();
-  page.parentNode.previousSibling.insertAdjacentHTML('beforeend', `<div class="content_box blog_post_content_box" style="margin-top:0px; ">
-    <div class="calendar" style="margin-top:0px">
-          <div class="month">Jan</div>
-          <div class="day">1<span style="font-size:0.6em;">st</span><div class="year">1992</div>
+  const date = new Date();
+  const months = 'Jan;Feb;Mar;Apr;May;Jun;Jul;Aug;Sep;Oct;Nov;Dec'.split(';');
+  const ending = 'th;st;nd;rd;th;th;th;th;th;th'.split(';');
+  page.insertAdjacentHTML('afterbegin', `
+    <div class="content_box blog-post-content-box" style="margin-top:0px; ">
+			<div class="calendar" style="margin-top:0px;">
+				<div class="month">${months[date.getMonth()]}</div>
+				<div class="day">
+          ${date.getDate()}<span style="font-size:0.6em;">${ending[date.getDate() % 10]}</span>
+					<div class="year">${date.getFullYear()}</div>
+				</div>
+			</div>
+		<div class="arrow"></div>	
+		<h1 class="show-buttons">
+			<div class="right_box">
+        <div class="button-group">
+          <a href="/manage/blog-posts/new" class="styled_button button-icon-only styled_button_white">
+            <i class="fa fa-pencil"></i>
+          </a><a href="javascript:void(0);" class="styled_button button-icon-only styled_button_white">
+            <i class="fa fa-trash-o"></i></a>
         </div>
-    </div>
-    <div class="arrow"></div>
-    <div class="blog-title show-buttons">
-        <div class="right_box"><div class="button-group">
-            <a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a>
-            <a href="javascript:void(0);" class="styled_button button-icon-only styled_button_white"><i class="fa fa-trash-o"></i></a>
+      </div>
+			<span class="resize_text" data-max-height="80" data-start-size="1.7" data-minimum-size="1.3">
+        <a href="/manage/blog-posts/new">You have no blog posts</a>
+				<span class="time desktop"><b class="dot">·</b> 1:00am</span>
+				<span class="time mobile"><span data-time="${Number(date)}">${months[date.getMonth()]} ${date.getDate()}${ending[date.getDate() % 10]}</span></span>
+			</span>
+		</h1>
+		<div class="main">			
+			<div class="blog_post_content bbcode">
+        <div class="bbcode-center" style="text-align:center">
+          <p>Go to <b><i class="fa fa-user"></i> ${name}</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
+          <br>
+          Or click
+          <div class="button-group">
+            <a href="/manage/blog-posts/new" class="styled_button button-icon-only styled_button_white">
+            <i class="fa fa-pencil"></i></a>
+          </div> to create one now and start talking!
         </div>
-    </div>
-    <h2>
-        <span class="resize_text" data-max-height="80" data-start-size="1.7" data-minimum-size="1.3" style="font-size: 1.7em;">
-            <a href="/manage_user/edit_blog_post">You have no blog posts</a>
-        </span>
-    </h2>
-</div>
-<div class="main">
-    <div class="blog_post_content" style="text-align:center">
-        <p>Go to <b><i class="fa fa-user"></i> ${name}</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
-        <br><br>Or click <div class="button-group"><a href="/manage_user/edit_blog_post" class="styled_button button-icon-only styled_button_white"><i class="fa fa-pencil"></i></a></div> to create one now and start talking!
-    </div>
-    <div class="information_box">
-        <a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views <b>·</b>
-    </div>
-</div>`);
+			</div>
+			<div class="information_box">
+				<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views				
+				<b>·</b>
+			</div>
+		</div>
+	</div>`);
 }
 function addExtraToolbarLinks(e) {
   if (e.event.type == 'stories') {
@@ -1909,10 +1911,10 @@ select[name="colour_scheme"] option[value="luna"] {
 }
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
-function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
-function Ban(name, source, color, args) {return Banner(name, GITHUB + '/banners/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), source.map ? source : [{href: source }], color, args);}
-function Ban2(name, sources, color, args) {return Banner(name, GITHUB + '/banners2/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
-function Ban0(name, sources, color, args) {return Banner(name, GITHUB + '/banners0/' + name + (name.indexOf('.') < 0 ? '.jpg' : ''), sources, color, args);}
+function LOGO(name) {return BG(name, `${GITHUB}/logos/${name.replace(/ /g, '_')}.png`);}
+function Ban (name, sources, color, args) {return Banner(name, `${GITHUB}/banners/${name}${name.indexOf('.') < 0 ? '.jpg' : ''}`, sources, color, args);}
+function Ban2(name, sources, color, args) {return Banner(name, `${GITHUB}/banners2/${name}${name.indexOf('.') < 0 ? '.jpg' : ''}`, sources, color, args);}
+function Ban0(name, sources, color, args) {return Banner(name, `${GITHUB}/banners0/${name}${name.indexOf('.') < 0 ? '.jpg' : ''}`, sources, color, args);}
 function Banner(id, url, sources, colour, args) {return {id, url, sources, colour, position: (args && args.position ? Pos(args.position) : null), options:args || {}};}
 function Pos(poss) {
   const result = {
@@ -2221,6 +2223,22 @@ function CustomBannerController(controller) {
 }
 function CommentSectionController() {
   const ICONS = 'adjust;adn;align-center;align-justify;align-left;align-right;ambulance;anchor;android;angellist;angle-double-down;angle-double-left;angle-double-right;angle-double-up;angle-down;angle-left;angle-right;angle-up;apple;archive;area-chart;arrow-circle-down;arrow-circle-left;arrow-circle-o-down;arrow-circle-o-left;arrow-circle-o-right;arrow-circle-o-up;arrow-circle-right;arrow-circle-up;arrow-down;arrow-left;arrow-right;arrow-up;arrows;arrows-alt;arrows-h;arrows-v;asterisk;at;automobile;backward;ban;bank;bar-chart;bar-chart-o;barcode;bars;beer;behance;behance-square;bell;bell-o;bell-slash;bell-slash-o;bicycle;binoculars;birthday-cake;bitbucket;bitbucket-square;bitcoin;bold;bolt;bomb;book;bookmark;bookmark-o;briefcase;btc;bug;building;building-o;bullhorn;bullseye;bus;cab;calculator;calendar;calendar-o;camera;camera-retro;car;caret-down;caret-left;caret-right;caret-square-o-down;caret-square-o-left;caret-square-o-right;caret-square-o-up;caret-up;cc;cc-amex;cc-discover;cc-mastercard;cc-paypal;cc-stripe;cc-visa;certificate;chain;chain-broken;check;check-circle;check-circle-o;check-square;check-square-o;chevron-circle-down;chevron-circle-left;chevron-circle-right;chevron-circle-up;chevron-down;chevron-left;chevron-right;chevron-up;child;circle;circle-o;circle-o-notch;circle-thin;clipboard;clock-o;close;cloud;cloud-download;cloud-upload;cny;code;code-fork;codepen;coffee;cog;cogs;columns;comment;comment-o;comments;comments-o;compass;compress;copy;copyright;credit-card;crop;crosshairs;css3;cube;cubes;cut;cutlery;dashboard;database;dedent;delicious;desktop;deviantart;digg;dollar;dot-circle-o;download;dribbble;dropbox;drupal;edit;eject;ellipsis-h;ellipsis-v;empire;envelope;envelope-o;envelope-square;eraser;eur;euro;exchange;exclamation;exclamation-circle;exclamation-triangle;expand;external-link;external-link-square;eye;eye-slash;eyedropper;facebook;facebook-square;fast-backward;fast-forward;fax;female;fighter-jet;file;file-archive-o;file-audio-o;file-code-o;file-excel-o;file-image-o;file-movie-o;file-o;file-pdf-o;file-photo-o;file-picture-o;file-powerpoint-o;file-sound-o;file-text;file-text-o;file-video-o;file-word-o;file-zip-o;files-o;film;filter;fire;fire-extinguisher;flag;flag-checkered;flag-o;flash;flask;flickr;floppy-o;folder;folder-o;folder-open;folder-open-o;font;forward;foursquare;frown-o;futbol-o;gamepad;gavel;gbp;ge;gear;gears;gift;git;git-square;github;github-alt;github-square;gittip;glass;globe;google;google-plus;google-plus-square;google-wallet;graduation-cap;group;h-square;hacker-news;hand-o-down;hand-o-left;hand-o-right;hand-o-up;hdd-o;header;headphones;heart;heart-o;history;home;hospital-o;html5;ils;image;inbox;indent;info;info-circle;inr;instagram;institution;ioxhost;italic;joomla;jpy;jsfiddle;key;keyboard-o;krw;language;laptop;lastfm;lastfm-square;leaf;legal;lemon-o;level-down;level-up;life-bouy;life-buoy;life-ring;life-saver;lightbulb-o;line-chart;link;linkedin;linkedin-square;linux;list;list-alt;list-ol;list-ul;location-arrow;lock;long-arrow-down;long-arrow-left;long-arrow-right;long-arrow-up;magic;magnet;mail-forward;mail-reply;mail-reply-all;male;map-marker;maxcdn;meanpath;medkit;meh-o;microphone;microphone-slash;minus;minus-circle;minus-square;minus-square-o;mobile;mobile-phone;money;moon-o;mortar-board;music;navicon;newspaper-o;openid;outdent;pagelines;paint-brush;paper-plane;paper-plane-o;paperclip;paragraph;paste;pause;paw;paypal;pencil;pencil-square;pencil-square-o;phone;phone-square;photo;picture-o;pie-chart;pied-piper;pied-piper-alt;pinterest;pinterest-square;plane;play;play-circle;play-circle-o;plug;plus;plus-circle;plus-square;plus-square-o;power-off;print;puzzle-piece;qq;qrcode;question;question-circle;quote-left;quote-right;ra;random;rebel;recycle;reddit;reddit-square;refresh;remove;renren;reorder;repeat;reply;reply-all;retweet;rmb;road;rocket;rotate-left;rotate-right;rouble;rss;rss-square;rub;ruble;rupee;save;scissors;search;search-minus;search-plus;send;send-o;share;share-alt;share-alt-square;share-square;share-square-o;shekel;sheqel;shield;shopping-cart;sign-in;sign-out;signal;sitemap;skype;slack;sliders;slideshare;smile-o;soccer-ball-o;sort;sort-alpha-asc;sort-alpha-desc;sort-amount-asc;sort-amount-desc;sort-asc;sort-desc;sort-down;sort-numeric-asc;sort-numeric-desc;sort-up;soundcloud;space-shuttle;spinner;spoon;spotify;square;square-o;stack-exchange;stack-overflow;star;star-half;star-half-empty;star-half-full;star-half-o;star-o;steam;steam-square;step-backward;step-forward;stethoscope;stop;strikethrough;stumbleupon;stumbleupon-circle;subscript;suitcase;sun-o;superscript;support;table;tablet;tachometer;tag;tags;tasks;taxi;tencent-weibo;terminal;text-height;text-width;th;th-large;th-list;thumb-tack;thumbs-down;thumbs-o-down;thumbs-o-up;thumbs-up;ticket;times;times-circle;times-circle-o;tint;toggle-down;toggle-left;toggle-off;toggle-on;toggle-right;toggle-up;trash;trash-o;tree;trello;trophy;truck;try;tty;tumblr;tumblr-square;turkish-lira;twitch;twitter;twitter-square;umbrella;underline;undo;university;unlink;unlock;unlock-alt;unsorted;upload;usd;user;user-md;users;video-camera;vimeo-square;vine;vk;volume-down;volume-off;volume-up;warning;wechat;weibo;weixin;wheelchair;wifi;windows;won;wordpress;wrench;xing;xing-square;yahoo;yelp;yen;youtube;youtube-play;youtube-square'.split(';');
+  const COLOURS = {
+    Mapping: {},
+    Keys: [], Names: [],
+    NamesLower: [],
+    Sets: {
+      'Standard Colours': [0, [0,73,70,68,107,59,103,24,112]],
+      'FimFiction': [0, range(113,127)],
+      'Mane Six': [0, range(128, 133)],
+      'More Colours': [1, range(0,112)]
+    }
+  };
+  'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').map(a => a.split(':')).forEach(a => {
+    COLOURS.Keys.push(a[1]);
+    COLOURS.Names.push(COLOURS.Mapping[a[1]] = a[0]);
+    COLOURS.NamesLower.push(a[0].toLowerCase());
+  });
   const getExtraEmotesInit = () => !!document.querySelector('.extraemoticons_loaded');
   const getAlwaysShowImages = () => settingsMan.bool('unspoiler_images', true);
   const getBlockLightbox = () => settingsMan.bool('block_lightbox', false);
@@ -2358,8 +2376,8 @@ function CommentSectionController() {
         } else if (va == false) {
           if (c.indexOf('#') != 0) c = "#" + c;
         } else {
-          c = colours.Keys[va];
-          e.target.value = colours.Names[va];
+          c = COLOURS.Keys[va];
+          e.target.value = COLOURS.Names[va];
         }
         pop.content.querySelector('#color_preview').style.color = c;
       };
@@ -2371,8 +2389,8 @@ function CommentSectionController() {
         if (!(c && c.length && valid.value === "1")) {
           return pop.content.querySelector('#color_error').classList.remove("hidden");
         }
-        let i = colours.NamesLower.indexOf(c.toLowerCase());
-        if (i > -1) c = colours.Keys[i];
+        let i = COLOURS.NamesLower.indexOf(c.toLowerCase());
+        if (i > -1) c = COLOURS.Keys[i];
         if (c.indexOf('#') == -1) c = '#' + c;
         addRecent(c);
         controller.insertTags("[color=" + c + "]", "[/color]");
@@ -2386,7 +2404,7 @@ function CommentSectionController() {
       controller.textarea.classList.add('active_text_area');
 
       const list = makePopup('All Colours', 'fa fa-tint', false, false);
-      Object.keys(colours.Sets).forEach(i => addColorSection(list.content, colours.Sets[i][1], i, ` collapsable${colours.Sets[i][0] ? ' collapsed' : ''}`));
+      Object.keys(COLOURS.Sets).forEach(i => addColorSection(list.content, COLOURS.Sets[i][1], i, ` collapsable${COLOURS.Sets[i][0] ? ' collapsed' : ''}`));
       addDelegatedEvent(list.content, '.colour-section-header.collapsable', 'click', (e, target) => target.classList.toggle('collapsed'));
 
       const recent = getRecentColours(15);
@@ -2411,9 +2429,9 @@ function CommentSectionController() {
 
     function addColorTiles(colors) {
       return colors.map(c => {
-        if (typeof c == 'string') return [c, colours.Mapping[c] || c];
+        if (typeof c == 'string') return [c, COLOURS.Mapping[c] || c];
         if (c < 0) return [''];
-        return [colours.Keys[c], colours.Names[c] || c]
+        return [COLOURS.Keys[c], COLOURS.Names[c] || c]
       }).map((a, c) => a[0] == '' ? '' : `<li class="colour-tile">
                 <a title="${a[1]}" data-index="${c}" data-colour="${a[0]}">
                     <span style="background-color:${a[0]} !important" class="color-tile"></span>
@@ -2520,9 +2538,9 @@ function CommentSectionController() {
         me.insertAdjacentHTML('beforeend', `<div class="drop-down drop-colour-pick" style="width:250px">
                 <div class="arrow" ></div>
                 <ul class="colour-holder">
-                    ${addColorTiles(colours.Sets['FimFiction'][1])}
+                    ${addColorTiles(COLOURS.Sets['FimFiction'][1])}
                     <li class="divider"></li>
-                    ${addColorTiles(colours.Sets['Mane Six'][1])}
+                    ${addColorTiles(COLOURS.Sets['Mane Six'][1])}
                     <li class="recent-part divider"><span>Recent</span></li>
                     <span data-count="6" class="recent-part recent-colours"></span>
                     <li class="divider"></li>
@@ -2810,19 +2828,20 @@ function SiteFontController() {
     }
   };
 }
-function LogoController(logos) {
-  const pickNextLogo = () => pickNext(logos.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
-  const getUrl = val => logos[val == -1 ? pickNextLogo() : Math.max(0, val % logos.length)].css;
+function LogoController() {
+  const LOGOS = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO);
+  const pickNextLogo = () => pickNext(LOGOS.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
+  const getUrl = val => LOGOS[val == -1 ? pickNextLogo() : Math.max(0, val % LOGOS.length)].css;
   const getCurrent = () => settingsMan.int("oldLogo", 0);
   return {
     getNames() {
-      return logos.filter(l => l.able).map(l => l.name);
+      return LOGOS.filter(l => l.able).map(l => l.name);
     },
     apply(v) {
       document.querySelector('#home_link img.logo').src = getUrl(v || getCurrent());
     },
     createOptions(tab) {
-        const oldLogo = tab.AddDropDown("ologo", "Logo Image", logos.filter(l => l.able).map(l => l.name), getCurrent());
+        const oldLogo = tab.AddDropDown("ologo", "Logo Image", LOGOS.filter(l => l.able).map(l => l.name), getCurrent());
         oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
         oldLogo.addEventListener('change', e => {
           settingsMan.set("oldLogo", e.target.value, 0);
