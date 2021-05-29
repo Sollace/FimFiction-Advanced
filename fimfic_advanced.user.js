@@ -409,22 +409,14 @@ function buildSettingsTab(tab) {
   siteFontController.createOptions(tab);
 
   const chapWid = tab.AddTextBox("cwt", "Chapter Width");
-  addTooltip("Acceps values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 100% (was 46em)", chapWid);
+  addTooltip("Accepts values in three formats:em, px, and %<br />Eg. 80px, 5em, 100%<br />If no format is specified em will be used<br />Default: 100% (was 46em)", chapWid);
   chapWid.value = getStoryWidth();
   chapWid.addEventListener('change', setStoryWidth);
 
-  tab.StartEndSection("Banners");
-  tab.AddCheckBox("eb", "Enable Banners", bannerController.getEnabled()).addEventListener('change', compose(bannerController.setEnabled, updateBannersOptions));
-  tab.AddCheckBox("fancyB", "Enable Fancy Banners", bannerController.getFancy()).addEventListener('change', bannerController.setFancy);
-  tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', e => setPinUserbar(e.target.checked));
-  tab.AddCheckBox("hb", "Compact Banner", bannerController.getCollapse()).addEventListener('change', bannerController.setCollapse);
-  const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", bannerController.slider.labels(), bannerController.slider.getSlide());
-  enableSlide.addEventListener('change', e=> bannerController.slider.setSlide(e, updateSliderOptions));
-  tab.AddCheckBox("shuf", "Shuffle Slide Show", bannerController.slider.getShuffle()).addEventListener('change', bannerController.slider.setShuffle);
-  updateSliderOptions();
-
-  tab.StartEndSection("Christmasy Stuff");
-  const enableUSnow = snowController.createOptions(tab);
+  bannerController.createOptions(tab, () => {
+    tab.StartEndSection("Christmasy Stuff");
+    snowController.createOptions(tab);
+  });
 
   tab.StartEndSection("Colours and Customization");
 
@@ -432,20 +424,9 @@ function buildSettingsTab(tab) {
 
   backgrounds.createOptions(tab);
 
-  customBannerController.createOptions(tab);
-  updateBannersOptions();
-
   tab.StartEndSection("Signatures");
 
   signatureController.createOptions(tab);
-
-  function updateBannersOptions() {
-    tab.SetEnabled(`#pub,#fancyB,#hb,#sl,#shuf,#bannerCust${enableUSnow.selectedIndex < 2 ? ',#uss' : ''}`, bannerController.getEnabled());
-  }
-
-  function updateSliderOptions() {
-    tab.SetEnabled('#shuf', enableSlide.selectedIndex);
-  }
 }
 function applyChapterButtons() {
   const immediateText = el => [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('');
@@ -2639,7 +2620,9 @@ function CustomBannerController() {
               pop.Close()
             }));
             builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye"></i>Preview</button>').addEventListener('click', paintView(true, (url, color, vert, hor, x, y) => {
-              bannerController.changeBanner(null, url, color, Pos([hor, x, vert, y]));
+              bannerController.slider.animate(() => {
+                bannerController.changeBanner(null, url, color, Pos([hor, x, vert, y]));
+              });
             }));
             builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o"></i>Reset</button>').addEventListener('click', () => {
               settingsMan.remove("customBannerUrl");
@@ -2652,7 +2635,7 @@ function CustomBannerController() {
                 customBannerindex = -1;
               }
               repaintBannerButton(cban, null);
-              bannerController.finalise();
+              bannerController.slider.goto(bannerController.getCurrentId(), false);
               pop.Close();
             });
             builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera"></i>Guess from Current</button>').addEventListener('click', () => {
@@ -2662,7 +2645,7 @@ function CustomBannerController() {
             });
 
             pop.element.querySelector(".close_button").addEventListener('mousedown', () => {
-              if (hasPre) bannerController.finalise();
+              if (hasPre) bannerController.slider.goto(bannerController.getCurrentId(), false);
             });
 
             customBanner = get();
@@ -3471,7 +3454,7 @@ function BannerCreditsController(controller) {
   return {
     selectBanner(e, target) {
       controller.setCurrent(target.value);
-      controller.finalise();
+      controller.slider.goto(controller.getCurrentId(), true);
     },
     switchSets(e, target) {
       target = document.querySelector(`.banner-credits[data-group="${target.value}"]`);
@@ -3503,6 +3486,8 @@ function BannerController(sets) {
 
   const done = e => e.target.parentNode.removeChild(e.target);
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
+  const getCollapse = () => settingsMan.bool("titleHidden", false);
+  const getFancy = () => settingsMan.bool('fancy_banners', false);
 
   if (CHRIST) sets.push({name: "Festive", items: [Ban("christmas.png", "Merry Christmas!", "#4c7e6e")]});
   sets.forEach(set => {
@@ -3631,21 +3616,23 @@ function BannerController(sets) {
         img.src = banners[theme].url;
       },
       goto(index, save) {
+        this.animate(() => bannerController.pick(index, save));
+      },
+      animate(action) {
         const cc = window.getComputedStyle(tit);
         fade.classList.add('animating');
         fade.style.backgroundImage = cc.backgroundImage;
         fade.style.backgroundPosition = cc.backgroundPosition;
         fade.style.backgroundSize = cc.backgroundSize;
         requestAnimationFrame(() => {
-          bannerController.pick(index, save);
+          action();
           requestAnimationFrame(() => fade.classList.remove('animating'));
         });
       }
     };
   }
 
-  let self;
-  return self = {
+  return {
     slider,
     getSets: _ => sets,
     prev: _ => slider.goto(theme == 0 ? banners.length - 1 : theme - 1, true),
@@ -3655,7 +3642,7 @@ function BannerController(sets) {
       slider.goto(-1, false);
     },
     initFancy() {
-      if (this.getFancy() && this.getEnabled()) {
+      if (getFancy() && this.getEnabled()) {
         bannerScrollOn();
         updateBannerScroll();
       }
@@ -3681,37 +3668,6 @@ function BannerController(sets) {
     getEnabled() {
       return settingsMan.bool('banners', true);
     },
-    setEnabled(e) {
-      settingsMan.setB("banners", e.target.checked, true);
-      settingsMan.flag('banners', e.target.checked);
-      if (e.target.checked) {
-        self.build(banners);
-      } else {
-        all('#FFA_Banner_Stylesheet, header.header > #title.title', s => s.parentNode.removeChild(s));
-        document.querySelector('.user_toolbar').style.background = '';
-      }
-      bannerScrollOff();
-      self.initFancy();
-    },
-    getCollapse() {
-      return settingsMan.bool("titleHidden", false);
-    },
-    setCollapse(e) {
-      settingsMan.setB("titleHidden", e.target.checked, false);
-      document.body.classList.toggle('titleHidden', e.target.checked);
-    },
-    getFancy() {
-      return settingsMan.bool('fancy_banners', false);
-    },
-    setFancy(e) {
-      if (e.target.checked == self.getFancy()) return;
-      settingsMan.setB('fancy_banners', e.target.checked, false);
-      if (e.target.checked) {
-        self.initFancy();
-      } else {
-        bannerScrollOff();
-      }
-    },
     build() {
       settingsMan.flag('banners', true);
       addBannerCss();
@@ -3719,7 +3675,7 @@ function BannerController(sets) {
       let mainBanner = document.querySelector('#main_banner');
       if (mainBanner) return;
 
-      if (bannerController.getCollapse()) document.body.classList.add('titleHidden');
+      if (getCollapse()) document.body.classList.add('titleHidden');
       if (getPinUserbar()) document.body.classList.add('pin_userbar');
       
       const pinLink = document.querySelector('.pin_link_container');
@@ -3819,7 +3775,50 @@ function BannerController(sets) {
         source_link.href = sources[0].href;
         source_link.title = sources[0].href;
       }
-      if (this.getFancy()) updateBannerScroll(pos);
+      if (getFancy()) updateBannerScroll(pos);
+    },
+    createOptions(tab, dependant) {
+      const updateBannersOptions = () => tab.SetEnabled(`#pub,#fancyB,#hb,#sl,#shuf,#bannerCust${snowController.getState() < 2 ? ',#uss' : ''}`, this.getEnabled());
+      const updateSliderOptions = () => tab.SetEnabled('#shuf', enableSlide.selectedIndex);
+
+      tab.StartEndSection("Banners");
+      tab.AddCheckBox("eb", "Enable Banners", this.getEnabled()).addEventListener('change', compose(e => {
+        settingsMan.setB("banners", e.target.checked, true);
+        settingsMan.flag('banners', e.target.checked);
+        if (e.target.checked) {
+          this.build(banners);
+        } else {
+          all('#FFA_Banner_Stylesheet, header.header > #title.title', s => s.parentNode.removeChild(s));
+          document.querySelector('.user_toolbar').style.background = '';
+        }
+        bannerScrollOff();
+        this.initFancy();
+      }, updateBannersOptions));
+      tab.AddCheckBox("fancyB", "Enable Fancy Banners", getFancy()).addEventListener('change', e => {
+        if (e.target.checked == getFancy()) return;
+        settingsMan.setB('fancy_banners', e.target.checked, false);
+        if (e.target.checked) {
+          this.initFancy();
+        } else {
+          bannerScrollOff();
+        }
+      });
+      tab.AddCheckBox("pub", "Sticky Userbar", getPinUserbar()).addEventListener('change', e => setPinUserbar(e.target.checked));
+      tab.AddCheckBox("hb", "Compact Banner", getCollapse()).addEventListener('change', e => {
+        settingsMan.setB("titleHidden", e.target.checked, false);
+        document.body.classList.toggle('titleHidden', e.target.checked);
+      });
+
+      const enableSlide = tab.AddDropDown("sl", "Banner Slide Show", slider.labels(), slider.getSlide());
+      enableSlide.addEventListener('change', e=> slider.setSlide(e, updateSliderOptions));
+      tab.AddCheckBox("shuf", "Shuffle Slide Show", slider.getShuffle()).addEventListener('change', slider.setShuffle);
+
+      customBannerController.createOptions(tab);
+      
+      dependant();
+      
+      updateSliderOptions();
+      updateBannersOptions();
     }
   };
 }
@@ -3962,7 +3961,9 @@ function SnowController() {
   }
 
   return {
+    getState,
     createOptions(tab) {
+      const updateSnowOptions = () => tab.SetEnabled('#pus' + (bannerController.getEnabled() ? ',#uss' : ''), enableUSnow.selectedIndex < 2);
       const enableUSnow = tab.AddDropDown("us", "Snow", ["Always On", "Default", "Always Off"], getState());
       enableUSnow.addEventListener('change', compose(e => {
         settingsMan.set("snow_bg", e.target.selectedIndex, 1);
@@ -3982,12 +3983,6 @@ function SnowController() {
         if (snower) snower.setSave(e.target.checked);
       });
       updateSnowOptions();
-
-      function updateSnowOptions() {
-        tab.SetEnabled('#pus' + (bannerController.getEnabled() ? ',#uss' : ''), enableUSnow.selectedIndex < 2);
-      }
-
-      return enableUSnow;
     },
     apply() {
       applySnowing(getMode(), getState());
