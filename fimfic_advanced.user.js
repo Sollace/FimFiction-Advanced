@@ -254,6 +254,11 @@ ready(() => {
     console.error(`FimficAdv: Unhandled Exception in ${stage}`);
     console.error(e);
   }
+  
+  function addFooterData(data) {
+    const footer = document.querySelector('.footer .block');
+    if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
+  }
 });
 
 try {
@@ -316,15 +321,12 @@ function initFimFictionAdvanced() {
   adsController.apply();
   applyCodePatches();
   applyFeatureBoxEnhancements();
-  
   setTimeout(() => {
     if (bannerController.slider.getSlide()) {
       bannerController.slider.updateSlide();
     }
-    
     snowController.apply();
   }, 300);
-  
 }
 function registerEvents() {
   FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
@@ -344,7 +346,6 @@ function buildSettingsTab(tab) {
     tab.StartEndSection("Christmasy Stuff");
     snowController.createOptions(tab);
   });
-
   tab.StartEndSection("Colours and Customization");
   logoController.createOptions(tab);
   backgrounds.createOptions(tab);
@@ -1949,10 +1950,6 @@ function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
 }
-function addFooterData(data) {
-  const footer = document.querySelector('.footer .block');
-  if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
-}
 function pinnerFunc(target, clazz, bounder) {
   clazz = `fix_${clazz}`;
   target = document.querySelector(target);
@@ -2829,7 +2826,6 @@ function LogoController(logos) {
   };
 }
 function AdsController() {
-
   function removeAnnoyances() {
     const listBox = document.querySelector('.list_boxes');
     if (listBox) {
@@ -3168,7 +3164,6 @@ function BackgroundsController() {
   };
 }
 function FancyFeedsController() {
-
   let computedUnreadCount = 0;
   let unreadCount = getUnreadCount();
 
@@ -3680,9 +3675,7 @@ function BannerController(sets) {
         mainBanner.insertAdjacentElement('afterbegin', subHeader);
         document.querySelector('.nav_bar .logo').classList.add('tiny-logo');
 
-        const readyBannerAnim = () => {
-          makeBannerTransitionStyle(computeAppropriateHeight(subHeader));
-        };
+        const readyBannerAnim = () => makeBannerTransitionStyle(computeAppropriateHeight(subHeader));
 
         window.addEventListener('resize', readyBannerAnim);
         window.addEventListener('DOMContentLoaded', readyBannerAnim);
