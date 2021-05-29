@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-6
+// @version     4.6-beta-7
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -19,7 +19,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const VERSION = '4.6-beta-6',
+const VERSION = '4.6-beta-7',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -211,6 +211,7 @@ const snowController = SnowController();
 const signatureController = SignatureController();
 const adsController = AdsController();
 const siteFontController = SiteFontController();
+const commentSectionController = CommentSectionController();
 const colours = {
   Mapping: {},
   Keys: [], Names: [],
@@ -242,7 +243,6 @@ ready(() => {
     stage = 'Init';
     initFimFictionAdvanced();
     stage = 'Settings Tab';
-    FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
     const settingsButt = document.querySelector('.user_toolbar li a[href="/manage/local-settings"] + ul');
     settingsButt.insertAdjacentHTML('beforeend', `<li class="divider"></li><li><a href="/manage/local-settings#fimfiction_advanced"><i class="fa fa-gear"></i>Advanced Settings</a></li>`);
     stage = 'Events';
@@ -265,7 +265,6 @@ try {
 function initGlobals() {
   if (!userToolbar) userToolbar = document.querySelector('.user_toolbar');
 }
-
 function earlyStart() {
   (function css() {
     if (document.body && document.querySelector('#stylesheetMain')) {
@@ -281,6 +280,10 @@ function earlyStart() {
           requestAnimationFrame(banner);
         })();
       }
+
+      backgrounds.apply();
+      FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
+      creditsController.buildAll();
 
       if (CURRENT_LOCATION.indexOf('feed') == 0) (function feed() {
         if (document.querySelector('.feed, .footer')) {
@@ -301,10 +304,8 @@ function earlyStart() {
     return false;
   }
 }
-
 function initFimFictionAdvanced() {
-  initCommentArea();
-  backgrounds.apply();
+  commentSectionController.initCommentArea();
   siteFontController.apply();
   applyChapterButtons();
   applyBetterRatingBars();
@@ -312,14 +313,9 @@ function initFimFictionAdvanced() {
   if (isMyBlogPage()) {
     initBlogPage();
   }
-  
-  creditsController.buildAll();
+
   initBBCodeController();
 
-  if (getBlockLightbox()) {
-    initLightBoxBlocker();
-  }
-  
   bannerController.initFancy();
   
   if (CURRENT_LOCATION.indexOf('feed') == 0) {
@@ -341,17 +337,13 @@ function initFimFictionAdvanced() {
   }, 300);
   
 }
-
 function registerEvents() {
-  FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', initCommentArea);
   FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
-  if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) startCommentHandler();
+  commentSectionController.apply();
   if (CURRENT_LOCATION.indexOf('feed') == 0) FimFicEvents.on('afterloadfeed', feeder.initFeedItems);
   applyNightModeListener();
 }
-//--------------------------------------------------------------------------------------------------
 //----------------------------------------FUNCTIONS-------------------------------------------------
-//--------------------------------------------------------------------------------------------------
 function applyFeatureBoxEnhancements() {
   extend(FrontpageController.prototype, {
     prevFeaturedStory() {
@@ -387,13 +379,11 @@ function applyFeatureBoxEnhancements() {
     }
   }
 }
-
 function applyBetterRatingBars() {
   all('.rating-bar > [style]', span => {
     span.parentNode.title = span.style.width;
   });
 }
-
 function applyNightModeListener() {
   window.addEventListener('darkmodechange', nightModeToggled);
   window.addEventListener('storage', c => {
@@ -410,11 +400,9 @@ function applyNightModeListener() {
     backgrounds.apply();
   }
 }
-
 function buildSettingsTab(tab) {
   tab.StartEndSection("General Settings");
-  tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', setAlwaysShowImages);
-  tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', setBlockLightbox);
+  commentSectionController.createOptions(tab);
   adsController.createOptions(tab);
   tab.AddCheckBox("sb", "Show Sweetie Scepter", getSweetieEnabled()).addEventListener('change', setSweetieEnabled);
 
@@ -595,7 +583,6 @@ function buildSettingsTab(tab) {
     });
   }
 }
-
 function applyChapterButtons() {
   const immediateText = el => [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('');
 
@@ -641,7 +628,6 @@ function applyChapterButtons() {
     a.querySelector('a').dataset.click = "expand";
   });
 }
-
 function applyCodePatches() {
   //Fix error window popping up whenever an operation times out/is cancelled
   override(window, 'ShowErrorWindow', function(c) {
@@ -704,24 +690,6 @@ function applyCodePatches() {
     console.warn(e);
   }
 }
-
-function initCommentArea() {
-  all('.bbcode-editor button[title="Text Colour"]', a => a.innerHTML = '<i class="fa fa-tint"></i>');
-  all('.bbcode-editor button[title="Insert Image"]', a => a.innerHTML = '<i class="fa fa-picture-o"></i>');
-  all('.bbcode-editor:not([data-fimficadv])', registerCommentButtons);
-  
-  function registerCommentButtons(me, recurs) {
-    const controller = App.GetControllerFromElement(me);
-    if (!recurs && !controller) return requestAnimationFrame(() => registerCommentButtons(me, 1));
-
-    const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
-
-    me.dataset.fimficadv = '1';
-    main_button.dataset.click = 'showFimficAdv';
-    registerButton(main_button, controller, -1);
-  }
-}
-
 function initBBCodeController() {
 
   function getRecentColours(num) {
@@ -1173,7 +1141,6 @@ function initBBCodeController() {
     }
   });
 }
-
 function initBlogPage() {
   if (document.querySelector('.content_box.blog-post-content-box')) return;
   const page = document.querySelector("div.page_list");
@@ -1208,77 +1175,6 @@ function initBlogPage() {
     </div>
 </div>`);
 }
-
-function startCommentHandler() {
-  extend(CommentListController.prototype, {
-    quoteComment(sender, event) {
-      const id = sender.dataset.commentId;
-      sender = sender.closest('.comment');
-      let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
-
-      all('.comment', bbcode, a => a.parentNode.removeChild(a));
-      all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
-
-      bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
-
-      let who = sender.querySelector('.author a.name').innerText;
-      who = who ? '=' + who.trim() : '';
-
-      const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
-      const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
-
-      controller.insertText(e, !event.ctrlKey && !event.shiftKey);
-      event.preventDefault();
-      if (!(event.ctrlKey || event.shiftKey)) {
-        fQuery.scrollTop(document.getElementById('add_comment_box').getBoundingClientRect().top);
-      }
-    }
-  });
-
-  FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
-    all('.comment .buttons:not([data-parsed])', insertQuoteButton);
-  })();
-
-  if (!getAlwaysShowImages() || getExtraEmotesInit()) return;
-
-  const unspoil = getAlwaysShowImages() ? me => {
-    replaceWith(me.parentNode, `<img class="user_image" data-lightbox src="${me.href}"></img>`);
-  } : me => {
-    const url = me.href;
-    if (!/\?.*isEmote/.test(url)) return;
-    me = me.parentNode;
-    if (me.nextSibling && me.nextSibling.tagName != 'BR') {
-      me.insertAdjacentHTML('afterend', '<br>');
-    }
-    replaceWith(me, `<img class="user_image" data-lightbox src="${url}"></img>`);
-  };
-
-  FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
-    all('.comment_data a.user_image_link', unspoil);
-  })();
-
-  function insertQuoteButton(me) {
-    me.dataset.parsed = '1';
-    const id = me.querySelector('[data-comment-id]').dataset.commentId;
-    me.insertAdjacentHTML('afterbegin', `<a title="Quote ( hold ctrl to prevent jumping to reply box )" data-click="quoteComment" data-comment-id="${id}">
-      <i class="fa fa-fw fa-quote-left"></i><span>Quote</span>
-    </a>`);
-  }
-}
-
-function initLightBoxBlocker() {
-  addDelegatedEvent(document.body, '[data-lightbox]', 'mouseover', (e, target) => {
-    if (target.classList.contains('user_image')) {
-      target.removeAttribute('data-lightbox');
-      target.removeAttribute('title');
-      target.dataset.resizeable = false;
-      target.classList.remove('user_image');
-      target.classList.add('user_image_no_lightbox');
-    }
-    target.classList.add('no-lightbox');
-  });
-}
-
 function addExtraToolbarLinks(e) {
   if (e.event.type == 'stories') {
     var ref = document.querySelector('#user_toolbar_story_list a[href^="/user/"]').parentNode;
@@ -2058,7 +1954,6 @@ ${ponyThemes()}
   .pin_nav_bar.fix_feed .feed-toolbar {top: 90px;}
 }`, "FFA_Stylesheet");
 }
-
 function addBannerCss() {
     const light = currentTheme() == 'light';
     updateStyle(`
@@ -2428,7 +2323,6 @@ ${light ? '' : `
 .user-page-header .tabs li.selected a {z-index: 0 !important;}
 `, 'FFA_Banner_Stylesheet');
 }
-
 function makeBannerTransitionStyle(height) {
   updateStyle(`
 @media all and (min-width: 700px) {
@@ -2438,7 +2332,6 @@ function makeBannerTransitionStyle(height) {
         transition: height 0.5s 0.6s ease;
         height: ${height}px;}}`, 'FFA_Banner_Transition_Stylesheet');
 }
-
 function ponyThemes() {
   return `
 /*Pinkie Pie*/
@@ -2696,17 +2589,11 @@ select[name="colour_scheme"] option[value="luna"] {
 }`;
 }
 //-----------------------------------OPTION FUNCTIONS-----------------------------------------------
-function getBlockLightbox() {return settingsMan.bool('block_lightbox', false);}
-function setBlockLightbox(e) {settingsMan.setB('block_lightbox', e.target.checked, false);}
-
 function getPinUserbar() {return settingsMan.bool('pin_userbar', false);}
 function setPinUserbar(v) {
   settingsMan.setB('pin_userbar', v, false);
   document.body.classList.toggle('pin_userbar', v);
 }
-
-function getAlwaysShowImages() {return settingsMan.bool('unspoiler_images', true);}
-function setAlwaysShowImages(e) {settingsMan.setB('unspoiler_images', e.target.checked, true);}
 
 function getStoryWidth() {
   const result = settingsMan.get('storyWidth', '100%');
@@ -2776,12 +2663,10 @@ function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
   el.parentNode.removeChild(el);
 }
-
 function addFooterData(data) {
   const footer = document.querySelector('.footer .block');
   if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
 }
-
 function pinnerFunc(target, clazz, bounder) {
   clazz = `fix_${clazz}`;
   target = document.querySelector(target);
@@ -2795,11 +2680,151 @@ function pinnerFunc(target, clazz, bounder) {
     }
   };
 }
+function Animator() {
+  let lastScroll;
+  let listenerCount = 0;
+  let callbacks = {};
+  let running = false;
 
-function getExtraEmotesInit() {
-  return !!document.querySelector('.extraemoticons_loaded');
+  function animate() {
+    const scroll = window.scrollY;
+    if (scroll != lastScroll) {
+      const ev = new Event('animator');
+      ev.scrollY = lastScroll = scroll;
+      document.dispatchEvent(ev);
+    }
+    running = listenerCount > 0;
+    if (running) requestAnimationFrame(animate);
+  }
+
+  return {
+    on(type, callback) {
+      if (!callbacks[type]) listenerCount++;
+      callbacks[type] = callback;
+      document.addEventListener('animator', callback);
+      listenerCount++;
+      if (!running) animate();
+    },
+    off(type) {
+      if (!callbacks[type]) return;
+      listenerCount--;
+      if (listenerCount <= 0) listenerCount = 0;
+      document.removeEventListener('animator', callbacks[type]);
+      callbacks[type] = null;
+    }
+  };
 }
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
+function CommentSectionController() {
+  const getExtraEmotesInit = () => !!document.querySelector('.extraemoticons_loaded');
+  const getAlwaysShowImages = () => settingsMan.bool('unspoiler_images', true);
+  const getBlockLightbox = () => settingsMan.bool('block_lightbox', false);
+
+  function startCommentHandler() {
+    extend(CommentListController.prototype, {
+      quoteComment(sender, event) {
+        const id = sender.dataset.commentId;
+        sender = sender.closest('.comment');
+        let bbcode = sender.querySelector('.comment_data.bbcode').cloneNode(true);
+
+        all('.comment', bbcode, a => a.parentNode.removeChild(a));
+        all('a[href*="#comment/"]', bbcode, a => a.outerHTML = `>>${a.href.split('/').reverse()[0]}`);
+
+        bbcode = new HTMLToBBCodeRenderer().render(new HTMLConverter().convert(bbcode.innerHTML.trim()));
+
+        let who = sender.querySelector('.author a.name').innerText;
+        who = who ? '=' + who.trim() : '';
+
+        const controller = App.GetControllerFromElement(document.querySelector('#add_comment_box .bbcode-editor'));
+        const e = `${controller.getText().length ? '\n' : ''}>>${id}\n[quote${who}]\n${bbcode}\n[/quote]\n`;
+
+        controller.insertText(e, !event.ctrlKey && !event.shiftKey);
+        event.preventDefault();
+        if (!(event.ctrlKey || event.shiftKey)) {
+          fQuery.scrollTop(document.getElementById('add_comment_box').getBoundingClientRect().top);
+        }
+      }
+    });
+
+    FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
+      all('.comment .buttons:not([data-parsed])', me => {
+        me.dataset.parsed = '1';
+        const id = me.querySelector('[data-comment-id]').dataset.commentId;
+        me.insertAdjacentHTML('afterbegin', `<a title="Quote ( hold ctrl to prevent jumping to reply box )" data-click="quoteComment" data-comment-id="${id}">
+          <i class="fa fa-fw fa-quote-left"></i><span>Quote</span>
+        </a>`);
+      });
+    })();
+
+    if (!getAlwaysShowImages() || getExtraEmotesInit()) return;
+
+    const unspoil = getAlwaysShowImages() ? me => {
+      replaceWith(me.parentNode, `<img class="user_image" data-lightbox src="${me.href}"></img>`);
+    } : me => {
+      const url = me.href;
+      if (!/\?.*isEmote/.test(url)) return;
+      me = me.parentNode;
+      if (me.nextSibling && me.nextSibling.tagName != 'BR') {
+        me.insertAdjacentHTML('afterend', '<br>');
+      }
+      replaceWith(me, `<img class="user_image" data-lightbox src="${url}"></img>`);
+    };
+
+    FimFicEvents.on('afterpagechange aftereditcomment afteraddcomment', () => {
+      all('.comment_data a.user_image_link', unspoil);
+    })();
+  }
+
+  function initLightBoxBlocker() {
+    addDelegatedEvent(document.body, '[data-lightbox]', 'mouseover', (e, target) => {
+      if (target.classList.contains('user_image')) {
+        target.removeAttribute('data-lightbox');
+        target.removeAttribute('title');
+        target.dataset.resizeable = false;
+        target.classList.remove('user_image');
+        target.classList.add('user_image_no_lightbox');
+      }
+      target.classList.add('no-lightbox');
+    });
+  }
+
+  function registerCommentButtons(me, recurs) {
+    const controller = App.GetControllerFromElement(me);
+    if (!recurs && !controller) return requestAnimationFrame(() => registerCommentButtons(me, 1));
+
+    const main_button = makeButton(controller.toolbar.children[0], "More Options", "fa fa-flag");
+
+    me.dataset.fimficadv = '1';
+    main_button.dataset.click = 'showFimficAdv';
+    registerButton(main_button, controller, -1);
+  }
+  
+  return {
+    initCommentArea() {
+      all('.bbcode-editor button[title="Text Colour"]', a => a.innerHTML = '<i class="fa fa-tint"></i>');
+      all('.bbcode-editor button[title="Insert Image"]', a => a.innerHTML = '<i class="fa fa-picture-o"></i>');
+      all('.bbcode-editor:not([data-fimficadv])', registerCommentButtons);
+    },
+    apply() {
+      FimFicEvents.on('aftereditmodule aftercomposepm afterpagechange afteraddcomment', this.initCommentArea);
+
+      if (getBlockLightbox()) {
+        initLightBoxBlocker();
+      }
+      if (CURRENT_LOCATION.indexOf('manage_user/messages/') != 0) {
+        startCommentHandler();
+      }
+    },
+    createOptions(tab) {
+      tab.AddCheckBox("unsp", "Always show posted Images", getAlwaysShowImages()).addEventListener('change', e => {
+        settingsMan.setB('unspoiler_images', e.target.checked, true);
+      });
+      tab.AddCheckBox("unlit", "Block Lightboxes (image popups)", getBlockLightbox()).addEventListener('change', e => {
+        settingsMan.setB('block_lightbox', e.target.checked, false);
+      });
+    }
+  };
+}
 function SiteFontController() {
 
   function getCustomFont() {
@@ -2823,16 +2848,17 @@ function SiteFontController() {
     },
     createOptions(tab) {
       const input = tab.AddDropDown("ffs", "Site Font", []);
-      ChapterFormatController.prototype.initFonts.apply({ font: getCustomFont(), inputs: {font: input} });
-      input.insertAdjacentHTML('afterbegin', `<optgroup label="FimFiction">${['Default','Classic'].map(f => `<option value="${f}">${f}</option>`).join('')}</optgroup>`);
-      input.addEventListener('change', () => {
-        settingsMan.set('custom_font', input.value, 'Default');
-        this.apply();
+      ready(() => {
+        ChapterFormatController.prototype.initFonts.apply({ font: getCustomFont(), inputs: {font: input} });
+        input.insertAdjacentHTML('afterbegin', `<optgroup label="FimFiction">${['Default','Classic'].map(f => `<option value="${f}">${f}</option>`).join('')}</optgroup>`);
+        input.addEventListener('change', () => {
+          settingsMan.set('custom_font', input.value, 'Default');
+          this.apply();
+        });
       });
     }
   };
 }
-
 function LogoController(logos) {
 
   function pickNextLogo() {
@@ -2864,7 +2890,6 @@ function LogoController(logos) {
     }
   };
 }
-
 function AdsController() {
 
   function removeAnnoyances() {
@@ -2963,7 +2988,6 @@ function AdsController() {
     }
   };
 }
-
 function SignatureController() {
   const DEFAULT_SIG = "%message%\n\n--[i]%name%[/i]";
   const RANDOM_COMMENTS = [
@@ -3073,7 +3097,6 @@ function SignatureController() {
     }
   };
 }
-
 function BackgroundsController() {
   const ALIGNMENTS = ['top','left','right','bottom','center'];
 
@@ -3191,7 +3214,6 @@ function BackgroundsController() {
     apply
   };
 }
-
 function FancyFeedsController() {
 
   let computedUnreadCount = 0;
@@ -3404,42 +3426,6 @@ function FancyFeedsController() {
     }
   };
 }
-
-function Animator() {
-  let lastScroll;
-  let listenerCount = 0;
-  let callbacks = {};
-  let running = false;
-
-  function animate() {
-    const scroll = window.scrollY;
-    if (scroll != lastScroll) {
-      const ev = new Event('animator');
-      ev.scrollY = lastScroll = scroll;
-      document.dispatchEvent(ev);
-    }
-    running = listenerCount > 0;
-    if (running) requestAnimationFrame(animate);
-  }
-
-  return {
-    on(type, callback) {
-      if (!callbacks[type]) listenerCount++;
-      callbacks[type] = callback;
-      document.addEventListener('animator', callback);
-      listenerCount++;
-      if (!running) animate();
-    },
-    off(type) {
-      if (!callbacks[type]) return;
-      listenerCount--;
-      if (listenerCount <= 0) listenerCount = 0;
-      document.removeEventListener('animator', callbacks[type]);
-      callbacks[type] = null;
-    }
-  };
-}
-
 function BannerCreditsController(controller) {
   function build() {
     const themeId = controller.getCurrent();
@@ -3500,7 +3486,6 @@ function BannerCreditsController(controller) {
     }
   };
 }
-
 function BannerController(sets) {
   let theme = 0;
   const slider = Slider();
@@ -3828,7 +3813,6 @@ function BannerController(sets) {
     }
   };
 }
-
 function SnowController() {
   let snower;
 
