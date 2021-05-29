@@ -18,7 +18,6 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-
 const VERSION = '4.6-beta-7',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
@@ -94,6 +93,7 @@ var banners = [];
 let customBanner, customBannerindex = -1;
 const animator = Animator();
 const feeder = FancyFeedsController();
+const customBannerController = CustomBannerController();
 const bannerController = BannerController([
   { name: "Default", items: [
     Ban("zecora", [{ href: "//aeronjvl.deviantart.com/art/Hanging-by-the-Edge-327757722", text: 'Artwork by AeronJVL'}], "#A46E3C"),
@@ -430,38 +430,9 @@ function buildSettingsTab(tab) {
 
   logoController.createOptions(tab);
 
-  makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
+  backgrounds.createOptions(tab);
 
-  const colorPick = tab.AddColorPick("bg", "Background Colour", backgrounds.getColor(), me => {
-    me.value = me.value.trim();
-    if (me.value.length) {
-      if (me.value.indexOf('#') !== 0) {
-        me.value = toHex(extractColor(me.value));
-      }
-    }
-
-    backgrounds.setColor(me.value);
-    all('.toolbar', tab.container, a => a.style.backgroundColor = backgrounds.getOrDefaultColor());
-  });
-
-  tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar').addEventListener('click', () => {
-    colorPick.value = rgb2hex(userToolbar.dataset.backgroundColor);
-    colorPick.change();
-  });
-  tab.AppendButton(colorPick, '<i class="fa fa-undo"></i>Revert to default').addEventListener('click', () => {
-    colorPick.value = '';
-    colorPick.change();
-  });
-  
-  backgroundPatterns.createPresetSelect(tab, false);
-  backgroundImages.createPresetSelect(tab, colorPick);
-
-  tab.AddPresetSelect("bannerCust", "Custom Banner").add(el => {
-    el.children[1].innerHTML = '<i class="fa fa-pencil fa-5x"></i>';
-    el.classList.add('custom_banner_button');
-    el.addEventListener('click', () => createCustomBannerPopup(el));
-    if (customBanner) repaintBannerButton(el, customBanner);
-  });
+  customBannerController.createOptions(tab);
   updateBannersOptions();
 
   tab.StartEndSection("Signatures");
@@ -474,113 +445,6 @@ function buildSettingsTab(tab) {
 
   function updateSliderOptions() {
     tab.SetEnabled('#shuf', enableSlide.selectedIndex);
-  }
-
-  function repaintBannerButton(cban, banner) {
-    if (banner) {
-      cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
-      cban.children[0].style.backgroundColor = banner.colour;
-      cban.style.backgroundImage = `url("${banner.url}")`;
-      cban.style.backgroundPosition = banner.position;
-    } else {
-      cban.children[0].innerHTML = '';
-      cban.children[0].style.background = '#fff';
-      cban.style.backgroundImage = 'none';
-    }
-  }
-
-  function createCustomBannerPopup(cban) {
-    const pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
-    pop.SetWidth(700);
-    pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
-    pop.content.insertAdjacentHTML('beforeend', '<div class="drop-down-pop-up-footer"></div>');
-    new FimFicSettings.OptionsBuilder(pop.content.querySelector('tbody'), null, builder => {
-      const footer = pop.content.lastChild;
-      const input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px"></input>');
-
-      let row = builder.AddOption('', 'Image Position', '<div></div>');
-      const alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
-      const posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
-      const alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
-      const posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
-
-      row = builder.AddColorSliders('bc', 'Banner Colour', true);
-
-      const updateFields = color => {
-        color = toComponents(color);
-        upd(row.red, color[0]);
-        upd(row.green, color[1]);
-        upd(row.blue, color[2]);
-        upd(row.alpha, color[3]);
-      };
-      const getColor = () => `rgba(${[val(row.red),val(row.green),val(row.blue),val(row.alpha)].join(',')})`;
-      const upd = (me, v) => me[0].value = me[1].value = parseFloat(v);
-      const val = me => parseFloat(me[1].value) || 0;
-      const ch = me => me[0].value && me[0].value.length && !me[0].value.match(/[^0-9]/);
-
-      let hasPre = false;
-      const addBannerError = pop.content.querySelector('#add_banner_error');
-      const paintView = (state, callback) => () => {
-        hasPre = state;
-        if (ch(row.red) && ch(row.green) && ch(row.blue) && ch(row.alpha)) {
-          callback(input.value, getColor(), alignVert.value, alignHor.value, parseInt(posX.value) || 0, parseInt(posY.value) || 0);
-          addBannerError.classList.add('hidden');
-        } else {
-          addBannerError.classList.remove('hidden');
-        }
-      };
-
-      builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save"></i>Save</button>').addEventListener('click', paintView(false, (url, color, vert, hor, x, y) => {
-        setCustomBanner(url, color, [hor, x, vert, y]);
-        customBanner = Banner('Custom', url, url, color, { position: [hor, x, vert, y] });
-        if (customBannerindex > -1) {
-          banners[customBannerindex] = customBanner;
-        } else {
-          customBannerindex = banners.length;
-          banners.push(customBanner);
-        }
-        repaintBannerButton(cban, customBanner);
-        bannerController.pick(customBannerindex, true);
-        pop.Close()
-      }));
-      builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye"></i>Preview</button>').addEventListener('click', paintView(true, (url, color, vert, hor, x, y) => {
-        bannerController.changeBanner(null, url, color, Pos([hor, x, vert, y]));
-      }));
-      builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o"></i>Reset</button>').addEventListener('click', () => {
-        unsetCustomBanner();
-        if (customBannerindex > -1) {
-          banners.splice(customBannerindex, 1);
-          if (bannerController.getCurrent() == 'Custom') bannerController.pick(-1, true);
-          customBannerindex = -1;
-        }
-        repaintBannerButton(cban, null);
-        bannerController.finalise();
-        pop.Close();
-      });
-      builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera"></i>Guess from Current</button>').addEventListener('click', () => {
-        let color = userToolbar.dataset.backgroundColor || '';
-        if (color == '') color = 'rgb(146,27,87)';
-        updateFields(color);
-      });
-
-      pop.element.querySelector(".close_button").addEventListener('mousedown', () => {
-        if (hasPre) bannerController.finalise();
-      });
-
-      customBanner = getCustomBanner();
-      if (customBanner) {
-        input.value = customBanner.url;
-        updateFields(customBanner.colour);
-        const poss = customBanner.position;
-        let i = 0;
-        alignHor.value = poss['position-x'];
-        if (poss[i] != 'center') posX.value = poss.x;
-        i++;
-        alignVert.value = poss['position-y'];
-        if (poss[i] != 'center') posY.value = poss.y;
-      }
-      pop.Show();
-    });
   }
 }
 function applyChapterButtons() {
@@ -2607,25 +2471,6 @@ function setStoryWidth(e) {
   e.target.value = val + form;
   settingsMan.set("storyWidth", e.target.value, '100%');
 }
-
-function getCustomBanner() {
-  if (!(settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition"))) return null;
-  const url = settingsMan.get("customBannerUrl", '');
-  const position = settingsMan.get("customBannerPosition", '').split(' ');
-  position[1] = parseInt(position[1]) || 0;
-  position[3] = parseInt(position[3]) || 0;
-  return Banner("Custom", url, url, settingsMan.get("customBannerColor", ''), { position });
-}
-function unsetCustomBanner() {
-  settingsMan.remove("customBannerUrl");
-  settingsMan.remove("customBannerColor");
-  settingsMan.remove("customBannerPosition");
-}
-function setCustomBanner(url, color, pos) {
-  settingsMan.set("customBannerUrl", url);
-  settingsMan.set("customBannerColor", color);
-  settingsMan.set("customBannerPosition", typeof pos === 'string' ? pos : pos.join(' '));
-}
 //---------------------------------------DATA STRUCTURES--------------------------------------------
 function BG(name, css, source, params) {return { able: typeof (name) == 'string', attributes: params || {}, css, name, source };}
 function LOGO(name) {return BG(name, GITHUB + '/logos/' + name.replace(/ /g, '_') + '.png');}
@@ -2715,6 +2560,143 @@ function Animator() {
   };
 }
 //---------------------------------------VIRTUALISATIONS--------------------------------------------
+function CustomBannerController() {
+  function get() {
+    if (!(settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition"))) {
+      return null;
+    }
+    const url = settingsMan.get("customBannerUrl", '');
+    const position = settingsMan.get("customBannerPosition", '').split(' ');
+    position[1] = parseInt(position[1]) || 0;
+    position[3] = parseInt(position[3]) || 0;
+    return Banner("Custom", url, url, settingsMan.get("customBannerColor", ''), { position });
+  }
+
+  return {
+    get,
+    createOptions(tab) {
+      tab.AddPresetSelect("bannerCust", "Custom Banner").add(el => {
+        el.children[1].innerHTML = '<i class="fa fa-pencil fa-5x"></i>';
+        el.classList.add('custom_banner_button');
+        el.addEventListener('click', () => createCustomBannerPopup(el));
+        if (customBanner) repaintBannerButton(el, customBanner);
+        
+        function createCustomBannerPopup(cban) {
+          const pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
+          pop.SetWidth(700);
+          pop.SetContent('<table class="properties"><tbody /></table><div style="margin:5px;" id="add_banner_error" class="error-message hidden">Select a Color</div>');
+          pop.content.insertAdjacentHTML('beforeend', '<div class="drop-down-pop-up-footer"></div>');
+          new FimFicSettings.OptionsBuilder(pop.content.querySelector('tbody'), null, builder => {
+            const footer = pop.content.lastChild;
+            const input = builder.AddOption('', 'Image Url\n(1300x175px)', '<input type="url" placeholder="Banner Image" style="background-repeat: no-repeat;background-position: 7px"></input>');
+
+            let row = builder.AddOption('', 'Image Position', '<div></div>');
+            const alignVert = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>top</option><option>center</option><option>bottom</option></select>');
+            const posY = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
+            const alignHor = builder.AppendControl(row, '<select style="display:inline-block;width:25%;"><option>left</option><option>center</option><option>right</option></select>');
+            const posX = builder.AppendControl(row, '<input style="display:inline-block;width:25%;" type="text" placeholder="auto"></input>');
+
+            row = builder.AddColorSliders('bc', 'Banner Colour', true);
+
+            const updateFields = color => {
+              color = toComponents(color);
+              upd(row.red, color[0]);
+              upd(row.green, color[1]);
+              upd(row.blue, color[2]);
+              upd(row.alpha, color[3]);
+            };
+            const getColor = () => `rgba(${[val(row.red),val(row.green),val(row.blue),val(row.alpha)].join(',')})`;
+            const upd = (me, v) => me[0].value = me[1].value = parseFloat(v);
+            const val = me => parseFloat(me[1].value) || 0;
+            const ch = me => me[0].value && me[0].value.length && !me[0].value.match(/[^0-9]/);
+
+            let hasPre = false;
+            const addBannerError = pop.content.querySelector('#add_banner_error');
+            const paintView = (state, callback) => () => {
+              hasPre = state;
+              if (ch(row.red) && ch(row.green) && ch(row.blue) && ch(row.alpha)) {
+                callback(input.value, getColor(), alignVert.value, alignHor.value, parseInt(posX.value) || 0, parseInt(posY.value) || 0);
+                addBannerError.classList.add('hidden');
+              } else {
+                addBannerError.classList.remove('hidden');
+              }
+            };
+
+            builder.AppendControl(footer, '<button class="styled_button"><i class="fa fa-save"></i>Save</button>').addEventListener('click', paintView(false, (url, color, vert, hor, x, y) => {
+              settingsMan.set("customBannerUrl", url);
+              settingsMan.set("customBannerColor", color);
+              settingsMan.set("customBannerPosition", [hor, x, vert, y].join(' '));
+              
+              customBanner = Banner('Custom', url, url, color, { position: [hor, x, vert, y] });
+              if (customBannerindex > -1) {
+                banners[customBannerindex] = customBanner;
+              } else {
+                customBannerindex = banners.length;
+                banners.push(customBanner);
+              }
+              repaintBannerButton(cban, customBanner);
+              bannerController.pick(customBannerindex, true);
+              pop.Close()
+            }));
+            builder.AppendControl(footer, '<button class="styled_button styled_button_blue"><i class="fa fa-eye"></i>Preview</button>').addEventListener('click', paintView(true, (url, color, vert, hor, x, y) => {
+              bannerController.changeBanner(null, url, color, Pos([hor, x, vert, y]));
+            }));
+            builder.AppendControl(footer, '<button class="styled_button styled_button_red"><i class="fa fa-trash-o"></i>Reset</button>').addEventListener('click', () => {
+              settingsMan.remove("customBannerUrl");
+              settingsMan.remove("customBannerColor");
+              settingsMan.remove("customBannerPosition");
+
+              if (customBannerindex > -1) {
+                banners.splice(customBannerindex, 1);
+                if (bannerController.getCurrent() == 'Custom') bannerController.pick(-1, true);
+                customBannerindex = -1;
+              }
+              repaintBannerButton(cban, null);
+              bannerController.finalise();
+              pop.Close();
+            });
+            builder.AppendControl(pop.content.querySelector('.color-selector'), '<button class="styled_button styled_button_blue"><i class="fa fa-camera"></i>Guess from Current</button>').addEventListener('click', () => {
+              let color = userToolbar.dataset.backgroundColor || '';
+              if (color == '') color = 'rgb(146,27,87)';
+              updateFields(color);
+            });
+
+            pop.element.querySelector(".close_button").addEventListener('mousedown', () => {
+              if (hasPre) bannerController.finalise();
+            });
+
+            customBanner = get();
+            if (customBanner) {
+              input.value = customBanner.url;
+              updateFields(customBanner.colour);
+              const poss = customBanner.position;
+              let i = 0;
+              alignHor.value = poss['position-x'];
+              if (poss[i] != 'center') posX.value = poss.x;
+              i++;
+              alignVert.value = poss['position-y'];
+              if (poss[i] != 'center') posY.value = poss.y;
+            }
+            pop.Show();
+          });
+        }
+        
+        function repaintBannerButton(cban, banner) {
+          if (banner) {
+            cban.children[0].innerHTML = banner.url.split('/').reverse()[0].split('.')[0];
+            cban.children[0].style.backgroundColor = banner.colour;
+            cban.style.backgroundImage = `url("${banner.url}")`;
+            cban.style.backgroundPosition = banner.position;
+          } else {
+            cban.children[0].innerHTML = '';
+            cban.children[0].style.background = '#fff';
+            cban.style.backgroundImage = 'none';
+          }
+        }
+      });
+    }
+  };
+}
 function CommentSectionController() {
   const getExtraEmotesInit = () => !!document.querySelector('.extraemoticons_loaded');
   const getAlwaysShowImages = () => settingsMan.bool('unspoiler_images', true);
@@ -3211,7 +3193,34 @@ function BackgroundsController() {
     },
     getOrDefaultColor,
     createSet,
-    apply
+    apply,
+    createOptions(tab) {
+      makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
+
+      const colorPick = tab.AddColorPick("bg", "Background Colour", backgrounds.getColor(), me => {
+        me.value = me.value.trim();
+        if (me.value.length) {
+          if (me.value.indexOf('#') !== 0) {
+            me.value = toHex(extractColor(me.value));
+          }
+        }
+
+        backgrounds.setColor(me.value);
+        all('.toolbar', tab.container, a => a.style.backgroundColor = backgrounds.getOrDefaultColor());
+      });
+
+      tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar').addEventListener('click', () => {
+        colorPick.value = rgb2hex(userToolbar.dataset.backgroundColor);
+        colorPick.change();
+      });
+      tab.AppendButton(colorPick, '<i class="fa fa-undo"></i>Revert to default').addEventListener('click', () => {
+        colorPick.value = '';
+        colorPick.change();
+      });
+
+      backgroundPatterns.createPresetSelect(tab, false);
+      backgroundImages.createPresetSelect(tab, colorPick);
+    }
   };
 }
 function FancyFeedsController() {
@@ -3761,7 +3770,7 @@ function BannerController(sets) {
       });
 
       slider.ready();
-      customBanner = getCustomBanner();
+      customBanner = customBannerController.get();
       if (customBanner) {
         customBannerindex = banners.length;
         banners.push(customBanner);
@@ -3806,9 +3815,10 @@ function BannerController(sets) {
       home_link.style.backgroundPosition = pos || '';
 
       source_link.classList.toggle('hidden', !(sources && sources.length));
-      source_link.href = sources[0].href;
-      source_link.title = sources[0].href;
-
+      if (sources && sources.length) {
+        source_link.href = sources[0].href;
+        source_link.title = sources[0].href;
+      }
       if (this.getFancy()) updateBannerScroll(pos);
     }
   };
