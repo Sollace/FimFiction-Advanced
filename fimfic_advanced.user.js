@@ -24,11 +24,9 @@ const VERSION = '4.6-beta-8',
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
 if (document.querySelector('body[FimFic_Adv]')) throw 'FimFAdv: Repeated Execution detected. Execution halted.';
-if (this['unsafeWindow'] && window !== unsafeWindow) {
-  console.warn(`FimFAdv: Sandboxing is enabled. This script may not run correctly.
+if (this['unsafeWindow'] && window !== unsafeWindow) console.warn(`FimFAdv: Sandboxing is enabled. This script may not run correctly.
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
-}
 //-------------------------------------------DATA---------------------------------------------------
 const backgrounds = BackgroundsController();
 const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
@@ -90,7 +88,6 @@ const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
 const icons = 'adjust;adn;align-center;align-justify;align-left;align-right;ambulance;anchor;android;angellist;angle-double-down;angle-double-left;angle-double-right;angle-double-up;angle-down;angle-left;angle-right;angle-up;apple;archive;area-chart;arrow-circle-down;arrow-circle-left;arrow-circle-o-down;arrow-circle-o-left;arrow-circle-o-right;arrow-circle-o-up;arrow-circle-right;arrow-circle-up;arrow-down;arrow-left;arrow-right;arrow-up;arrows;arrows-alt;arrows-h;arrows-v;asterisk;at;automobile;backward;ban;bank;bar-chart;bar-chart-o;barcode;bars;beer;behance;behance-square;bell;bell-o;bell-slash;bell-slash-o;bicycle;binoculars;birthday-cake;bitbucket;bitbucket-square;bitcoin;bold;bolt;bomb;book;bookmark;bookmark-o;briefcase;btc;bug;building;building-o;bullhorn;bullseye;bus;cab;calculator;calendar;calendar-o;camera;camera-retro;car;caret-down;caret-left;caret-right;caret-square-o-down;caret-square-o-left;caret-square-o-right;caret-square-o-up;caret-up;cc;cc-amex;cc-discover;cc-mastercard;cc-paypal;cc-stripe;cc-visa;certificate;chain;chain-broken;check;check-circle;check-circle-o;check-square;check-square-o;chevron-circle-down;chevron-circle-left;chevron-circle-right;chevron-circle-up;chevron-down;chevron-left;chevron-right;chevron-up;child;circle;circle-o;circle-o-notch;circle-thin;clipboard;clock-o;close;cloud;cloud-download;cloud-upload;cny;code;code-fork;codepen;coffee;cog;cogs;columns;comment;comment-o;comments;comments-o;compass;compress;copy;copyright;credit-card;crop;crosshairs;css3;cube;cubes;cut;cutlery;dashboard;database;dedent;delicious;desktop;deviantart;digg;dollar;dot-circle-o;download;dribbble;dropbox;drupal;edit;eject;ellipsis-h;ellipsis-v;empire;envelope;envelope-o;envelope-square;eraser;eur;euro;exchange;exclamation;exclamation-circle;exclamation-triangle;expand;external-link;external-link-square;eye;eye-slash;eyedropper;facebook;facebook-square;fast-backward;fast-forward;fax;female;fighter-jet;file;file-archive-o;file-audio-o;file-code-o;file-excel-o;file-image-o;file-movie-o;file-o;file-pdf-o;file-photo-o;file-picture-o;file-powerpoint-o;file-sound-o;file-text;file-text-o;file-video-o;file-word-o;file-zip-o;files-o;film;filter;fire;fire-extinguisher;flag;flag-checkered;flag-o;flash;flask;flickr;floppy-o;folder;folder-o;folder-open;folder-open-o;font;forward;foursquare;frown-o;futbol-o;gamepad;gavel;gbp;ge;gear;gears;gift;git;git-square;github;github-alt;github-square;gittip;glass;globe;google;google-plus;google-plus-square;google-wallet;graduation-cap;group;h-square;hacker-news;hand-o-down;hand-o-left;hand-o-right;hand-o-up;hdd-o;header;headphones;heart;heart-o;history;home;hospital-o;html5;ils;image;inbox;indent;info;info-circle;inr;instagram;institution;ioxhost;italic;joomla;jpy;jsfiddle;key;keyboard-o;krw;language;laptop;lastfm;lastfm-square;leaf;legal;lemon-o;level-down;level-up;life-bouy;life-buoy;life-ring;life-saver;lightbulb-o;line-chart;link;linkedin;linkedin-square;linux;list;list-alt;list-ol;list-ul;location-arrow;lock;long-arrow-down;long-arrow-left;long-arrow-right;long-arrow-up;magic;magnet;mail-forward;mail-reply;mail-reply-all;male;map-marker;maxcdn;meanpath;medkit;meh-o;microphone;microphone-slash;minus;minus-circle;minus-square;minus-square-o;mobile;mobile-phone;money;moon-o;mortar-board;music;navicon;newspaper-o;openid;outdent;pagelines;paint-brush;paper-plane;paper-plane-o;paperclip;paragraph;paste;pause;paw;paypal;pencil;pencil-square;pencil-square-o;phone;phone-square;photo;picture-o;pie-chart;pied-piper;pied-piper-alt;pinterest;pinterest-square;plane;play;play-circle;play-circle-o;plug;plus;plus-circle;plus-square;plus-square-o;power-off;print;puzzle-piece;qq;qrcode;question;question-circle;quote-left;quote-right;ra;random;rebel;recycle;reddit;reddit-square;refresh;remove;renren;reorder;repeat;reply;reply-all;retweet;rmb;road;rocket;rotate-left;rotate-right;rouble;rss;rss-square;rub;ruble;rupee;save;scissors;search;search-minus;search-plus;send;send-o;share;share-alt;share-alt-square;share-square;share-square-o;shekel;sheqel;shield;shopping-cart;sign-in;sign-out;signal;sitemap;skype;slack;sliders;slideshare;smile-o;soccer-ball-o;sort;sort-alpha-asc;sort-alpha-desc;sort-amount-asc;sort-amount-desc;sort-asc;sort-desc;sort-down;sort-numeric-asc;sort-numeric-desc;sort-up;soundcloud;space-shuttle;spinner;spoon;spotify;square;square-o;stack-exchange;stack-overflow;star;star-half;star-half-empty;star-half-full;star-half-o;star-o;steam;steam-square;step-backward;step-forward;stethoscope;stop;strikethrough;stumbleupon;stumbleupon-circle;subscript;suitcase;sun-o;superscript;support;table;tablet;tachometer;tag;tags;tasks;taxi;tencent-weibo;terminal;text-height;text-width;th;th-large;th-list;thumb-tack;thumbs-down;thumbs-o-down;thumbs-o-up;thumbs-up;ticket;times;times-circle;times-circle-o;tint;toggle-down;toggle-left;toggle-off;toggle-on;toggle-right;toggle-up;trash;trash-o;tree;trello;trophy;truck;try;tty;tumblr;tumblr-square;turkish-lira;twitch;twitter;twitter-square;umbrella;underline;undo;university;unlink;unlock;unlock-alt;unsorted;upload;usd;user;user-md;users;video-camera;vimeo-square;vine;vk;volume-down;volume-off;volume-up;warning;wechat;weibo;weixin;wheelchair;wifi;windows;won;wordpress;wrench;xing;xing-square;yahoo;yelp;yen;youtube;youtube-play;youtube-square'.split(';');
 const logoController = LogoController('Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO));
 var banners = [];
-let customBanner, customBannerindex = -1;
 const animator = Animator();
 const feeder = FancyFeedsController();
 const customBannerController = CustomBannerController();
@@ -224,8 +221,7 @@ const colours = {
     'More Colours': [1, range(0,112)]
   }
 };
-'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').forEach(a => {
-  a = a.split(':');
+'White:#FFFFFF;Pink:#FFC0CB;PeachPuff:#FFDAB9;Gainsboro:#DCDCDC;LightPink:#FFB6C1;Moccasin:#FFE4B5;NavajoWhite:#FFDEAD;Wheat:#F5DEB3;LightGray:#D3D3D3;PaleTurquoise:#AFEEEE;PaleGoldenRod:#EEE8AA;Thistle:#D8BFD8;PowderBlue:#B0E0E6;LightBlue:#ADD8E6;PaleGreen:#98FB98;LightSteelBlue:#B0C4DE;LightSkyBlue:#87CEFA;Silver:#C0C0C0;Aquamarine:#7FFFD4;LightGreen:#90EE90;Plum:#DDA0DD;Khaki:#F0E68C;LightSalmon:#FFA07A;SkyBlue:#87CEEB;Violet:#EE82EE;LightCoral:#F08080;Salmon:#FA8072;HotPink:#FF69B4;BurlyWood:#DEB887;DarkSalmon:#E9967A;Tan:#D2B48C;MediumSlateBlue:#7B68EE;SandyBrown:#F4A460;DarkGray:#A9A9A9;CornFlowerBlue:#6495ED;Coral:#FF7F50;PaleVioletRed:#DB7093;MediumPurple:#9370DB;RosyBrown:#BC8F8F;Orchid:#DA70D6;DarkSeaGreen:#8FBC8B;Tomato:#FF6347;MediumAquamarine:#66CDAA;GreenYellow:#ADFF2F;IndianRed:#CD5C5C;MediumOrchid:#BA55D3;DarkKhaki:#BDB76B;SlateBlue:#6A5ACD;RoyalBlue:#4169E1;Turquoise:#40E0D0;DodgerBlue:#1E90FF;MediumTurquoise:#48D1CC;DeepPink:#FF1493;LightSlateGray:#778899;BlueViolet:#8A2BE2;Peru:#CD853F;SlateGray:#708090;Gray:#808080;Magenta:#FF00FF;Blue:#0000FF;DeepSkyBlue:#00BFFF;CadetBlue:#5F9EA0;Cyan:#00FFFF;SpringGreen:#00FF7F;Lime:#00FF00;LimeGreen:#32CD32;Chartreuse:#7FFF00;YellowGreen:#9ACD32;Yellow:#FFFF00;Gold:#FFD700;Orange:#FFA500;DarkOrange:#FF8C00;OrangeRed:#FF4500;Red:#FF0000;DarkOrchid:#9932CC;LawnGreen:#7CFC00;Steelblue:#4682B4;MediumSpringGreen:#00FA9A;GoldenRod:#DAA520;Crimson:#DC143C;Chocolate:#D2691E;MediumSeaGreen:#3CB371;MediumVioletRed:#C71585;FireBrick:#B22222;DarkViolet:#9400D3;LightSeaGreen:#20B2AA;DimGray:#696969;DarkTurquoise:#00CED1;Brown:#A52A2A;MediumBlue:#0000CD;Sienna:#A0522D;DarkSlateBlue:#483D8B;DarkGoldenRod:#B8860B;SeaGreen:#2E8B57;OliveDrab:#6B8E23;ForestGreen:#228B22;SaddleBrown:#8B4513;DarkOliveGreen:#556B2F;DarkMagenta:#8B008B;DarkBlue:#00008B;DarkCyan:#008B8B;DarkRed:#8B0000;MidnightBlue:#191970;Indigo:#4B0082;Purple:#800080;Navy:#000080;Teal:#008080;Green:#008000;Olive:#808000;Maroon:#800000;DarkSlateGray:#2F4F4F;DarkGreen:#006400;Black:#000000;Grey:#666666;Light Grey:#CCCCCC;Dark Grey:#383838;Red:#BE4343;Orange:#BE7A43;Yellow:#AFA426;Lime Green:#7AAF26;Green:#2CAF26;Turquoise:#26AF6D;Light Blue:#26A4AF;Blue:#265DAF;Purple:#3C26AF;Violet:#9426AF;Pink:#AF2673;Brown:#5F4432;Twilight Sparkle:#A66EBE;Rarity:#5E51A3;Applejack:#E97135;Pinkie Pie:#EA80B0;Rainbow Dash:#6AAADD;Fluttershy:#E6B91F'.split(';').map(a => a.split(':')).forEach(a => {
   colours.Keys.push(a[1]);
   colours.Names.push(colours.Mapping[a[1]] = a[0]);
   colours.NamesLower.push(a[0].toLowerCase());
@@ -2074,6 +2070,8 @@ function StoryBoxController() {
   };
 }
 function CustomBannerController() {
+  let customBanner, customBannerindex = -1;
+
   function get() {
     if (!(settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition"))) {
       return null;
@@ -2086,7 +2084,15 @@ function CustomBannerController() {
   }
 
   return {
+    getCustomBannerIndex: _ => customBannerindex,
     get,
+    apply() {
+      customBanner = customBannerController.get();
+      if (customBanner) {
+        customBannerindex = banners.length;
+        banners.push(customBanner);
+      }
+    },
     createOptions(tab) {
       tab.AddPresetSelect("bannerCust", "Custom Banner").add(el => {
         el.children[1].innerHTML = '<i class="fa fa-pencil fa-5x"></i>';
@@ -3428,7 +3434,7 @@ function BannerCreditsController(controller) {
     },
     buildAll() {
       if (!controller.getEnabled()) return;
-      document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">• Banner Credits</a>');
+      ready(() => document.querySelector('.footer .block a[href="/staff"]').insertAdjacentHTML('afterend', '<br><a href="/?view=page&page=banner_credits">• Banner Credits</a>'));
       if (CURRENT_LOCATION !== '?view=page&page=banner_credits') return;
 
       build();
@@ -3690,11 +3696,7 @@ function BannerController(sets) {
       });
 
       slider.ready();
-      customBanner = customBannerController.get();
-      if (customBanner) {
-        customBannerindex = banners.length;
-        banners.push(customBanner);
-      }
+      customBannerController.apply();
       this.finalise();
       requestAnimationFrame(() => document.body.classList.add('banner-transitionable'));
 
