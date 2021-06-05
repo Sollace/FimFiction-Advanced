@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-8
+// @version     4.6-beta-9
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6-beta-8',
+const VERSION = '4.6-beta-9',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -149,9 +149,9 @@ const bannerController = BannerController([
     ], "#764D17"),
     Ban2("flutter_bee", [{ href: "//atteez.deviantart.com/art/Flutterbee-437641542", text: 'Artwork by Atteez'}], "#92A43C"),
     Ban2("cmc_roped", [{ href: "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", text: 'Artwork by Nightcreepmax'}], "#6485BE"),
-    Ban2("twi_revenge", [{ href: "//zacatron94.deviantart.com/art/Revenge-446974245", text: 'Artwork by Zacatron94'}], "#4B2164"),
-    Ban2("solar_flare", [{ href: "https://derpibooru.org/images/639721", text: 'Artwork by ZodiacNicola'}], "#AD160B", { position: ["right",0,"center",0] }),
-    Ban2("serene", [{ href: "//rain-gear.deviantart.com/art/A-Quiet-Place-to-Read-434204811", text: 'Artwork by Rain-Gear'}], "#2E737A"),
+    Ban2("moe_balloon", [{ href: "//derpibooru.org/images/4896", text: 'Artwork by Moe'}], "#4B2164"),
+    Ban2("solar_flare", [{ href: "//derpibooru.org/639721", text: 'Artwork by ZodiacNicola'}], "#AD160B", { position: ["right",0,"center",0] }),
+    Ban2("moe_twilight", [{ href: "//derpibooru.org/4876", text: 'Artwork by Moe'}], "#685699"),
     Ban2("nightwork", [{ href: "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", text: "Artwork by Yakovlev-vad"}], "#9E75A9"),
     Ban2("shamanguli_princess", [{ href: "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", text: 'Artwork by Shamanguli'}], "#6E6756"),
     Ban2("yakovlev_trap", [{ href: "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", text: 'Artwork by Yakovlev-vad'}], "#694255", { position: ["center",0,"bottom",0] }),
@@ -3053,7 +3053,14 @@ function BackgroundsController() {
 
   function getOrDefaultColor() {
     const col = getColor();
-    return !col || col == 'transparent' ? rgb2hex(window.getComputedStyle(document.body).backgroundColor) : col;
+    if (!col || col == 'transparent') {
+      const color = window.getComputedStyle(document.body).backgroundColor;
+      if (color.startsWith('rgba')) {
+        return 'transparent';
+      }
+      return rgb2hex(color);
+    }
+    return col;
   }
 
   function apply() {
@@ -3098,8 +3105,8 @@ function BackgroundsController() {
 
     function populateSelect(item, blank, index) {
       blank.children[1].innerHTML = item.name;
-      blank.children[0].style.backgroundColor = getOrDefaultColor();
       blank.children[0].style.opacity = '0.8';
+      ready(() => blank.children[0].style.backgroundColor = getOrDefaultColor());
 
       let css = item.css.replace(/ fixed/g, "");
       if (item.attributes.custom) {
@@ -3151,18 +3158,12 @@ function BackgroundsController() {
   }
 
   return {
-    getColor,
-    setColor(c) {
-      settingsMan.set("bgColor", c, 'transparent');
-      apply();
-    },
-    getOrDefaultColor,
     createSet,
     apply,
     createOptions(tab) {
       makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
 
-      const colorPick = tab.AddColorPick("bg", "Background Colour", backgrounds.getColor(), me => {
+      const colorPick = tab.AddColorPick("bg", "Background Colour", getColor(), me => {
         me.value = me.value.trim();
         if (me.value.length) {
           if (me.value.indexOf('#') !== 0) {
@@ -3170,8 +3171,9 @@ function BackgroundsController() {
           }
         }
 
-        backgrounds.setColor(me.value);
-        all('.toolbar', tab.container, a => a.style.backgroundColor = backgrounds.getOrDefaultColor());
+        settingsMan.set("bgColor", me.value, 'transparent');
+        apply();
+        all('.toolbar', tab.container, a => a.style.backgroundColor = getOrDefaultColor());
       });
 
       tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar').addEventListener('click', () => {
