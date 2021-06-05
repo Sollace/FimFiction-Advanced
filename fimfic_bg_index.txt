@@ -2,8 +2,9 @@ http://www.fimfiction-static.net
 
 switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/themes/poni2.0/images/body_background.png (plaster) (GOT)
-	/themes/poni2.0/images/user_cp_tab_overlay.png (GOT)
-	/images/custom_backgrounds/cloud_pattern.png
+	/themes/poni2.0/images/user_cp_tab_overlay.png (lines) (GOT)
+	/images/custom_backgrounds/cloth.png (GOT)
+	/images/custom_backgrounds/cloud_pattern.png (GOT - reconstructed)
 	/images/custom_backgrounds/stars.png (GOT)
 	/images/custom_backgrounds/checkerboard.png
 	/images/custom_backgrounds/flowers_1.png
@@ -14,7 +15,7 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/images/custom_backgrounds/flowers_6.png
 	/images/custom_backgrounds/waves.png
 	/images/custom_backgrounds/savannah.png
-	/images/custom_backgrounds/dots.png
+	/images/custom_backgrounds/dots.png (GOT - reconstructed)
 	/images/custom_backgrounds/fans.png
 	/images/custom_backgrounds/woodland.png
 	/images/custom_backgrounds/diamonds.png
@@ -24,10 +25,10 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 switch ( LocalStorageGet( "background_image", "0" ) )
 	/images/custom_backgrounds/trees.png (GOT) = https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434
 	/images/custom_backgrounds/pinkie_choir.png
-	/images/custom_backgrounds/night_town.png
-	/images/custom_backgrounds/clouds.png
+	/images/custom_backgrounds/night_town.png (GOT - reconstructed)
+	/images/custom_backgrounds/clouds.png (GOT)
 	/images/custom_backgrounds/apple_house.png (GOT)
-	/images/custom_backgrounds/day_town.png
+	/images/custom_backgrounds/day_town.png (GOT - reconstructed)
 	/images/custom_backgrounds/rarity.png (GOT) = http://web.archive.org/web/20121112235744/http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751
 	/images/custom_backgrounds/dash.png
 	/images/custom_backgrounds/applejack.png
