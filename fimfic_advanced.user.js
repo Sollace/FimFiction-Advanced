@@ -266,7 +266,7 @@ function earlyStart() {
           requestAnimationFrame(banner);
         })();
       }
-      
+
       FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
       creditsController.buildAll();
 
@@ -462,7 +462,7 @@ function initBlogPage() {
 					<div class="year">${date.getFullYear()}</div>
 				</div>
 			</div>
-		<div class="arrow"></div>	
+		<div class="arrow"></div>
 		<h1 class="show-buttons">
 			<div class="right_box">
         <div class="button-group">
@@ -478,7 +478,7 @@ function initBlogPage() {
 				<span class="time mobile"><span data-time="${Number(date)}">${months[date.getMonth()]} ${date.getDate()}${ending[date.getDate() % 10]}</span></span>
 			</span>
 		</h1>
-		<div class="main">			
+		<div class="main">
 			<div class="blog_post_content bbcode">
         <div class="bbcode-center" style="text-align:center">
           <p>Go to <b><i class="fa fa-user"></i> ${name}</b> &gt; <b><i class="fa fa-file-text"></i> Blog</b> &gt; <b><i class="fa fa-pencil"></i> New Blog Post</b> to create one.</p>
@@ -491,7 +491,7 @@ function initBlogPage() {
         </div>
 			</div>
 			<div class="information_box">
-				<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views				
+				<a href="/user/${urlSafe(name)}"><b>${name}</b></a> <b class="dot">·</b> 0 views
 				<b>·</b>
 			</div>
 		</div>
@@ -3447,6 +3447,7 @@ function BannerCreditsController(controller) {
       controller.slider.goto(controller.getCurrentId(), true);
     },
     switchSets(e, target) {
+      document.location.hash = `set=${target.value}`;
       target = document.querySelector(`.banner-credits[data-group="${target.value}"]`);
       if (!target) return;
       target.parentNode.style.height = `${target.offsetHeight + 50}px`;
@@ -3465,6 +3466,11 @@ function BannerCreditsController(controller) {
       });
 
       animator.on('switcher', pinnerFunc('#banner-switcher', 'switcher', document.querySelector('#banner-selector')));
+
+      const selected = document.querySelector(`input${(document.location.hash || '').replace('set=', '')}`);
+      if (selected) {
+        selected.click();
+      }
     }
   };
 }
