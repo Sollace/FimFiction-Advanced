@@ -149,7 +149,7 @@ const bannerController = BannerController([
     ], "#764D17"),
     Ban2("flutter_bee", [{ href: "//atteez.deviantart.com/art/Flutterbee-437641542", text: 'Artwork by Atteez'}], "#92A43C"),
     Ban2("cmc_roped", [{ href: "//spittfireart.deviantart.com/art/Cutie-Mark-Crusaders-365513354", text: 'Artwork by Nightcreepmax'}], "#6485BE"),
-    Ban2("moe_balloon", [{ href: "//derpibooru.org/images/4896", text: 'Artwork by Moe'}], "#4B2164"),
+    Ban2("moe_balloon", [{ href: "//derpibooru.org/images/4896", text: 'Artwork by Moe'}], "#8C7897"),
     Ban2("solar_flare", [{ href: "//derpibooru.org/639721", text: 'Artwork by ZodiacNicola'}], "#AD160B", { position: ["right",0,"center",0] }),
     Ban2("moe_twilight", [{ href: "//derpibooru.org/4876", text: 'Artwork by Moe'}], "#685699"),
     Ban2("nightwork", [{ href: "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", text: "Artwork by Yakovlev-vad"}], "#9E75A9"),
