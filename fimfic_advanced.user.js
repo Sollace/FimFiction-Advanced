@@ -156,7 +156,8 @@ const bannerController = BannerController([
     Ban2("shamanguli_princess", [{ href: "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", text: 'Artwork by Shamanguli'}], "#6E6756"),
     Ban2("yakovlev_trap", [{ href: "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", text: 'Artwork by Yakovlev-vad'}], "#694255", { position: ["center",0,"bottom",0] }),
     Ban2("buttercupsaiyan_dash", [{ href: '#', text: 'Anonymous Artist'}], "#4C7A7E", { position: ["center",0,"top",0] }),
-    Ban2("symbian_izzysunny", [{ href: '//www.deviantart.com/symbianl/art/G5-Fillies-873500877', text: 'Artwork by SymbianL'}], '#77599A')
+    Ban2("symbian_izzysunny", [{ href: '//www.deviantart.com/symbianl/art/G5-Fillies-873500877', text: 'Artwork by SymbianL'}], '#77599A'),
+    Ban2("symbian_scitwi", [{ href: '//www.deviantart.com/symbianl/art/SciTwi-Pony-No-Glasses-873604507', text: 'Artwork by SymbianL'}], '#77599A')
   ]}, { name: "Nostalgic", items: [
     Ban0("fields", [
       {href: "https://derpibooru.org/50676", text: 'Artwork by Qsteel'}
