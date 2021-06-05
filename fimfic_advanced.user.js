@@ -1,16 +1,16 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6-beta-9
+// @version     4.6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
 // @include     /^http?[s]://www.fimfiction.net/.*/
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/ThreeCanvas.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/Events.user.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.color.js
-// @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.reflect.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.color.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.reflect.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
@@ -18,8 +18,8 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6-beta-9',
-      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
+const VERSION = '4.6',
+      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
