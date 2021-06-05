@@ -155,7 +155,8 @@ const bannerController = BannerController([
     Ban2("nightwork", [{ href: "//yakovlev-vad.deviantart.com/art/Nightwork-493323738", text: "Artwork by Yakovlev-vad"}], "#9E75A9"),
     Ban2("shamanguli_princess", [{ href: "//shamanguli.deviantart.com/art/Playground-for-a-Princess-512544966", text: 'Artwork by Shamanguli'}], "#6E6756"),
     Ban2("yakovlev_trap", [{ href: "//yakovlev-vad.deviantart.com/art/The-trap-Patreon-reward-548854581", text: 'Artwork by Yakovlev-vad'}], "#694255", { position: ["center",0,"bottom",0] }),
-    Ban2("buttercupsaiyan_dash", [{ href: '#', text: 'Anonymous Artist'}], "#4C7A7E", { position: ["center",0,"top",0] })
+    Ban2("buttercupsaiyan_dash", [{ href: '#', text: 'Anonymous Artist'}], "#4C7A7E", { position: ["center",0,"top",0] }),
+    Ban2("symbian_izzysunny", [{ href: '//www.deviantart.com/symbianl/art/G5-Fillies-873500877', text: 'Artwork by SymbianL'}], '#77599A')
   ]}, { name: "Nostalgic", items: [
     Ban0("fields", [
       {href: "https://derpibooru.org/50676", text: 'Artwork by Qsteel'}
@@ -200,7 +201,6 @@ const bannerController = BannerController([
     ], "#C3A550")
   ]}
 ]);
-const customBannerController = CustomBannerController(bannerController);
 const creditsController = BannerCreditsController(bannerController);
 const snowController = SnowController();
 const signatureController = SignatureController();
@@ -2069,8 +2069,13 @@ function StoryBoxController() {
     }
   };
 }
-function CustomBannerController(controller) {
-  let customBanner, customBannerindex = -1;
+function CustomBannerController(sets, banners) {
+  let customBanner = get();
+  let customBannerindex = -1;
+
+  if (customBanner) {
+    sets.push({ name: "Custom", items: [ customBanner ] });
+  }
 
   function get() {
     if (!(settingsMan.has("customBannerUrl") && settingsMan.has("customBannerColor") && settingsMan.has("customBannerPosition"))) {
@@ -2080,29 +2085,28 @@ function CustomBannerController(controller) {
     const position = settingsMan.get("customBannerPosition", '').split(' ');
     position[1] = parseInt(position[1]) || 0;
     position[3] = parseInt(position[3]) || 0;
-    return Banner("Custom", url, url, settingsMan.get("customBannerColor", ''), { position });
+    return Banner("Custom", url, [], settingsMan.get("customBannerColor", ''), { position });
   }
 
   function injectBanner(banner) {
-    customBannerindex = controller.getBanners().length;
-    controller.getBanners().push(banner);
+    customBanner = banner;
+    if (customBannerindex > -1) {
+      banners[customBannerindex] = customBanner;
+    } else {
+      customBannerindex = banners.length;
+      banners.push(banner);
+    }
   }
 
   return {
-    getCustomBannerIndex: _ => customBannerindex,
-    get,
-    apply() {
-      customBanner = customBannerController.get();
-      if (customBanner) {
-        injectBanner(customBanner);
-      }
-    },
     createOptions(tab) {
       tab.AddPresetSelect("bannerCust", "Custom Banner").add(el => {
         el.children[1].innerHTML = '<i class="fa fa-pencil fa-5x"></i>';
         el.classList.add('custom_banner_button');
         el.addEventListener('click', () => createCustomBannerPopup(el));
-        if (customBanner) repaintBannerButton(el, customBanner);
+        if (customBanner) {
+          repaintBannerButton(el, customBanner);
+        }
 
         function createCustomBannerPopup(cban) {
           const pop = makePopup("Edit Custom Banner", "fa fa-pencil", 10);
@@ -2150,12 +2154,7 @@ function CustomBannerController(controller) {
               settingsMan.set("customBannerColor", color);
               settingsMan.set("customBannerPosition", [hor, x, vert, y].join(' '));
 
-              customBanner = Banner('Custom', url, url, color, { position: [hor, x, vert, y] });
-              if (customBannerindex > -1) {
-                controller.getBanners()[customBannerindex] = customBanner;
-              } else {
-                injectBanner(customBanner);
-              }
+              injectBanner(Banner('Custom', url, url, color, { position: [hor, x, vert, y] }));
               repaintBannerButton(cban, customBanner);
               bannerController.pick(customBannerindex, true);
               pop.Close()
@@ -2171,7 +2170,7 @@ function CustomBannerController(controller) {
               settingsMan.remove("customBannerPosition");
 
               if (customBannerindex > -1) {
-                controller.getBanners().splice(customBannerindex, 1);
+                banners.splice(customBannerindex, 1);
                 if (bannerController.getCurrent() == 'Custom') bannerController.pick(-1, true);
                 customBannerindex = -1;
               }
@@ -3475,6 +3474,7 @@ function BannerController(sets) {
 
   let preloader, home_link, source_link;
 
+  const customBannerController = CustomBannerController(sets, banners);
   const done = e => e.target.parentNode.removeChild(e.target);
   const bannerScrollOn = () => animator.on('banners', updateBannerScroll);
   const getCollapse = () => settingsMan.bool("titleHidden", false);
@@ -3645,7 +3645,6 @@ function BannerController(sets) {
 
       all('.patreon-sponsor', a => a.title = window.getComputedStyle(a, ':before').content.replace(/["']/g, ''));
     },
-    getBanners: _ => banners,
     getSelected: _ => byTheme(theme),
     byTheme,
     getCurrent() {
@@ -3719,7 +3718,6 @@ function BannerController(sets) {
       });
 
       slider.ready();
-      customBannerController.apply();
       this.finalise();
       requestAnimationFrame(() => document.body.classList.add('banner-transitionable'));
 
