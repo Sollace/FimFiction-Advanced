@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6
+// @version     4.6.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6',
+const VERSION = '4.6.1',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -1997,7 +1997,7 @@ function Animator() {
 //---------------------------------------CONTROLLERS-------------------------------------------------
 function StoryBoxController() {
   function applyChapterButtons() {
-    const immediateText = el => [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('');
+    const immediateText = el => el ? [].filter.call(el.childNodes, a => a.nodeType == Node.TEXT_NODE).map(a => a.nodeValue).join('') : '';
 
     addDelegatedEvent(document, '.story_container a[data-click="minimise"]', 'click', (e, target) => target.closest('article').classList.toggle('chapters_compact'));
     addDelegatedEvent(document, '.story_container a[data-click="expand"]', 'click', (e, target) => target.closest('article').classList.toggle('all-shown'));
