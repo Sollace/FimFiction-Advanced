@@ -4893,9 +4893,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.5"
-     inkscape:cx="-178.51975"
-     inkscape:cy="225.91061"
+     inkscape:zoom="0.35355339"
+     inkscape:cx="67.476073"
+     inkscape:cy="388.25959"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="false"
@@ -4992,7 +4992,7 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="fans"
-     style="opacity:0.2"
+     style="opacity:0.119"
      sodipodi:insensitive="true">
     <rect
        y="87.840637"
