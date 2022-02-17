@@ -14,25 +14,28 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/images/custom_backgrounds/flowers_5.png
 	/images/custom_backgrounds/flowers_6.png
 	/images/custom_backgrounds/waves.png
-	/images/custom_backgrounds/savannah.png
+	/images/custom_backgrounds/savannah.png (GOT - reconstructing)
 	/images/custom_backgrounds/dots.png (GOT - reconstructed)
-	/images/custom_backgrounds/fans.png
-	/images/custom_backgrounds/woodland.png
+	/images/custom_backgrounds/fans.png (GOT - reconstructed)
+	/images/custom_backgrounds/woodland.png (GOT - reconstructing)
 	/images/custom_backgrounds/diamonds.png
 	/images/custom_backgrounds/checker_wave.png
 };
 	
 switch ( LocalStorageGet( "background_image", "0" ) )
 	/images/custom_backgrounds/trees.png (GOT) = https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434
-	/images/custom_backgrounds/pinkie_choir.png
+	/images/custom_backgrounds/pinkie_choir.png (GOT) - https://www.deviantart.com/sirspikensons/art/Pinkie-with-choir-288478484
 	/images/custom_backgrounds/night_town.png (GOT - reconstructed)
 	/images/custom_backgrounds/clouds.png (GOT)
 	/images/custom_backgrounds/apple_house.png (GOT)
 	/images/custom_backgrounds/day_town.png (GOT - reconstructed)
-	/images/custom_backgrounds/rarity.png (GOT) = http://web.archive.org/web/20121112235744/http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751
-	/images/custom_backgrounds/dash.png
-	/images/custom_backgrounds/applejack.png
-	/images/custom_backgrounds/twilight.png
-	/images/custom_backgrounds/fluttershy.png
+	/images/custom_backgrounds/rarity.png (GOT) = http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751
+	/images/custom_backgrounds/dash.png (GOT) - https://www.deviantart.com/silentmatten/art/Lookin-Good-346360296
+	/images/custom_backgrounds/applejack.png (GOT) - https://www.deviantart.com/silentmatten/art/Awesome-AJ-332895937
+	/images/custom_backgrounds/twilight.png (GOT) - https://www.deviantart.com/silentmatten/art/Twilight-Fighter-Re-Uploaded-293969327
+	/images/custom_backgrounds/fluttershy.png (GOT) - https://www.deviantart.com/silentmatten/art/Cuddleshy-Re-Upload-293969017
 	/images/custom_backgrounds/christmas.png (GOT)
 }
+
+extra:
+derpy - https://www.deviantart.com/silentmatten/art/Derpy-Hooves-Re-Vectored-310843272
