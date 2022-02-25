@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6.1
+// @version     4.6.2
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,8 +18,8 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6.1',
-      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
+const VERSION = '4.6.2',
+      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
@@ -28,62 +28,91 @@ if (this['unsafeWindow'] && window !== unsafeWindow) console.warn(`FimFAdv: Sand
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
 //-------------------------------------------DATA---------------------------------------------------
-const backgrounds = BackgroundsController();
-const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
-  BG("None", ''),
-  BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
-  BG("Lines", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
-  BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
-  BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloud_pattern.png)`),
-  BG("Stars", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/stars.png)`),
-  BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png) top left / 40px auto`),
-  BG("Flowers 1", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_1.png)`),
-  BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
-  BG("Flowers 3", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_3.png)`),
-  BG("Flowers 4", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_4.png)`),
-  BG("Flowers 5", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_5.png)`),
-  BG("Flowers 6", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_6.png)`),
-  BG("Waves", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/waves.png)`),
-  BG("Savannah",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/savannah.png)`),
-  BG("Dots",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/dots.png)`),
-  BG("Fans",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/fans.png)`),
-  BG("Woodland",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/woodland.png)`),
-  BG("Diamonds", `url(${GITHUB}/backgrounds/rarity_1.png)`),
-  BG("Checker Wave",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/checker_wave.png)`),
-  BG("Noise", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`),
-  BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`),
-  BG("Wool", `url(${GITHUB}/backgrounds/patterns/wool.png)`),
-  BG("Cobbles", `url(${GITHUB}/backgrounds/patterns/cobble.png)`),
-  BG("Shards", `url(${GITHUB}/backgrounds/patterns/glass.png) top center`),
-  BG("Zecora",`url(${GITHUB}/backgrounds/patterns/zecora.png)`),
-  BG("Celestia",`url(${GITHUB}/backgrounds/patterns/sunny_days.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
-  BG("Luna", `url(${GITHUB}/backgrounds/patterns/lunar_nights.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
-  BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_2.png)`),
-  BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png) fixed right`),
-  BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
-]);
-const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
-  BG("None", ''),
-  BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
-  BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
-  BG("Big City", `url(${GITHUB}/backgrounds/manehattan2.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/abion47/art/Manehatten-Skyline-425529568'),
-  BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
-  BG("Old Apple House", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
-  BG("Memories", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house_lowfi.png) repeat-x bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
-  BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
-  BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) bottom center repeat-x`),
-  BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) bottom center repeat-x`),
-  BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) no-repeat bottom center / 100% auto`),
- // BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`),
+const backgrounds = BackgroundsController().addSet('bgPattern', 'Background Pattern', [
+  { items: [ BG("None", '') ] },
+  {
+    category: "Patterns",
+    items: [
+      BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
+      BG("Grid", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
+      BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
+      BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png) top left / 40px auto`),
+      BG("* Flowers 1", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_1.png)`),
+      BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
+      BG("Flowers 3", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_3.png)`),
+      BG("* Flowers 4", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_4.png)`),
+      BG("* Flowers 5", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_5.png)`),
+      BG("* Flowers 6", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_6.png)`),
+      BG("* Waves", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/waves.png)`),
+      BG("* Savannah",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/savannah.png)`),
+      BG("Dots",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/dots.png)`),
+      BG("Fans",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/fans.png)`),
+      BG("* Woodland",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/woodland.png)`),
+      BG("Chidori",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/chidori.png)`),
+      BG("Diamonds", `url(${GITHUB}/backgrounds/rarity_1.png)`),
+      BG("* Checker Wave",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/checker_wave.png)`),
+      BG("Noise", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`),
+      BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`),
+      BG("Wool", `url(${GITHUB}/backgrounds/patterns/wool.png)`),
+      BG("Cobbles", `url(${GITHUB}/backgrounds/patterns/cobble.png)`),
+      BG("Shards", `url(${GITHUB}/backgrounds/patterns/glass.png) top center`)
+    ]
+  },
+  {
+    category: "Images",
+    items: [
+      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloud_pattern.png)`),
+      BG("Stars", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/stars.png)`),
+      BG("Balloons",`url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
+    ]
+  },
+  {
+    category: "Characters",
+    items: [
+      BG("Zecora",`url(${GITHUB}/backgrounds/patterns/zecora.png)`),
+      BG("Celestia",`url(${GITHUB}/backgrounds/patterns/sunny_days.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
+      BG("Luna", `url(${GITHUB}/backgrounds/patterns/lunar_nights.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
+      BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_1.png) fixed right, url(${GITHUB}/backgrounds/twilight_2.png)`),
+      BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
+      BG("Rainbow Dash", `url(${GITHUB}/backgrounds/rd.png) top 120px center`, "//up1ter.deviantart.com/")
+    ]
+  }
+]).addSet('bgImg', 'Background Image', [
+  {
+    items: [ BG("None", '') ]
+  },
+  {
+    category: "Standard",
+    items: [
+      BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
+      BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
+      BG("Big City", `url(${GITHUB}/backgrounds/manehattan2.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/abion47/art/Manehatten-Skyline-425529568'),
+      BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
+      BG("Apple House", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
+      BG("Memories", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house_lowfi.png) repeat-x bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
+      BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
+      BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) bottom center repeat-x`),
+      BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) bottom center repeat-x`),
+      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) no-repeat bottom center / 100% auto`),
+      BG("Candyland", `url(${GITHUB}/backgrounds/land.png) no-repeat bottom -300px center / 100% auto`)
+      // BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`),
+    ]
+  },
+  {
+    category: "Characters",
+    items: [
+      BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/classic_poni_2/twilight.png) no-repeat bottom -300px right / 1300px auto`),
+      BG("Pinkie Pie", `url(${GITHUB}/backgrounds/classic_poni_2/pinkie_choir.png) repeat-x bottom center / 100% auto`),
+      BG("Applejack", `url(${GITHUB}/backgrounds/classic_poni_2/applejack.png) no-repeat bottom -150px right -100px / 1000px auto`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231", {contain: true}),
+      BG("Rarity", `url(${GITHUB}/backgrounds/classic_poni_2/rarity.png) no-repeat bottom -200px right -100px / 800px auto`),
+      BG("Rainbow Dash", `url(${GITHUB}/backgrounds/classic_poni_2/dash.png) no-repeat bottom -500px right -200px`),
+      BG("Fluttershy", `url(${GITHUB}/backgrounds/classic_poni_2/fluttershy.png) no-repeat bottom -100px right -650px / 1100px auto`),
 
-  BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_1.png) fixed right, url(${GITHUB}/backgrounds/twilight_2.png) fixed right`),
-  BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
- // BG("Applejack", `url(${GITHUB}/backgrounds/aj.png) no-repeat bottom right / 500px auto`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231", {contain: true}),
-  BG("Rainbow Dash", `url(${GITHUB}/backgrounds/rd.png) top 120px center`, "//up1ter.deviantart.com/"),
+      // BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) no-repeat bottom -150px right -300px / 1300px auto, url(${GITHUB}/backgrounds/patterns/starfield.png)`)
+      // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
 
- // BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) fixed bottom -150px right -50px no-repeat, url(${GITHUB}/backgrounds/patterns/starfield.png)`),
- // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
- // BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`, '', {darken: true})
+    ]
+  }
 ]);
 const logoController = LogoController();
 const animator = Animator();
@@ -3050,6 +3079,7 @@ function SignatureController() {
 function BackgroundsController() {
   const ALIGNMENTS = ['top','left','right','bottom','center'];
   const getColor = () => settingsMan.get("bgColor", 'transparent');
+  const SETS = [];
 
   function getOrDefaultColor() {
     const col = getColor();
@@ -3065,8 +3095,8 @@ function BackgroundsController() {
 
   function apply() {
     let c = getColor();
-    let img = backgroundImages.get();
-    let pattern = backgroundPatterns.get();
+    let img = SETS[1].get();
+    let pattern = SETS[0].get();
 
     settingsMan.flag('background', !((c == '' || c == 'transparent') && img === 'none'));
 
@@ -3098,12 +3128,14 @@ function BackgroundsController() {
     }
   }
 
-  function createSet(key, name, backgrounds) {
+  function createSet(key, name, groups) {
+    const backgrounds = groups.flatMap(a => a.items);
+
     function getIndex() {
       return Math.min(backgrounds.length - 1, Math.max(settingsMan.int(key, -1), 0));
     }
 
-    function populateSelect(item, blank, index) {
+    /*function populateSelect(item, blank, index) {
       blank.children[1].innerHTML = item.name;
       blank.children[0].style.opacity = '0.8';
       ready(() => blank.children[0].style.backgroundColor = getOrDefaultColor());
@@ -3128,14 +3160,36 @@ function BackgroundsController() {
         settingsMan.set(key, index, -1);
         apply();
       });
-    }
+    }*/
 
     return {
       get() {
         return backgrounds[getIndex()] || 'none';
       },
-      createPresetSelect(tab) {
-        const select = tab.AddPresetSelect(key, name, true, 0);
+      createDropdown(tab) {
+        let begin = 0;
+
+        function createOptions(items, value) {
+          return items.map((l, i) => `<option value="${i + begin}" ${(i + begin) === index ? ' selected' : ''}>${l}</option>`).join('');
+        }
+
+        const select = tab.AddDropDown(key, name, [], 0);
+        const index = getIndex();
+
+        select.innerHTML = groups.map(group => {
+          const html = group.category
+            ? `<optgroup label="${group.category}">${createOptions(group.items.map(l => l.name), index)}</optgroup>`
+            : createOptions(group.items.map(l => l.name), index);
+          begin += group.items.length;
+          return html;
+        }).join('');
+        select.addEventListener('change', e => {
+          settingsMan.set(key, e.target.value, -1);
+          apply();
+        });
+
+
+        /*const select = tab.AddPresetSelect(key, name, true, 0);
 
         backgrounds.forEach((a, i) => select.add(el => {
           populateSelect(a, el, i);
@@ -3152,13 +3206,16 @@ function BackgroundsController() {
         const bgIndex = select.element.querySelector(`[data-index="${getIndex()}"]`);
         if (bgIndex) {
           bgIndex.classList.add('premade_settings_selected');
-        }
+        }*/
       }
     };
   }
 
   return {
-    createSet,
+    addSet(key, name, backgrounds) {
+      SETS.push(createSet(key, name, backgrounds))
+      return this;
+    },
     apply,
     createOptions(tab) {
       makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
@@ -3185,8 +3242,7 @@ function BackgroundsController() {
         colorPick.change();
       });
 
-      backgroundPatterns.createPresetSelect(tab, false);
-      backgroundImages.createPresetSelect(tab, colorPick);
+      SETS.forEach(set => set.createDropdown(tab));
     }
   };
 }
