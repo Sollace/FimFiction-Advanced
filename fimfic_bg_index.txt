@@ -6,10 +6,10 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/images/custom_backgrounds/cloth.png (GOT)
 	/images/custom_backgrounds/cloud_pattern.png (GOT - reconstructed)
 	/images/custom_backgrounds/stars.png (GOT)
-	/images/custom_backgrounds/checkerboard.png
+	/images/custom_backgrounds/checkerboard.png (GOT)
 	/images/custom_backgrounds/flowers_1.png
 	/themes/poni2.0/images/flowers_2.png (GOT)
-	/images/custom_backgrounds/flowers_3.png
+	/images/custom_backgrounds/flowers_3.png (GOT - reconstructed)
 	/images/custom_backgrounds/flowers_4.png
 	/images/custom_backgrounds/flowers_5.png
 	/images/custom_backgrounds/flowers_6.png
@@ -18,7 +18,8 @@ switch ( LocalStorageGet( "background_pattern", "0" ) )
 	/images/custom_backgrounds/dots.png (GOT - reconstructed)
 	/images/custom_backgrounds/fans.png (GOT - reconstructed)
 	/images/custom_backgrounds/woodland.png (GOT - reconstructing)
-	/images/custom_backgrounds/diamonds.png
+	/images/custom_backgrounds/chidori.png (GOT - reconstructing)
+	/images/custom_backgrounds/diamonds.png (replaced)
 	/images/custom_backgrounds/checker_wave.png
 };
 	
@@ -32,7 +33,7 @@ switch ( LocalStorageGet( "background_image", "0" ) )
 	/images/custom_backgrounds/rarity.png (GOT) = http://silentmatten.deviantart.com/art/Stylish-Rarity-327242751
 	/images/custom_backgrounds/dash.png (GOT) - https://www.deviantart.com/silentmatten/art/Lookin-Good-346360296
 	/images/custom_backgrounds/applejack.png (GOT) - https://www.deviantart.com/silentmatten/art/Awesome-AJ-332895937
-	/images/custom_backgrounds/twilight.png (GOT) - https://www.deviantart.com/silentmatten/art/Twilight-Fighter-Re-Uploaded-293969327
+	/images/custom_backgrounds/twilight.png (GOT) - https://www.deviantart.com/dipi11/art/Twilight-with-a-saddlebag-289786852
 	/images/custom_backgrounds/fluttershy.png (GOT) - https://www.deviantart.com/silentmatten/art/Cuddleshy-Re-Upload-293969017
 	/images/custom_backgrounds/christmas.png (GOT)
 }
