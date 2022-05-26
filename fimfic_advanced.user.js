@@ -30,7 +30,8 @@ if (this['unsafeWindow'] && window !== unsafeWindow) console.warn(`FimFAdv: Sand
 //-------------------------------------------DATA---------------------------------------------------
 const backgrounds = BackgroundsController()
 .addPreset('Clouds', '#57a6d0', '#a1d0e4', 10, 24)
-.addPreset('Night Town', '#48434c', '#8c8691', 2, 25)
+.addPreset('Night Town', '#48434c', '#8c8691', 1, 25)
+.addPreset('Day Town', '#3f96d9', '#d9e5f0', 2, 24)
 .addPreset('Old Apple House', '#a1925f', '#dcd7c7', 5, 1, true)
 .addPreset('Pinkie', '#ca6ca3', '#f2e1eb', 13, 24)
 .addPreset('Rarity', '#5e4fa2', '#ded6e2', 15, 4)
@@ -94,18 +95,17 @@ const backgrounds = BackgroundsController()
   {
     category: "Standard",
     items: [
-      BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
       BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
+      BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
       BG("Big City", `url(${GITHUB}/backgrounds/manehattan2.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/abion47/art/Manehatten-Skyline-425529568'),
       BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
       BG("Apple House", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
       BG("Memories", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house_lowfi.png) repeat-x bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
       BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
-      BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) bottom center repeat-x`),
-      BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) bottom center repeat-x`),
-      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) no-repeat bottom center / 100% auto`),
+      BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) repeat-x bottom center`),
+      BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) repeat-x bottom center`),
+      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) repeat-x bottom center / 100% auto`),
       BG("Candyland", `url(${GITHUB}/backgrounds/land.png) no-repeat bottom -300px center / 100% auto`)
-      // BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`),
     ]
   },
   {
