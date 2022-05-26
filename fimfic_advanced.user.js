@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6.1
+// @version     4.6.2
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,8 +18,8 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6.1',
-      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
+const VERSION = '4.6.2',
+      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
@@ -28,62 +28,101 @@ if (this['unsafeWindow'] && window !== unsafeWindow) console.warn(`FimFAdv: Sand
   Firefox users are recommended to use this script through ViolentMonkey: https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/
   Greasemonkey is deprecated.`);
 //-------------------------------------------DATA---------------------------------------------------
-const backgrounds = BackgroundsController();
-const backgroundPatterns = backgrounds.createSet('bgPattern', 'Background Pattern', [
-  BG("None", ''),
-  BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
-  BG("Lines", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
-  BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
-  BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloud_pattern.png)`),
-  BG("Stars", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/stars.png)`),
-  BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png) top left / 40px auto`),
-  BG("Flowers 1", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_1.png)`),
-  BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
-  BG("Flowers 3", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_3.png)`),
-  BG("Flowers 4", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_4.png)`),
-  BG("Flowers 5", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_5.png)`),
-  BG("Flowers 6", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_6.png)`),
-  BG("Waves", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/waves.png)`),
-  BG("Savannah",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/savannah.png)`),
-  BG("Dots",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/dots.png)`),
-  BG("Fans",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/fans.png)`),
-  BG("Woodland",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/woodland.png)`),
-  BG("Diamonds", `url(${GITHUB}/backgrounds/rarity_1.png)`),
-  BG("Checker Wave",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/checker_wave.png)`),
-  BG("Noise", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`),
-  BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`),
-  BG("Wool", `url(${GITHUB}/backgrounds/patterns/wool.png)`),
-  BG("Cobbles", `url(${GITHUB}/backgrounds/patterns/cobble.png)`),
-  BG("Shards", `url(${GITHUB}/backgrounds/patterns/glass.png) top center`),
-  BG("Zecora",`url(${GITHUB}/backgrounds/patterns/zecora.png)`),
-  BG("Celestia",`url(${GITHUB}/backgrounds/patterns/sunny_days.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
-  BG("Luna", `url(${GITHUB}/backgrounds/patterns/lunar_nights.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
-  BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_2.png)`),
-  BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png) fixed right`),
-  BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
-]);
-const backgroundImages = backgrounds.createSet('bgImg', 'Background Image', [
-  BG("None", ''),
-  BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
-  BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
-  BG("Big City", `url(${GITHUB}/backgrounds/manehattan2.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/abion47/art/Manehatten-Skyline-425529568'),
-  BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
-  BG("Old Apple House", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
-  BG("Memories", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house_lowfi.png) repeat-x bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
-  BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
-  BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) bottom center repeat-x`),
-  BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) bottom center repeat-x`),
-  BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) no-repeat bottom center / 100% auto`),
- // BG("Rain",`url(${GITHUB}/backgrounds/rain.png)`),
+const backgrounds = BackgroundsController()
+.addPreset('Clouds', '#57a6d0', '#a1d0e4', 10, 24)
+.addPreset('Night Town', '#48434c', '#8c8691', 1, 25)
+.addPreset('Day Town', '#3f96d9', '#d9e5f0', 2, 24)
+.addPreset('Old Apple House', '#a1925f', '#dcd7c7', 5, 1, true)
+.addPreset('Pinkie', '#ca6ca3', '#f2e1eb', 13, 24)
+.addPreset('Rarity', '#5e4fa2', '#ded6e2', 15, 4)
+.addPreset('Rainbow Dash', '#3f96d9', '#d9e5f0', 16, 24)
+.addPreset('Applejack', '#ab7949', '#cbcfc6', 14, 14)
+.addPreset('Fluttershy', '#e57eb3', '#f3efb1', 17, 6)
+.addPreset('Twilight Sparkle', '#632f87', '#8e6f80', 12, 13)
+.addSet('bgPattern', 'Background Pattern', [
+  { items: [ BG("None", '') ] },
+  {
+    category: "Patterns",
+    items: [
+      BG("Plaster", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/plaster.png)`),
+      BG("Grid", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/lines.png)`),
+      BG("Cloth",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloth.png)`),
+      BG("Checkerboard", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/checkerboard.png) top left / 40px auto`),
+      BG("* Flowers 1", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_1.png)`),
+      BG("Flowers 2", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_2.png)`),
+      BG("Flowers 3", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_3.png)`),
+      BG("* Flowers 4", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_4.png)`),
+      BG("* Flowers 5", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_5.png)`),
+      BG("* Flowers 6", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/flowers_6.png)`),
+      BG("* Waves", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/waves.png)`),
+      BG("* Savannah",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/savannah.png)`),
+      BG("Dots",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/dots.png)`),
+      BG("Fans",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/fans.png)`),
+      BG("* Woodland",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/woodland.png)`),
+      BG("Chidori",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/chidori.png)`),
+      BG("Diamonds", `url(${GITHUB}/backgrounds/rarity_1.png)`),
+      BG("* Checker Wave",`url(${GITHUB}/backgrounds/classic_poni_2/patterns/checker_wave.png)`),
+      BG("Noise", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/noise.png)`),
+      BG("Feathers", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/feather_0.png)`),
+      BG("Wool", `url(${GITHUB}/backgrounds/patterns/wool.png)`),
+      BG("Cobbles", `url(${GITHUB}/backgrounds/patterns/cobble.png)`),
+      BG("Shards", `url(${GITHUB}/backgrounds/patterns/glass.png) top center`)
+    ]
+  },
+  {
+    category: "Images",
+    items: [
+      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/cloud_pattern.png)`),
+      BG("Stars", `url(${GITHUB}/backgrounds/classic_poni_2/patterns/stars.png)`),
+      BG("Balloons",`url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
+    ]
+  },
+  {
+    category: "Characters",
+    items: [
+      BG("Zecora",`url(${GITHUB}/backgrounds/patterns/zecora.png)`),
+      BG("Celestia",`url(${GITHUB}/backgrounds/patterns/sunny_days.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
+      BG("Luna", `url(${GITHUB}/backgrounds/patterns/lunar_nights.png), url(${GITHUB}/backgrounds/patterns/starfield.png) fixed`),
+      BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_1.png) fixed right, url(${GITHUB}/backgrounds/twilight_2.png)`),
+      BG("Rarity", `url(${GITHUB}/backgrounds/rarity_1.png),url(${GITHUB}/backgrounds/rarity_0.png)`),
+      BG("Rainbow Dash", `url(${GITHUB}/backgrounds/rd.png) top 120px center`, "//up1ter.deviantart.com/")
+    ]
+  }
+]).addSet('bgImg', 'Background Image', [
+  {
+    items: [ BG("None", '') ]
+  },
+  {
+    category: "Standard",
+    items: [
+      BG("Night Town", `url(${GITHUB}/backgrounds/classic_poni_2/night_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/foxy-noxy/art/Ponyville-Road-View-Night-341236895'),
+      BG("Day Town", `url(${GITHUB}/backgrounds/classic_poni_2/day_town.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/boneswolbach/art/Ponyville-Road-View-320722001'),
+      BG("Big City", `url(${GITHUB}/backgrounds/manehattan2.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/abion47/art/Manehatten-Skyline-425529568'),
+      BG("School House", `url(${GITHUB}/backgrounds/school_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/tamalesyatole/art/Ponyville-Schoolhouse-Background-326034340'),
+      BG("Apple House", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house.png) no-repeat bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
+      BG("Memories", `url(${GITHUB}/backgrounds/classic_poni_2/apple_house_lowfi.png) repeat-x bottom center / 100% auto`, 'https://www.deviantart.com/timeimpact/art/Background-Scenery-Hillside-Farm-299365434'),
+      BG("Christmas", `url(${GITHUB}/backgrounds/classic_poni_2/christmas.png) no-repeat fixed bottom center / 100% auto`),
+      BG("Trees", `url(${GITHUB}/backgrounds/classic_poni_2/trees.old.png) repeat-x bottom center`),
+      BG("Trees 2", `url(${GITHUB}/backgrounds/classic_poni_2/trees.new.png) repeat-x bottom center`),
+      BG("Clouds", `url(${GITHUB}/backgrounds/classic_poni_2/cloud.png) repeat-x bottom center / 100% auto`),
+      BG("Candyland", `url(${GITHUB}/backgrounds/land.png) no-repeat bottom -300px center / 100% auto`)
+    ]
+  },
+  {
+    category: "Characters",
+    items: [
+      BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/classic_poni_2/twilight.png) no-repeat bottom -300px right -600px / 1000px auto`),
+      BG("Pinkie Pie", `url(${GITHUB}/backgrounds/classic_poni_2/pinkie_choir.png) repeat-x bottom center / 100% auto`),
+      BG("Applejack", `url(${GITHUB}/backgrounds/classic_poni_2/applejack.png) no-repeat bottom -150px right -100px`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231", {contain: true}),
+      BG("Rarity", `url(${GITHUB}/backgrounds/classic_poni_2/rarity.png) no-repeat bottom -200px right -100px`),
+      BG("Rainbow Dash", `url(${GITHUB}/backgrounds/classic_poni_2/dash.png) no-repeat bottom -500px right -200px`),
+      BG("Fluttershy", `url(${GITHUB}/backgrounds/classic_poni_2/fluttershy.png) no-repeat bottom -100px right -650px`),
 
-  BG("Twilight Sparkle", `url(${GITHUB}/backgrounds/twilight_1.png) fixed right, url(${GITHUB}/backgrounds/twilight_2.png) fixed right`),
-  BG("Pinkie Pie",`url(${GITHUB}/backgrounds/pinkie_0.png), url(${GITHUB}/backgrounds/pinkie_1.png)`),
- // BG("Applejack", `url(${GITHUB}/backgrounds/aj.png) no-repeat bottom right / 500px auto`, "//benybing.deviantart.com/art/Applejack-noms-an-Apple-432759231", {contain: true}),
-  BG("Rainbow Dash", `url(${GITHUB}/backgrounds/rd.png) top 120px center`, "//up1ter.deviantart.com/"),
+      // BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) no-repeat bottom -150px right -300px / 1300px auto, url(${GITHUB}/backgrounds/patterns/starfield.png)`)
+      // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
 
- // BG("Diary",`url(${GITHUB}/backgrounds/book_0.png) fixed bottom -150px right -50px no-repeat, url(${GITHUB}/backgrounds/patterns/starfield.png)`),
- // BG("Sonic Rainboom", `url('${GITHUB}/backgrounds/rainboom.jpg') fixed 100% center`, "//knight33.deviantart.com/art/Sonic-Rainboom-301417918"),
- // BG("PinkieScape", `url(${GITHUB}/backgrounds/land.png) no-repeat fixed top 200px center / 100% auto, url(${GITHUB}/backgrounds/sky.png) local top left -300px / 100% auto`, '', {darken: true})
+    ]
+  }
 ]);
 const logoController = LogoController();
 const animator = Animator();
@@ -251,43 +290,22 @@ function initGlobals() {
   if (!userToolbar) userToolbar = document.querySelector('.user_toolbar');
 }
 function earlyStart() {
-  (function css() {
-    if (document.body && document.querySelector('#stylesheetMain')) {
-      addCss();
-      backgrounds.apply();
+  runOnce(() => document.body && document.querySelector('#stylesheetMain'), () => {
+    addCss();
+    backgrounds.apply();
 
-      if (bannerController.getEnabled()) {
-        addBannerCss();
-        (function banner() {
-          if (canLoadBanners()) {
-            logoController.apply();
-            return bannerController.build();
-          }
-          requestAnimationFrame(banner);
-        })();
-      }
-
-      FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
-      creditsController.buildAll();
-
-      if (CURRENT_LOCATION.indexOf('feed') == 0) (function feed() {
-        if (document.querySelector('.feed, .footer')) {
-          return feeder.replaceFeedUI();
-        }
-        requestAnimationFrame(feed);
-      })();
-
-      return;
+    if (bannerController.getEnabled()) {
+      addBannerCss();
+      runOnce(() => (userToolbar = userToolbar || document.body.querySelector('.user_toolbar')) && !!document.querySelector('.user-page-header, .story-page-header, .footer'), () => {
+        logoController.apply();
+        return bannerController.build();
+      });
     }
-    requestAnimationFrame(css);
-  })();
 
-  function canLoadBanners() {
-    if ((userToolbar = userToolbar || document.body.querySelector('.user_toolbar'))) {
-      return !!document.querySelector('.user-page-header, .story-page-header, .footer');
-    }
-    return false;
-  }
+    FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
+    creditsController.buildAll();
+    feeder.buildUi();
+  });
 }
 function initFimFictionAdvanced() {
   commentSectionController.initCommentArea();
@@ -310,7 +328,7 @@ function initFimFictionAdvanced() {
 function registerEvents() {
   FimFicEvents.on('aftertoolbar', addExtraToolbarLinks);
   commentSectionController.registerEvents();
-  if (CURRENT_LOCATION.indexOf('feed') == 0) FimFicEvents.on('afterloadfeed', feeder.initFeedItems);
+  feeder.registerEvents();
   applyNightModeListener();
 }
 function buildSettingsTab(tab) {
@@ -1070,14 +1088,12 @@ a:hover .bg_source_link {
     text-align: center;}
 
 a.premade_settings.custom_banner_button {
-  width: 100%;
-  text-align: center;
-  background-size: 100%;
-}
+    width: 100%;
+    text-align: center;
+    background-size: 100%;}
 a.premade_settings.custom_banner_button .toolbar {
-  color: black;
-  text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.15);
-}
+    color: black;
+    text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.15);}
 
 .user_toolbar > .inner .button-first {
     margin-left: 0px !important;
@@ -1945,7 +1961,15 @@ function Pos(poss) {
 //--------------------------------------UTIL FUNCTIONS-----------------------------------------------
 function replaceWith(el, html) {
   el.insertAdjacentHTML('beforebegin', html);
-  el.parentNode.removeChild(el);
+  el.remove();
+}
+function runOnce(condition, action) {
+  (function self() {
+    if (condition()) {
+      return action();
+    }
+    requestAnimationFrame(self);
+  })();
 }
 function pinnerFunc(target, clazz, bounder) {
   clazz = `fix_${clazz}`;
@@ -3050,6 +3074,8 @@ function SignatureController() {
 function BackgroundsController() {
   const ALIGNMENTS = ['top','left','right','bottom','center'];
   const getColor = () => settingsMan.get("bgColor", 'transparent');
+  const SETS = [];
+  const PRESETS = [];
 
   function getOrDefaultColor() {
     const col = getColor();
@@ -3065,8 +3091,8 @@ function BackgroundsController() {
 
   function apply() {
     let c = getColor();
-    let img = backgroundImages.get();
-    let pattern = backgroundPatterns.get();
+    let img = SETS[1].get();
+    let pattern = SETS[0].get();
 
     settingsMan.flag('background', !((c == '' || c == 'transparent') && img === 'none'));
 
@@ -3098,67 +3124,54 @@ function BackgroundsController() {
     }
   }
 
-  function createSet(key, name, backgrounds) {
+  function createSet(key, name, groups) {
+    const backgrounds = groups.flatMap(a => a.items);
+
     function getIndex() {
       return Math.min(backgrounds.length - 1, Math.max(settingsMan.int(key, -1), 0));
     }
 
-    function populateSelect(item, blank, index) {
-      blank.children[1].innerHTML = item.name;
-      blank.children[0].style.opacity = '0.8';
-      ready(() => blank.children[0].style.backgroundColor = getOrDefaultColor());
-
-      let css = item.css.replace(/ fixed/g, "");
-      if (item.attributes.custom) {
-        css = css.split(' ').filter(a => ALIGNMENTS.indexOf(a) > -1).join(' ');
-      }
-
-      blank.style.background = css;
-      blank.dataset.bgIndex = index;
-      if (item.attributes.center) {
-        blank.style.backgroundPosition = "center center";
-      }
-      blank.style.backgroundSize = item.attributes.contain ? 'contain' : item.attributes.custom || 'cover';
-      if (item.source) {
-        blank.style.position = 'relative';
-        blank.insertAdjacentHTML('beforeend', `<a class="bg_source_link" href="${item.source}">Source</a>`);
-      }
-
-      blank.addEventListener('click', () => {
-        settingsMan.set(key, index, -1);
-        apply();
-      });
-    }
-
     return {
+      key,
       get() {
         return backgrounds[getIndex()] || 'none';
       },
-      createPresetSelect(tab) {
-        const select = tab.AddPresetSelect(key, name, true, 0);
+      createDropdown(tab) {
+        let begin = 0;
 
-        backgrounds.forEach((a, i) => select.add(el => {
-          populateSelect(a, el, i);
-        }));
+        function createOptions(items, value) {
+          return items.map((l, i) => `<option value="${i + begin}" ${(i + begin) === index ? ' selected' : ''}>${l}</option>`).join('');
+        }
 
-        addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
-          const other = select.element.querySelector('.premade_settings_selected');
-          if (other) {
-            other.classList.remove('premade_settings_selected');
-          }
-          target.classList.add('premade_settings_selected');
+        const select = tab.AddDropDown(key, name, [], 0);
+        const index = getIndex();
+
+        select.innerHTML = groups.map(group => {
+          const html = group.category
+            ? `<optgroup label="${group.category}">${createOptions(group.items.map(l => l.name), index)}</optgroup>`
+            : createOptions(group.items.map(l => l.name), index);
+          begin += group.items.length;
+          return html;
+        }).join('');
+        select.addEventListener('change', e => {
+          settingsMan.set(key, e.target.value, -1);
+          apply();
         });
 
-        const bgIndex = select.element.querySelector(`[data-index="${getIndex()}"]`);
-        if (bgIndex) {
-          bgIndex.classList.add('premade_settings_selected');
-        }
+        return () => select.value = getIndex();
       }
     };
   }
 
   return {
-    createSet,
+    addPreset(name, user_toolbar_color, background_color, background_image, background_pattern, break_line) {
+      PRESETS.push({name, user_toolbar_color, background_color, background_pattern, background_image, break_line});
+      return this;
+    },
+    addSet(key, name, backgrounds) {
+      SETS.push(createSet(key, name, backgrounds))
+      return this;
+    },
     apply,
     createOptions(tab) {
       makeStyle(".body_container {transition: background-color 0.125s ease;}", "FFA_T");
@@ -3173,7 +3186,6 @@ function BackgroundsController() {
 
         settingsMan.set("bgColor", me.value, 'transparent');
         apply();
-        all('.toolbar', tab.container, a => a.style.backgroundColor = getOrDefaultColor());
       });
 
       tab.AppendButton(colorPick, '<i class="fa fa-camera"></i>From Toolbar').addEventListener('click', () => {
@@ -3185,14 +3197,36 @@ function BackgroundsController() {
         colorPick.change();
       });
 
-      backgroundPatterns.createPresetSelect(tab, false);
-      backgroundImages.createPresetSelect(tab, colorPick);
+      const changeCallbacks = SETS.map(set => set.createDropdown(tab));
+
+      const select = tab.AddPresetSelect('theme', 'Premade Settings');
+      PRESETS.forEach(preset => {
+        select.add(el => {
+          extend(el.dataset, preset);
+          el.style.backgroundColor = el.dataset.background_color;
+          el.children[1].innerHTML = el.dataset.name;
+          el.children[0].style.backgroundColor = el.dataset.user_toolbar_color;
+          if (preset.break_line) {
+            el.insertAdjacentHTML('afterend', '<br>');
+          }
+        });
+      });
+
+      addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
+        colorPick.value = target.dataset.background_color;
+        colorPick.change();
+        settingsMan.set(SETS[0].key, parseInt(target.dataset.background_pattern), -1);
+        settingsMan.set(SETS[1].key, parseInt(target.dataset.background_image), -1);
+        changeCallbacks.forEach(a => a());
+        apply();
+      });
     }
   };
 }
 function FancyFeedsController() {
   let computedUnreadCount = 0;
   let unreadCount = getUnreadCount();
+  const timestamp = getFeedRead();
 
   function getFancyFeeds() {return settingsMan.int('feed_compressed', 0);}
 
@@ -3256,10 +3290,10 @@ function FancyFeedsController() {
 
   function updateUnreadFeedItems(markAllRead) {
     const t = document.querySelector('#feed [data-timestamp]');
-    if (!t) return;
-    const timestamp = getFeedRead();
-    console.log("Old Feed read time:" + timestamp);
-    console.log("New Feed read time:" + t.dataset.timestamp);
+    if (!t) {
+      return;
+    }
+
     settingsMan.set('feedRead', t.dataset.timestamp, 0);
     const fancy = getFancyFeeds() == 2;
 
@@ -3274,9 +3308,14 @@ function FancyFeedsController() {
       item.classList.add('touched');
       item.dataset.worth = worth;
 
-      if (item.classList.contains('new')) count += worth;
+      if (item.classList.contains('new')) {
+        count += worth;
+      }
 
-      if (!item.classList.contains('feed_group_item')) return;
+      if (!item.classList.contains('feed_group_item')) {
+        return;
+      }
+
       let group = item.querySelector('.group_stories');
       if (group) {
         const stories = getParsedStoryFeedItem(item);
@@ -3298,7 +3337,9 @@ function FancyFeedsController() {
     });
 
     computedUnreadCount += count;
-    if (computedUnreadCount > unreadCount) setUnreadCount(count, markAllRead);
+    if (computedUnreadCount > unreadCount) {
+      setUnreadCount(count, markAllRead);
+    }
   }
 
   function getParsedStoryFeedItem(item) {
@@ -3320,91 +3361,100 @@ function FancyFeedsController() {
     return stories;
   }
 
+  function initFeedItems() {
+    updateUnreadFeedItems(document.querySelector('#mark-read-button'));
+  }
+
+  function fixFeedOptions() {
+    initFeedItems();
+
+    extend(FeedController.prototype, {
+      changeCompactMode(c, d, sender) {
+        this.column.classList.toggle("compressed", false);
+        LocalStorageSet("feed_compressed", sender.value);
+        updateFeedUi();
+        all('.feed .touched', t => t.classList.remove('touched'));
+        updateUnreadFeedItems(this.elements.markAllRead);
+      },
+      markAllRead(sender) {
+        setUnreadCount(0, sender);
+        all('.feed .new', t => {
+          t.classList.add('marked');
+          t.classList.remove('new');
+          t.classList.remove('expanded');
+        });
+      },
+      setSimpleFeeds(event, d, sender) {
+        settingsMan.setB('simple_feeds', sender.checked, true);
+        updateFeedUi();
+      },
+      setDistinguishedFeeds(event, d, sender) {
+        settingsMan.setB('distinguished_feeds', sender.checked, false);
+        updateFeedUi();
+      }
+    });
+
+    override(FeedController.prototype, 'toggleCompressed', function(sender, event) {
+      if (event.target.tagName === 'A') return true;
+      sender = sender.closest('.feed_item');
+      sender.classList.toggle('expanded');
+      if (sender.classList.contains('new')) {
+        sender.classList.remove('new');
+        sender.classList.add('marked');
+        if (unreadCount > 0) {
+          if (!this.elements.markAllRead) all('[data-element]', this.element, a => this.elements[a.dataset.element] = a);
+          const worth = parseInt(sender.dataset.worth);
+          computedUnreadCount = Math.max(0, computedUnreadCount - worth);
+          setUnreadCount(unreadCount - worth, this.elements.markAllRead);
+        }
+      }
+    });
+  }
+
+  function applyFeedFix() {
+    // prevent misleading links around images
+    addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
+      e.preventDefault();
+      const a = target.closest('a');
+      if (a.href) {
+        a.title = a.href;
+      }
+    });
+    fixFeedOptions();
+    animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
+  }
+
   return {
     apply() {
       if (CURRENT_LOCATION.indexOf('feed') == 0) {
-        this.applyFeedFix();
+        applyFeedFix();
       } else {
-        this.initUnreadCount();
+        const count = document.querySelector('.feed-link.new div');
+        setUnreadCount(count ? count.innerText.trim() : 0);
       }
     },
-    applyFeedFix() {
-      // prevent misleading links around images
-      addDelegatedEvent(document, '.feed_body img.thumbnail_image', 'click', (e, target) => {
-        e.preventDefault();
-        const a = target.closest('a');
-        if (a.href) a.title = a.href;
-      });
-      this.fixFeedOptions();
-      animator.on('feed', pinnerFunc('.feed-toolbar', 'feed'));
-    },
-    initUnreadCount() {
-      const count = document.querySelector('.feed-link.new div');
-      setUnreadCount(count ? count.innerText.trim() : 0);
-    },
-    initFeedItems() {
-      updateUnreadFeedItems(document.querySelector('#mark-read-button'));
-    },
-    replaceFeedUI() {
-      const options = document.querySelector('#feed-options');
-      if (options) {
-        const toggle = document.querySelector('.feed-toolbar .drop-down-expander');
-        toggle.parentNode.removeChild(toggle);
-        options.insertAdjacentHTML('afterend', getNewFeedOptions());
-        options.parentNode.removeChild(options);
-        const reload = document.querySelector('#refresh-button');
-        reload.insertAdjacentHTML('afterend', `
-          <a id="mark-read-button" class="styled_button button-icon-only ${unreadCount > 0 ? 'on' : 'off'}" data-element="markAllRead" data-click="markAllRead" data-count="${unreadCount}">
-            <i class="off fa fa-check"></i>
-            <i class="on fa fa-check-square-o"></i>
-          </a>`);
-      }
-      updateFeedUi();
-    },
-    fixFeedOptions() {
-      this.initFeedItems();
-
-      extend(FeedController.prototype, {
-        changeCompactMode(c, d, sender) {
-          this.column.classList.toggle("compressed", false);
-          LocalStorageSet("feed_compressed", sender.value);
-          updateFeedUi();
-          all('.feed .touched', t => t.classList.remove('touched'));
-          updateUnreadFeedItems(this.elements.markAllRead);
-        },
-        markAllRead(sender) {
-          setUnreadCount(0, sender);
-          all('.feed .new', t => {
-            t.classList.add('marked');
-            t.classList.remove('new');
-            t.classList.remove('expanded');
-          });
-        },
-        setSimpleFeeds(event, d, sender) {
-          settingsMan.setB('simple_feeds', sender.checked, true);
-          updateFeedUi();
-        },
-        setDistinguishedFeeds(event, d, sender) {
-          settingsMan.setB('distinguished_feeds', sender.checked, false);
-          updateFeedUi();
-        }
-      });
-
-      override(FeedController.prototype, 'toggleCompressed', function(sender, event) {
-        if (event.target.tagName === 'A') return true;
-        sender = sender.closest('.feed_item');
-        sender.classList.toggle('expanded');
-        if (sender.classList.contains('new')) {
-          sender.classList.remove('new');
-          sender.classList.add('marked');
-          if (unreadCount > 0) {
-            if (!this.elements.markAllRead) all('[data-element]', this.element, a => this.elements[a.dataset.element] = a);
-            const worth = parseInt(sender.dataset.worth);
-            computedUnreadCount = Math.max(0, computedUnreadCount - worth);
-            setUnreadCount(unreadCount - worth, this.elements.markAllRead);
+    buildUi() {
+      if (CURRENT_LOCATION.indexOf('feed') == 0) {
+        runOnce(() => document.querySelector('.feed, .footer'), () => {
+          const options = document.querySelector('#feed-options');
+          if (options) {
+            document.querySelector('.feed-toolbar .drop-down-expander').remove();
+            replaceWith(options, getNewFeedOptions());
+            const reload = document.querySelector('#refresh-button');
+            reload.insertAdjacentHTML('afterend', `
+              <a id="mark-read-button" class="styled_button button-icon-only ${unreadCount > 0 ? 'on' : 'off'}" data-element="markAllRead" data-click="markAllRead" data-count="${unreadCount}">
+                <i class="off fa fa-check"></i>
+                <i class="on fa fa-check-square-o"></i>
+              </a>`);
           }
-        }
-      });
+          updateFeedUi();
+        });
+      }
+    },
+    registerEvents() {
+      if (CURRENT_LOCATION.indexOf('feed') == 0) {
+        FimFicEvents.on('afterloadfeed', initFeedItems);
+      }
     }
   };
 }
@@ -3734,7 +3784,6 @@ function BannerController(sets) {
         slider.resume();
       });
       window.addEventListener('blur', () => slider.pause());
-
     },
     finalise() {
       this.pick(this.getCurrentId());
