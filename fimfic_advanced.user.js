@@ -3213,15 +3213,8 @@ function BackgroundsController() {
       });
 
       addDelegatedEvent(select.element, '.premade_settings', 'click', (e, target) => {
-        const other = select.element.querySelector('.premade_settings_selected');
-        if (other) {
-          other.classList.remove('premade_settings_selected');
-        }
-        target.classList.add('premade_settings_selected');
-
         colorPick.value = target.dataset.background_color;
         colorPick.change();
-
         settingsMan.set(SETS[0].key, parseInt(target.dataset.background_pattern), -1);
         settingsMan.set(SETS[1].key, parseInt(target.dataset.background_image), -1);
         changeCallbacks.forEach(a => a());
