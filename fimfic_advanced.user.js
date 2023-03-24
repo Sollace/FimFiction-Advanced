@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.6.2
+// @version     4.7.0
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.6.2',
+const VERSION = '4.7.0',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -677,6 +677,34 @@ ${light ? '' : `
   bottom: 1px;
   width: 7px;
 }
+
+
+.columnized .feed-page {
+  max-width: 100%;
+  width: max-content;
+}
+.columnized #feed {
+  display: grid;
+  grid-template-columns: minmax(25%, max-content);
+  grid-auto-flow: column dense;
+  align-items: flex-start;
+
+  column-gap: 100px;
+}
+
+.columnized #feed .feed_column[data-type="story"] {
+  grid-column: 1;
+}
+.columnized #feed .feed_column[data-type="blog_post"] {
+  grid-column: 2;
+}
+.columnized #feed .feed_column[data-type="group_thread"] {
+  grid-column: 3;
+}
+.columnized #feed .feed_column[data-type="group_item"] {
+  grid-column: 4;
+}
+
 
 /*Faster Compression (kinda)*/
 .compressed .feed_item:not(.expanded) {
@@ -3233,6 +3261,8 @@ function FancyFeedsController() {
   function getSimpleFeeds() {return settingsMan.bool('simple_feeds', true);}
   function getDistinguishedFeeds() {return settingsMan.bool('distinguished_feeds', false);}
 
+  function getColumnizedFeeds() {return settingsMan.bool('columnized_feeds', false);}
+
   function getFeedRead() {return settingsMan.int('feedRead', 0);}
   function getUnreadCount() {return settingsMan.int('unread_count', 0);}
 
@@ -3251,6 +3281,7 @@ function FancyFeedsController() {
     document.body.classList.toggle("compressed", getFancyFeeds() > 0);
     document.body.classList.toggle("distinguish", getDistinguishedFeeds());
     document.body.classList.toggle('simplified', getSimpleFeeds());
+    document.body.classList.toggle('columnized', getColumnizedFeeds());
   }
 
   function getNewFeedOptions() {
@@ -3279,6 +3310,8 @@ function FancyFeedsController() {
               <li class="divider"></li>
               ${checkof('tasks', 'Group By Story', `<input ${getSimpleFeeds() ? 'checked=""' : ''} data-change="setSimpleFeeds" name="simple-feeds" type="checkbox">`)}
               ${checkof('magic', 'Separate Blogs', `<input ${getDistinguishedFeeds() ? 'checked=""' : ''} data-change="setDistinguishedFeeds" name="distenguish-feeds" type="checkbox">`)}
+              <li class="divider"></li>
+              ${checkof('magic', 'Use Columns', `<input ${getColumnizedFeeds() ? 'checked=""' : ''} data-change="setColumnizedFeeds" name="columnized-feeds" type="checkbox">`)}
               <li class="divider"></li>
               ${checkof('newspaper-o', 'Full View', `<input name="feed-type" value="0" ${state == '0' ? 'checked=""' : ''} data-change="changeCompactMode" type="radio">`)}
               ${checkof('th', 'Mixed View', `<input name="feed-type" value="2" ${state == '2' ? 'checked=""' : ''} data-change="changeCompactMode" type="radio">`)}
@@ -3361,14 +3394,50 @@ function FancyFeedsController() {
     return stories;
   }
 
+  function populateColumns() {
+    all('#feed > .feed_item', item => {
+      const column = getOrCreateColumn(item.parentNode, item.dataset.type, item.dataset.timestamp, item.dataset.oldestTimestamp);
+      column.insertAdjacentElement('beforeend', item);
+      column.dataset.timestamp = Math.max(parseInt(item.dataset.timestamp), parseInt(column.dataset.timestamp));
+      column.dataset.oldestTimestamp = Math.min(parseInt(item.dataset.oldestTimestamp), parseInt(column.dataset.oldestTimestamp));
+    });
+
+    function getOrCreateColumn(container, type, timestamp, oldestTimestamp) {
+      if (type == 'site_blog_post') {
+        type = 'blog_post';
+      }
+      let column = container.querySelector(`.feed_column[data-type="${type}"]`);
+      if (column) {
+        return column;
+      }
+      container.insertAdjacentHTML('beforeend', `<div class="feed feed_column" data-type="${type}" data-timestamp="${timestamp}" data-oldest-timestamp="${oldestTimestamp}"></div>`);
+      return container.lastChild;
+    }
+  }
+
   function initFeedItems() {
     updateUnreadFeedItems(document.querySelector('#mark-read-button'));
+    if (getColumnizedFeeds()) {
+      populateColumns();
+    }
   }
 
   function fixFeedOptions() {
     initFeedItems();
 
     extend(FeedController.prototype, {
+      getLastTimestamp() {
+        if (getColumnizedFeeds()) {
+          return [].reduce.call(this.column.querySelectorAll('.feed_column'), (initial, a) => Math.min(parseInt(a.dataset.oldestTimestamp), initial), Number.MAX_VALUE);
+        }
+        return this.column.querySelector('.feed_item:last-child').dataset.oldestTimestamp;
+      },
+      getFirstTimestamp() {
+        if (getColumnizedFeeds()) {
+          return [].reduce.call(this.column.querySelectorAll('.feed_column'), (initial, a) => Math.min(parseInt(a.dataset.timestamp), initial), Number.MIN_VALUE);
+        }
+        return this.column.querySelector('.feed_item:first-child').dataset.timestamp;
+      },
       changeCompactMode(c, d, sender) {
         this.column.classList.toggle("compressed", false);
         LocalStorageSet("feed_compressed", sender.value);
@@ -3390,6 +3459,10 @@ function FancyFeedsController() {
       },
       setDistinguishedFeeds(event, d, sender) {
         settingsMan.setB('distinguished_feeds', sender.checked, false);
+        updateFeedUi();
+      },
+      setColumnizedFeeds(evend, d, sender) {
+        settingsMan.setB('columnized_feeds', sender.checked, false);
         updateFeedUi();
       }
     });
