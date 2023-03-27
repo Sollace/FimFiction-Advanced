@@ -3345,12 +3345,12 @@ function FancyFeedsController() {
         count += worth;
       }
 
-      if (!item.classList.contains('feed_group_item')) {
+      if (item.dataset.type != 'group_item') {
         return;
       }
 
       let group = item.querySelector('.group_stories');
-      if (group) {
+      if (group && !group.querySelector('.complex')) {
         const stories = getParsedStoryFeedItem(item);
         const kes = Object.keys(stories);
 
@@ -3394,25 +3394,121 @@ function FancyFeedsController() {
     return stories;
   }
 
+  const columnCategories = {
+    story: 'stories',
+    chapter: 'stories',
+    blog_post: 'blogs',
+    group_item: 'groups',
+    group_thread: 'groups'
+  };
+  const columnsPerMode = {
+    all: ['story', 'blog_post', 'group_item', 'group_thread'],
+    stories: ['story', 'chapter'],
+    groups: ['group_item', 'group_thread'],
+    blogs: ['blog_post', 'site_blog_post']
+  };
+
+  const loaders = {};
+
   function populateColumns() {
+    const controller = App.GetControllerFromElement(document.querySelector('.content'));
+
     all('#feed > .feed_item', item => {
       const column = getOrCreateColumn(item.parentNode, item.dataset.type, item.dataset.timestamp, item.dataset.oldestTimestamp);
       column.insertAdjacentElement('beforeend', item);
       column.dataset.timestamp = Math.max(parseInt(item.dataset.timestamp), parseInt(column.dataset.timestamp));
-      column.dataset.oldestTimestamp = Math.min(parseInt(item.dataset.oldestTimestamp), parseInt(column.dataset.oldestTimestamp));
+      column.dataset.oldestTimestamp = parseInt(column.dataset.oldestTimestamp) == 0 ? item.dataset.oldestTimestamp : Math.min(parseInt(item.dataset.oldestTimestamp), parseInt(column.dataset.oldestTimestamp));
+    });
+    console.log("Current View Mode: " + controller.viewMode);
+    (columnsPerMode[controller.viewMode] || []).forEach(column => {
+      getOrCreateColumn(controller.column, column, 0, 0);
     });
 
     function getOrCreateColumn(container, type, timestamp, oldestTimestamp) {
       if (type == 'site_blog_post') {
         type = 'blog_post';
       }
-      let column = container.querySelector(`.feed_column[data-type="${type}"]`);
+      let column = container.querySelector(`.feed_column[data-type="${type}"] .feed`);
       if (column) {
         return column;
       }
-      container.insertAdjacentHTML('beforeend', `<div class="feed feed_column" data-type="${type}" data-timestamp="${timestamp}" data-oldest-timestamp="${oldestTimestamp}"></div>`);
-      return container.lastChild;
+
+      container.insertAdjacentHTML('beforeend', `<div class="feed_column" data-type="${type}">
+        <div class="feed" data-timestamp="${timestamp}" data-oldest-timestamp="${oldestTimestamp}"></div>
+        <div class="column_loading_marker"></div>
+      </div>`);
+      column = container.lastChild;
+      const loader = createFeedLoader();
+
+      if (oldestTimestamp == 0) {
+        setTimeout(loader.loadItems, 200);
+      }
+
+      function createFeedLoader() {
+        if (loaders[type]) {
+          return loaders[type];
+        }
+
+        let loading;
+
+        function scrollEvent() {
+          const marker = controller.column.querySelector(`.feed_column[data-type="${type}"] .column_loading_marker`);
+
+          if (!marker) {
+            unbind();
+            return;
+          }
+
+          if (marker.getBoundingClientRect().top < 1.5 * window.innerHeight) {
+            loadItems();
+          }
+        }
+
+        function unbind() {
+          console.log('Column ' + type + ' no longer exists');
+          loaders[type] = undefined;
+          window.removeEventListener('scroll', scrollEvent);
+        }
+
+        window.addEventListener('scroll', scrollEvent);
+
+        function loadItems() {
+          const feed = controller.column.querySelector(`.feed_column[data-type="${type}"] .feed`);
+          if (!feed) {
+            unbind();
+            return;
+          }
+
+          if (loading) {
+            return;
+          }
+
+          loading = true;
+          new AjaxRequest({
+            url: '/ajax/feed',
+            method: 'GET',
+            data: {
+              max_date: feed.dataset.oldestTimestamp,
+              feed_view: columnCategories[type]
+            },
+            success(d) {
+              d.items.forEach(item => {
+                item = fQuery.createFromHtml(item);
+                if (item.dataset.type == type) {
+                  controller.initItem(item);
+                  controller.column.appendChild(item);
+                }
+              });
+            }
+          });
+        }
+
+        return { unbind, loadItems };
+      }
+
+      return column.querySelector('.feed');
     }
+
   }
 
   function initFeedItems() {
@@ -3428,13 +3524,13 @@ function FancyFeedsController() {
     extend(FeedController.prototype, {
       getLastTimestamp() {
         if (getColumnizedFeeds()) {
-          return [].reduce.call(this.column.querySelectorAll('.feed_column'), (initial, a) => Math.min(parseInt(a.dataset.oldestTimestamp), initial), Number.MAX_VALUE);
+          return [].reduce.call(this.column.querySelectorAll('.feed_column .feed'), (initial, a) => Math.min(parseInt(a.dataset.oldestTimestamp), initial), Number.MAX_VALUE);
         }
         return this.column.querySelector('.feed_item:last-child').dataset.oldestTimestamp;
       },
       getFirstTimestamp() {
         if (getColumnizedFeeds()) {
-          return [].reduce.call(this.column.querySelectorAll('.feed_column'), (initial, a) => Math.min(parseInt(a.dataset.timestamp), initial), Number.MIN_VALUE);
+          return [].reduce.call(this.column.querySelectorAll('.feed_column .feed'), (initial, a) => Math.max(parseInt(a.dataset.timestamp), initial), Number.MIN_VALUE);
         }
         return this.column.querySelector('.feed_item:first-child').dataset.timestamp;
       },
