@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Fimfiction MLD Day
 // @description Shhhhhhh
-// @version     1.0.0
+// @version     1.0.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
-// @include     /^http?[s]://www.fimfiction.net/.*/
+// @match       *://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.reflect.js
 // @grant       none
