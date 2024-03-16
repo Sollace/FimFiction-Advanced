@@ -1133,7 +1133,7 @@ a:hover .bg_source_link {
 .drop-down li.button-group > .drop-down {
     margin-top: 100%;
     margin-left: -320%;}
-.bbcode-editor .button-group > .drop-down ul:not(.scrollable, .drop-down-emoticons) {overflow: visible !important;}
+.bbcode-editor .button-group > .drop-down ul:not(.scrollable, .emoji-selector__list) {overflow: visible !important;}
 .drop-down li.button-group:hover > .drop-down::before {content: '';}
 .colour-holder li.colour-tile a {border-radius: 0px !important;}
 .button-group .drop-down ul ul li:first-child ~ li > a, .button-group-vertical .drop-down ul li:first-child ~ li > a, * + .button-holder > li:first-child > a {
