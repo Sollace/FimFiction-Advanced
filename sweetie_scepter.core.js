@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Sweetie Scepter
 // @description Super Secret Stuff
-// @version     4.3.2g
+// @version     4.3.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
-// @include     /^http?[s]://www.fimfiction.net/.*/
+// @match       *://www.fimfiction.net/*
 // @require     https://github.com/Sollace/UserScripts/raw/Dev/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/Dev/settings_man.core.js
 // @grant       none

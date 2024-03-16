@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        Settings Manager
 // @description Super Secret Stuff
-// @version     4.3
+// @version     4.3.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
-// @include     /^http?[s]://www.fimfiction.net/.*/
+// @match       *://www.fimfiction.net/*
 // @grant       none
 // ==/UserScript==
 
