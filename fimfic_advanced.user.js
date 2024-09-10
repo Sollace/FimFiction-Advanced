@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.0
+// @version     4.7.1
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,8 +18,8 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.0',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
+const VERSION = '4.7.1',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
@@ -2149,6 +2149,38 @@ function StoryBoxController() {
       span.parentNode.title = span.style.width;
     });
   }
+
+  function applySafetyNet() {
+    const unpublishMessage = 'This chapter is currently live. Are you sure you want to unpublish it now?';
+    const publishMessage = 'Publishing your chapter now will make it visible to other users. You can undo this at any time but user comments and views will remain and the story will still appear in the recently updated list.';
+    const unpublishProbe = 'If you are sure you want to unpublish this chapter';
+    const publishProbe = 'If you are ready to publish this chapter now';
+
+    all('[data-click="togglePublish"]', button => {
+      button.addEventListener('click', e => {
+        e.stopPropagation();
+        const publishing = !!button.closest('.chapter_unpublished');
+        const pop = makePopup(publishing ? 'Publish Chapter' : 'Unpublish Chapter', 'warning', true, true);
+        pop.SetWidth(350);
+        pop.SetContent(`
+          <div class="bbcode" style="padding:18px;overflow-y:auto;max-height:400px;">
+            <p>${publishing ? publishMessage : unpublishMessage}</p>
+            <p>${publishing ? publishProbe : unpublishProbe}, click <b>continue</b> otherwise click <b>cancel</b> to go back.</p>
+          </div>
+          <div class="drop-down-pop-up-footer-right">
+            <button data-click="confirm" class="styled_button"><i class="fa fa-check"></i> Yes, I really want to do this</button>
+            <button data-click="cancel" class="styled_button styled_button_red"><i class="fa fa-times"></i> Cancel</button>
+          </div>`);
+        addDelegatedEvent(pop.content, 'button[data-click="confirm"]', 'click', a => {
+          pop.Close();
+          App.GetControllerFromElement(button.closest('[data-controller-id]'))[button.dataset.click]();
+        });
+        addDelegatedEvent(pop.content, 'button[data-click="cancel"]', 'click', a => pop.Close());
+        pop.Show();
+      });
+    });
+  }
+
   return {
     getWidth() {
       const result = settingsMan.get('storyWidth', '100%');
@@ -2157,6 +2189,7 @@ function StoryBoxController() {
     apply() {
       applyChapterButtons();
       applyBetterRatingBars();
+      applySafetyNet();
     },
     createOptions(tab) {
       const chapWid = tab.AddTextBox("cwt", "Chapter Width");
