@@ -3,7 +3,7 @@ FimFiction-Advanced
 
 This script requires either [Violentmonkey](https://addons.mozilla.org/en-US/firefox/addon/violentmonkey/) for Firefox* or Tampermonkey for [Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo?hl=en), [Opera](https://addons.opera.com/en/extensions/details/tampermonkey-beta/?display=en), or [Safari](https://tampermonkey.net/?browser=safari).
 
-Current version: 4.6.2
+Current version: 4.7.1
 
 Download: [Install](https://github.com/Sollace/FimFiction-Advanced/raw/master/fimfic_advanced.user.js)
 
