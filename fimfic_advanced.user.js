@@ -2658,11 +2658,11 @@ function CommentSectionController() {
             preview = document.getElementById('bbcode_image_preview'),
             error = document.getElementById('add_image_error'),
             form = document.getElementById('add_image');
-      form.closest('.drop-down-pop-up-container').querySelector('h1').firstChild.nextSibling.textContent = 'Insert Direct Image';
+      form.closest('.drop-down-pop-up-container').querySelector('h1 span i').nextSibling.textContent = 'Insert Direct Image';
       form.removeEventListeners('submit');
       form.addEventListener('submit', e => {
         e.preventDefault();
-        if (!valid) return error.classList.remove('hidden');
+        if (!form.valid) return error.classList.remove('hidden');
         const url = input.value;
         this.insertText(`[img]${url}${url.indexOf('?') > -1 ? '&' : '?'}isEmote=true[/img]`);
         form.closest('.drop-down-pop-up-container').querySelector('.close_button').click();
