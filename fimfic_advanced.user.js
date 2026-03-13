@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.2
+// @version     4.7.3
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.2',
+const VERSION = '4.7.3',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -252,7 +252,23 @@ let userToolbar;
 //--------------------------------------BOILER PLATE------------------------------------------------
 requireRemoveEventListeners();
 ready(() => {
-  if (!document.querySelector('.body_container')) return;
+  if (!document.querySelector('.body_container')) {
+    runOnce(() => document.body && document.querySelector('.body_container'), () => {
+      excepted(bootstrapMain, "FimficAdv: Unhandled Exception in Main Init");
+    });
+  } else {
+    excepted(bootstrapMain, "FimficAdv: Unhandled Exception in Main Init", () => {
+      requestAnimationFrame(() => {
+        excepted(bootstrapMain, "FimficAdv: Unhandled Exception in Main Init (next frame)");
+      });
+    });
+  }
+});
+
+excepted(earlyStart, `FimficAdv: Unhandled Exception in Early Init`);
+//----------------------------------------BOOTSTRAP-------------------------------------------------
+
+function bootstrapMain() {
   const start = (new Date()).getTime();
   initGlobals();
   let stage = 'Ready-init';
@@ -269,22 +285,15 @@ ready(() => {
     stage = 'End-init';
     addFooterData(`Script applied in <a>${((new Date()).getTime() - start)/1000} seconds</a>`);
   } catch (e) {
-    console.error(`FimficAdv: Unhandled Exception in ${stage}`);
-    console.error(e);
+    console.error([`FimficAdv: Unhandled Exception in ${stage}`, e]);
   }
 
   function addFooterData(data) {
     const footer = document.querySelector('.footer .block');
     if (footer) footer.insertAdjacentHTML('beforeend', '<br>' + data);
   }
-});
-
-try {
-  earlyStart();
-} catch (e) {
-  console.error(`FimficAdv: Unhandled Exception in Early Init`);
-  console.error(e);
 }
+
 //---------------------------------------SCRIPT BODY------------------------------------------------
 function initGlobals() {
   if (!userToolbar) userToolbar = document.querySelector('.user_toolbar');
@@ -2043,12 +2052,29 @@ function replaceWith(el, html) {
   el.remove();
 }
 function runOnce(condition, action) {
+  const startTime = Date.now();
   (function self() {
     if (condition()) {
       return action();
     }
+
+    if (Date.now() > startTime + 15000) {
+      console.warn(`RunOnce: condition took too long (>15s): ${condition.toString()}`);
+      return;
+    }
+
     requestAnimationFrame(self);
   })();
+}
+function excepted(func, stage, fallback) {
+  try {
+    func();
+  } catch (e) {
+    console.error([stage, e]);
+    if (fallback) {
+      fallback();
+    }
+  }
 }
 function pinnerFunc(target, clazz, bounder) {
   clazz = `fix_${clazz}`;
