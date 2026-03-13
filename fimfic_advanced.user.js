@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.3
+// @version     4.7.4
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.3',
+const VERSION = '4.7.4',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -2992,6 +2992,34 @@ function SiteFontController() {
 }
 function LogoController() {
   const LOGOS = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura;Cadance;Bon Bon;Roseluck'.split(';').map(LOGO);
+  const SELECT_GROUPS = [
+    ['Random', -1],
+    ['Default', 0],
+    ['Main Cast', [
+      ['Twilight Sparkle', 2],
+      ['Pinkie Pie', 3],
+      ['Rarity', 4],
+      ['Applejack', 5],
+      ['Rainbow Dash', 1],
+      ['Fluttershy', 6],
+      ['Starlight Glimmer', 14]
+    ]],
+    ['Princesses', [
+      ['Princess Celestia', 11],
+      ['Princess Luna', 12],
+      ['Princess Cadance', 16]
+    ]],
+    ['Background Ponies', [
+      ['Lyra Heartstrings', 7],
+      ['Bon-Bon', 17],
+      ['Roseluck', 18],
+      ['Octavia', 8],
+      ['Vinyl Scratch', 9],
+      ['Derpy Hooves', 10],
+      ['Sunset Shimmer', 13],
+      ['Coloratura (Rara)', 15]
+    ]]
+  ];
   const pickNextLogo = () => pickNext(LOGOS.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
   const getUrl = val => LOGOS[val == -1 ? pickNextLogo() : Math.max(0, val % LOGOS.length)].css;
   const getCurrent = () => settingsMan.int("oldLogo", 0);
@@ -3003,8 +3031,16 @@ function LogoController() {
       document.querySelector('#home_link img.logo').src = getUrl(v || getCurrent());
     },
     createOptions(tab) {
-        const oldLogo = tab.AddDropDown("ologo", "Logo Image", LOGOS.filter(l => l.able).map(l => l.name), getCurrent());
-        oldLogo.innerHTML = '<option value="-1">Random</option>' + oldLogo.innerHTML;
+        const oldLogo = tab.AddDropDown("ologo", "Logo Image", [], getCurrent());
+        oldLogo.innerHTML = SELECT_GROUPS.map(option => {
+          if (Array.isArray(option[1])) {
+            return `<optgroup label="${option[0]}">
+              ${option[1].map(item => `<option value="${item[1]}">${item[0]}</option>`)}
+            </optgroup>`;
+          } else {
+            return `<option value="${option[1]}">${option[0]}</option>`;
+          }
+        });
         oldLogo.addEventListener('change', e => {
           settingsMan.set("oldLogo", e.target.value, 0);
           this.apply(e.target.value);
