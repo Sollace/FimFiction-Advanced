@@ -2965,7 +2965,7 @@ function SiteFontController() {
   };
 }
 function LogoController() {
-  const LOGOS = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura'.split(';').map(LOGO);
+  const LOGOS = 'Default;Rainbow Dash;Twilight Sparkle;Pinkie Pie;Rarity;Applejack;Fluttershy;Lyra Heartstrings;Octavia;Vinyl Scratch;Derpy Hooves;Celestia;Luna;Sunset Shimmer;Starlight Glimmer;Coloratura;Cadance;Bon Bon;Roseluck'.split(';').map(LOGO);
   const pickNextLogo = () => pickNext(LOGOS.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
   const getUrl = val => LOGOS[val == -1 ? pickNextLogo() : Math.max(0, val % LOGOS.length)].css;
   const getCurrent = () => settingsMan.int("oldLogo", 0);
