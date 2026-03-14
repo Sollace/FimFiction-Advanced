@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.4
+// @version     4.7.5
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -11,15 +11,15 @@
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.core.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.color.js
 // @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.reflect.js
-// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js
+// @require     https://github.com/Sollace/UserScripts/raw/master/Internal/FimQuery.settings.js?v4.2.10
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/settings_man.core.js
 // @require     https://github.com/Sollace/FimFiction-Advanced/raw/master/sweetie_scepter.core.js
 // @grant       none
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.4',
-      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
+const VERSION = '4.7.5',
+      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
@@ -2995,14 +2995,18 @@ function LogoController() {
   const SELECT_GROUPS = [
     ['Random', -1],
     ['Default', 0],
-    ['Main Cast', [
+    ['Mane Six', [
       ['Twilight Sparkle', 2],
-      ['Pinkie Pie', 3],
       ['Rarity', 4],
-      ['Applejack', 5],
       ['Rainbow Dash', 1],
       ['Fluttershy', 6],
-      ['Starlight Glimmer', 14]
+      ['Pinkie Pie', 3],
+      ['Applejack', 5]
+    ]],
+    ['Supporting Characters', [
+      ['Starlight Glimmer', 14],
+      ['Sunset Shimmer', 13],
+      ['Coloratura (Rara)', 15]
     ]],
     ['Princesses', [
       ['Princess Celestia', 11],
@@ -3010,14 +3014,12 @@ function LogoController() {
       ['Princess Cadance', 16]
     ]],
     ['Background Ponies', [
+      ['Derpy Hooves', 10],
       ['Lyra Heartstrings', 7],
       ['Bon-Bon', 17],
-      ['Roseluck', 18],
-      ['Octavia', 8],
       ['Vinyl Scratch', 9],
-      ['Derpy Hooves', 10],
-      ['Sunset Shimmer', 13],
-      ['Coloratura (Rara)', 15]
+      ['Octavia', 8],
+      ['Roseluck', 18]
     ]]
   ];
   const pickNextLogo = () => pickNext(LOGOS.map((l,i) => [l, i]).filter(l => l[0].able).map(l => l[1]));
@@ -3031,16 +3033,7 @@ function LogoController() {
       document.querySelector('#home_link img.logo').src = getUrl(v || getCurrent());
     },
     createOptions(tab) {
-        const oldLogo = tab.AddDropDown("ologo", "Logo Image", [], getCurrent());
-        oldLogo.innerHTML = SELECT_GROUPS.map(option => {
-          if (Array.isArray(option[1])) {
-            return `<optgroup label="${option[0]}">
-              ${option[1].map(item => `<option value="${item[1]}">${item[0]}</option>`)}
-            </optgroup>`;
-          } else {
-            return `<option value="${option[1]}">${option[0]}</option>`;
-          }
-        });
+        const oldLogo = tab.AddDropDown("ologo", "Logo Image", SELECT_GROUPS, getCurrent());
         oldLogo.addEventListener('change', e => {
           settingsMan.set("oldLogo", e.target.value, 0);
           this.apply(e.target.value);
