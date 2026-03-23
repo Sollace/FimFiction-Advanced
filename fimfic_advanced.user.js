@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.5
+// @version     4.7.6
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,8 +18,8 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.5',
-      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/Dev',
+const VERSION = '4.7.6',
+      GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
 if (CURRENT_LOCATION.indexOf('login-frame') != -1) throw 'FimFAdv: Login Frame detected. Execution halted.';
@@ -414,6 +414,10 @@ function applyCodePatches() {
   //Fix error window popping up whenever an operation times out/is cancelled
   override(window, 'ShowErrorWindow', function(c) {
     if (arguments[0] !== 'Request Failed (0)') return window.ShowErrorWindow.super(c);
+  });
+  // Fix group icons
+  document.querySelectorAll('#story-groups-list a > .icon').forEach(icon => {
+    icon.outerHTML = `<div class="icon-container">${icon.outerHTML}</div>`;
   });
   if (!document.querySelector('.chapter-container')) return;
   function formatChapter(chapter) {
