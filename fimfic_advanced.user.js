@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.6
+// @version     4.7.8
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.6',
+const VERSION = '4.7.8',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -301,7 +301,6 @@ function initGlobals() {
 function earlyStart() {
   runOnce(() => document.body && document.querySelector('#stylesheetMain'), () => {
     addCss();
-    backgrounds.apply();
 
     if (bannerController.getEnabled()) {
       addBannerCss();
@@ -314,6 +313,9 @@ function earlyStart() {
     FimFicSettings.SettingsTab('Advanced', 'Advanced Settings', 'fimfiction_advanced', 'fa fa-wrench', 'My Account', 'cog', buildSettingsTab);
     creditsController.buildAll();
     feeder.buildUi();
+  });
+  runOnce(() => document.querySelector('.body_container'), () => {
+    backgrounds.apply(document.querySelector('.body_container'));
   });
 }
 function initFimFictionAdvanced() {
@@ -407,7 +409,7 @@ function applyNightModeListener() {
   function nightModeToggled() {
     addCss();
     if (bannerController.getEnabled()) addBannerCss();
-    backgrounds.apply();
+    backgrounds.apply(document.querySelector('.body_container'));
   }
 }
 function applyCodePatches() {
@@ -572,6 +574,9 @@ function addCss() {
   updateStyle(`
 /*Footer overflow fix*/
 div.footer { height: auto !important;}
+
+/*Fix content breaking out of the page*/
+.bbcode { display: flow-root !important; }
 
 /*Fix bleeding corners on dropdown menus*/
 .user_toolbar > ul > li ul li:last-child a i { border-bottom-left-radius: 4px;}
@@ -3260,7 +3265,7 @@ function BackgroundsController() {
     return col;
   }
 
-  function apply() {
+  function apply(body_container) {
     let c = getColor();
     let img = SETS[1].get();
     let pattern = SETS[0].get();
@@ -3286,7 +3291,7 @@ function BackgroundsController() {
     `, 'FFA_BODY_BACKGROUND');
 
     document.body.dataset.baseColor = c;
-    c = window.getComputedStyle(document.querySelector('.body_container')).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
+    c = window.getComputedStyle(body_container).backgroundColor.replace(/rgb|a|\(|\)| /g,'').split(',');
 
     if (getBrightness(c[0] >> 0, c[1] >> 0, c[2] >> 0) < 100 || (typeof img !== 'string' && img.attributes.darken)) {
       all('.breadcrumbs, .chapter-header, .user-stats > div > .section > h1', a => a.classList.add('bright'));
