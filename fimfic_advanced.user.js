@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        FimFiction Advanced
 // @description Adds various improvements to FimFiction.net
-// @version     4.7.8
+// @version     4.7.9
 // @author      Sollace
 // @namespace   fimfiction-sollace
 // @icon        https://raw.githubusercontent.com/Sollace/FimFiction-Advanced/master/logo.png
@@ -18,7 +18,7 @@
 // @inject-into page
 // @run-at      document-start
 // ==/UserScript==
-const VERSION = '4.7.8',
+const VERSION = '4.7.9',
       GITHUB = '//raw.githubusercontent.com/Sollace/FimFiction-Advanced/master',
       DECEMBER = (new Date()).getMonth() == 11, CHRIST = DECEMBER && (new Date()).getDay() == 25,
       CURRENT_LOCATION = (document.location.href + ' ').split('fimfiction.net/')[1].trim().split('#')[0];
@@ -576,7 +576,8 @@ function addCss() {
 div.footer { height: auto !important;}
 
 /*Fix content breaking out of the page*/
-.bbcode { display: flow-root !important; }
+.story-description, .bbcode { display: flow-root !important; }
+.story-description .bbcode { display: inline !important; }
 
 /*Fix bleeding corners on dropdown menus*/
 .user_toolbar > ul > li ul li:last-child a i { border-bottom-left-radius: 4px;}
